@@ -29,6 +29,7 @@ async function save({ win, doc, downloads }) {
   const json = await new Promise((resolve, reject) => {
     const reader = new win.FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(downloads.at(-1));
   });
+  button(doc, 'I saved the file').click(); await tick();
   return JSON.parse(json);
 }
 async function importPack({ win, doc }, pack) {

@@ -3,6 +3,12 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 const FILE = 'stem_lab/stem_tool_weathersystems.js';
 
+function sameSetupForecasts(attempts) {
+  const kernel = window.WeatherSystemsKernel;
+  const model = kernel.resolvedState({ scenario: 'coldFront', simHour: 0 });
+  return attempts.map((entry) => ({ ...entry, modelHour: model.simHour, contextKey: kernel.forecastContextKey(model), window: kernel.expectedForecast(model).window }));
+}
+
 beforeEach(() => {
   resetStemLab();
   loadTool(FILE, 'weatherSystems');
@@ -163,6 +169,46 @@ describe('Weather Systems science kernel', () => {
     expect(kernel.geographicOrientationSummary(-18)).toEqual({ bearing: -18, northRotation: 18, label: 'North is 18\u00B0 right of screen top.' });
     expect(kernel.geographicOrientationSummary(0).label).toBe('North is aligned with screen top.');
     expect(kernel.geographicOrientationSummary(200)).toEqual({ bearing: -160, northRotation: 160, label: 'North is 160\u00B0 right of screen top.' });
+  });
+
+  it('keeps unzoned, impossible and future valid times out of the current-data badge', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const now = Date.parse('2026-10-31T12:00:00Z');
+    for (const utcOffsetSeconds of [undefined, null, '', false]) {
+      const result = kernel.liveObservationFreshness({ observedAt: '2026-10-31T12:00', utcOffsetSeconds }, now);
+      expect(result).toMatchObject({ code: 'unknown', current: false, ageMinutes: null, badge: 'SAVED' });
+    }
+    expect(kernel.liveObservationFreshness({ observedAt: '2026-02-30T12:00Z' }, now).code).toBe('unknown');
+    const future = kernel.liveObservationFreshness({ observedAt: '2026-10-31T12:01Z' }, now);
+    expect(future).toMatchObject({ code: 'future', current: false, stale: true, ageMinutes: null, badge: 'SAVED' });
+    expect(future.detail).toContain('device time');
+    expect(kernel.liveObservationFreshness({ observedAt: '2026-10-31T08:00', utcOffsetSeconds: -14400 }, now)).toMatchObject({ code: 'current', ageMinutes: 0 });
+  });
+
+  it('uses the device clock when no explicit freshness reference is supplied', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const now = Date.now();
+    const weather = { observedAt: new Date(now - 60000).toISOString() };
+    for (const reference of [undefined, null, '', false]) {
+      expect(kernel.liveObservationFreshness(weather, reference)).toMatchObject({ code: 'current', current: true, ageMinutes: 1 });
+    }
+  });
+
+  it('keeps UTC and explicit offset labels separate from location timezones', () => {
+    const kernel = window.WeatherSystemsKernel;
+    for (const time of ['2026-10-31T14:00Z', '2026-10-31T14:00:00+02:00', '2026-10-31T14:00:00-0400']) {
+      const label = kernel.weatherTimelineLabel({ time, role: 'forecast', offsetHours: 2 }, 'EDT');
+      expect(label).toContain(time.replace('T', ' '));
+      expect(label).not.toContain('EDT');
+      expect(kernel.weatherValidTimeLabel(time, 'EDT')).toBe(time);
+    }
+    expect(kernel.weatherValidTimeLabel('2026-10-31T14:00', 'EDT')).toBe('2026-10-31T14:00 EDT');
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'immersive', immersiveDataSource: 'live',
+      liveWeather: { observedAt: '2026-10-31T14:00Z', timezone: 'EDT', temperature: 12, humidity: 70, pressure: 1010, precipitation: 0, windSpeed: 8, windDir: 180, cloudCover: 25, condition: 'Partly cloudy' },
+    } });
+    expect(html).toContain('14:00Z');
+    expect(html).not.toContain('14:00Z EDT');
   });
 
   it('normalizes hourly weather and selects an explicit observed or forecast hour', () => {
@@ -899,7 +945,9 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(stageTimelineHtml).toContain('data-weather-stage-timeline-comparison');
     expect(stageTimelineHtml).toContain('Compare hours');
     expect(stageTimelineHtml).toContain('weather-stage-timeline-comparison');
-    expect(stageTimelineHtml).toContain('Change since baseline');
+    expect(stageTimelineHtml).not.toContain('Change since baseline');
+    expect(stageTimelineHtml).toContain('Refresh weather to record the location and retrieval before using these controls.');
+    expect(stageTimelineHtml).toMatch(/id="weather-stage-timeline-slider"[^>]*value="1"/);
   });
 
   it('renders optional structured location fields with address autocomplete semantics', () => {
@@ -935,7 +983,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
         tab: 'immersive', immersiveDataSource: 'live',
         liveWeather: {
           label: 'Portland, Maine, United States', latitude: 43.6591, longitude: -70.2568,
-          observedAt: '2026-07-16T14:00', timezone: 'EDT', temperature: 28.4, humidity: 74,
+          observedAt: '2026-07-16T14:00', timezone: 'EDT', utcOffsetSeconds: -14400, temperature: 28.4, humidity: 74,
           precipitation: 1.2, weatherCode: 95, condition: 'Thunderstorms', cloudCover: 88,
           pressure: 1004.6, windSpeed: 22.1, windDir: 215, visibility: 8400,
           source: 'Open-Meteo', sourceUrl: 'https://open-meteo.com/'
@@ -1182,7 +1230,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
         },
         liveWeather: {
           label: 'Portland, Maine, United States', latitude: 43.6591, longitude: -70.2568,
-          observedAt: '2026-07-16T14:00', timezone: 'EDT', temperature: 28.4, humidity: 74,
+          observedAt: '2026-07-16T14:00', timezone: 'EDT', utcOffsetSeconds: -14400, temperature: 28.4, humidity: 74,
           precipitation: 1.2, weatherCode: 95, condition: 'Thunderstorms', cloudCover: 88,
           pressure: 1004.6, windSpeed: 22.1, windDir: 215, visibility: 8400,
           source: 'Open-Meteo', sourceUrl: 'https://open-meteo.com/'
@@ -1635,7 +1683,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('4 of 5 stages');
     expect(html).toContain('Next: Revise');
     expect(html).toContain('Recommended next: Revise and verify again.');
-    expect(html).toContain('Revise. Recommended next step. Compare two verified forecasts.');
+    expect(html).toContain('Revise. Recommended next step. Compare two forecasts for the same setup and target.');
   });
 
   it('celebrates a complete investigation cycle', () => {
@@ -1645,12 +1693,12 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       patternCompared: true,
       experimentsRun: 1,
       forecastsIssued: 2,
-      forecastHistory: [{ attempt: 1, score: 70 }, { attempt: 2, score: 90 }]
+      forecastHistory: sameSetupForecasts([{ attempt: 1, score: 70 }, { attempt: 2, score: 90 }])
     } }, { gradeLevel: '10th Grade' });
     expect(html).toContain('5 of 5 stages');
     expect(html).toContain('Cycle complete');
     expect(html).toContain('Investigation cycle complete. Keep testing new scenarios and improving explanations.');
-    expect(html).toContain('Revise. Complete. Compare two verified forecasts.');
+    expect(html).toContain('Revise. Complete. Compare two forecasts for the same setup and target.');
   });
 
   it('guides learners toward the next meteorologist badge', () => {
@@ -1674,7 +1722,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       evidence: ['pressure', 'front', 'radar'],
       predictionPrecip: 'storms', predictionTiming: '4-6', predictionHazard: 'lightning', readinessAction: 'indoors',
       forecastsIssued: 2,
-      forecastHistory: [{ attempt: 1, score: 70 }, { attempt: 2, score: 90 }]
+      forecastHistory: sameSetupForecasts([{ attempt: 1, score: 70 }, { attempt: 2, score: 90 }])
     } }, { gradeLevel: '10th Grade' });
     expect(html).toContain('9 of 9 earned');
     expect(html).toContain('aria-valuenow="9"');
@@ -1933,14 +1981,14 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       observationLog: [{ id: 'central-0', station: 'Central School' }],
       lensEvidence: ['pressure'], experimentsRun: 1, forecastsIssued: 2,
       evidence: ['pressure', 'front', 'radar'], reasoning: 'Pressure and wind changes support an approaching front.',
-      forecastHistory: [
+      forecastHistory: sameSetupForecasts([
         { attempt: 1, score: 68, evidenceCount: 2, reasoning: 'Pressure is falling.' },
         { attempt: 2, score: 86, evidenceCount: 3, reasoning: 'Pressure and wind changes support an approaching front.' }
-      ]
+      ])
     } }, { gradeLevel: '10th Grade' });
     expect(guide).toContain('5 of 5 checkpoints ready');
     expect(guide).toContain('aria-valuenow="5"');
-    expect(guide).toContain('Latest revision improved the model-match score by 18 points.');
+    expect(guide).toContain('Forecast #1 → #2, valid T+6 h. Model-match score 68 → 86 out of 100 (+18 points).');
     expect(guide).toContain('Suggested conference focus: Transfer and model limits');
     expect(guide).toContain('Compare the teaching model with local weather observations.');
   });
@@ -1992,10 +2040,10 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       reasoningPulseResponses: { systems: 'approaching', saturation: 'temperatureOnly', fairTest: 'oneVariable' },
       peerReviewStrength: 'reasoning', peerReviewMove: 'explainLink',
       peerReviewFeedback: 'The evidence is relevant. Explain the wind shift connection.', peerReviewSubmitted: true,
-      forecastHistory: [
+      forecastHistory: sameSetupForecasts([
         { attempt: 1, score: 68, evidenceCount: 2 },
         { attempt: 2, score: 86, evidenceCount: 3 }
-      ]
+      ])
     } }, { gradeLevel: '7th Grade' });
     expect(guide).toContain('data-weather-teacher-handoff');
     expect(guide).toContain('WEATHER SYSTEMS TEACHER HANDOFF');
@@ -2003,7 +2051,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(guide).toContain('Model time: T +6 hours');
     expect(guide).toContain('Investigation checkpoints ready: 5/5');
     expect(guide).toContain('Latest model-match score: 86/100 with 3 evidence sources');
-    expect(guide).toContain('Latest score change: +18 points');
+    expect(guide).toContain('Forecast #1 → #2, valid T+6 h. Model-match score 68 → 86 out of 100 (+18 points).');
     expect(guide).toContain('Learner exit ticket: Saved');
     expect(guide).toContain('Reasoning pulse: 2/3 explanations supported; 3/3 answered');
     expect(guide).toContain('Reasoning review focus: Moisture and saturation');
@@ -2184,13 +2232,13 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     const html = renderTool('weatherSystems', { weatherSystems: {
       tab: 'forecast',
       scenario: 'coldFront',
-      forecastHistory: [
-        { attempt: 1, score: 55, precip: 'rain', timing: '7-12', hazard: 'highWind', action: 'monitor', confidence: 60, evidenceCount: 1, modelHour: 0 },
-        { attempt: 2, score: 85, precip: 'storms', timing: '4-6', hazard: 'lightning', action: 'indoors', confidence: 80, evidenceCount: 3, reasoning: 'Falling pressure and the wind shift support an approaching cold front.', modelHour: 3 }
-      ]
+      forecastHistory: sameSetupForecasts([
+        { attempt: 1, score: 55, precip: 'rain', timing: '7-12', hazard: 'highWind', action: 'monitor', confidence: 60, evidenceCount: 1 },
+        { attempt: 2, score: 85, precip: 'storms', timing: '4-6', hazard: 'lightning', action: 'indoors', confidence: 80, evidenceCount: 3, reasoning: 'Falling pressure and the wind shift support an approaching cold front.' }
+      ])
     } }, { gradeLevel: '10th Grade' });
     expect(html).toContain('Forecast Revision Journal');
-    expect(html).toContain('Revision improved by 30 points');
+    expect(html).toContain('Forecast #1 → #2, valid T+6 h. Model-match score 55 → 85 out of 100 (+30 points).');
     expect(html).toContain('Forecast #2 - latest');
     expect(html).toContain('3 evidence sources');
     expect(html).toContain('Falling pressure and the wind shift support an approaching cold front.');
@@ -3305,12 +3353,21 @@ describe('Weather Systems geographic map loader resilience', () => {
   const PATHS = [
     'stem_lab/stem_tool_weathersystems.js',
     'desktop/web-app/public/stem_lab/stem_tool_weathersystems.js',
+    'desktop/app-build/stem_lab/stem_tool_weathersystems.js',
+    'desktop/web-app/build/stem_lab/stem_tool_weathersystems.js',
   ];
+
+  it('keeps all four Weather Systems assets byte-identical', () => {
+    const source = readFileSync(resolve(process.cwd(), PATHS[0]));
+    PATHS.slice(1).forEach((filePath) => {
+      expect(readFileSync(resolve(process.cwd(), filePath)).equals(source), filePath).toBe(true);
+    });
+  });
 
   it('requests a bounded hourly weather window for temporal playback', () => {
     const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
     expect(source).toContain("'&hourly=' + fields + '&past_hours=6&forecast_hours=25&timezone=auto'");
-    expect(source).toContain('normalizeHourlyWeatherTimeline(payload, live)');
+    expect(source).toContain('normalizeHourlyWeatherTimeline(payload, live, { includePartial: true })');
     expect(source).toContain('geographicRuntimeRef.current.refreshWeatherOverlays = refreshGeographicWeather');
     expect(source).toContain('geographicTerrainProfileWeather: { validAt: terrainProfileWeather.validAt');
   });

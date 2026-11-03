@@ -1,0 +1,36 @@
+{
+  "mode": "built-in image_gen",
+  "style": "abstract cut-paper stencil printmaking",
+  "assets": [
+    {
+      "key": "reason",
+      "prompt": "Use case: stylized-concept. Asset type: educational glossary illustration, square composition. Create sophisticated abstract cut-paper collage with stencil printmaking grain on warm ivory paper, indigo, muted teal and copper. Visually interesting layered shapes and crisp legible silhouette, no realism, no cartoons, no mascots, no people or faces. No words, letters, digits, ticks/checkmarks, logos, watermarks, grading marks. Concept: A copper bridge links a small card holding several observed geometric fragments to a larger card holding a coherent arrangement of those same fragments. The link makes the connection visible, without adding new evidence. Equal clarity of both ends, one connected visual metaphor for explaining why evidence supports an idea.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-a77edea8-0e52-4502-beb1-bf0f5450565e.png"
+    },
+    {
+      "key": "criteria",
+      "prompt": "Use case: stylized-concept. Asset type: educational glossary illustration, square composition. Create sophisticated abstract cut-paper collage with stencil printmaking grain on warm ivory paper, indigo, muted teal and copper. Visually interesting layered shapes and crisp legible silhouette, no realism, no cartoons, no mascots, no people or faces. No words, letters, digits, ticks/checkmarks, logos, watermarks, grading marks. Concept: Three simple translucent rectangular viewing frames lie across two distinct abstract designs. The same frames are used to examine both designs; no winning design, scores or marked answers. Visual metaphor for consistent criteria applied to possible choices.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-44e35812-ff1b-48fe-90da-1d72c524d707.png"
+    },
+    {
+      "key": "feedback",
+      "prompt": "Use case: stylized-concept. Asset type: educational glossary illustration, square composition. Create sophisticated abstract cut-paper collage with stencil printmaking grain on warm ivory paper, indigo, muted teal and copper. Visually interesting layered shapes and crisp legible silhouette, no realism, no cartoons, no mascots, no people or faces. No words, letters, digits, ticks/checkmarks, logos, watermarks, grading marks. Concept: An unfinished geometric paper composition lies beside two blank overlapping comment cards. A small copper curved connector relates one comment to a specific piece of the draft. Thoughtful response to a draft, not praise, grades or a corrected answer.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-eabc5263-8ad9-4635-8244-ebe491cec6af.png"
+    },
+    {
+      "key": "revise",
+      "prompt": "Use case: stylized-concept. Asset type: educational glossary illustration, square composition. Create sophisticated abstract cut-paper collage with stencil printmaking grain on warm ivory paper, indigo, muted teal and copper. Visually interesting layered shapes and crisp legible silhouette, no realism, no cartoons, no mascots, no people or faces. No words, letters, digits, ticks/checkmarks, logos, watermarks, grading marks. Concept: Two paper design cards contain the same small set of geometric pieces. Between them a single copper connector traces one piece being moved to a different position; preserve other pieces. Deliberate revision without declaring the second design better, no success icons.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-c8efdb8f-959a-48be-bc44-7c4fd33db9c2.png"
+    },
+    {
+      "key": "retain",
+      "prompt": "Use case: stylized-concept. Asset type: educational glossary illustration, square composition. Create sophisticated abstract cut-paper collage with stencil printmaking grain on warm ivory paper, indigo, muted teal and copper. Visually interesting layered shapes and crisp legible silhouette, no realism, no cartoons, no mascots, no people or faces. No words, letters, digits, ticks/checkmarks, logos, watermarks, grading marks. Concept: An open reflection notebook sits beside two matching abstract design cards with identical arrangement of three paper shapes. A gentle circular copper loop returns to the same arrangement. A considered decision to keep a plan, without implying resistance or adding approval marks.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-7e0f6f8e-b250-49f1-880d-4d646dd6415c.png"
+    },
+    {
+      "key": "remaining_check",
+      "prompt": "Use case: stylized-concept. Asset type: educational glossary illustration, square composition. Create sophisticated abstract cut-paper collage with stencil printmaking grain on warm ivory paper, indigo, muted teal and copper. Visually interesting layered shapes and crisp legible silhouette, no realism, no cartoons, no mascots, no people or faces. No words, letters, digits, ticks/checkmarks, logos, watermarks, grading marks. Concept: A magnifying lens hovers over a neutral comparison record made of blank paper strips. One distinct outlined space remains open beside several filled geometric evidence windows. Visual metaphor for an unresolved question or information still needed. No answers, question marks, numbers or words.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-1021f36e-f522-4f61-9f79-2bc57f70d18c.png"
+    }
+  ]
+}

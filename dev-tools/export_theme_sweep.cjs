@@ -78,7 +78,7 @@ function generate(outDir, moduleFile, packs, wide) {
   ];
   const jobs = [{ name: 'generated-source', items: [generated], topic: 'Justice' }];
   for (const name of packs) {
-    const file = path.join(ROOT, 'allopacks', name + '.allopack.json');
+    const file = path.join(ROOT, 'allopacks', 'current', name + '.allopack.json');
     if (!fs.existsSync(file)) { process.stderr.write('missing pack ' + name + '\n'); continue; }
     const pack = JSON.parse(fs.readFileSync(file, 'utf8'));
     jobs.push({ name, items: pack.history || [], topic: pack.sourceTopic || name });
@@ -245,7 +245,7 @@ async function selftest(outDir) {
   const moduleFile = path.resolve(arg('--module', path.join(ROOT, 'doc_pipeline_module.js')));
   const packsArg = arg('--packs', DEFAULT_PACKS.join(','));
   const packs = packsArg === 'all'
-    ? fs.readdirSync(path.join(ROOT, 'allopacks')).filter(f => f.endsWith('.allopack.json')).map(f => f.replace('.allopack.json', ''))
+    ? fs.readdirSync(path.join(ROOT, 'allopacks', 'current')).filter(f => f.endsWith('.allopack.json')).map(f => f.replace('.allopack.json', ''))
     : packsArg.split(',');
   fs.rmSync(out, { recursive: true, force: true });
   const gen = spawnSync(process.execPath, [__filename, '--generate', '--out', out, '--module', moduleFile, '--packs', packs.join(',')].concat(process.argv.includes('--wide') ? ['--wide'] : []), { encoding: 'utf8', maxBuffer: 1 << 26 });

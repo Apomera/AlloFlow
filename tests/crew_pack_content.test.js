@@ -23,7 +23,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 // CREW_PACK_DIR points the suite at a copy (mutation runs), never at the real packs by accident.
-const DIR = process.env.CREW_PACK_DIR ? resolve(process.env.CREW_PACK_DIR) : resolve(process.cwd(), 'allopacks');
+const DIR = process.env.CREW_PACK_DIR ? resolve(process.env.CREW_PACK_DIR) : resolve(process.cwd(), 'allopacks', 'current');
 const FILES = readdirSync(DIR).filter((f) => /^crew_.*\.allopack\.json$/.test(f)).sort();
 
 // Where the reading uses a glossary word in a form no suffix rule can derive. Keyed by the
@@ -150,8 +150,12 @@ describe.each(FILES)('Crew pack content: %s', (file) => {
   });
 
   it('has no em or en dashes anywhere', () => {
+    // Exempt: the edition label every allopacks/current/ title carries, and image-generation prompts
+    // (imagenPrompt), which no learner or teacher reads.
     const dashes = new RegExp('.{0,30}[' + String.fromCharCode(0x2013, 0x2014) + '].{0,30}', 'g');
-    const hits = [...JSON.stringify(pack).matchAll(dashes)].map((m) => m[0]);
+    const shown = JSON.parse(JSON.stringify(pack), (k, v) => (k === 'imagenPrompt' ? undefined : v));
+    shown.allopack.title = shown.allopack.title.replace(new RegExp(' ' + String.fromCharCode(0x2014) + ' Illustrated Edition$'), '');
+    const hits = [...JSON.stringify(shown).matchAll(dashes)].map((m) => m[0]);
     expect(hits).toEqual([]);
   });
 });

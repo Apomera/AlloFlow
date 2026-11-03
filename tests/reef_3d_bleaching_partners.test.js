@@ -33,6 +33,11 @@ function shape(h) {
     uv: m.geometry.attributes.uv ? Array.from(m.geometry.attributes.uv.array) : null, inst: m.isInstancedMesh ? Array.from(m.instanceMatrix.array) : null }));
 }
 function vertexColours(m) { const c = m.geometry.attributes.color, out = []; for (let i = 0; i < c.count; i++) out.push([c.getX(i), c.getY(i), c.getZ(i)]); return out; }
+function wormHeadParts(m) {
+  const all = vertexColours(m), boundary = m.geometry.userData.wormHostVertexCount;
+  expect(Number.isInteger(boundary) && boundary > 0 && boundary < all.length, 'explicit coral host / worm structure boundary').toBe(true);
+  return { coral: all.slice(0, boundary), structures: all.slice(boundary) };
+}
 // Each instance as seen: mean vertex colour times its instance colour (all linear).
 function instanceColours(m) {
   const v = vertexColours(m), avg = [0, 1, 2].map((k) => mean(v.map((c) => c[k]))), a = m.instanceColor.array, out = [];
@@ -121,11 +126,12 @@ describe('Lane G2: animals with algae partners bleach, the rest do not', () => {
 
   it('bleaches the worms\' living Porites head while the worms keep their own colours', () => {
     for (const quality of ['low', 'high']) for (const seed of [1, 4, 9]) {
-      const healthy = build('christmas_tree_worm', { seed, quality }, (h) => ({ shape: shape(h), head: vertexColours(part(h, 'coral-head')), worms: Array.from(part(h, 'worms').instanceColor.array) }));
+      const healthy = build('christmas_tree_worm', { seed, quality }, (h) => { const host = wormHeadParts(part(h, 'coral-head')); return { shape: shape(h), head: host.coral, structures: host.structures, worms: Array.from(part(h, 'worms').instanceColor.array) }; });
       build('christmas_tree_worm', { seed, quality, health: 'bleached' }, (h) => {
-        const tag = 'worms ' + quality + ' seed ' + seed, head = vertexColours(part(h, 'coral-head'));
+        const tag = 'worms ' + quality + ' seed ' + seed, host = wormHeadParts(part(h, 'coral-head')), head = host.coral;
         expect(shape(h), tag + ' same head and crowns').toEqual(healthy.shape);
         expect(Array.from(part(h, 'worms').instanceColor.array), tag + ' crowns keep their colours').toEqual(healthy.worms);
+        expect(host.structures, tag + ' tubes, recesses and lids keep their colours').toEqual(healthy.structures);
         expect(mean(healthy.head.map(sat)), tag + ' living Porites is brown').toBeGreaterThan(0.25);
         expect(head.filter((c) => sat(c) > 0.2).length, tag + ' no pigment left').toBe(0);
         expect(mean(head.map(lum)), tag + ' stark white').toBeGreaterThan(0.55);
@@ -158,8 +164,8 @@ describe('Lane G2: animals with algae partners bleach, the rest do not', () => {
     expect(all, 'bleaching adds no material family to the healthy catalog').toEqual(healthy);
     const legacy = fams('healthy', S.ids.filter(id => !POST_MERGE_IDS.includes(id)));
     expect(legacy.size, 'earlier eleven pinned specimen families').toBe(11);
-    expect([...all].filter(s => !legacy.has(s)).sort()).toEqual(POST_MERGE_FAMILIES.map(s => s + ',reef3d-species-v7|d').sort());
-    expect(new Set([...all].map((k) => k.split(',').pop())), 'one shader patch').toEqual(new Set(['reef3d-species-v7|d']));
+    expect([...all].filter(s => !legacy.has(s)).sort()).toEqual(POST_MERGE_FAMILIES.map(s => s + ',reef3d-species-v8|d').sort());
+    expect(new Set([...all].map((k) => k.split(',').pop())), 'one shader patch').toEqual(new Set(['reef3d-species-v8|d']));
     for (const id of PARTNERS) for (const quality of ['low', 'high']) {
       const a = signatureFor(id, quality), b = signatureFor(id, quality, 'bleached');
       expect(b, id + ' ' + quality).toEqual(a);

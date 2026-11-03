@@ -95,9 +95,9 @@ describe('what a student sees', () => {
     expect(host.querySelector('[data-reading-comparison]')).not.toBeNull();
     expect(host.textContent).not.toMatch(/Word counts|before sharing/);
     expect(host.textContent).toContain('Read the original and the easier version side by side.');
-    const listen = [...host.querySelectorAll('button')].filter(b => b.textContent === 'Listen with highlights');
+    const listen = [...host.querySelectorAll('button')].filter(b => b.textContent === 'Read along with audio');
     expect(listen.length).toBe(2);
-    expect(listen.map(b => b.getAttribute('aria-label'))).toEqual(['Listen with highlights: original', 'Listen with highlights: adapted text']);
+    expect(listen.map(b => b.getAttribute('aria-label'))).toEqual(['Read along with audio: original', 'Read along with audio: adapted text']);
   });
   it('the teacher\'s side-by-side view keeps the review note', () => {
     const { adapted, original } = pair();

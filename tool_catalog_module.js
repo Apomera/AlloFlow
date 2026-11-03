@@ -34,7 +34,7 @@ const TOOL_CATALOG = [
   {
     id: 'analysis',
     description: 'Analyzes source text for key ideas, vocabulary, structure.',
-    whenToUse: 'ALWAYS include as first resource.',
+    whenToUse: 'Include first only when the exact current source has not been checked. Reuse an existing source check.',
     placeFirst: true,
     inAutofill: true,
     sidebarKey: 'sidebar.tool_analysis',
@@ -159,8 +159,8 @@ const TOOL_CATALOG = [
   },
   {
     id: 'math',
-    description: 'Opens the STEAM Lab — hands-on math/science tools (algebra, calculus, statistics, physics simulations, chemistry, anatomy, etc.).',
-    whenToUse: 'Use for STEM content where students benefit from interactive exploration. NOT for simple arithmetic problems (use quiz for that).',
+    description: 'Generates math practice problems, worked examples and explanations, including arithmetic, conceptual tasks and attached manipulatives. The separate STEAM Lab opens interactive math/science tools.',
+    whenToUse: 'Use for arithmetic or topic-based practice, step-by-step explanations and applied math. For an interactive simulator, choose the separate STEAM Lab action.',
     inAutofill: true,
     sidebarKey: 'sidebar.tool_math',
   },

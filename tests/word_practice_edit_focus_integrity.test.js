@@ -49,6 +49,7 @@ async function saveSet(context) {
   const text = await new Promise((resolve, reject) => {
     const reader = new win.FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(blob);
   });
+  button(doc, 'I saved the file').click(); await tick();
   return JSON.parse(text);
 }
 async function importSet(context, value) {
@@ -63,6 +64,33 @@ function press(win, key) {
 }
 
 describe.each(Object.keys(sources))('Word Practice edit integrity (%s)', lane => {
+  it('keeps review marks through setup and filters them to the chosen cards and activity', async () => {
+    const context = load(lane), { doc, win, ui } = context;
+    ui.open({ words: [{ ...preparedWord(), id: 'ship-card' }, { word: 'rain', id: 'rain-card' }], options: { shuffle: false, repetitions: 1 } });
+    button(doc, 'Present').click(); await tick();
+    button(doc, 'Next').click(); button(doc, 'Add to review').click(); button(doc, 'Back to setup').click();
+    expect((await saveSet(context)).reviewItemIds).toEqual(['rain-card']);
+    editWords(win, 'ship');
+    expect((await saveSet(context)).reviewItemIds).toBeUndefined();
+    editWords(win, 'ship\nrain');
+    field(doc, 'Practice activity').value = 'sentence';
+    button(doc, 'Present').click(); await tick();
+    expect(button(doc, 'Start review (0)').disabled).toBe(true);
+    button(doc, 'Add to review').click(); button(doc, 'Start review (1)').click();
+    expect(doc.querySelector('.awp-progress').textContent).toBe('Card 1 of 1');
+    button(doc, 'Back to setup').click();
+    const saved = await saveSet(context);
+    expect(saved.reviewItemIds).toEqual(['rain-card', 'ship-card']);
+    await importSet(context, { ...saved, reviewItemIds: ['ship-card'] });
+    field(doc, 'Practice activity').value = 'popup';
+    button(doc, 'Present').click(); await tick();
+    expect(button(doc, 'Start review (1)').disabled).toBe(false);
+    button(doc, 'Remove from review').click(); button(doc, 'Back to setup').click();
+    expect((await saveSet(context)).reviewItemIds).toBeUndefined();
+    await importSet(context, saved);
+    await importSet(context, { words: saved.items, options: saved.options });
+    expect((await saveSet(context)).reviewItemIds).toBeUndefined();
+  });
   it('exports only selected words but restores all prepared content after temporary removal and blur', async () => {
     const context = load(lane), { win, ui } = context;
     ui.open({ words: [preparedWord(), 'rain'], options: { shuffle: false, repetitions: 1 } });

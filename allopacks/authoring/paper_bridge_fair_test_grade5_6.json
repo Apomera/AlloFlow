@@ -1,0 +1,539 @@
+{
+  "requestId": "paper-bridge-fair-test-grade5-6-20261101",
+  "profile": "native",
+  "title": "Which Paper Bridge Holds More? Plan a Fair Test",
+  "author": "AlloFlow · original AI-authored teaching draft · educator review pending",
+  "sourceTopic": "Original fictional paper-bridge investigation: fair comparisons, variables, repeated trials and bounded conclusions",
+  "gradeLevel": "5th–6th Grade",
+  "language": "en",
+  "learningGoal": "Explain how a fair comparison changes one planned variable, measures an explicitly defined result and keeps relevant conditions consistent; use repeated fictional trials to support a bounded conclusion and propose a useful next test.",
+  "standards": "No formal standards alignment asserted; educator mapping pending.",
+  "privacy": {
+    "confirmNoStudentPii": true,
+    "confirmSourcePermission": true
+  },
+  "history": [
+    {
+      "id": "pb-directions",
+      "type": "directions",
+      "title": "Start here: What would make the comparison fair?",
+      "meta": "Grades 5–6 · Original fictional investigation · Educator review draft",
+      "data": {
+        "body": "**Draft for educator review · Grades 5–6 · Two sessions of about 40 minutes**\n\n**Goal:** Explain a fair comparison and make a conclusion that fits its measurements. You will work with an invented paper-bridge record. All six results are fictional teaching examples, not real observations or predictions of what your own bridge will hold.\n\nNo bridge building, counters, internet or AI provider is needed for the core lesson. Read the supplied method and results. Any later physical investigation is a separate, teacher-supervised extension.\n\n1. Open **Two shapes, one comparison**. Read the question and method before the results. Predict which design might have the higher last successful count, or explain why you are unsure. A prediction is a starting idea, not a score. Keep this starting response on paper or in a separate accessible document for later reflection.\n2. Read the fictional results. In the first three rows of **My fair-test evidence record**, put a short method detail or result in the left column. In the right column, explain why that detail matters. Include a condition kept consistent, the counting rule and evidence from both shapes. Keep all four response boxes blank until you enter your own reasoning.\n3. Use **Words for a fair comparison** and **Four moves for a fair test** as needed. Distinguish what the plan changes, what it measures and what it keeps consistent.\n4. Try **Paper helicopter plan: Which role?** This is a separate fictional planning case. Sort each card by its role. After **Check**, open **Why?** and reconsider your explanation. No paper helicopters need to be built or dropped.\n5. Use **Does the conclusion fit the test?** with a partner, written/AAC messages or an imagined objection you answer independently. Refer to the actual method and numbers.\n6. Use the fourth row of **My fair-test evidence record** for your final explanation. State what the fictional results support, use numbers from both shapes, explain one fairness choice and name a limit plus a useful next test. Write, dictate, sign, use AAC or make a labeled comparison with an explanation. A teacher or scribe may record your reasoning faithfully. The sentence starters are optional.\n7. Complete **Check your fair-test reasoning** and its reflections. Compare your prediction with the fictional results; a well-explained retained prediction or revision is useful.\n\nSuccess depends on your reasoning, not on building a bridge, doing mental arithmetic, speaking quickly or writing a long response. You may use read-aloud, enlarged text, a calculator, a partner reader, a scribe or another response mode while keeping the same goal.\n\n## Optional visual supports\n\nThis illustrated edition includes direct illustrations or adjacent resources titled **Visual companion** for every activity. The pictures are conceptual supports, not construction diagrams, measured results or answer keys. All exact dimensions, rules and numbers are in the editable reading.\n\n## Save your work between sessions\n\nChoose **Save File**, then **Save**, to download your current work. If the sidebar tools are hidden, choose **Restore Split View** first. Keep the newest downloaded file. When you return in Student mode, choose **Load Saved File** and select that copy. In the full workspace, open **More** in **Resource Pack History**, then choose **Load Project**. Open the quiz again to continue unfinished responses.\n\nUse **Review & submit** when ready, check your responses, then choose **Submit assessment**. Save again after submitting. The two written quiz answers need teacher review; submitting does not give them an automatic score.",
+        "objectives": [
+          {
+            "id": "pb-goal-roles",
+            "label": "I distinguish the planned change, the measured result and conditions kept consistent.",
+            "kind": "manual",
+            "resourceRef": "pb-reading"
+          },
+          {
+            "id": "pb-goal-count",
+            "label": "I explain the last-successful-count rule and why a failing counter is excluded.",
+            "kind": "manual",
+            "resourceRef": "pb-notes"
+          },
+          {
+            "id": "pb-goal-trials",
+            "label": "I explain why a fresh bridge trial adds information that re-reading a count does not.",
+            "kind": "manual",
+            "resourceRef": "pb-quiz"
+          },
+          {
+            "id": "pb-goal-conclusion",
+            "label": "I use results from both shapes, name a limit and propose a useful next test.",
+            "kind": "manual",
+            "resourceRef": "pb-notes"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pb-reading",
+      "type": "simplified",
+      "title": "Two shapes, one comparison",
+      "meta": "Main reading · Original fictional method and six invented results · Educator review draft",
+      "instructionalText": {
+        "schemaVersion": 1,
+        "role": "primary",
+        "form": "original",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "5th–6th Grade",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "en"
+        }
+      },
+      "data": "## The planning question\n\n**Original fictional teaching case.** The method and all six results below were invented for this lesson. They are not observations from a real class and do not predict a result for your paper. You can complete the whole lesson by reading and reasoning.\n\nAn imaginary investigation asks: **In this setup, how does changing a paper bridge from flat to accordion-folded affect its last successful supported counter count?**\n\nThe planned change is **paper shape**: flat or accordion-folded. The result is a **count of supported counters under a stated rule**. The team is not directly measuring paper strength, a breaking force or the load a real bridge could carry.\n\n## The fictional method\n\n1. Use a new, unused rectangular sheet for every trial. Each sheet is 20 cm long and 15 cm wide, made from the same type of paper from one pack. There are three fresh sheets for the flat shape and three for the folded shape. No tape, glue, cuts or extra paper are used.\n2. Place the same two stable supports on the same level desk. Their tops are 5 cm above the desk, and the gap between their inside edges is 10 cm. Mark their positions so the gap stays the same. The paper's 20 cm direction runs from one support to the other. Center it so the same length rests on each support.\n3. Leave a flat sheet unfolded. For a folded trial, use the same accordion profile each time: parallel creases run in the support-to-support direction, and the sheet alternates up and down across its width. Use one fixed folding guide to keep that profile consistent between folded trials. The fold profile is part of the tested design; it is not changed from one folded trial to the next. This description is a reading record, not a complete building template.\n4. Use the same shallow loading cup in every trial: the fictional cup has a flat circular base 4 cm across and is 1 cm high. Its size and empty mass stay unchanged. Empty it between trials. Center its base halfway across the gap and halfway across the bridge's width. The empty cup meets the success rule before counting begins in every recorded trial.\n5. Use identical small counters from the same set. Gently add one counter to the center of the cup, then wait 5 seconds. Use the same placement and waiting rule each time. Do not hold the paper or move the supports.\n6. A count is successful when the bridge supports the cup and all its counters for the full 5 seconds, the paper does not touch the desk between the supports, and the cup and counters stay in place. Stop at the first count that fails any part of that rule. Record the **last successful supported counter count**. Do not count the counter that causes the first failure. Do not add up earlier counts.\n7. Start the next trial with a fresh sheet. Alternate shapes: flat trial 1, folded trial 1, flat trial 2, folded trial 2, flat trial 3, folded trial 3. Reset the cup, marked supports and other conditions each time.\n\nFor example, if 6 counters meet the rule but adding counter 7 makes the paper touch the desk before 5 seconds, record **6**, not 7. Different shapes can affect bending or whether the cup stays in place. This method combines those limits in one supported-count result; it does not isolate a material property.\n\n## Six invented results\n\nEvery number in this table is a fictional teaching example. The next added counter failed the rule in each trial.\n\n| Trial with a fresh sheet | Flat shape: last successful count | Folded shape: last successful count |\n| --- | --- | --- |\n| 1 | 6 counters | 11 counters |\n| 2 | 7 counters | 12 counters |\n| 3 | 6 counters | 10 counters |\n\n**The same results in words:** The flat trials recorded six, seven and six supported counters. The folded trials recorded eleven, twelve and ten supported counters. Each value is the final successful count from one new sheet, not a total formed by adding counts while loading.\n\n## Read the results carefully\n\nA repeated trial is a new run of the method with a fresh bridge. Re-reading the same result, or removing and replacing counters on the same already-bent sheet, is not a fresh-sheet trial. Repeats help reveal how results vary. They do not promise that every condition was perfect or that every future result will match.\n\nCompare all three values for each shape. Do not choose only the largest number. Ask what stayed consistent, what was changed, how the result was counted and what the record cannot show.\n\nThe question concerns this paper, these shapes, this gap, this cup and this rule. It does not cover every paper type, every fold pattern, every span or full-size bridges. More fresh trials could help examine variation under the same method. A different paper type or span would be a separate investigation: keep it consistent within each shape comparison and label the new conditions.\n\n## Your explanation\n\nUse numbers from both shapes. Explain one choice that makes their comparison fairer. State a conclusion within this method's scope, one thing still unknown and a next test that could help answer that specific question. You do not need to build anything to explain your reasoning."
+    },
+    {
+      "id": "pb-glossary",
+      "type": "glossary",
+      "title": "Words for a fair comparison",
+      "meta": "Six reasoning terms · Original teaching definitions · Educator review draft",
+      "data": [
+        {
+          "term": "Fair comparison",
+          "def": "A comparison planned so a chosen difference can be examined while relevant other conditions stay consistent. It still has limits and needs careful measurement.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Variable",
+          "def": "A feature or quantity that can take different values, such as paper shape, gap size or counter count. Its role depends on the investigation's question.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Changed variable",
+          "def": "The feature the plan deliberately varies to compare conditions. In the bridge case, it is the paper shape: flat or accordion-folded.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Measured variable",
+          "def": "The result recorded using a defined rule. In this case it is the last successful supported counter count, not the number that makes the bridge first fail.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Kept-same condition",
+          "def": "A relevant condition made consistent across the comparison, such as the gap or paper type. It can vary in another investigation, so always connect its role to the question.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Trial",
+          "def": "One run of the stated method. Here, a new trial starts with a fresh sheet and reset conditions. Re-reading a number does not create another trial.",
+          "tier": "Academic"
+        }
+      ]
+    },
+    {
+      "id": "pb-anchor",
+      "type": "anchor-chart",
+      "title": "Four moves for a fair test",
+      "meta": "A planning and reasoning reference · Educator review draft",
+      "data": {
+        "title": "Change, keep consistent, measure, repeat",
+        "sections": [
+          {
+            "label": "1 · Ask a question and choose the change",
+            "bullets": [
+              "Name the comparison the evidence should answer.",
+              "Choose one planned difference between conditions.",
+              "A feature's role comes from this question, not from its name alone."
+            ]
+          },
+          {
+            "label": "2 · Keep relevant conditions consistent",
+            "bullets": [
+              "Plan the same materials, setup and loading procedure where they are not the chosen change.",
+              "Reset the conditions between trials; check them instead of merely saying 'everything else is the same'.",
+              "If two planned features change together, explain why the result cannot separate their contributions."
+            ]
+          },
+          {
+            "label": "3 · Define and record the result",
+            "bullets": [
+              "State what you will count or measure and its unit.",
+              "Use a clear success and stopping rule that stays consistent.",
+              "Record what the rule actually measures; a supported counter count is not automatically a material-strength measurement."
+            ]
+          },
+          {
+            "label": "4 · Repeat, compare and limit the conclusion",
+            "bullets": [
+              "Use new runs of the method, not repeated readings of one result.",
+              "Compare all recorded values and describe variation.",
+              "Keep the conclusion within the tested conditions. Match a next test to a named uncertainty."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "pb-sort",
+      "type": "concept-sort",
+      "title": "Paper helicopter plan: Which role?",
+      "meta": "Separate fictional transfer case · No physical testing required · Educator review draft",
+      "data": {
+        "instructions": "Separate fictional planning case: How does changing a paper helicopter's blade angle affect the time from release to first floor contact? This plan compares a shallow blade angle with a steeper blade angle. Paper type, sheet size and release height stay consistent. Sort each card by the role it describes in THIS plan. These cards state a proposed method, not measured outcomes. After Check, open Why? to examine your reasoning. No models need to be built or dropped.",
+        "categories": [
+          {
+            "id": "what-change",
+            "label": "The feature deliberately changed"
+          },
+          {
+            "id": "what-measure",
+            "label": "The result measured"
+          },
+          {
+            "id": "keep-same",
+            "label": "A condition kept consistent"
+          }
+        ],
+        "items": [
+          {
+            "id": "pb-sort-1",
+            "content": "Compare the shallow blade angle with the steeper blade angle.",
+            "categoryId": "what-change",
+            "explanation": "Blade angle is the planned difference named in the question. The card does not state a result."
+          },
+          {
+            "id": "pb-sort-2",
+            "content": "Record how many seconds each model takes from release to its first contact with the floor.",
+            "categoryId": "what-measure",
+            "explanation": "Elapsed time in seconds is the measured result in this plan. It may differ between trials; it is not a condition the team promises to keep equal."
+          },
+          {
+            "id": "pb-sort-3",
+            "content": "Release every model from the same marked height.",
+            "categoryId": "keep-same",
+            "explanation": "Release height is held consistent so it is not a second planned difference between the blade-angle conditions."
+          },
+          {
+            "id": "pb-sort-4",
+            "content": "Give one set of models the shallow blade angle and the other set the steeper angle.",
+            "categoryId": "what-change",
+            "explanation": "Assigning the two blade angles sets the deliberately changed feature. Within each set, its assigned angle should be consistent."
+          },
+          {
+            "id": "pb-sort-5",
+            "content": "Start the timer at release and stop it at first floor contact to obtain each descent time.",
+            "categoryId": "what-measure",
+            "explanation": "This card defines how the measured descent time is obtained. Timing the result uses the same rule; the elapsed result itself is not held equal."
+          },
+          {
+            "id": "pb-sort-6",
+            "content": "Use a fresh sheet of the same paper type and size for every model.",
+            "categoryId": "keep-same",
+            "explanation": "Paper type and sheet size stay consistent across the comparison. Fresh sheets do not mean deliberately changing to a different paper type."
+          }
+        ]
+      }
+    },
+    {
+      "id": "pb-notes",
+      "type": "note-taking",
+      "title": "My fair-test evidence record",
+      "meta": "Blank learner workspace · Method detail or result → Why it matters · Educator review draft",
+      "data": {
+        "templateType": "double-entry",
+        "title": "Method detail or result → My explanation, conclusion and next test",
+        "entries": [
+          {
+            "id": "pb-note-1",
+            "quote": "",
+            "response": ""
+          },
+          {
+            "id": "pb-note-2",
+            "quote": "",
+            "response": ""
+          },
+          {
+            "id": "pb-note-3",
+            "quote": "",
+            "response": ""
+          },
+          {
+            "id": "pb-note-4",
+            "quote": "",
+            "response": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "pb-discussion",
+      "type": "brainstorm",
+      "title": "Does the conclusion fit the test?",
+      "meta": "Think, compare reasons, respond · Original discussion kit · Educator review draft",
+      "data": [
+        {
+          "kind": "discussion",
+          "title": "Keep the comparison fair and the conclusion bounded",
+          "protocol": "think-pair-share",
+          "grouping": "Think and record first. Compare with a partner or exchange accessible written/AAC messages. An independent learner can write an objection and answer it using the record.",
+          "openingQuestion": "What can this fictional comparison help us say, and which wording would reach beyond its method?",
+          "questionSets": [
+            {
+              "depth": "literal",
+              "questions": [
+                "What is deliberately changed, what result is recorded, and which conditions stay consistent?",
+                "Which count is recorded when the next counter first fails the rule?"
+              ]
+            },
+            {
+              "depth": "inferential",
+              "questions": [
+                "Why does a fresh sheet matter when a previous sheet has bent or slipped?",
+                "Why would changing both paper shape and the support gap make a different comparison?"
+              ]
+            },
+            {
+              "depth": "evaluative",
+              "questions": [
+                "Which conclusion uses all six invented results without promising a result for every future bridge?",
+                "Which next test would reduce a specific uncertainty, and what would it still leave unresolved?"
+              ]
+            }
+          ],
+          "talkStems": {
+            "agree": [
+              "That part fits the record because the method/results say ___."
+            ],
+            "disagree": [
+              "That wording reaches beyond ___; the test only covered ___."
+            ],
+            "clarify": [
+              "Are you talking about the changed feature, the measured count or a kept-same condition?"
+            ],
+            "build": [
+              "Your point makes me want to repeat/test ___ while keeping ___ consistent."
+            ]
+          },
+          "lookFors": [
+            "Accurate method references and results from both shapes.",
+            "An explanation of why a fairness choice or measurement rule matters.",
+            "A response to another reason, with a conclusion limit or a useful next test."
+          ],
+          "facilitationNotes": "Offer silent thinking and flexible communication. Do not judge by speed, vocabulary alone or bridge-building dexterity. Ask learners to explain why a condition matters instead of listing 'controls'. Do not treat invented data as real evidence for what physical paper bridges should do. Keep the teacher model in the teacher-only guide."
+        }
+      ]
+    },
+    {
+      "id": "pb-frames",
+      "type": "sentence-frames",
+      "title": "Sentence starters: Explain the comparison",
+      "meta": "Optional expression support · Keep the reasoning yours · Educator review draft",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "The plan deliberately changes ___. It records ___ using the rule ___."
+          },
+          {
+            "text": "Keeping ___ consistent matters because otherwise ___."
+          },
+          {
+            "text": "If ___ counters succeed and the next one fails, the recorded count is ___ because ___."
+          },
+          {
+            "text": "A fresh-sheet trial adds ___; reading one result again does not ___."
+          },
+          {
+            "text": "The flat results are ___ and the folded results are ___. Under these conditions, they support ___."
+          },
+          {
+            "text": "This does not yet tell us ___. A next test could ___ while keeping ___ consistent, to learn ___."
+          }
+        ],
+        "rubric": "Use accurate method details and results from both shapes. Explain why a fairness choice matters, follow the counting rule and keep your conclusion within the tested conditions. The starters are optional; completing blanks alone does not show the reasoning."
+      }
+    },
+    {
+      "id": "pb-quiz",
+      "type": "quiz",
+      "title": "Check your fair-test reasoning",
+      "meta": "Four multiple-choice and two teacher-reviewed written items · Educator review draft",
+      "data": {
+        "scoringPolicy": {
+          "partialCredit": true,
+          "writtenResponseMode": "teacher-review"
+        },
+        "deliverySettings": {
+          "profile": "flexible",
+          "feedbackTiming": "teacher-graded",
+          "pacing": "all-at-once",
+          "timeLimitMinutes": 0,
+          "allowFlagging": true,
+          "showProgress": true
+        },
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which feature is deliberately changed between the two conditions in the fictional bridge comparison?",
+            "options": [
+              "The paper shape: flat or accordion-folded.",
+              "The gap between the supports: shorter or longer.",
+              "The paper type: thinner or thicker.",
+              "The waiting time after adding a counter: shorter or longer."
+            ],
+            "correctAnswer": "The paper shape: flat or accordion-folded."
+          },
+          {
+            "type": "mcq",
+            "question": "A bridge supports 6 counters for the full 5 seconds. Adding counter 7 makes the paper touch the desk before 5 seconds. What result should be recorded under this method?",
+            "options": [
+              "7 counters, because the seventh counter was added.",
+              "6 counters, because this was the last count meeting the full success rule.",
+              "5 counters, because the last successful count should also be left out.",
+              "13 counters, by adding the last successful count to the first failing count."
+            ],
+            "correctAnswer": "6 counters, because this was the last count meeting the full success rule."
+          },
+          {
+            "type": "mcq",
+            "question": "Which action creates another fresh-sheet trial of the folded design under the same method?",
+            "options": [
+              "Read the recorded folded count again to check it was copied correctly.",
+              "Remove the counters from the already-bent bridge and load that same sheet again.",
+              "Use a new sheet of the same paper, apply the same folded profile and reset the cup, supports and loading rule.",
+              "Use a new folded sheet of thicker paper and narrow the support gap."
+            ],
+            "correctAnswer": "Use a new sheet of the same paper, apply the same folded profile and reset the cup, supports and loading rule."
+          },
+          {
+            "type": "mcq",
+            "question": "Which conclusion is best supported by all six fictional results and the stated method?",
+            "options": [
+              "Folding adds exactly 5 successful counters to each bridge, whatever paper is used.",
+              "Both shapes have one fixed supported count; differences between trials should be ignored.",
+              "The folded design has a supported count of 12, because its largest trial is the result to use.",
+              "Under these conditions, all three folded trials had higher last successful counts than the flat trials; other materials and setups remain untested."
+            ],
+            "correctAnswer": "Under these conditions, all three folded trials had higher last successful counts than the flat trials; other materials and setups remain untested."
+          },
+          {
+            "type": "short-answer",
+            "question": "A new plan compares a flat sheet across a 12 cm gap with a folded sheet across an 8 cm gap. Explain why that comparison cannot separate the effect of shape from the effect of gap size. Describe one repair to the plan.",
+            "expectedAnswer": "Both paper shape and gap size change together, so a different supported count could relate to either change or their combination. To examine shape, compare flat and folded fresh sheets over one consistent gap and keep the paper, supports, cup and loading rule consistent; repeat fresh-sheet trials. Accept an alternative repair that instead investigates gap size while keeping shape consistent and clearly names that different question. Repairing the planned comparison does not guarantee identical results or eliminate all uncertainty.",
+            "studentCriteria": [
+              "Identify the two features changed together and explain why the result cannot separate their contributions.",
+              "Describe a feasible repair that varies one planned feature while keeping the other consistent.",
+              "Explain which comparison the repaired plan would answer; do not promise a particular result."
+            ]
+          },
+          {
+            "type": "short-answer",
+            "question": "Use results from both paper shapes to state a conclusion within this fictional method's scope. Then name one thing still unknown and a next test that could help investigate it.",
+            "expectedAnswer": "The flat fresh-sheet counts were 6, 7 and 6; the folded counts were 11, 12 and 10. In these invented trials, every folded count exceeded every flat count under this setup, with variation within each shape. This supports a bounded statement about the tested designs and supported-count rule, not all papers, fold patterns or real bridges. For example, more fresh-sheet trials under the same conditions could examine variation, or a separately labeled comparison of both shapes using one different paper type could explore whether the pattern extends to that paper. The latter would still not establish a result for every paper. Accept accurate selected values from both shapes with a justified bounded comparison and a feasible next test matched to an uncertainty.",
+            "studentCriteria": [
+              "Use accurate numerical evidence from both shapes and explain the comparison.",
+              "Keep the conclusion within the recorded method and identify a specific uncertainty.",
+              "Propose a feasible next test and explain how it could help investigate that uncertainty."
+            ]
+          }
+        ],
+        "reflections": [
+          {
+            "text": "How did the results affect your prediction or initial uncertainty? Refer to a method detail or recorded value."
+          },
+          {
+            "text": "Which fairness or counting rule matters most to your explanation, and why?"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pb-lesson",
+      "type": "lesson-plan",
+      "title": "Teacher guide: Fair comparisons and careful conclusions",
+      "meta": "Teacher-only planning and model reasoning · Educator review draft",
+      "data": {
+        "essentialQuestion": "How can a planned comparison help answer one question without claiming more than it measured?",
+        "objectives": [
+          "Distinguish the deliberately changed variable, measured result and relevant kept-same conditions in a stated question.",
+          "Explain the success/stopping rule and why a fresh-sheet trial differs from re-reading a result.",
+          "Use repeated fictional results from both shapes to justify a bounded conclusion and a next test."
+        ],
+        "hook": "Session 1, 4 minutes: present the question and two shape names before the table. Invite a prediction or reasoned uncertainty in any communication mode. State that the method and results are invented and no building is required. Keep the starting response on paper or in a separate accessible document for the later reflection.",
+        "directInstruction": "Teach variable roles as relationships to a question rather than fixed labels attached to objects. Explain a deliberate change, an operationally defined result and relevant conditions kept consistent. A fresh-sheet repeat is another run, not another reading of a number. The paper-bridge method and all results are original fictional teaching examples. Teacher background, reviewed by the authoring task on 2026-11-01: Science Buddies, Variables in Your Science Fair Project, https://www.sciencebuddies.org/science-fair-projects/science-fair/variables ; and Writing a Procedure, https://www.sciencebuddies.org/science-fair-projects/science-fair/writing-experimental-procedures . These pages inform general planning ideas only. No source text, diagram or bridge activity is reproduced; no affiliation or endorsement is implied. The source reading is an original main text, not an adaptation of an unavailable source. Formal standards alignment and educator review remain pending.",
+        "guidedPractice": "Session 1, 8 minutes: model identifying the three roles using a separate oral example, such as changing one ramp surface while keeping ramp height and toy car consistent and measuring travel distance. Do not resolve the bridge conclusion for learners. Read the bridge stopping rule together and check that learners distinguish last successful count from the failing counter. Let learners point to the rule rather than reproduce its wording.",
+        "independentPractice": "Session 1, 14 minutes: read the fictional method and table, then complete three double-entry rows with method/results details and explanations. Session 1, 10 minutes: use the separate helicopter role sort and its Why? feedback. Session 1, 4 minutes: save a downloaded file and rehearse the return route. Session 2, 10 minutes: use the discussion kit. Session 2, 12 minutes: complete the fourth notebook row with a final comparison, fairness explanation, limit and next test. Session 2, 12 minutes: complete the quiz; keep written responses for teacher review. Allow flexible timing or chunking while preserving the reasoning demand.",
+        "closure": "Session 2, 6 minutes: complete reflections, distinguish submitting from being graded and save again. Ask which detail made the comparison fairer and what no amount of re-reading one result would establish. Revisit predictions without rewarding a lucky correct guess.",
+        "successCriteria": [
+          {
+            "id": "pb-criterion-roles",
+            "statement": "I connect the planned change, result and kept-same conditions to this question.",
+            "source": "author"
+          },
+          {
+            "id": "pb-criterion-method",
+            "statement": "I explain the last-successful-count rule and the purpose of fresh-sheet trials.",
+            "source": "author"
+          },
+          {
+            "id": "pb-criterion-evidence",
+            "statement": "I accurately use evidence from both shapes and consider repeated values.",
+            "source": "author"
+          },
+          {
+            "id": "pb-criterion-scope",
+            "statement": "I keep my conclusion within the method and match a next test to a named uncertainty.",
+            "source": "author"
+          }
+        ],
+        "timing": [
+          {
+            "label": "Session 1 · Question and prediction",
+            "minutes": 4
+          },
+          {
+            "label": "Session 1 · Model variable roles and counting",
+            "minutes": 8
+          },
+          {
+            "label": "Session 1 · Read and record",
+            "minutes": 14
+          },
+          {
+            "label": "Session 1 · Transfer sort",
+            "minutes": 10
+          },
+          {
+            "label": "Session 1 · Save and return route",
+            "minutes": 4
+          },
+          {
+            "label": "Session 2 · Discussion",
+            "minutes": 10
+          },
+          {
+            "label": "Session 2 · Final evidence explanation",
+            "minutes": 12
+          },
+          {
+            "label": "Session 2 · Quiz",
+            "minutes": 12
+          },
+          {
+            "label": "Session 2 · Reflection and save",
+            "minutes": 6
+          }
+        ],
+        "materialsNeeded": [
+          "This original fictional reading and results table; four blank double-entry rows. No physical experiment, internet access or AI provider is required for the core lesson.",
+          "Optional read-aloud, enlarged text, calculator, partner reader, AAC, scribe or labeled diagrams. Preserve the same evidence and reasoning goal.",
+          "Illustrations are conceptual supports, not scale construction plans, measured data or answer keys. Use the editable reading for every dimension, rule and result.",
+          "Learners use Save File, then Save, retain the newest download and return through Load Saved File in Student mode. In the full workspace, open More in Resource Pack History, then Load Project. Keep the original teacher pack for reviewing returned work in the Submission Inbox. Save again after final quiz submission.",
+          "Paper or a separate accessible document for retaining the starting prediction and reason. Keep that note with the newest saved student file for later reflection."
+        ],
+        "assessmentIdeas": [
+          "TEACHER MODEL, NOT A REQUIRED SCRIPT: The planned change is flat versus accordion-folded shape. The method records the last count that supports the same cup and counters for 5 seconds without desk contact or slipping. The flat trials are 6, 7 and 6; the folded trials are 11, 12 and 10. Every folded value is above every flat value in this fictional record, while each shape's repeated values vary. Keeping the same paper type, support gap and loading procedure helps interpret the shape comparison. These are invented results under one setup; they do not show the strength of paper as a material or a universal result for every fold and span. More fresh-sheet trials under the same method could examine variation; a separately labeled comparison using another paper type could investigate whether the pattern extends to that paper. It would still leave other papers and designs untested. Accept equivalent bounded reasoning and feasible alternative next tests.",
+          "Use three feedback lenses for the notebook explanation: method (accurate role and rule, plus why one kept-same condition matters); evidence (accurate values from both shapes and attention to repeats); scope (a bounded conclusion, named uncertainty and matched next test). Beginning responses list terms or one largest value without explaining them. Developing responses connect accurate evidence to one part of the comparison but leave the rule or scope unclear. Secure responses connect method, both shapes and a justified limit/next test. These are teacher feedback descriptions, not an automatically computed grade or formal standards rubric.",
+          "The four MCQs have deterministic keys. The two written items require teacher judgment using their public studentCriteria. For the repaired-plan item, accept either a shape comparison at one gap or an explicitly renamed gap comparison with one shape. Do not insist on the teacher model's wording. Submission or completion does not mean the written answers have been graded.",
+          "Access and expression: Accept equivalent oral, signed, AAC, dictated, scribed or diagram-based reasoning with the same evidence and explanation demands. Judge reasoning rather than spelling, speed or manual construction. Do not prefill notebook responses or reveal quiz keys in student supports. The helicopter sort checks transfer of variable roles, not factual knowledge of helicopter motion."
+        ],
+        "extensions": [
+          {
+            "title": "Plan a supervised physical investigation",
+            "description": "Optional separate activity only after educator review of materials, accessibility, a complete fold guide, cup stability, endpoint and local classroom procedures. Use lightweight classroom materials on a low stable work surface and teacher supervision; no heavy or overhead loading. Learners may remain planners/recorders or use the fictional case instead. Write a new protocol and record actual measurements without replacing or relabeling the invented results. No physical outcome is promised by the fictional numbers."
+          },
+          {
+            "title": "Ask a different question",
+            "description": "Choose one new planned difference, such as support gap, and hold one shape and other relevant conditions consistent. Explain how this changes the investigation's question. Draft the roles and measurement rule; carrying out the test is not required."
+          }
+        ]
+      }
+    }
+  ]
+}

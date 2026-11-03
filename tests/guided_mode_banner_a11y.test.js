@@ -82,7 +82,7 @@ describe('Guided Mode banner accessibility', () => {
     expect(component).toContain('aria-valuenow={currentPhaseIndex + 1}');
     expect(component).toContain('aria-valuemin={1}');
     expect(component).toContain("(t('guided.step_of') || 'Step {current} of {total}').replace");
-    expect(component).toContain('guidedSkippedIds.includes(item.id)');
+    expect(component).toContain('effectiveSkippedIds.includes(item.id)');
     expect(component).toContain("const phaseState = phaseIndex === currentPhaseIndex");
   });
 

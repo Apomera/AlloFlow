@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "source": "Hugging Face model API; immutable revision and file metadata only; no weight download or GPU validation",
+  "models": {
+    "Efficient-Large-Model/Sana_Sprint_1.6B_1024px_diffusers": {
+      "backend": "sana-sprint",
+      "revision": "19683c58b7ea290e55cedd8950ae1d86ada7ef96",
+      "gated": false,
+      "download_bytes": 9736968489,
+      "files": [
+        {
+          "path": "model_index.json",
+          "bytes": 392,
+          "sha256": null,
+          "git_blob": "795d41a9eaf524bb0d84fbac6a325609d4f737d1"
+        },
+        {
+          "path": "scheduler/scheduler_config.json",
+          "bytes": 160,
+          "sha256": null,
+          "git_blob": "6d3081b117d2ea1c4db209edf5914a80c9ed754e"
+        },
+        {
+          "path": "text_encoder/config.json",
+          "bytes": 890,
+          "sha256": null,
+          "git_blob": "b9834570dc12b608f336a00e3f81658d17a85b6c"
+        },
+        {
+          "path": "text_encoder/model-00001-of-00002.safetensors",
+          "bytes": 4988024144,
+          "sha256": "e909230aabafad02d097c7dc02f2ae062b4e6b0593477c1f07679d277e09ce71",
+          "git_blob": "2ec6c12cdb4f33eeb8fc0e96e081187943a90a70"
+        },
+        {
+          "path": "text_encoder/model-00002-of-00002.safetensors",
+          "bytes": 240691624,
+          "sha256": "48e14f6b7a917e54cabc4ff2047ac2bfe0dae663e771eed3a8acf4ea27dcac18",
+          "git_blob": "56158202c6d7382ec0e4235466b897fba141aa52"
+        },
+        {
+          "path": "text_encoder/model.safetensors.index.json",
+          "bytes": 22495,
+          "sha256": null,
+          "git_blob": "36d550130eb056ee9c28e438c0e3d1b28fddab84"
+        },
+        {
+          "path": "tokenizer/special_tokens_map.json",
+          "bytes": 636,
+          "sha256": null,
+          "git_blob": "8d6368f7e735fbe4781bf6e956b7c6ad0586df80"
+        },
+        {
+          "path": "tokenizer/tokenizer.json",
+          "bytes": 34362873,
+          "sha256": "5f7eee611703c5ce5d1eee32d9cdcfe465647b8aff0c1dfb3bed7ad7dbb05060",
+          "git_blob": "a4a305d1de4d8f47c0252b4d7fe65a10dd8e2c22"
+        },
+        {
+          "path": "tokenizer/tokenizer.model",
+          "bytes": 4241003,
+          "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
+          "git_blob": "796efe9ab515c15e146ce7588e6d7b9b8134dbf8"
+        },
+        {
+          "path": "tokenizer/tokenizer_config.json",
+          "bytes": 46996,
+          "sha256": null,
+          "git_blob": "36ba12877e7efaba5252f7b17ab337a59d953563"
+        },
+        {
+          "path": "transformer/config.json",
+          "bytes": 624,
+          "sha256": null,
+          "git_blob": "fb69cb8e561b37527dff0ab0c3327a3b4699fa93"
+        },
+        {
+          "path": "transformer/diffusion_pytorch_model.safetensors",
+          "bytes": 3220530536,
+          "sha256": "effac51c73537487ac1505993f0e7fbd292c310b23aae96f2c3e53131e876f2d",
+          "git_blob": "36d877b2d7ada5ae3f4f8d72d3596b25902f9561"
+        },
+        {
+          "path": "vae/config.json",
+          "bytes": 1280,
+          "sha256": null,
+          "git_blob": "e265030c18bc640fa24267beb2a92c3a187cba5b"
+        },
+        {
+          "path": "vae/diffusion_pytorch_model.safetensors",
+          "bytes": 1249044836,
+          "sha256": "dfd991d1b54ffabf22745c5885589d8f2a7bc59930d95d92bd741c4fc64454bb",
+          "git_blob": "aafb390f079447364369923645aafb2e64e64030"
+        }
+      ],
+      "managed_download": true
+    },
+    "Efficient-Large-Model/Sana_Sprint_0.6B_1024px_diffusers": {
+      "backend": "sana-sprint",
+      "revision": "aa76e7f4f4928f378716b6716a2130fba3caf5b1",
+      "gated": false,
+      "download_bytes": 7703516561,
+      "files": [
+        {
+          "path": "model_index.json",
+          "bytes": 392,
+          "sha256": null,
+          "git_blob": "795d41a9eaf524bb0d84fbac6a325609d4f737d1"
+        },
+        {
+          "path": "scheduler/scheduler_config.json",
+          "bytes": 160,
+          "sha256": null,
+          "git_blob": "6d3081b117d2ea1c4db209edf5914a80c9ed754e"
+        },
+        {
+          "path": "text_encoder/config.json",
+          "bytes": 890,
+          "sha256": null,
+          "git_blob": "b9834570dc12b608f336a00e3f81658d17a85b6c"
+        },
+        {
+          "path": "text_encoder/model-00001-of-00002.safetensors",
+          "bytes": 4988024144,
+          "sha256": "e909230aabafad02d097c7dc02f2ae062b4e6b0593477c1f07679d277e09ce71",
+          "git_blob": "2ec6c12cdb4f33eeb8fc0e96e081187943a90a70"
+        },
+        {
+          "path": "text_encoder/model-00002-of-00002.safetensors",
+          "bytes": 240691624,
+          "sha256": "48e14f6b7a917e54cabc4ff2047ac2bfe0dae663e771eed3a8acf4ea27dcac18",
+          "git_blob": "56158202c6d7382ec0e4235466b897fba141aa52"
+        },
+        {
+          "path": "text_encoder/model.safetensors.index.json",
+          "bytes": 22495,
+          "sha256": null,
+          "git_blob": "36d550130eb056ee9c28e438c0e3d1b28fddab84"
+        },
+        {
+          "path": "tokenizer/special_tokens_map.json",
+          "bytes": 636,
+          "sha256": null,
+          "git_blob": "8d6368f7e735fbe4781bf6e956b7c6ad0586df80"
+        },
+        {
+          "path": "tokenizer/tokenizer.json",
+          "bytes": 34362873,
+          "sha256": "5f7eee611703c5ce5d1eee32d9cdcfe465647b8aff0c1dfb3bed7ad7dbb05060",
+          "git_blob": "a4a305d1de4d8f47c0252b4d7fe65a10dd8e2c22"
+        },
+        {
+          "path": "tokenizer/tokenizer.model",
+          "bytes": 4241003,
+          "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
+          "git_blob": "796efe9ab515c15e146ce7588e6d7b9b8134dbf8"
+        },
+        {
+          "path": "tokenizer/tokenizer_config.json",
+          "bytes": 46996,
+          "sha256": null,
+          "git_blob": "36ba12877e7efaba5252f7b17ab337a59d953563"
+        },
+        {
+          "path": "transformer/config.json",
+          "bytes": 648,
+          "sha256": null,
+          "git_blob": "e0d55e9165c1992b9c98e16afeb397548e705f57"
+        },
+        {
+          "path": "transformer/diffusion_pytorch_model.safetensors",
+          "bytes": 1187078584,
+          "sha256": "9069dd697395b96a59d1f74837461f7aeb3d95e55b67fa85c9f31c9106b65e87",
+          "git_blob": "37e4396d86b92eca7cc25cea2819da87d79129b8"
+        },
+        {
+          "path": "vae/config.json",
+          "bytes": 1280,
+          "sha256": null,
+          "git_blob": "e265030c18bc640fa24267beb2a92c3a187cba5b"
+        },
+        {
+          "path": "vae/diffusion_pytorch_model.safetensors",
+          "bytes": 1249044836,
+          "sha256": "dfd991d1b54ffabf22745c5885589d8f2a7bc59930d95d92bd741c4fc64454bb",
+          "git_blob": "aafb390f079447364369923645aafb2e64e64030"
+        }
+      ],
+      "managed_download": true
+    },
+    "black-forest-labs/FLUX.1-schnell": {
+      "backend": "flux",
+      "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "gated": true,
+      "download_bytes": 0,
+      "files": [],
+      "managed_download": false,
+      "note": "Public gated-weight metadata hides integrity hashes. This entry pins revision only; managed provisioning is unavailable. Use separate operator provisioning for Flux."
+    }
+  }
+}

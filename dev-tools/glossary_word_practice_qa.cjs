@@ -66,7 +66,8 @@ async function main() {
         selectedVoice: 'teacher', voiceSpeed: 0.9,
       })));
     });
-    const launcher = page.getByRole('button', { name: 'Present & Export', exact: true });
+    await page.getByRole('button', { name: 'Present & Export', exact: true }).click();
+    const launcher = page.getByRole('button', { name: 'Open presenter', exact: true });
     for (const label of ['Read term: Leaf', 'Download audio for term: Leaf', 'Read definition for Leaf', 'Download definition audio for Leaf', 'Read French translation of Leaf', 'Download French translation audio for Leaf']) {
       const control = page.getByRole('button', { name: label, exact: true });
       assert.equal(await control.count(), 1, label + ' is an accessible button');

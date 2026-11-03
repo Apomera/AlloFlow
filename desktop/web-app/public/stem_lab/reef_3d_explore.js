@@ -119,6 +119,7 @@
     sea_fan: ['invertebrate', 'sessile', 1.0, 4, 40], barrel_sponge: ['invertebrate', 'sessile', 1.0, 6, 40],
     soft_coral: ['invertebrate', 'sessile', 0.5, 1, 30], brain_coral: ['coral', 'sessile', 1.0, 1, 25],
     staghorn_coral: ['coral', 'sessile', 1.2, 1, 20], table_coral: ['coral', 'sessile', 1.6, 1, 15],
+    acropora_humilis: ['coral','sessile',.65,2,15], acropora_millepora: ['coral','sessile',.88,2,15], acropora_clathrata: ['coral','sessile',1.15,5,40],
     mushroom_coral: ['coral', 'sessile', 0.22, 1, 25], boulder_coral: ['coral', 'sessile', 1.8, 1, 25],
     cauliflower_coral: ['coral', 'sessile', 0.45, 1, 20], foliose_coral: ['coral', 'sessile', 0.85, 2, 20],
     reef_star: ['structure', 'sessile', 1.0, 1, 20], reef_ball: ['structure', 'sessile', 1.2, 1, 30],
@@ -167,6 +168,7 @@
     magnificent_anemone: 'anemone', giant_clam: 'flat', sea_fan: 'slope', barrel_sponge: 'slope', christmas_tree_worm: 'bommie', soft_coral: 'bommie',
     blue_sea_star: 'flat', sea_cucumber: 'sand', bluespotted_stingray: 'channel', long_spined_urchin: 'reef', crown_of_thorns: 'garden', nudibranch: 'reef',
     mushroom_coral: 'garden', brain_coral: 'garden', staghorn_coral: 'garden', boulder_coral: 'garden', table_coral: 'crest', cauliflower_coral: 'crest', foliose_coral: 'slope',
+    acropora_humilis:'rockShoulder', acropora_millepora:'rockShoulder', acropora_clathrata:'rockShoulder',
     reef_star: 'rubble', reef_ball: 'rubble', coral_tree_nursery: 'rubble', lionfish: 'bommieSide', peacock_grouper: 'bommieSide',
     porcupinefish: 'bommieSide', day_octopus: 'rubbleEdge', anthias: 'bommieAbove', blue_green_chromis: 'bommieAbove', yellow_boxfish: 'garden',
     firefish: 'bommieAbove', copperband_butterflyfish: 'garden', spotted_garden_eel: 'sand', banded_pipefish: 'bommieSide', yellow_longnose_butterflyfish: 'garden', pajama_cardinalfish: 'bommieAbove', banggai_cardinalfish: 'bommieAbove', giant_triton: 'rubbleEdge', blue_velvet_headshield_slug: 'sand', regal_angelfish: 'garden', mandarin_dragonet: 'rubbleEdge', harlequin_shrimp: 'rubbleEdge', spotted_seahorse: 'rubbleEdge', bennetts_feather_star: 'bommie', peacock_mantis_shrimp: 'rubble', ribbon_eel: 'sand', leaf_scorpionfish: 'rubble', longnose_hawkfish: 'slope', chocolate_chip_sea_star: 'sand',
@@ -1236,6 +1238,7 @@
     goldmouth_sea_squirt: ['tunicate', 0xd9d2df, 0xf0aa38], feather_duster_worm: ['featherworm', 0x805237, 0xebd8b4],
     soft_coral: ['soft', 0xe07ab0, 0xf5c0d8], brain_coral: ['brain', 0xb8a050, 0x7a8a40], staghorn_coral: ['staghorn', 0xc8a070, 0xe8d0a0],
     table_coral: ['table', 0x8a9a5a, 0xb0c080], mushroom_coral: ['mushroom', 0xb8a080, 0xd8c8a0], boulder_coral: ['boulder', 0x8a7a50, 0xa89a60],
+    acropora_humilis:['thickFingers',0xad8cb0,0xe5d5de], acropora_millepora:['cushion',0xb58c72,0xdfbe94], acropora_clathrata:['lattice',0x87956f,0xc4c5a3],
     cauliflower_coral: ['staghorn', 0xb68180, 0xe4c5bd], foliose_coral: ['table', 0xb78675, 0xe8cbb5],
     reef_star: ['reefstar', 0x4a3a2a, 0xe08a6a], reef_ball: ['reefball', 0xb8b4a8, 0xe08a6a], coral_tree_nursery: ['nursery', 0xf2f2ea, 0xe8a070]
   };
@@ -1336,6 +1339,27 @@
           var t = feather / 6, px = dx * t, py = (0.28 + 0.27 * t) * L, pz = dz * t;
           tube([[px - dz * 0.1, py, pz + dx * 0.1], [px - dz * 0.03, py, pz + dx * 0.03], [px + dz * 0.03, py, pz - dx * 0.03], [px + dz * 0.1, py, pz - dx * 0.1]], 0.002 * L, 0.5, B);
         }
+      }
+    } else if (shape === 'thickFingers' || shape === 'cushion') {
+      var thick = shape === 'thickFingers', shoots = thick ? 10 : 22;
+      ball(0,.055*L,0,.35*L,.055*L,.33*L,paint(A));
+      for (k=0; k<shoots; k++) {
+        var az=k*2.399963, radial=Math.sqrt((k+.5)/shoots), xx=Math.cos(az)*L*radial*.32, zz=Math.sin(az)*L*radial*.32;
+        var height=L*((thick?.58:.42)-radial*.13), radius=L*(thick?.072:.034);
+        tube([[xx,.04*L,zz],[xx*1.12,height*.4,zz*1.12],[xx*1.25,height*.77,zz*1.25],[xx*1.32,height,zz*1.32]],radius,.55,A);
+        ball(xx*1.32,height,zz*1.32,radius*.62,radius*.5,radius*.62,paint(B));
+      }
+    } else if (shape === 'lattice') {
+      var previous = null;
+      for (k=0; k<9; k++) {
+        var ang=-1.35+2.7*k/8, dx=Math.cos(ang)*L*.84, dz=Math.sin(ang)*L*.84;
+        tube([[0,0,0],[dx*.23,.066*L,dz*.23],[dx*.61,.12*L,dz*.61],[dx,.18*L,dz]],L*.035,.5,A);
+        if(previous) for(var level=2;level<=4;level++){
+          var f=level/5, lo=f-.11, y=L*(.035+.145*f);
+          tube([[dx*f,y,dz*f],[dx*f*.7+previous[0]*lo*.3,y, dz*f*.7+previous[1]*lo*.3],
+            [dx*f*.3+previous[0]*lo*.7,y, dz*f*.3+previous[1]*lo*.7],[previous[0]*lo,y-.01*L,previous[1]*lo]],.015*L,.85,B);
+        }
+        previous=[dx,dz];
       }
     } else if (shape === 'worm') {
       [-1, 1].forEach(function (side) { var g = new T.ConeGeometry(0.42 * L, 1.1 * L, detail ? 10 : 6, 4); g.translate(0, 0.55 * L, 0); b.absorb(T, g, M(side * 0.32 * L, 0, 0, 1, 1, 1), function (x, y, z, nx, ny, nz, rgb) { var c = Math.sin(y / L * 30) > 0.6 ? B : A; rgb[0] = c.r; rgb[1] = c.g; rgb[2] = c.b; }); });
@@ -1587,7 +1611,7 @@
       owned.length = 0; organisms.length = 0; protos.length = 0; groups.length = 0; decorMeshes.length = 0; owner.clear();
       if (renderer) {
         renderer.dispose();
-        if (!contextLost && typeof renderer.forceContextLoss === 'function') renderer.forceContextLoss();
+        // GPU resources are disposed above; forced context loss can stall software renderers.
         renderer = null;
       }
       scene.clear();
@@ -2319,8 +2343,19 @@
       if (beh === 'manta') { placeManta(o); return; }
       if (beh === 'cruise') { var hx = -18 + 36 * d[0]; o.ground = terrain.floorY(hx, 21); o.home = new T.Vector3(hx, o.ground + 1.6, 21); return; }
       var best = null, bestScore = -Infinity, sessile = beh === 'fixed' || beh === 'den' || beh === 'ray' || beh === 'cleaner' && info.group !== 'fish';
+      var partnerId = o.speciesId === 'acropora_humilis' ? 'acropora_millepora' : o.speciesId === 'acropora_millepora' ? 'acropora_humilis' : null;
+      var partner = partnerId && sessiles.find(function(seat){return seat.speciesId === partnerId && seat.index === o.index;});
       for (k = 0; k < 8; k++) {
-        var c = candidate(zone, d[k * 3], d[k * 3 + 1], d[k * 3 + 2], info);
+        var c = null;
+        // Sample both sides of the first colony's actual outcrop. A nearby candidate
+        // must have exposed rock beneath it and enough space for both colonies.
+        if (partner && k < 7) {
+          var bearing = TAU*(k/7+d[26]), distance = 1.35+.8*d[k*3];
+          var x = partner.x+Math.cos(bearing)*distance, z = partner.z+Math.sin(bearing)*distance;
+          var support = exposedRockAt(x,z);
+          if (support) c={x:x,z:z,y:support.point.y,score:5,bommie:partner.bommie};
+        }
+        if (!c) c = candidate(zone, d[k*3], d[k*3+1], d[k*3+2], info);
         if (!c || Math.abs(c.x) > 27.5 || Math.abs(c.z) > 27.5) continue;
         var depth = -c.y, score = c.score;
         // Planktivore schools gather over the larger coral heads.
@@ -2336,7 +2371,7 @@
       }
       if (!best) best = { x: 2, z: -2, y: terrain.floorY(2, -2) };
       o.ground = best.y; o.bommie = best.bommie || null;
-      if (sessile) sessiles.push({ x: best.x, z: best.z, r: Math.max(0.2, L * 0.5) });
+      if (sessile) sessiles.push({ x: best.x, z: best.z, r: Math.max(0.2, L * 0.5), speciesId:o.speciesId, index:o.index, bommie:o.bommie });
       var alt = 0;
       if (beh === 'wander' || beh === 'turtle') alt = 0.5 + 1.6 * d[29] + 0.4 * Math.min(L, 1);
       else if (beh === 'pair') alt = 0.35 + 1.0 * d[29];

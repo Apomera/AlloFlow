@@ -95,6 +95,36 @@ describe('targeted quiz practice', () => {
     const t = mount({ quizLog: { 0: 1, 1: 1 } });
     expect(select(t.host, '[data-rk-practice-start]')).toBeNull();
     expect(select(t.host, '[data-rk-practice-resume]')).toBeNull();
+    expect(select(t.host, '[data-rk-practice-topic]')).toBeNull();
+  });
+
+  it('lets the learner practise a missed topic other than the weakest without changing round evidence', () => {
+    const t = mount();
+    const before = original(t.store);
+    const button = select(t.host, '[data-rk-practice-topic="Hardness"]');
+    expect(button.getAttribute('aria-label')).toBe('Missed-question practice (1): Hardness');
+    expect(select(t.host, '[data-rk-practice-topic="Sedimentary"]')).toBeTruthy();
+    const complete = [...t.host.querySelectorAll('[data-rk-quiz-topic]')].find(row => row.textContent.includes('1 / 1'));
+    expect(complete.querySelector('[data-rk-practice-topic]')).toBeNull();
+    click(button); flushFocus();
+    expect(t.store.rocks.quizPractice).toMatchObject({queue:[2],index:0,answers:{},active:true,done:false});
+    expect(document.activeElement).toBe(select(t.host, '#rk-quiz-practice-question'));
+    expect(original(t.store)).toEqual(before);
+    expect(t.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('can finish one chosen topic and deliberately start another while preserving the original score and writing', () => {
+    const t = mount();
+    const before = original(t.store);
+    click(select(t.host, '[data-rk-practice-topic="Hardness"]'));
+    click(answer(t.host,'Apatite')); next(t);
+    expect(select(t.host, '[data-rk-practice-done]').getAttribute('data-rk-practice-done')).toBe('1/1');
+    click(select(t.host, '[data-rk-practice-return]'));
+    click(select(t.host, '[data-rk-practice-topic="Sedimentary"]')); flushFocus();
+    expect(t.store.rocks.quizPractice).toMatchObject({queue:[0,1],answers:{},index:0,done:false,active:true});
+    expect(document.activeElement).toBe(select(t.host, '#rk-quiz-practice-question'));
+    expect(original(t.store)).toEqual(before);
+    expect(t.awardXP).not.toHaveBeenCalled();
   });
 
   it('records the actual option once, with stable live feedback and no XP or vocabulary credit', () => {

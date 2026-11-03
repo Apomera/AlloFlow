@@ -5,9 +5,9 @@ import vm from 'node:vm';
 const NEW_SPECIES = ['porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish',
   'blackspotted_puffer', 'ocellated_eagle_ray', 'textile_cone', 'orange_cup_coral',
   'banded_sea_krait', 'white_spotted_hermit_crab', 'longfin_bannerfish', 'bigfin_reef_squid',
-  'goldmouth_sea_squirt', 'feather_duster_worm'];
+  'goldmouth_sea_squirt', 'feather_duster_worm', 'acropora_clathrata', 'acropora_humilis', 'acropora_millepora'];
 const PHOTOSYNTHETIC_CORALS = ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral',
-  'boulder_coral', 'cauliflower_coral', 'foliose_coral'];
+  'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'acropora_clathrata', 'acropora_humilis', 'acropora_millepora'];
 let X, Species;
 const count = (population, id) => population.find(entry => entry.id === id)?.count || 0;
 const total = population => population.reduce((sum, entry) => sum + entry.count, 0);
@@ -50,8 +50,8 @@ describe('explicit reef population diversity', () => {
       expect(count(healthy, id), id).toBeGreaterThanOrEqual(1);
       expect(count(healthy, id), id).toBeLessThanOrEqual(3);
     }
-    expect(NEW_SPECIES.reduce((sum, id) => sum + count(healthy, id), 0)).toBe(23);
-    expect(total(healthy.filter(entry => !NEW_SPECIES.includes(entry.id)))).toBe(216);
+    expect(NEW_SPECIES.reduce((sum, id) => sum + count(healthy, id), 0)).toBe(26);
+    expect(total(healthy.filter(entry => !NEW_SPECIES.includes(entry.id)))).toBe(213);
     expect(total(healthy)).toBeLessThanOrEqual(240);
   });
 

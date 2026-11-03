@@ -22,7 +22,7 @@ function fakeKv(entries = []) {
     list: vi.fn(async ({ prefix = '' }) => ({ keys: [...store.keys()].filter(key => key.startsWith(prefix)).sort().map(name => ({ name })), list_complete: true })),
   };
 }
-const envFor = kv => ({ BUG_REPORTS: kv, BUG_REPORTS_ADMIN_TOKEN: token });
+const envFor = kv => ({ BUG_REPORTS: kv, BUG_REPORTS_ADMIN_TOKEN: token, SUBMIT_RATE: fakeKv() });
 
 function post(body, kv = fakeKv(), headers = jsonHeaders) {
   return worker.fetch(new Request('https://worker.test/submitBug', { method: 'POST', headers, body: typeof body === 'string' ? body : JSON.stringify(body) }), envFor(kv));

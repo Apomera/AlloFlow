@@ -1147,7 +1147,7 @@ const handleLoadProject = (e, deps) => {
                     setIsStudentLinkMode(true);
                     setIsTeacherMode(false);
                     setIsFullscreen(true);
-                    setLeftWidth(0);
+
                     if (!rawData.studentNickname) addToast(t('toasts.loaded_student_view'), "info");
                 } else {
                      addToast(t('toasts.project_loaded'), "success");

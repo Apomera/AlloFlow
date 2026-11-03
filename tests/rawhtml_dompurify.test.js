@@ -68,7 +68,7 @@ describe('_sanitizeRawHtmlBlock: routes through DOMPurify when it is present', (
   it('calls window.DOMPurify.sanitize with the rawhtml config (not the regex)', () => {
     let seenCfg = null;
     globalThis.window = globalThis.window || {};
-    globalThis.window.DOMPurify = { sanitize: (html, cfg) => { seenCfg = cfg; return 'PURIFIED::' + html; } };
+    globalThis.window.DOMPurify = { version: '3.4.17', sanitize: (html, cfg) => { seenCfg = cfg; return 'PURIFIED::' + html; } };
     const out = _sanitizeRawHtmlBlock('<p onclick="x">hi</p>');
     expect(out).toBe('PURIFIED::<p onclick="x">hi</p>'); // delegated verbatim to DOMPurify (which strips handlers itself)
     expect(seenCfg).toBeTruthy();
@@ -78,7 +78,7 @@ describe('_sanitizeRawHtmlBlock: routes through DOMPurify when it is present', (
   });
   it('falls back if DOMPurify.sanitize throws — benign content sanitizes, execution-shaped content withholds (#16)', () => {
     globalThis.window = globalThis.window || {};
-    globalThis.window.DOMPurify = { sanitize: () => { throw new Error('boom'); } };
+    globalThis.window.DOMPurify = { version: '3.4.17', sanitize: () => { throw new Error('boom'); } };
     const benign = _sanitizeRawHtmlBlock('<p>ok</p><style>x{}</style>');
     expect(benign).toContain('<p>ok</p>');
     expect(benign).not.toMatch(/<style/i);

@@ -83,7 +83,7 @@ describe('header settings resolved state and coverage',()=>{
 describe('header on-device voice setup recovery',()=>{
   // The picker and "Get the voice" share startKokoroVoiceDownload; run the real one in the same scope.
   const download=block(header,'const startKokoroVoiceDownload = () => {','  // With no engine loaded');
-  function setup(loader){const selected=[],toasts=[];const fakeWindow={__loadKokoroTTS:loader};const scope={window:fakeWindow,setSelectedVoice:v=>selected.push(v),canUseKokoroVoicePicker:true,KOKORO_VOICES:[{id:'af_heart'}],kokoroCapability:{isIOS:false},addToast:(text,type)=>toasts.push({text,type}),t:()=>null};scope.startKokoroVoiceDownload=vm.runInNewContext(download+';startKokoroVoiceDownload',scope);const callback=attributeValue(element('id','header-spoken-output-voice'),'onChange',scope);return {fakeWindow,selected,toasts,choose:()=>callback({target:{value:'af_heart'}})};}
+  function setup(loader){const selected=[],toasts=[];const fakeWindow={__loadKokoroTTS:loader};const scope={window:fakeWindow,setSelectedVoice:v=>selected.push(v),setKokoroSavedOnDevice:()=>{},canUseKokoroVoicePicker:true,KOKORO_VOICES:[{id:'af_heart'}],kokoroCapability:{isIOS:false},addToast:(text,type)=>toasts.push({text,type}),t:()=>null};scope.startKokoroVoiceDownload=vm.runInNewContext(download+';startKokoroVoiceDownload',scope);const callback=attributeValue(element('id','header-spoken-output-voice'),'onChange',scope);return {fakeWindow,selected,toasts,choose:()=>callback({target:{value:'af_heart'}})};}
   it.each(['reject','throw','false'])('clears setup flags and permits retry after %s',async(mode)=>{
     let count=0;const s=setup(()=>{count++;if(mode==='throw')throw Error('unavailable');return mode==='reject'?Promise.reject(Error('unavailable')):Promise.resolve(false);});
     s.choose();await settle();expect(s.fakeWindow.__kokoroTTSDownloading).toBe(false);expect(s.fakeWindow.__kokoroLoadUserInitiated).toBe(false);expect(s.toasts.at(-1).type).toBe('error');
@@ -110,7 +110,7 @@ describe('header Kokoro model status when no engine is loaded', () => {
   const status = (fakeWindow, kokoroSavedOnDevice) => attributeValue(withAttr('data-kokoro-model-status'), 'data-kokoro-model-status', { window: fakeWindow, kokoroSavedOnDevice });
   it('names each state', () => {
     expect(status({ _kokoroTTS: { ready: true } }, null)).toBe('ready');
-    expect(status({ _kokoroTTS: { ready: false } }, null)).toBe('preparing');
+    expect(status({ _kokoroTTS: { ready: false } }, null), 'an idle loader still allows a retry').toBe('missing');
     expect(status({ __kokoroTTSDownloading: true }, false)).toBe('preparing');
     expect(status({}, true)).toBe('saved');
     expect(status({}, false)).toBe('missing');
@@ -125,7 +125,7 @@ describe('header Kokoro model status when no engine is loaded', () => {
   });
   it('checks the device copy only while the voice panel is open', () => {
     const effect = block(header, 'const [kokoroSavedOnDevice, setKokoroSavedOnDevice] = React.useState(null);', '  // Called, never mounted');
-    expect(effect).toContain('if (!showVoiceSettings || window._kokoroTTS) return undefined;');
+    expect(effect).toContain('if (!showVoiceSettings || window._kokoroTTS?.ready) return undefined;');
     expect(effect).toContain('}, [showVoiceSettings, selectedVoice]);');
   });
 });

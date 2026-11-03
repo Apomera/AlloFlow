@@ -17,7 +17,7 @@ describe('GitHub Pages promotion publication', () => {
         for (const file of [
             'index.html', 'tool-water-cycle.html', 'manual-water-cycle.html', 'guide/index.html',
             'docs/manuals/catalog.json', 'docs/google_classroom_import.md', 'assets/alloflow-social-preview.png',
-            'examples/water_cycle.json', 'lang/manifest.json', 'allopacks/illustrated/water_cycle_grade6.allopack.json',
+            'examples/water_cycle.json', 'lang/manifest.json', 'allopacks/current/water_cycle_grade6.allopack.json',
             'allopacks/media/water_cycle_grade6/wc-img-puddle-time.webp', 'vendor/lucide.js'
         ]) expect(published(file), file).toBe(true);
     });

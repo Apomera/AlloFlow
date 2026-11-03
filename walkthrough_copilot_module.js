@@ -931,16 +931,11 @@
       execUrl: execUrl,
       hasToken: !!token,
       claim: function () {
-        return call('claim', {}).then(function (result) {
-          if (!result || result.ok === false) {
-            return bad([error((result && result.code) || 'claim-failed', 'claim',
-              (result && result.error) || 'The script did not accept the connection.')]);
-          }
-          token = isNonEmptyString(result.token) ? result.token : token;
-          return ok({ token: token, owner: result.owner || '', version: result.version });
-        });
+        return Promise.resolve(bad([error('owner_setup_required', 'claim',
+          'Run setupWalkthroughOwner in the Apps Script editor, then paste the owner token from Script properties.')]));
       },
       selfTest: function () {
+        if (!token) return Promise.resolve(bad([error('owner_token_required', 'token', 'Paste the owner token from Apps Script Project Settings > Script properties.')]));
         return call('selftest', {}).then(function (result) {
           if (!result || result.ok === false) {
             return bad([error((result && result.code) || 'selftest-failed', 'selftest',

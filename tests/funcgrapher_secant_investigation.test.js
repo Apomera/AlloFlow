@@ -29,7 +29,8 @@ beforeEach(()=>{vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnVal
 beforeEach(()=>{vi.stubGlobal('ResizeObserver',class {observe(){} unobserve(){} disconnect(){}});});
 afterEach(()=>vi.unstubAllGlobals());
 const api=()=>{loadTool('stem_lab/stem_tool_funcgrapher.js','funcGrapher');return window.__alloSecantInvestigation;};
-const initial={type:'quadratic',a:1,b:0,c:0,traceX:1};
+// The secant investigation sits in the Investigate stage of the stage-B mode bar.
+const initial={type:'quadratic',a:1,b:0,c:0,traceX:1,fgStage:'investigate'};
 describe('one-sided secant evidence',()=>{
  it('approaches the quadratic derivative from opposite sides',()=>{
   const result=api().study(x=>x*x,2,1,1);

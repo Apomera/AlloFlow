@@ -535,14 +535,14 @@ function FaqView(props) {
     disabled: !!regenAudioKey,
     "aria-busy": prepState.busy,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50 transition-all shadow-sm",
-    title: prepState.busy ? label('common.stop', 'Stop') : label('faq.save_tts', 'Save TTS'),
-    "aria-label": prepState.busy ? label('faq.stop_saving_tts', 'Stop saving TTS') : label('faq.save_tts', 'Save TTS')
+    title: prepState.busy ? label('common.stop', 'Stop') : label('faq.save_audio', 'Save audio'),
+    "aria-label": prepState.busy ? label('faq.stop_saving_audio', 'Stop saving audio') : label('faq.save_audio', 'Save audio')
   }, prepState.busy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
-  }), prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : label('faq.save_tts', 'Save TTS')), /*#__PURE__*/React.createElement("button", {
+  }), prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : label('faq.save_audio', 'Save audio')), /*#__PURE__*/React.createElement("button", {
     onClick: handleToggleIsEditingFaq,
     "data-help-key": "faq_edit_toggle",
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`
@@ -572,7 +572,7 @@ function FaqView(props) {
     "aria-hidden": "true"
   }, "▾ "), label('faq.show_all', 'Show all')), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-500 italic ml-1"
-  }, label('faq.disclosure_tip', 'Use the arrow to reveal an answer. Select a sentence to hear it aloud.'))), faqItems.length === 0 && /*#__PURE__*/React.createElement("div", {
+  }, label('faq.disclosure_tip', 'Choose Show answer to reveal it. Use Listen to hear a question; select an answer sentence to hear it.'))), faqItems.length === 0 && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "data-faq-empty": true,
     className: "rounded-lg border border-slate-300 bg-slate-50 p-4 text-sm text-slate-700"
@@ -598,12 +598,15 @@ function FaqView(props) {
         className: "bg-white p-5 rounded-lg border border-slate-400 shadow-sm",
         "data-help-key": "faq_item"
       }, /*#__PURE__*/React.createElement("div", {
-        className: "flex items-start gap-3"
+        className: "flex flex-wrap sm:flex-nowrap items-start gap-3"
       }, /*#__PURE__*/React.createElement("div", {
         className: "bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1",
         "aria-hidden": "true"
       }, label('faq.q_badge', 'Q')), /*#__PURE__*/React.createElement("div", {
-        className: "flex-grow space-y-2"
+        className: "min-w-0 flex-grow space-y-2",
+        style: {
+          flex: '1 1 12rem'
+        }
       }, isEditingFaq ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
         "aria-label": t('faq.edit_question') || 'Edit FAQ question',
         value: faq.question,
@@ -636,24 +639,26 @@ function FaqView(props) {
         placeholder: t('common.placeholder_answer_trans')
       })))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h4", {
         className: "font-bold text-slate-800 text-lg mb-1 leading-relaxed"
-      }, (() => {
-        const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
-        return qSentences.map((s, sIdx) => {
-          const currentGlobalIdx = qBase + sIdx;
-          const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-          return /*#__PURE__*/React.createElement("button", {
-            type: "button",
-            key: sIdx,
-            id: `sentence-${currentGlobalIdx}`,
-            "aria-label": label('faq.read_sentence', 'Read sentence: {sentence}').replace('{sentence}', s),
-            className: `bg-transparent border-0 font-inherit text-inherit text-start transition-colors motion-reduce:transition-none duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`,
-            onClick: e => {
-              e.stopPropagation();
-              handleSpeak(s, 'faq-active', currentGlobalIdx);
-            }
-          }, formatInteractiveText(s, false), " ");
-        });
-      })()), isExpanded && faq.question_en && /*#__PURE__*/React.createElement("p", _extends({}, _faqTranslationAttributes(generatedContent), {
+      }, splitTextToSentences(faq.question).filter(s => s && s.trim()).map((s, sIdx) => /*#__PURE__*/React.createElement("span", {
+        key: sIdx,
+        id: `sentence-${qBase + sIdx}`,
+        className: isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === qBase + sIdx ? 'bg-yellow-400 text-black rounded' : ''
+      }, formatInteractiveText(s, false), " "))), /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-wrap gap-2"
+      }, qSentencesForCount.map((s, sIdx) => /*#__PURE__*/React.createElement("button", {
+        key: sIdx,
+        type: "button",
+        "data-faq-listen-question": true,
+        "aria-label": label('faq.read_sentence', 'Read sentence: {sentence}').replace('{sentence}', s),
+        onClick: e => {
+          e.stopPropagation();
+          handleSpeak(s, 'faq-active', qBase + sIdx);
+        },
+        className: "min-h-11 inline-flex items-center gap-1 rounded-lg border border-cyan-300 px-3 py-2 text-xs font-semibold text-cyan-900 hover:bg-cyan-50 focus-visible:ring-2 focus-visible:ring-cyan-600"
+      }, /*#__PURE__*/React.createElement(Volume2, {
+        size: 14,
+        "aria-hidden": "true"
+      }), qSentencesForCount.length === 1 ? label('faq.listen_question', 'Listen to question') : label('faq.listen_question_sentence', 'Listen to question sentence {number}').replace('{number}', String(sIdx + 1))))), isExpanded && faq.question_en && /*#__PURE__*/React.createElement("p", _extends({}, _faqTranslationAttributes(generatedContent), {
         className: "text-sm text-slate-600 italic mb-2"
       }), "(", faq.question_en, ")"), /*#__PURE__*/React.createElement("div", {
         id: `faq-answer-${idx}`,
@@ -685,7 +690,9 @@ function FaqView(props) {
         "aria-controls": `faq-answer-${idx}`,
         "aria-label": (isExpanded ? label('faq.collapse_answer_named', 'Hide answer: {question}') : label('faq.expand_answer_named', 'Show answer: {question}')).replace('{question}', () => faqQuestionName(faq) || label('faq.audio_item', 'FAQ') + ' ' + (idx + 1)),
         className: "shrink-0 mt-2 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-      }, /*#__PURE__*/React.createElement(ChevronDown, {
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "text-xs font-semibold"
+      }, isExpanded ? label('faq.hide_answer_action', 'Hide answer') : label('faq.show_answer_action', 'Show answer')), /*#__PURE__*/React.createElement(ChevronDown, {
         size: 20,
         "aria-hidden": "true",
         className: "transition-transform duration-200",

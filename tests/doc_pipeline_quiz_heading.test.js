@@ -88,7 +88,7 @@ describe('shared per-resource quiz headings', () => {
   });
 
   it('uses the shared open-response heading for the current Katie exit task', () => {
-    const pack = JSON.parse(readFileSync('allopacks/academic_discourse_reading_space_grade6.allopack.json', 'utf8'));
+    const pack = JSON.parse(readFileSync('allopacks/current/academic_discourse_reading_space_grade6.allopack.json', 'utf8'));
     const exit = pack.history.find(item => item.id === 'reading-space-exit'), before = structuredClone(exit);
     expect(headings(render([exit]))).toEqual(['Open responses']);
     expect(exit).toEqual(before);

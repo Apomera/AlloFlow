@@ -11,7 +11,7 @@ const anchor = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(anchor)) throw new Error('Dino Lab registration anchor was not found');
 window.StemLab = { registerTool() {} };
 new Function(source.replace(anchor,
-  'globalThis.__dinoBeakSurface = { DINOS, cranialSurfaceProfileFor, dinoBeakSurfaceGeometry, dinoSurfaceGeometry, dinoCranialGeometry, dinoConnectedCranialPose };' + anchor))();
+  'globalThis.__dinoBeakSurface = { DINOS, cranialSurfaceProfileFor, dinoBeakSurfaceGeometry, dinoBeakGrainCoordinates, dinoSurfaceGeometry, dinoCranialGeometry, dinoConnectedCranialPose };' + anchor))();
 const art = globalThis.__dinoBeakSurface;
 delete globalThis.__dinoBeakSurface;
 const byId = id => {
@@ -83,14 +83,14 @@ const callerEnd = source.indexOf('var integumentSeed =', callerStart);
 if ([chainStart, chainEnd, callerStart, callerEnd].some(index => index < 0)) throw new Error('Actual beak construction was not found');
 const createChain = new Function('THREE', 'props', 'bodyMat', 'model', 'dinoCranialGeometry', 'dinoSurfaceGeometry', source.slice(chainStart, chainEnd) + 'return addSoftTissueChain;');
 const buildBeak = new Function('THREE', 'dn', 'skeletalProfile', 'head', 'surfaceSnout', 'surfaceHeadLength', 'surfaceHeadHeight', 'surfaceHeadDepth',
-  'cranialSurface', 'cladeName', 'vec', 'addSoftTissueChain', 'keratinMat', 'registerCranialMotion', 'dinoBeakSurfaceGeometry',
+  'cranialSurface', 'cladeName', 'vec', 'addSoftTissueChain', 'keratinMat', 'registerCranialMotion', 'dinoBeakSurfaceGeometry', 'dinoBeakGrainCoordinates',
   source.slice(callerStart, callerEnd) + 'return keratinBeak;');
 function caller(data, hasBeak = true) {
   const material = new THREE.MeshBasicMaterial(), model = new THREE.Group(), registered = [], helperCalls = [];
   const chain = createChain(THREE, { showBody: true }, material, model, art.dinoCranialGeometry, art.dinoSurfaceGeometry);
   const mesh = buildBeak(THREE, data.dino, { keratinBeak: hasBeak }, data.head, data.snout, data.length, data.height, data.depth,
     data.profile, data.dino.clade, (x, y, z) => new THREE.Vector3(x, y, z), chain, material, part => registered.push(part),
-    (...args) => { helperCalls.push({ geometry: args[1], height: args[2], enabled: args[3] }); return art.dinoBeakSurfaceGeometry(...args); });
+    (...args) => { helperCalls.push({ geometry: args[1], height: args[2], enabled: args[3] }); return art.dinoBeakSurfaceGeometry(...args); }, art.dinoBeakGrainCoordinates);
   return { mesh, material, model, registered, helperCalls };
 }
 function disposeBuilt(built) { if (built.mesh) built.mesh.geometry.dispose(); built.material.dispose(); }

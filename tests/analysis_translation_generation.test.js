@@ -65,6 +65,43 @@ describe('source-bound multilingual analysis generation', () => {
     expect(f.callGemini.mock.calls[0][0]).not.toContain('BILINGUAL ARRAYS REQUIREMENT');
   });
 
+  it('attaches only retrieved, eligible references to each claim and keeps the rest for review', async () => {
+    const raw = report();
+    const urls = ['https://alpha.example/facts', 'https://blocked.example/page', 'https://beta.example/research'];
+    raw.accuracy.verifiedFacts = ['Two sources [Source 1, 3].', 'Still needs evidence.', 'Wrong ID [99].', 'Filtered [2].', 'Wrong destination [1](https://forged.example).'];
+    raw.reportTranslations.English.accuracy.verifiedFacts = ['Both sources [1, 3].', 'Needs evidence.', 'Missing [99].', 'Filtered [2].', 'Wrong [1](https://forged.example).'];
+    const f = fixture(raw, {
+      performDeepVerification: async () => ({ text: 'Both sources support the finding [1, 3].', sources: urls.map((uri, i) => ({ uri, title: 'Source ' + (i + 1) })) }),
+      filterEducationalSources: chunks => chunks.filter(chunk => chunk.web.uri !== urls[1]),
+    });
+    const item = await dispatcher.handleGenerate('analysis', null, false, null, { rethrowErrors: true }, true, f.deps);
+    const a = item.data.accuracy, translated = item.data.reportTranslations.English.accuracy;
+    expect(a.verifiedFacts).toHaveLength(1);
+    expect(a.unsourcedFacts).toEqual(['Still needs evidence.', 'Wrong ID.', 'Filtered.', 'Wrong destination.']);
+    expect(translated.verifiedFacts).toHaveLength(1);
+    expect(translated.unsourcedFacts).toEqual(['Needs evidence.', 'Missing.', 'Filtered.', 'Wrong.']);
+    const rows = dispatcher.getAnalysisFactRows(a, translated);
+    expect(rows[0].text).toBe('Both sources.');
+    expect(rows[0].sources.map(source => [source.title, source.url])).toEqual([['Source 1', urls[0]], ['Source 3', urls[2]]]);
+    expect(rows.slice(1).every(row => !row.sources.length)).toBe(true);
+    expect(a.citations).not.toContain(urls[1]);
+    expect(a.citations).not.toContain('forged');
+  });
+  it.each(['consulted', 'unavailable', 'off'])('keeps an uncited statement out of verified facts when search is %s', async mode => {
+    const raw = report();
+    raw.accuracy.verifiedFacts = ['A claim without a citation.', 'The draft guessed a source [1].'];
+    raw.accuracy.citations = '1. [Invented source](https://fake.example)';
+    raw.accuracy.sourceReferences = [{ number: 1, title: 'Invented source', url: 'https://fake.example' }];
+    raw.reportTranslations.English.accuracy.verifiedFacts = ['An uncited claim.', 'Guessed a source [1].'];
+    const f = fixture(raw, { checkAccuracyWithSearch: mode !== 'off', performDeepVerification: async () =>
+      mode === 'consulted' ? { text: 'Sources consulted as background.', sources: [{ uri: 'https://background.example/page', title: 'Background' }] } : { text: '', sources: [] } });
+    const item = await dispatcher.handleGenerate('analysis', null, false, null, { rethrowErrors: true }, true, f.deps);
+    const a = item.data.accuracy;
+    expect(a.verifiedFacts).toEqual([]);
+    expect(a.unsourcedFacts).toEqual(['A claim without a citation.', 'The draft guessed a source.']);
+    expect(JSON.stringify(a)).not.toContain('fake.example');
+    if (mode === 'consulted') expect(a.citations).toContain('background.example');
+  });
   it('does not extract or overwrite an already bilingual original during analysis', async () => {
     const bilingual = 'El planeta gira.\r\n--- ENGLISH TRANSLATION ---\r\nThe planet turns.\r\n';
     const f = fixture(report(), { inputText: bilingual });

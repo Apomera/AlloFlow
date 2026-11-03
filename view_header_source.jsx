@@ -639,6 +639,8 @@ function HeaderBar(props) {
     return { ok: true, isIOS };
   }, [t]);
   const canUseKokoroVoicePicker = kokoroCapability.ok;
+  let speechProvider = 'auto';
+  try { speechProvider = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider || 'auto'; } catch (_) {}
   // Choosing a Kokoro voice, or "Get the voice", IS the consent to download it.
   // Nothing else on a phone may start this fetch; see the off-desktop guard in callTTS.
   const startKokoroVoiceDownload = () => {
@@ -653,19 +655,20 @@ function HeaderBar(props) {
     );
     Promise.resolve().then(() => window.__loadKokoroTTS()).then(ok => {
       if (ok) addToast(t('header.voice_kokoro_ready_toast') || 'On-device voice ready. It is saved on this device.', 'success');
-      else addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Another voice will read for now.', 'error');
+      else addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Retry the download or select another spoken-output voice.', 'error');
     }).catch(() => {
-      addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Another voice will read for now.', 'error');
+      addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Retry the download or select another spoken-output voice.', 'error');
     }).finally(() => {
       window.__kokoroTTSDownloading = false;
       window.__kokoroLoadUserInitiated = false;
+      setKokoroSavedOnDevice(!!window._kokoroTTS?.ready);
     });
   };
   // With no engine loaded, say whether the model is saved here (it wakes on first
   // use) or missing (a cloud or device voice reads instead).
   const [kokoroSavedOnDevice, setKokoroSavedOnDevice] = React.useState(null);
   React.useEffect(() => {
-    if (!showVoiceSettings || window._kokoroTTS) return undefined;
+    if (!showVoiceSettings || window._kokoroTTS?.ready) return undefined;
     let live = true;
     const check = window.AlloModules?.AlloCommands?.modelCache?.hasKokoro;
     if (typeof check !== 'function') { setKokoroSavedOnDevice(null); return undefined; }
@@ -1513,23 +1516,30 @@ function HeaderBar(props) {
                                                         </>
                                                     )}
                                                 </select>
+                                                {/^[ab][fm]_/i.test(selectedVoice || '') && (speechProvider === 'browser' || speechProvider === 'off') && (
+                                                  <p role="status" className={`mt-2 text-xs ${_skin.label}`}>
+                                                    {speechProvider === 'browser'
+                                                      ? (t('header.kokoro_browser_provider') || 'The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro.')
+                                                      : (t('header.kokoro_disabled_provider') || 'Speech output is off. Choose Auto or Local in speech provider settings to hear Kokoro.')}
+                                                  </p>
+                                                )}
                                                 {/* ── Kokoro model info (2026-07-06): the old Fast(q4)/High(q8)
                                                     toggle was retired — the q4 file is really ~291MB (not 43MB),
                                                     sounds worse, and benched no faster on wasm CPU. One honest
                                                     tier now: q8, ~88MB, downloaded once + cached on device. ── */}
                                                 {canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes('_') && (
-                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`} data-kokoro-model-status={window._kokoroTTS?.ready ? 'ready' : (window._kokoroTTS || window.__kokoroTTSDownloading) ? 'preparing' : kokoroSavedOnDevice ? 'saved' : 'missing'}>
+                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`} data-kokoro-model-status={window._kokoroTTS?.ready ? 'ready' : window.__kokoroTTSDownloading ? 'preparing' : kokoroSavedOnDevice ? 'saved' : 'missing'}>
                                                         <p className="text-[11px] m-0">
                                                             <span className="font-bold">{t('header.voice_model_label') || 'Voice model'}:</span>{' '}
                                                             {window._kokoroTTS?.ready
                                                                 ? (t('header.voice_model_ready') || 'Kokoro (~88MB) — ready on this device. Downloaded once; reads offline.')
-                                                                : (window._kokoroTTS || window.__kokoroTTSDownloading)
-                                                                    ? (t('header.voice_model_preparing') || 'Kokoro (~88MB) — preparing… a temporary voice reads aloud until it finishes.')
+                                                                : window.__kokoroTTSDownloading
+                                                                    ? (t('header.voice_model_preparing') || 'Kokoro (~88MB) is preparing. Try reading again when the voice is ready.')
                                                                     : kokoroSavedOnDevice
                                                                         ? (t('header.voice_model_saved') || 'Kokoro (~88MB) is saved on this device. It starts when reading begins.')
-                                                                        : (t('header.voice_model_missing') || "Kokoro (~88MB) isn't on this device yet, so another voice reads aloud.")}
+                                                                        : (t('header.voice_model_missing') || "Kokoro (~88MB) is not on this device yet. Get the voice to read aloud with it.")}
                                                         </p>
-                                                        {!window._kokoroTTS && !window.__kokoroTTSDownloading && kokoroSavedOnDevice === false && window.__loadKokoroTTS && (
+                                                        {!window._kokoroTTS?.ready && !window.__kokoroTTSDownloading && !kokoroSavedOnDevice && window.__loadKokoroTTS && (
                                                             <button type="button" onClick={() => { startKokoroVoiceDownload(); setKokoroSavedOnDevice(null); }} data-kokoro-get-voice className={`mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}`}>
                                                                 {t('header.voice_model_get') || 'Get the voice (88 MB)'}
                                                             </button>

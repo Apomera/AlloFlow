@@ -479,7 +479,7 @@ const backupSearchEvidence = path.join(root, 'reports/document-builder-backup-se
 fs.mkdirSync(backupSearchEvidence, { recursive: true });
 const importedLesson = '<!doctype html><html lang="en"><head><title>Recovered lesson</title><style>h1{color:#4338ca}p{font-size:18px}</style></head><body><main><h1>Recovered lesson</h1><p id="restored-editable">Backup lesson text.</p><a href="https://example.org/reference">Lesson reference</a><img alt="Recovered diagram" width="40" height="40" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jf1sAAAAASUVORK5CYII="><script>parent.__backupScriptRan=true</script><p onclick="parent.__backupScriptRan=true">Safe text</p></main></body></html>';
 async function openBackupFile(page: Page, content = importedLesson, name = 'lesson-backup.html') {
-  await page.addScriptTag({ path: path.join(root, 'dompurify/3.1.7/purify.min.js') });
+  await page.addScriptTag({ path: path.join(root, 'dompurify/3.4.17/purify.min.js') });
   await page.locator('#builder-backup-file').setInputFiles({ name, mimeType: 'text/html', buffer: Buffer.from(content) });
 }
 for (const width of [1440, 390]) {

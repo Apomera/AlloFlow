@@ -44,7 +44,7 @@ describe('portable rocks notebook codec', () => {
     };
     const saved = JSON.parse(encode(work, config));
     expect(saved.format).toBe('alloflow-rocks-notebook');
-    expect(saved.version).toBe(2);
+    expect(saved.version).toBe(3);
     expect(new Date(saved.createdAt).toISOString()).toBe(saved.createdAt);
     expect(saved.data).not.toHaveProperty('wb');
     expect(saved.data).not.toHaveProperty('quizScore');
@@ -78,7 +78,7 @@ describe('portable rocks notebook codec', () => {
   it.each([
     [null, /object/], [[], /object/], ['not JSON', /JSON/],
     [{ ...envelope({}), format: 'other' }, /not an AlloFlow/],
-    [{ ...envelope({}), version: 3 }, /version/],
+    [{ ...envelope({}), version: 4 }, /version/],
     [{ ...envelope({}), version: '1' }, /version/],
     [{ ...envelope({}), createdAt: '2026-02-31T12:00:00.000Z' }, /creation time/],
     [{ ...envelope({}), data: [] }, /data must be an object/],
@@ -174,7 +174,7 @@ describe('portable rocks notebook codec', () => {
     expect(readV2({ specimenNotes: {} }).specimenNotes).toEqual({});
     expect(() => read({ specimenNotes: {} })).toThrow(/version 1 does not support/);
     expect(() => readV2({})).toThrow(/version 2 must include/);
-    expect(JSON.parse(encode({}, config))).toMatchObject({ version: 2, data: { specimenNotes: {} } });
+    expect(JSON.parse(encode({}, config))).toMatchObject({ version: 3, data: { specimenNotes: {}, weathHunt: {log: []} } });
   });
 
   it('keeps Unicode study writing, bookmarks and questions but omits empty entries', () => {
@@ -220,5 +220,65 @@ describe('portable rocks notebook codec', () => {
     expect(accessed).toBe(false);
     expect(snapshot({ wb: { spId: 'halite', guess: 'quartz' }, selectedRock: 'granite' }, config).specimenNotes).toEqual({});
     expect(() => snapshot({ specimenNotes: null }, config)).toThrow(/specimenNotes/);
+  });
+});
+
+describe('version 3 weathering and field measurements', () => {
+  const readWeather = weathHunt => decode(JSON.stringify(envelope({specimenNotes: {}, weathHunt}, 3)), config).weathHunt;
+  const trial = {t: 8, rm: 2800, p: 5.6, rk: 'limestone', st: 'chemDom'};
+
+  it('round trips eight trials, their original outcomes, draft writing, settings and learner controls', () => {
+    const weather = {tempSwing: 8, rainMm: 2800, pH: 5.6, rock: 'limestone', hypothesis: 'Wet limestone changes faster.', explanation: '雨 supplies water and acidity.', understood: true, stuckRevealed: true, modelOn: true, log: Array.from({length:8}, () => ({...trial}))};
+    const result = decode(encode({weathHunt:weather}, config), config).weathHunt;
+    expect(result).toEqual(weather);
+    expect(result.log).not.toBe(weather.log);
+    expect(readWeather({explanation:'An unfinished idea.'})).toMatchObject({explanation:'An unfinished idea.', understood:false, log:[]});
+  });
+
+  it('converts earlier session rainfall units and numeric strings without changing the saved session', () => {
+    const old = {rainfall:'250', tempSwing:'30', pH:'5.6', log:[{t:'30',r:'20',p:'5.6',st:'physDom'}]};
+    const stored = decode(encode({weathHunt:old}, config), config).weathHunt;
+    expect(stored).toMatchObject({rainMm:1500, tempSwing:30, pH:5.6, rock:'granite', log:[{t:30,rm:120,p:5.6,rk:'granite',st:'physDom'}]});
+    expect(stored).not.toHaveProperty('rainfall');
+    expect(old).toHaveProperty('rainfall','250');
+  });
+
+  it.each([
+    null, [], {rock:'coal'}, {tempSwing:51}, {rainMm:-1}, {pH:9}, {rainMm:'500'},
+    {hypothesis:42}, {explanation:null}, {understood:1}, {modelOn:'yes'}, {unrelated:true},
+    {log:Array(9).fill(trial)}, {log:[{...trial,st:'invented'}]}, {log:[{...trial,rk:'diamond'}]},
+    {log:[{...trial,rm:undefined}]}, {log:[{...trial,p:1}]}, {log:[{...trial,t:'8'}]},
+    {log:[{...trial,grade:100}]}, {log:[{...trial,rm:undefined,r:400}]}
+  ])('rejects unsupported weathering data %#', value => {
+    expect(()=>readWeather(value)).toThrow(/weathHunt/);
+  });
+
+  it('requires weathering in v3 and excludes it from earlier file schemas', () => {
+    expect(()=>decode(JSON.stringify(envelope({specimenNotes:{}},3)),config)).toThrow(/must include weathering/);
+    expect(()=>read({weathHunt:{}})).toThrow(/does not support weathering/);
+    expect(()=>readV2({specimenNotes:{},weathHunt:{}})).toThrow(/does not support weathering/);
+    expect(readWeather({})).toMatchObject({rainMm:1200,tempSwing:20,pH:5.6,rock:'granite',log:[]});
+    expect(readV2({specimenNotes:{}})).not.toHaveProperty('weathHunt');
+  });
+
+  const river = {id:'rounded-river',clues:[],candidates:['granite']};
+  const allCases = {...config,cases:[...config.cases,river]};
+  const withFragment = (fragment, id='rounded-river', other={}) => ({fieldCases:{records:{[id]:{fragmentObservation:fragment,...other}}}});
+  it.each([{estimate:'2,', shape:'', compared:false}, {estimate:' 20,5 ',shape:'rounded',compared:true}])('preserves the fragment entry exactly',fragment => {
+    expect(decode(encode(withFragment(fragment),allCases),allCases).fieldCases.records[river.id].fragmentObservation).toEqual(fragment);
+  });
+  it.each([
+    {estimate:'0',shape:'rounded',compared:true}, {estimate:'1001',shape:'angular',compared:true},
+    {estimate:'invalid',shape:'rounded',compared:true}, {estimate:'2',shape:'',compared:true},
+    {estimate:'1234567890123',shape:'',compared:false},{estimate:'1',shape:'square',compared:false}
+  ])('rejects an invalid fragment observation %#', fragment => {
+    expect(()=>encode(withFragment(fragment),allCases)).toThrow(/fragmentObservation/);
+  });
+  it('limits fragment observations to the rounded-river record in version 3',()=>{
+    const fragment={estimate:'20',shape:'rounded',compared:true};
+    expect(()=>encode(withFragment(fragment,'deep-cooling'),allCases)).toThrow(/not a supported field/);
+    const data={...withFragment(fragment),specimenNotes:{}};
+    expect(()=>decode(JSON.stringify(envelope(data,2)),allCases)).toThrow(/not a supported field/);
+    expect(()=>encode(withFragment(fragment,river.id,{attempts:[{fragmentObservation:fragment}]}),allCases)).toThrow(/not a supported field/);
   });
 });

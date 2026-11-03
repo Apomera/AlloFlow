@@ -116,6 +116,14 @@ describe.each(['edited source', 'generated runtime'])('Glossary export data fide
     } else expect(doc.querySelector('.back .def-text strong').textContent).toBe('Spanish:');
   });
 
+  it('gives source quotes their saved language independently of the word and definition', () => {
+    const row = { term: 'Feuille', termLanguage: 'French', def: 'A plant part.', definitionLanguage: 'English', contextSentence: 'تحتاج الورقة إلى الضوء.\nوإلى الماء.' };
+    const run = exportContent(factory(), [{ ...row, contextSentenceLanguage: 'Arabic' }, row, { ...row, contextSentenceLanguage: 'Unlisted language' }], 'standard');
+    const doc = run.doc(), quotes = [...doc.querySelectorAll('[data-context-sentence] q')];
+    expect(quotes.map(q => [q.lang, q.dir, q.textContent])).toEqual([['ar', 'rtl', row.contextSentence], ['en', 'ltr', row.contextSentence], ['', 'auto', row.contextSentence]]);
+    expect(doc.querySelector('.back .def-text > span').lang).toBe('en');
+  });
+
   it('preserves empty template literals and unmatched backtick runs in every word-list format', () => {
     const data = [{ term: '``', def: 'const text = ``;' }, { term: '```', def: 'Unmatched ` and **bold** remain useful.' }];
     const csv = exportContent(factory(), data, 'csv');
@@ -145,7 +153,7 @@ describe.each(['edited source', 'generated runtime'])('Glossary export data fide
     window.AlloModules.ModuleScopeExtras = { getSpeechLangCode: () => 'en-US', isRtlLang: () => false };
     const run = exportContent(factory(), [{ term: 'A word', termLanguage: 'Unlisted language', def: 'A definition.', definitionLanguage: 'es-MX', translations: { French: 'Un mot' } }], 'language');
     const doc = run.doc();
-    expect(doc.querySelector('.front .primary-text').hasAttribute('lang')).toBe(false);
+    expect(doc.querySelector('.front .primary-text').getAttribute('lang')).toBe('');
     expect(doc.querySelector('.front .primary-text').dir).toBe('auto');
     expect(doc.querySelector('.front .def-text').lang).toBe('es-MX');
     expect(doc.querySelector('.front .lang-label').textContent).toBe('Unlisted language');

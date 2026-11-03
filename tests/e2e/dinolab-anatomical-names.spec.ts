@@ -4,7 +4,7 @@ import { GlHarness } from './helpers/stem_gl_harness';
 
 test.describe.configure({ timeout: 300_000, retries: 0, mode: 'serial' });
 test.use({ video: 'off', trace: 'off', actionTimeout: 60_000 });
-const report = 'reports/dinolab-anatomical-names';
+const report = process.env.DINO_ANATOMICAL_NAMES_REPORT_DIR || 'reports/dinolab-anatomical-names';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_dinolab.js', toolId: 'dinoLab', width: 1280, height: 960, layout: 'document', appStyles: true,
   probes: 'var R=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){var r=new R(o),draw=r.render.bind(r);r.__namesIdentity=(window.__namesRendererCount||0)+1;window.__namesRendererCount=r.__namesIdentity;r.render=function(s,c){window.__namesScene=s;window.__namesCamera=c;window.__namesRenderer=r;return draw(s,c);};return r;};' });
 
@@ -78,6 +78,7 @@ async function selectPart(page: Page, part: string, term: string) {
   await page.locator('#dinolab-part-picker').selectOption(part);
   await expect(page.locator('#dinolab-selected-part-guide .dinolab-anatomical-term')).toContainText('Anatomical term');
   await expect(page.locator('#dinolab-selected-part-guide .dinolab-anatomical-term')).toContainText(term);
+  await page.locator('canvas.dinolab-3d-canvas').scrollIntoViewIfNeeded();
   await expect.poll(async () => (await inspect(page)).labels.some(label => label.id === part && label.selected), { timeout: 60_000 }).toBe(true);
   await settle(page);
 }
@@ -85,7 +86,14 @@ async function keyboardToggle(page: Page, enabled: boolean) {
   const toggle = page.getByRole('checkbox', { name: 'Show scientific names', exact: true });
   await toggle.focus(); await page.keyboard.press('Space');
   if (enabled) await expect(toggle).toBeChecked(); else await expect(toggle).not.toBeChecked();
-  await expect.poll(async () => (await inspect(page)).scientificNames).toBe(enabled); await settle(page);
+  await expect.poll(async () => (await inspect(page)).scientificNames).toBe(enabled);
+  // The viewer pauses off-screen. Bring it back before checking rendered label metrics.
+  await page.locator('canvas.dinolab-3d-canvas').scrollIntoViewIfNeeded();
+  await expect.poll(async () => {
+    const row = await inspect(page);
+    return row.labels.length > 0 && row.labels.every(label => label.contentFits && label.termFits && (!!label.term === enabled));
+  }, { timeout: 60_000 }).toBe(true);
+  await settle(page);
 }
 async function photo(page: Page, name: string) {
   await page.locator('canvas.dinolab-3d-canvas').screenshot({ path: report + '/' + name + '.png' });

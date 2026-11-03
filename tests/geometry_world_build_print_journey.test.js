@@ -121,4 +121,55 @@ describe('Geometry World build-to-print journey',()=>{
   it('does not let queued preparation focus steal focus from a newly opened modal',()=>{
     const app=fixture.mount();click(app,'[data-gwe-prepare="print"]');const modal=document.createElement('div');modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.tabIndex=-1;app.host.querySelector('main').appendChild(modal);modal.focus();settle();expect(document.activeElement).toBe(modal);modal.remove();
   });
+
+  function prepareAllPieces(){
+    const app = fixture.mount({retained:null});
+    click(app,'[data-gwe-prepare="print"]');
+    click(app,'[data-gwe-select-all]');
+    React.act(()=>vi.advanceTimersByTime(900));
+    const groups = app.state().builderPrintCheck.contactGroups;
+    const index = groups.findIndex(cells=>cells.length===3);
+    expect(index).toBeGreaterThanOrEqual(0);
+    return {app,index};
+  }
+
+  it('prepares an exact mesh-contact piece, restores all earlier blocks, and hands off only the chosen piece',()=>{
+    const {app,index} = prepareAllPieces();
+    const all = selectedKeys(app), before = fixture.worldState(app.engine);
+    const choose = () => click(app,'[data-gwe-use-piece="'+(index+1)+'"]');
+    choose(); settle();
+    expect(selectedKeys(app)).toEqual(['8,1,0','8,2,0','9,1,0']);
+    expect(document.activeElement).toBe(query(app,'#gwe-print-piece-scope'));
+    click(app,'[data-gwe-restore-pieces]'); settle();
+    expect(selectedKeys(app)).toEqual(all);
+    expect(document.activeElement).toBe(query(app,'#gwe-print-connections'));
+    React.act(()=>vi.advanceTimersByTime(900));
+    choose(); settle();
+    expect(fixture.worldState(app.engine)).toEqual(before);
+    click(app,'[data-gwe-send="print"]');
+    expect(window.__alloPrintLabPendingHandoff.sourceModel.blocks).toHaveLength(3);
+    expect(window.__alloPrintLabPendingHandoff.sourceModel.blocks.every(b=>b.type==='wood')).toBe(true);
+  });
+
+  it('declines to restore an earlier selection that was edited while only one piece was selected',()=>{
+    const {app,index} = prepareAllPieces();
+    click(app,'[data-gwe-use-piece="'+(index+1)+'"]'); settle();
+    app.engine.blocks['0,1,0'].userData.blockType = 'wood';
+    click(app,'[data-gwe-restore-pieces]'); settle();
+    expect(query(app,'.gwe-piece-selection [role=alert]').textContent).toContain('earlier selection has changed');
+    expect(selectedKeys(app)).toEqual(['8,1,0','8,2,0','9,1,0']);
+  });
+
+  it('rejects a stale piece button and a pending size edit without changing print scope',()=>{
+    const {app,index} = prepareAllPieces();
+    const selector = '[data-gwe-use-piece="'+(index+1)+'"]';
+    app.draft('18'); click(app,selector);
+    expect(query(app,'.gwe-piece-selection [role=alert]').textContent).toContain('pending edit');
+    expect(selectedKeys(app)).toHaveLength(5);
+    click(app,'[data-gwe-scale-discard]');
+    app.engine._builderSelection = {blocks:app.groups.a,exact:true};
+    click(app,selector);
+    expect(selectedKeys(app)).toEqual(['0,1,0','1,1,0']);
+    expect(query(app,'.gwe-piece-selection [role=alert]').textContent).toContain('selection has changed');
+  });
 });

@@ -1010,6 +1010,10 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                           <p className="text-sm text-slate-700 leading-relaxed italic">
                               "{item.directive || "No specific instructions."}"
                           </p>
+                          {item.type === 'analysis' && _reusedVariants.length > 0 && !_newVariants.length && <p
+                              data-testid="bp-source-check-reused" className="mt-1 text-xs font-semibold text-emerald-800">
+                              {t('blueprint.analysis_reused') || 'Already checked, reused'}
+                          </p>}
                           <details data-testid="bp-row-details" className="group/row-details mt-1">
                             <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-medium text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
                               {t('blueprint.row_details') || 'Generation details'}
@@ -1023,6 +1027,8 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                           >
                               {_rowMatrixUnavailable
                                   ? <span data-testid="bp-row-matrix-unavailable">{t('blueprint.row_matrix_unavailable') || 'Waiting for generation planning. This row will not run until exact duplicate and audience-version checks are available.'}</span>
+                                  : item.type === 'analysis' && _reusedVariants.length && !_newVariants.length
+                                  ? (t('blueprint.analysis_reused') || 'Already checked, reused')
                                   : _generationVariants.length
                                   ? `${_newVariants.length} ${t('blueprint.new_versions') || 'new'} / ${_reusedVariants.length} ${t('blueprint.reused_versions') || 'reused'}${_variantGrades.length ? `; ${_variantGrades.join(', ')}` : ''}${_variantLanguages.length ? `; ${_variantLanguages.join(', ')}` : ''}${item.type === 'glossary' && embeddedGlossaryLanguages.length ? `; ${t('blueprint.embedded_languages') || 'embedded'}: ${embeddedGlossaryLanguages.join(', ')}` : ''}`
                                   : (t('blueprint.row_matrix_pending') || 'Reuse and audience variants will be checked before generation.')}

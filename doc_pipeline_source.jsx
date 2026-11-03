@@ -194,7 +194,11 @@ function _alloDropRunningLines(text, pages) {
   var pw = pages.map(function (p) { return [].concat.apply([], String((p && p.text) || '').normalize('NFKC').split(/\s+/).filter(Boolean).map(unglue)); });
   var pageNo = function (t) { return /^[-–—(]?\d{1,4}[-–—)]?$/.test(t); };
   var isDash = function (t) { return /^[-–—]$/.test(t || ''); };
-  var minPages = Math.max(3, Math.ceil(pw.length * 0.6));
+  // (2026-11-02) A 2-page document qualifies too, when BOTH pages carry the passage and it is 4+ words, as in
+  // the line rule (activity4h: the UMaine EEO footer on both pages read as 6 changed numbers and broke the
+  // reading-order measure; pdf.js hands each page over as one line, so the line rule never saw it).
+  var minPages = pw.length === 2 ? 2 : Math.max(3, Math.ceil(pw.length * 0.6));
+  var minWords = pw.length === 2 ? 4 : 2;
   out = out.normalize('NFKC');
   [true, false].forEach(function (fromEnd) {
     var active = pw.map(function (_, i) { return i; }).filter(function (i) { return pw[i].length; });
@@ -211,7 +215,7 @@ function _alloDropRunningLines(text, pages) {
       seq.push(best);
     }
     while (seq.length && seq[seq.length - 1] === null) seq.pop();
-    if (seq.filter(Boolean).length < 2) return;
+    if (seq.filter(Boolean).length < minWords) return;
     var ordered = fromEnd ? seq.slice().reverse() : seq;
     // A page number matches only a number shape, so it can never swallow a word; a lone dash may touch its neighbours.
     var re = new RegExp(ordered.map(function (t, i) { return (i ? (isDash(t) || isDash(ordered[i - 1]) ? '\\s*' : '\\s+') : '') + (t === null ? '([-\\u2013\\u2014(]?\\d{1,4}[-\\u2013\\u2014)]?)' : t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')); }).join(''), 'giu');
@@ -438,6 +442,36 @@ function _alloOcrTextLayerVerdict(result) {
     : { ok: true, code: 'complete', reason: '' };
 }
 
+// True when two HTML strings differ only in data-allo-* attributes (pipeline bookkeeping such as
+// data-allo-kind, which no auditor or assistive technology reads) or in how a parser re-serializes
+// the same document (describeAndClassifyImages writes back documentElement.outerHTML).
+function _alloSameHtmlIgnoringAlloData(a, b) {
+  if (a === b) return true;
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  var canon = function (html) {
+    if (typeof DOMParser === 'undefined') {
+      return html.replace(/<[a-zA-Z][^>]*>/g, function (tag) {
+        return tag.replace(/\s+data-allo-[\w-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?(?=[\s/>])/g, '');
+      });
+    }
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    Array.prototype.forEach.call(doc.querySelectorAll('*'), function (el) {
+      Array.prototype.slice.call(el.attributes).forEach(function (attr) {
+        if (/^data-allo-/i.test(attr.name)) el.removeAttribute(attr.name);
+      });
+    });
+    return doc.documentElement ? doc.documentElement.outerHTML : '';
+  };
+  return canon(a) === canon(b);
+}
+
+// A pure symbol the hidden OCR font cannot encode (ballot "○" ovals, check boxes, bullets, emoji,
+// keyless 11-02) is left out of the invisible layer WITHOUT counting as a dropped character: it
+// carries no words, and counting it withheld the whole tagged PDF. Letters and digits still count.
+function _alloOcrIsPureSymbol(ch) {
+  return /^(?:\p{So}|[•‣⁃∙]|\p{Join_Control}|\p{Variation_Selector})$/u.test(String(ch || ''));
+}
+
 // Tesseract falls back to the English model when a script's data is not bundled (Urdu UDHR,
 // 2026-10-26): its word boxes then carry Latin guesses over Arabic-script text, and the positioned
 // layer drew that junk while the coverage tally (encoding drops only) read 98%. True when the page
@@ -490,8 +524,11 @@ function _alloTitleFromHeading(html) {
   var next = /^\s*<p\b[^>]*>((?:(?!<\/?(?:p|br)\b)[\s\S])*?)<\/p>/i.exec(s.slice(h.index + h[0].length));
   var sub = next ? dec(next[1]) : '';
   var low = function (x) { return x.toLowerCase(); };
+  // (2026-11-02) Not after a heading that ends a sentence, and never a parenthetical: scan1913 read
+  // "RETURN OF ANNUAL NET INCOME OF INDIVIDUALS. – (As provided by Act of Congress, approved October 3, 1913.)".
   var ok = sub && sub.length >= 4 && sub.length <= 70 && sub.split(' ').length >= 2 && /\p{L}/u.test(sub)
-    && !/[.:;,!?]$/.test(sub) && !/^(?:https?:|www\.)|@/i.test(sub)
+    && !/[.!?]["'”’)\]]*$/.test(head) && !/^["'“‘]?[(\[]/.test(sub)
+    && !/[.:;,!?]["'”’)\]]*$/.test(sub) && !/^(?:https?:|www\.)|@/i.test(sub)
     && low(head).indexOf(low(sub)) === -1 && low(sub).indexOf(low(head)) === -1;
   // (2026-10-28) A line printed more than once is a recurring label, not this heading's subtitle (IRS i1040:
   // "Keep for Your Records" beside every worksheet became "…Line 12e – Keep for Your Records").
@@ -2889,6 +2926,27 @@ var _alloHighContrastCssCheck = function (html) {
   var _r = { ok: reasons.length === 0, reasons: reasons };
   return _r;
 };
+// (2026-11-02, Aaron) style_color_misuse lands on the FIRST <style> that sets a colour, which is AlloFlow's own
+// marked block (/* a11y-focus-visible */: focus shown by outline + shadow, not colour alone); measured with the
+// engine on the corpus, 19 of 19 runs, later styles PASS. True only when EVERY flagged node resolves (XPath in the
+// audited HTML) to a <style> starting with an AlloFlow a11y marker; anything else stays with a person.
+var _alloColourReminderOnOwnStyles = function (html, findings) {
+  if (typeof DOMParser === 'undefined' || typeof XPathResult === 'undefined') return false;
+  var list = (findings || []).filter(function (f) { return f && f.id === 'style_color_misuse'; });
+  if (!list.length) return false;
+  var doc = new DOMParser().parseFromString(String(html == null ? '' : html), 'text/html');
+  var _r = list.every(function (f) {
+    var details = Array.isArray(f.details) ? f.details : [];
+    if (!details.length || details.length !== (Number(f.nodes) || 0)) return false;
+    return details.every(function (d) {
+      var p = d && d.path && d.path.dom;
+      if (typeof p !== 'string' || !/^\/html\[1\]\/head\[1\]\/style\[\d+\]$/.test(p)) return false;
+      var el = doc.evaluate(p, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+      return !!(el && el.tagName === 'STYLE' && /^\s*\/\*\s*a11y-[a-z-]+\s*\*\//.test(el.textContent || ''));
+    });
+  });
+  return _r;
+};
 var _alloStylesheetDigest = async function (html) {
   var b = await _alloCreateVerificationHtmlBinding(_stripChromeForAudit(String(html == null ? '' : html)));
   return b ? b.digest : null;
@@ -2996,6 +3054,11 @@ var _alloApplyStylesheetReview = function (ea, opts) {
       if (_ALLO_STYLESHEET_REVIEW_RULES.indexOf(id) === -1) return true;
       if (id === 'style_highcontrast_visible' && check && check.ok) {
         answered.push(Object.assign({}, f, { bucket: b, answeredBy: 'alloflow-stylesheet-check', answer: 'The stylesheet inserts no text, uses no CSS images and does not opt out of high-contrast colours, so Windows high contrast mode can restyle everything.' }));
+        counts[b] = Math.max(0, counts[b] - 1);
+        return false;
+      }
+      if (id === 'style_color_misuse' && opts.colourOnOwnStyles === true) {
+        answered.push(Object.assign({}, f, { bucket: b, answeredBy: 'alloflow-own-style-check', answer: 'This reminder points at AlloFlow\'s own accessibility styling (the keyboard focus outline), which shows focus with an outline and a shadow, not colour alone. Places where the document itself uses colour to carry meaning are checked separately.' }));
         counts[b] = Math.max(0, counts[b] - 1);
         return false;
       }
@@ -4370,6 +4433,50 @@ function collectTaggedTreeReferenceOrder(pdfContext, rootValue, PDFNameCtor, tra
   };
   walk(rootValue, 0);
   return out;
+}
+
+// Stage 4b drops the flat Stage-4 blocks it re-points onto semantic leaves from their page Sects but
+// leaves the objects registered, and pdf-lib's save() writes every registered object: syllabus_sie
+// shipped 1,412 StructElems no tree reached (831 KB for a 210 KB source; keyless 11-02). Before save,
+// delete each StructElem that no object reachable from the trailer refers to. Duck-typed for pdf-lib;
+// returns how many were removed.
+function _alloPruneUnreachableStructElems(pdfContext, PDFNameCtor) {
+  if (!pdfContext || typeof pdfContext.enumerateIndirectObjects !== 'function' || typeof pdfContext.lookup !== 'function'
+      || typeof pdfContext.delete !== 'function' || !PDFNameCtor || typeof PDFNameCtor.of !== 'function') return 0;
+  var typeName = PDFNameCtor.of('Type');
+  var refKey = function (v) {
+    return v && typeof v === 'object' && typeof v.objectNumber === 'number' ? v.objectNumber + ' ' + (v.generationNumber || 0) : null;
+  };
+  var isStructElem = function (d) {
+    try { return !!d && typeof d.entries === 'function' && typeof d.get === 'function' && String(d.get(typeName) || '') === '/StructElem'; } catch (_) { return false; }
+  };
+  var trailer = pdfContext.trailerInfo || {};
+  var roots = [trailer.Root, trailer.Info].filter(Boolean);
+  if (!roots.length) return 0; // no catalog to measure reachability from: change nothing
+  var marked = Object.create(null), stack = roots.slice();
+  while (stack.length) {
+    var v = stack.pop();
+    if (!v || typeof v !== 'object') continue;
+    var key = refKey(v);
+    if (key) {
+      if (marked[key]) continue;
+      marked[key] = true;
+      try { v = pdfContext.lookup(v); } catch (_) { v = null; }
+      if (!v || typeof v !== 'object') continue;
+    }
+    if (typeof v.asArray === 'function') { v.asArray().forEach(function (x) { stack.push(x); }); continue; }
+    var dict = v.dict && typeof v.dict.entries === 'function' ? v.dict : v;
+    if (typeof dict.entries !== 'function') continue;
+    // Every key is followed, /P included: a draft only points UP at a live Sect, which keeps the draft
+    // unreached, while a live element whose /P names a detached parent keeps that parent (no dangling ref).
+    dict.entries().forEach(function (pair) { stack.push(pair[1]); });
+  }
+  var doomed = [];
+  pdfContext.enumerateIndirectObjects().forEach(function (pair) {
+    if (!marked[refKey(pair[0])] && isStructElem(pair[1])) doomed.push(pair[0]);
+  });
+  doomed.forEach(function (ref) { pdfContext.delete(ref); });
+  return doomed.length;
 }
 
 // Order-SENSITIVE round-trip signal (H-5, audit 2026-06-23). The shipped tagged-PDF round-trip check compares
@@ -12751,11 +12858,24 @@ var createDocPipeline = function(deps) {
           };
           const cells = table => nodes(table, 'td,th').filter(el => el.closest('table') === table);
           const ac = cells(a), bc = cells(b);
+          // An EMPTY header cell (a blank corner th) names nothing, so turning it into a td is a correct
+          // repair, not a semantics change (keyless 11-02 scan1913: refused every round). Only when both
+          // cells are textless, nothing points at the header by id, and the td keeps a plain cell role.
+          const textless = el => !String(domValue(el, 'textContent') || '').replace(/[\s\p{Cf}]+/gu, '')
+            && !nodes(el, 'img,svg,input,select,textarea,math,object,canvas,[role="img"]').length
+            && !['aria-label', 'aria-labelledby', 'title', 'abbr'].some(name => String(attribute(el, name) || '').trim());
+          const referencedById = (el, all) => {
+            const id = attribute(el, 'id');
+            return !!id && all.some(other => String(attribute(other, 'headers') || '').trim().split(/\s+/).includes(id));
+          };
           for (let ci = 0; ci < ac.length; ci++) {
             if (!bc[ci]) continue;
             const loc = 'table:' + (ti + 1) + '/cell:' + (ci + 1);
             const sourceHeaderRole = headerRole(ac[ci]), outputHeaderRole = headerRole(bc[ci]);
             const sourceCellRole = cellRole(ac[ci], a, sourceTableRole), outputCellRole = cellRole(bc[ci], b, outputTableRole);
+            if (ac[ci].tagName === 'TH' && bc[ci].tagName === 'TD' && /^(cell|gridcell)$/.test(outputCellRole)
+              && textless(ac[ci]) && textless(bc[ci]) && !referencedById(ac[ci], ac) && !hasAttribute(bc[ci], 'headers')
+              && ac[ci].rowSpan === bc[ci].rowSpan && ac[ci].colSpan === bc[ci].colSpan) continue;
             if (/^(cell|gridcell)$/.test(sourceCellRole) && sourceCellRole !== outputCellRole
               && !/^(rowheader|columnheader)$/.test(outputCellRole)) return rejectAt('table-semantics-changed', loc);
             if (ac[ci].tagName === 'TD' && /^(rowheader|columnheader)$/.test(sourceCellRole) && sourceCellRole !== outputCellRole)
@@ -13406,7 +13526,8 @@ var createDocPipeline = function(deps) {
       start = next;
     }
     // A final section that only repeats the previous one's tail adds nothing but a "requested section".
-    if (chunks.length > 1 && chunks[chunks.length - 2].endsWith(chunks[chunks.length - 1])) chunks.pop();
+    // Disjoint sections (overlap 0) never repeat: a coincidentally equal tail is new content, keep it.
+    if (overlap > 0) if (chunks.length > 1 && chunks[chunks.length - 2].endsWith(chunks[chunks.length - 1])) chunks.pop();
     return chunks;
   };
 
@@ -13966,7 +14087,19 @@ var createDocPipeline = function(deps) {
       return original.match(/^\s*/)[0] + candidate.trim() + original.match(/\s*$/)[0];
     };
     let _passCoverageReported = false;
-    const _reportPassCoverage = (shippedOriginalChunks, deferredChunks) => {
+    // AI-flagged findings whose every candidate fix this pass was refused outright (no salvage) and
+    // that no other chunk changed: the loop stops re-sending them (scan1913 re-sent one every pass).
+    const _refusedChunks = new Set();
+    let _routeAssign = null;
+    const _refusedAiFindings = (shippedChunks) => {
+      const entries = _routing && Array.isArray(_routing.entries) ? _routing.entries : [];
+      if (!_refusedChunks.size || !entries.length) return [];
+      const received = (ei, ci) => !_routeAssign || _routeAssign[ei] === -1 || _routeAssign[ei] === ci;
+      return entries.filter((e, ei) => /^AI-FLAGGED:/.test(String(e && e.text || ''))
+        && chunks.some((_c, ci) => received(ei, ci) && _refusedChunks.has(ci))
+        && chunks.every((_c, ci) => !received(ei, ci) || shippedChunks[ci])).map((e) => e.text).slice(0, 50);
+    };
+    const _reportPassCoverage = (shippedOriginalChunks, deferredChunks, refusedFindings) => {
       if (_passCoverageReported) return;
       _passCoverageReported = true;
       if (_control && typeof _control.onPassEvidence === 'function') {
@@ -13978,6 +14111,7 @@ var createDocPipeline = function(deps) {
             deferredChunks: Math.max(0, Number(deferredChunks) || 0),
             candidateRejectionCount: _candidateRejectionCount,
             candidateRejections: _candidateRejections.map((entry) => Object.assign({}, entry)),
+            refusedFindings: Array.isArray(refusedFindings) ? refusedFindings.slice() : [],
           });
         } catch (_) {}
       }
@@ -13988,6 +14122,7 @@ var createDocPipeline = function(deps) {
     if (_routing && Array.isArray(_routing.entries) && _routing.entries.length > 0 && chunks.length > 1) {
       const _r = _routeViolationsToChunks(_routing.entries, chunks);
       if (_r && _r.routedCount > 0) {
+        _routeAssign = _r.assign;
         const _fb = _routing.feedback ? '\n\n' + _routing.feedback : '';
         _perChunkText = chunks.map((_c, ci) => {
           const _list = _routing.entries.filter((e, ei) => _r.assign[ei] === -1 || _r.assign[ei] === ci);
@@ -14030,7 +14165,8 @@ var createDocPipeline = function(deps) {
           _reportPassCoverage(0);
           return _restoreImages(_singleSalvaged.html);
         }
-        _reportPassCoverage(1);
+        _refusedChunks.add(0);
+        _reportPassCoverage(1, 0, _refusedAiFindings([true]));
         warnLog(`[aiFixChunked:${label}] single-chunk rejected — keeping original`);
         return html;
       } catch (e) {
@@ -14156,6 +14292,7 @@ var createDocPipeline = function(deps) {
         } else {
           const _salvaged = _salvage(out, part, ci + 1);
           if (_salvaged) return _restoreChunkBoundaryWhitespace(_salvaged.html, part);
+          _refusedChunks.add(ci);
           warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — keeping original`);
           return part;
         }
@@ -14230,7 +14367,8 @@ var createDocPipeline = function(deps) {
       _reportPassCoverage(chunks.length);
       return html;
     }
-    _reportPassCoverage(_shippedOriginalChunks, new Set(_deferredIdx).size);
+    _reportPassCoverage(_shippedOriginalChunks, new Set(_deferredIdx).size,
+      _refusedAiFindings(chunks.map((c, i) => String(fixed[i] || '') === String(c || ''))));
     // H-4 (audit 2026-06-23): the per-chunk + aggregate gates above are MAGNITUDE-only — a block reorder (or a
     // mid-table chunk split that re-interleaves rows) passes silently. Surface a reading-order WARN on the
     // assembled doc vs the source so it isn't shipped unnoticed with a high score. Non-blocking for now
@@ -16854,14 +16992,15 @@ var createDocPipeline = function(deps) {
   var _sheetJsPromise = null;
   var _sheetJsOwner = 0;
   const _SHEET_JS_WATCHDOG_MS = 12000;
+  const _isApprovedSheetJS = (value) => value && value.version === '0.20.3' && typeof value.read === 'function';
   const _lazyLoadSheetJS = () => {
-    if (typeof window !== 'undefined' && window.XLSX && window.XLSX.read) return Promise.resolve();
+    if (typeof window !== 'undefined' && _isApprovedSheetJS(window.XLSX)) return Promise.resolve(window.XLSX);
     if (_sheetJsPromise) return _sheetJsPromise;
     if (typeof document === 'undefined' || !document.head || typeof document.createElement !== 'function') {
       return Promise.reject(new Error('SheetJS requires a browser document'));
     }
     const owner = ++_sheetJsOwner;
-    const urls = ['https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js', 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'];
+    const urls = ['https://alloflow-cdn.pages.dev/runtime_assets/document/sheetjs-0.20.3/xlsx.full.min.js', 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js'];
     const promise = new Promise((resolve, reject) => {
       let settled = false;
       let activeScript = null;
@@ -16885,12 +17024,12 @@ var createDocPipeline = function(deps) {
           _sheetJsPromise = null;
           _sheetJsOwner = 0;
         }
-        if (error) reject(error); else resolve();
+        if (error) reject(error); else resolve(window.XLSX);
       };
       const tryAt = (i) => {
         if (settled || !ownsLoader()) return;
         clearAttempt();
-        if (typeof window !== 'undefined' && window.XLSX && window.XLSX.read) { finish(); return; }
+        if (typeof window !== 'undefined' && _isApprovedSheetJS(window.XLSX)) { finish(); return; }
         if (i >= urls.length) {
           const detail = failures.length ? ': ' + failures.join('; ') : '';
           finish(new Error('SheetJS load failed from all mirrors' + detail));
@@ -16912,7 +17051,7 @@ var createDocPipeline = function(deps) {
         s.onload = () => {
           if (attemptSettled || settled || !ownsLoader()) return;
           attemptSettled = true;
-          if (typeof window !== 'undefined' && window.XLSX && window.XLSX.read) finish();
+          if (typeof window !== 'undefined' && _isApprovedSheetJS(window.XLSX)) finish();
           else {
             failures.push('mirror ' + (i + 1) + ' loaded without XLSX');
             clearAttempt();
@@ -16951,9 +17090,9 @@ var createDocPipeline = function(deps) {
       });
     };
     throwIfAborted();
-    await awaitAbortable(_lazyLoadSheetJS());
+    const workbookReader = await awaitAbortable(_lazyLoadSheetJS());
     throwIfAborted();
-    const wb = window.XLSX.read(base64, { type: 'base64' });
+    const wb = workbookReader.read(base64, { type: 'base64' });
     throwIfAborted();
     const maxRows = opts.maxRowsPerSheet || 200;
     const parts = [];
@@ -16965,7 +17104,7 @@ var createDocPipeline = function(deps) {
       throwIfAborted();
       const sheet = wb.Sheets[name];
       if (!sheet) continue;
-      const rows = window.XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+      const rows = workbookReader.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
       throwIfAborted();
       const nonEmpty = rows.filter((r) => Array.isArray(r) && r.some((c) => String(c).trim()));
       throwIfAborted();
@@ -24059,7 +24198,10 @@ Return ONLY JSON:
   // from 400→800 because WCAG violations in tables, code blocks, and long links
   // can span more than 400 chars at a chunk boundary and slip past the audit.
   const AUDIT_CHUNK_SIZE = _localHtmlChunkChars(GEMINI_CHUNK_CHARS); // S6: shared chunk budget; local backends get model-aware smaller chunks
-  const AUDIT_CHUNK_OVERLAP = 800;
+  // (2026-11-02) 0: sections are disjoint. splitHtmlForAudit cuts only after a depth-0 block close, so
+  // no table, list or figure is split; the 800-char overlap repeated whole boundary paragraphs, and an
+  // issue there was reported twice (keyless 11-02 pt, fda, udhr_es).
+  const AUDIT_CHUNK_OVERLAP = 0;
   // $2 (deep dive 2026-07-02): chunk-level audit memoization. Audit calls run at temperature=0
   // (deterministic by design), yet the fix loop re-audits ALL chunks every pass even though a
   // typical pass changes only a minority of them — re-auditing unchanged chunks was the single
@@ -24227,7 +24369,7 @@ Return ONLY JSON:
         _auditMemoPut(_shortKey, _shortPrompt, parsed); // cache only exact, full-coverage evidence
         return parsed;
       }
-      // For long documents, split into overlapping sections that start and end on block-element
+      // For long documents, split into disjoint sections that start and end on block-element
       // boundaries (splitHtmlForAudit, 2026-09-13) and audit each. The fixed-stride slicer this
       // replaces began every later section mid-element, which a text-only auditor misreads.
       // M3 (2026-07-03) still holds: a final section that only repeats the previous one's tail is
@@ -24779,22 +24921,29 @@ HTML section ${chunkNum}/${chunks.length}:
   // the Canvas preview. Mirror chain (each a published dompurify dist) so one blocked CDN
   // host on a locked-down school network doesn't kill the upgrade.
   var _domPurifyPromise = null;
+  var _domPurifyInstance = null;
+  const _approvedDOMPurify = () => {
+    const current = typeof window !== 'undefined' && window.DOMPurify;
+    if (current && current.version === '3.4.17' && typeof current.sanitize === 'function') _domPurifyInstance = current;
+    return _domPurifyInstance;
+  };
   const _DOMPURIFY_CDN_URLS = [
-    'https://alloflow-cdn.pages.dev/dompurify/3.1.7/purify.min.js', // (2026-09-06) first-party copy; Canvas's CSP refuses the three below, so raw HTML stayed on the regex baseline there
-    'https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js',
-    'https://unpkg.com/dompurify@3.1.7/dist/purify.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.7/purify.min.js',
+    'https://alloflow-cdn.pages.dev/dompurify/3.4.17/purify.min.js', // (2026-09-06) first-party copy; Canvas's CSP refuses the three below, so raw HTML stayed on the regex baseline there
+    'https://cdn.jsdelivr.net/npm/dompurify@3.4.17/dist/purify.min.js',
+    'https://unpkg.com/dompurify@3.4.17/dist/purify.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.4.17/purify.min.js',
   ];
   const _ensureDOMPurify = () => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.resolve(null);
-    if (window.DOMPurify && window.DOMPurify.sanitize) return Promise.resolve(window.DOMPurify);
+    if (_approvedDOMPurify()) return Promise.resolve(_domPurifyInstance);
     if (_domPurifyPromise) return _domPurifyPromise;
     const attempt = new Promise((resolve) => {
       let settled = false;
       const finish = (purifier) => {
         if (settled) return;
         settled = true;
-        resolve(purifier && purifier.sanitize ? purifier : null);
+        if (purifier && purifier.version === '3.4.17' && typeof purifier.sanitize === 'function') _domPurifyInstance = purifier;
+        resolve(_domPurifyInstance);
       };
       // A script without our live promise is stale (a prior chain resolved null).
       // Remove it so a later call can genuinely retry the mirrors.
@@ -24813,7 +24962,7 @@ HTML section ${chunkNum}/${chunks.length}:
         catch (_) { Promise.resolve().then(() => tryAt(i + 1)); return; }
         script.setAttribute('data-dompurify', 'true');
         script.onload = () => {
-          if (window.DOMPurify && window.DOMPurify.sanitize) finish(window.DOMPurify);
+          if (_approvedDOMPurify()) finish(_domPurifyInstance);
           else { try { script.remove(); } catch (_) {} tryAt(i + 1); }
         };
         script.onerror = () => { try { script.remove(); } catch (_) {} tryAt(i + 1); };
@@ -24847,8 +24996,9 @@ HTML section ${chunkNum}/${chunks.length}:
   const _sanitizeRawHtmlBlock = (rawHtml) => {
     const html = String(rawHtml || '');
     try {
-      if (typeof window !== 'undefined' && window.DOMPurify && window.DOMPurify.sanitize) {
-        return window.DOMPurify.sanitize(html, _RAWHTML_PURIFY_CFG);
+      const purifier = _approvedDOMPurify();
+      if (purifier) {
+        return purifier.sanitize(html, _RAWHTML_PURIFY_CFG);
       }
     } catch (_) { /* fall through to the regex baseline */ }
     try { _ensureDOMPurify(); } catch (_) {} // warm it up for the next render/export
@@ -25676,6 +25826,8 @@ HTML section ${chunkNum}/${chunks.length}:
       // prompts simply stay in review.
       let _sheetCheck = null, _sheetDigest = null, _sheetSigned = null;
       try { _sheetCheck = _alloHighContrastCssCheck(htmlContent); } catch (_) { _sheetCheck = null; }
+      let _colourOwn = false;
+      try { _colourOwn = _alloColourReminderOnOwnStyles(htmlContent, potentials.concat(manuals)); } catch (_) { _colourOwn = false; }
       try {
         if (_alloStylesheetSignoffs.size) {
           _sheetDigest = await _alloStylesheetDigest(htmlContent);
@@ -25706,7 +25858,7 @@ HTML section ${chunkNum}/${chunks.length}:
         score: Math.max(0, Math.round(100 - fails.length * 10 - reviewFindingCount * 2)),
         manualReviewRequired: reviewFindingCount > 0,
         verificationStatus: reviewFindingCount > 0 ? 'complete-with-review' : 'complete',
-      }, { check: _sheetCheck, signoffs: _sheetSigned, digest: _sheetDigest });
+      }, { check: _sheetCheck, signoffs: _sheetSigned, digest: _sheetDigest, colourOnOwnStyles: _colourOwn });
     } catch (err) {
       warnLog('[IBM Equal Access] Audit failed (fail-soft — axe-only path continues):', err && err.message);
       return null;
@@ -29345,6 +29497,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         let _consecFixErrors = 0; // B18: tolerate a transient chunk-fix error; bail only on 2 consecutive
         let _lastPassFeedback = ''; // $7b (2026-07-02): tell the next pass WHY the previous one was reverted/no-op — a bare retry re-sends the identical prompt and mostly re-rolls the same dud
         let _lastRejectionFeedback = ''; // 2026-10-19: and which edits the content gate refused (_alloRejectionFeedback)
+        const _gateRefusedFindings = new Set(); // AI-flagged texts whose only fix the gate refused: not re-sent (keyless 11-02)
         _emitReviewFindings(0); // seed the queue from the run-entry audits
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
           // H7 (deep dive 2026-07-09): in BATCH mode the outer _withTimeout is a bare Promise.race —
@@ -29431,6 +29584,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 snippet: (x && x.locator && x.locator.kind === 'exact' && x.locator.snippet) ? x.locator.snippet : null,
               }))));
           let violationInstructions = _fixEntries.map((e) => e.text).join('\n');
+          // Not re-sent: AI findings whose only fix the content gate refused (scan1913 re-sent one every pass).
+          // With only reminders (or nothing) left, the refusal note has nothing to steer either, so it alone
+          // does not buy another "UNCHANGED" fixer round.
+          if (_gateRefusedFindings.size && _fixEntries.some((e) => _gateRefusedFindings.has(e.text))) {
+            for (let _ri = _fixEntries.length - 1; _ri >= 0; _ri--) if (_gateRefusedFindings.has(_fixEntries[_ri].text)) _fixEntries.splice(_ri, 1);
+            violationInstructions = _fixEntries.map((e) => e.text).join('\n');
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: not re-sending ${_gateRefusedFindings.size} AI finding(s) whose only fix the content gate refused`);
+            if (_fixEntries.every((e) => /^(?:POTENTIAL|MANUAL) REVIEW FINDING \(IBM Equal Access\)/.test(e.text))) _lastRejectionFeedback = '';
+          }
           const _feedbackNow = [_lastPassFeedback, _lastRejectionFeedback].filter(Boolean).join('\n\n');
           const _routingArg = _fixEntries.length > 0 ? { entries: _fixEntries, feedback: _feedbackNow } : null;
           if (!_routingArg && _feedbackNow) violationInstructions = violationInstructions + '\n\n' + _feedbackNow;
@@ -29466,6 +29628,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   _candidateRejections.push({ pass: fixPass + 1, chunkId: entry.chunkId, phase: entry.phase, reason: entry.reason, ...(entry.sourceLocation ? { sourceLocation: entry.sourceLocation } : {}) });
                 }
                 _lastRejectionFeedback = _alloRejectionFeedback(entries);
+                for (const text of (meta && Array.isArray(meta.refusedFindings) ? meta.refusedFindings : [])) if (typeof text === 'string') _gateRefusedFindings.add(text);
               },
             });
             // The AI call is the long window of the pass (minutes), so it is where a human edit is
@@ -35400,6 +35563,23 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // deterministic re-score remains gated so the common no-op path keeps identical behavior + cost.
       // Fail-soft: on any error the pre-restore numbers stand.
       const _imageRecoveryInjected = accessibleHtml.indexOf('data-image-recovery="true"') !== -1;
+      // Image description adds only data-allo-kind after the final audit (keyless 11-02 worksheet, civics,
+      // notifications: 2 wasted audit calls each), on top of the deterministic token -> data URL restore and
+      // a DOM re-serialization. None of that changes what an auditor reads, so the audit still describes
+      // this document: re-bind it instead of re-running it. Any other change (an alt, a chart table) re-audits.
+      if (typeof _finalAiAuditedHtml === 'string' && _finalAiAuditedHtml !== accessibleHtml) {
+        try {
+          let _auditedRestored = _finalAiAuditedHtml;
+          for (const _tok of Object.keys(_deferredImageMap || {})) {
+            const _ti = _tok.match(/__ALLOFLOW_DATAURL_FINAL_(\d+)__/);
+            if (_ti) _auditedRestored = _auditedRestored.replace(new RegExp('_\\s*_\\s*ALLOFLOW\\s*_\\s*DATAURL\\s*_\\s*FINAL\\s*_\\s*' + _ti[1] + '\\s*_\\s*_', 'gi'), () => _deferredImageMap[_tok]);
+          }
+          if (_alloSameHtmlIgnoringAlloData(_auditedRestored, accessibleHtml)) {
+            _finalAiAuditedHtml = accessibleHtml;
+            _pipeLog('Audit', 'HTML after the final audit differs only by image data, data-allo-* attributes or serialization; the audit stays bound (no re-audit)');
+          }
+        } catch (_) {}
+      }
       const _htmlChangedAfterFinalAiAudit = typeof _finalAiAuditedHtml === 'string' && _finalAiAuditedHtml !== accessibleHtml;
       if (_autoRestore || _imageRecoveryInjected || _htmlChangedAfterFinalAiAudit) {
         try {
@@ -38447,7 +38627,7 @@ tr { page-break-inside: avoid; }
                 let o = '', drop = 0;
                 for (const ch of String(t == null ? '' : t)) {
                   const cp = ch.codePointAt(0);
-                  if (cp === 32 || cp === 9 || cp === 10 || cp === 13 || _cs.has(cp)) o += ch; else drop++;
+                  if (cp === 32 || cp === 9 || cp === 10 || cp === 13 || _cs.has(cp)) o += ch; else if (!_alloOcrIsPureSymbol(ch)) drop++;
                 }
                 if (count && drop) _ocrDroppedChars += drop;
                 return o;
@@ -38486,7 +38666,7 @@ tr { page-break-inside: avoid; }
       .replace(/[\u2013\u2014]/g, '-')
       .replace(/\u2026/g, '...')
       .replace(/\u00A0/g, ' ')
-      .match(/[^\x20-\xFF\n\r\t]/g) || []).length;
+      .match(/[^\x20-\xFF\n\r\t]/gu) || []).filter((ch) => !_alloOcrIsPureSymbol(ch)).length;
     let _ocrTotalChars = 0, _ocrDroppedChars = 0;
     // ── Coverage safety net (2026-06-18) ── Mechanism-agnostic accounting so no scanned page
     // silently ships with a missing text layer and we never overclaim. We track, across the
@@ -41607,6 +41787,10 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         }
       }
     } catch (_) {}
+    try {
+      const _prunedStructElems = _alloPruneUnreachableStructElems(context, PDFName);
+      if (_prunedStructElems > 0) warnLog('[createTaggedPdf] left out ' + _prunedStructElems + ' structure element(s) no tag tree reaches (superseded Stage-4 drafts)');
+    } catch (_) {}
     const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false, updateFieldAppearances: !_fieldAppearancesDrawn });
     // ── Round-trip self-check (Tier A) ──
     // _pdfUa1Checks above walk the IN-MEMORY structures (before save). This RE-PARSES
@@ -44254,7 +44438,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        displayText = cleanUrl.substring(0, 30) + '...';
                   }
               }
-              return `${prefix}<a href="${cleanUrl}" style="color: #2563eb; text-decoration: underline;" target="_blank">${displayText}</a>${punctuation}`;
+              return `${prefix}<a href="${_safeMdUrl(cleanUrl)}" style="color: #2563eb; text-decoration: underline;" target="_blank" rel="noopener noreferrer">${displayText}</a>${punctuation}`;
           });
           if (content.startsWith('|')) {
               if (!inTable) {
@@ -44365,6 +44549,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // displays as text instead of garbling or injecting markup (WCAG 4.1.1). Use ONLY for
       // plain-text fields interpolated directly — never for fields rendered via parseMarkdownToHTML.
       const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const _resourceIdJson = JSON.stringify(String(item.id == null ? '' : item.id)).replace(/</g, '\\u003c');
       const studentSourceExcerptsHTML = value => {
           if (isTeacher || typeof value !== 'string') return '';
           const api = window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources;
@@ -44579,12 +44764,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (_keyBuilt.answers.length === 0) {
                   // Say so rather than printing an empty key. A silent no-op here
                   // is how a teacher finds out at the photocopier.
-                  return `<div class="section" id="${item.id}-cloze-key" style="border-left:4px solid #2563eb;border-radius:12px;">
+                  return `<div class="section" id="${_escTxt(item.id)}-cloze-key" style="border-left:4px solid #2563eb;border-radius:12px;">
                       <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #2563eb;background:#eff6ff;"><span aria-hidden="true">🔑</span> ${_keyTitle}</h2>
                       <p style="padding:8px 4px;color:#475569;">${_escTxt(t('export.cloze_no_blanks') || 'No glossary terms appear in this passage, so no blanks were made.')}</p>
                   </div>`;
               }
-              return `<div class="section" id="${item.id}-cloze-key" style="border-left:4px solid #2563eb;border-radius:12px;">
+              return `<div class="section" id="${_escTxt(item.id)}-cloze-key" style="border-left:4px solid #2563eb;border-radius:12px;">
                   <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #2563eb;background:#eff6ff;"><span aria-hidden="true">🔑</span> ${_keyTitle}</h2>
                   <ol style="columns:2;column-gap:32px;padding:8px 4px 8px 28px;margin:0;line-height:1.9;color:#1e293b;">${_keyBuilt.answers.map(a => `<li style="break-inside:avoid;">${_escTxt(a.text)}${String(a.text).toLowerCase() === String(a.term).toLowerCase() ? '' : ` <span style="color:#64748b;font-size:0.88em;">(${_escTxt(a.term)})</span>`}</li>`).join('')}</ol>
               </div>`;
@@ -44620,7 +44805,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       if (originalReading) tv.label = 'Original with supports';
       // flex-wrap + min-width:0 so the title and its "(meta)" tag drop to a second
       // line instead of running past the card edge when the reader turns text up.
-      const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;flex-wrap:wrap;min-width:0;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${title}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#475569;overflow-wrap:anywhere;">(${item.meta})</span>` : ''}</h2>`;
+      const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;flex-wrap:wrap;min-width:0;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${_escTxt(title)}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#475569;overflow-wrap:anywhere;">(${_escTxt(item.meta)})</span>` : ''}</h2>`;
       if (item.type === 'directions') {
           const data = item.data && typeof item.data === 'object' && !Array.isArray(item.data) ? item.data : {};
           const body = typeof item.data === 'string' ? item.data : (typeof data.body === 'string' ? data.body : '');
@@ -44642,8 +44827,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const address = (label, url) => /^https:\/\//i.test(url || '') ? '. ' + label + ': <a href="' + _escTxt(url) + '">' + _escTxt(url) + '</a>' : '';
               const credits = annotations.filter(annotation => annotation.image && annotation.image.attribution).map(annotation => _escTxt(annotation.quote) + ': ' + _escTxt(creditLine(annotation.image.attribution))
                   + address('Source', annotation.image.attribution.url) + address('License', annotation.image.attribution.licenseUrl));
-              return '<dl>' + annotations.map(annotation => '<dt>' + (annotation.image ? '<img src="' + _escTxt(annotation.image.src) + '" alt="' + _escTxt(annotation.image.alt || '') + '" width="48" height="48" style="width:48px;height:48px;object-fit:contain;vertical-align:middle;margin-right:8px;">' : '') + _escTxt(annotation.quote) + '</dt><dd>' + _escTxt(annotation.text) + '</dd>').join('') + '</dl>'
-                  + (credits.length ? '<div class="picture-credits" style="font-size:0.8em;color:#475569;">Picture credits: ' + credits.join('; ') + '</div>' : '');
+              const rows = annotations.map(annotation => {
+                  const picture = annotation.image ? '<img src="' + _escTxt(annotation.image.src) + '" alt="' + _escTxt(annotation.image.alt || '') + '" width="48" height="48" style="width:3em;height:3em;max-width:100%;object-fit:contain;position:absolute;inset-inline-start:0;top:0.7em;">' : '';
+                  const pictureSpace = picture ? 'position:relative;padding-inline-start:3.75em;min-height:4.4em;box-sizing:border-box;' : '';
+                  return '<div class="reading-support-entry" style="padding:0.7em 0;' + pictureSpace + 'border-top:1px solid #94a3b8;break-inside:avoid;page-break-inside:avoid;overflow-wrap:anywhere;">'
+                      + '<dt style="margin:0;font-weight:bold;line-height:1.4;">' + picture + '<bdi dir="auto">' + _escTxt(annotation.quote) + '</bdi></dt>'
+                      + '<dd dir="auto" style="margin:0.25em 0 0;text-align:start;line-height:1.55;white-space:pre-wrap;">' + _escTxt(annotation.text) + '</dd></div>';
+              });
+              return '<dl style="max-width:68ch;margin:0.5em 0 1em;padding:0;">' + rows.join('') + '</dl>'
+                  + (credits.length ? '<div class="picture-credits" style="max-width:76ch;margin-top:1em;font-size:0.875em;line-height:1.5;overflow-wrap:anywhere;"><strong>Picture credits: </strong><ul style="margin:0.25em 0 0;padding-inline-start:1.25em;">' + credits.map(credit => '<li style="margin:0.25em 0;">' + credit + '</li>').join('') + '</ul></div>' : '');
           };
           if (originalReading) {
               const snapshot = readingContract.getSourceSnapshot(item);
@@ -44677,7 +44869,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               // The teacher key says why, above.
               if (_built.answers.length > 0) {
                   return `
-              <div class="section" id="${item.id}" style="border-left:4px solid #2563eb;border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
                   ${_readingRoleHtml}
                   <p style="margin:0 4px 12px;padding:8px 12px;background:#f8fafc;border-left:3px solid #94a3b8;font-size:0.92em;color:#334155;">${_escTxt(t('export.cloze_instructions') || 'Fill in each blank with the correct word from the word bank.')}</p>
@@ -44692,7 +44884,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const _adaptedHelp = readingContract?.isAdaptedReading?.(item) ? readingContract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports) : null;
           const _adaptedHelpHtml = _adaptedHelp && _adaptedHelp.shown && _adaptedHelp.annotations.length ? '<aside class="reading-support-notes" aria-label="Word help"><h3>Word help</h3>' + _wordHelpList(_adaptedHelp.annotations) + '</aside>' : '';
           return `
-              <div class="section" id="${item.id}" data-ka-readable style="border-left:4px solid #2563eb;border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" data-ka-readable style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
                   ${_readingRoleHtml}
                   <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_passageHtml}</div>
@@ -44805,10 +44997,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (isTeacher && cfg.glossaryDisplayMode === 'worksheet' && cfg.includeTeacherKey && cfg.assessmentMode !== true) {
               const plan = _glossWorksheetPlan();
               const keyRows = plan.words.map((gItem, i) => `<li><strong>${_glossTermHtml(gItem)}</strong>: ${_glossWorksheetVariant === 'matching' ? _escTxt(_glossLetter(plan.order.indexOf(i))) : _glossDefinitionHtml(gItem)}</li>`).join('');
-              return `<div class="section alloflow-glossary-worksheet-key" id="${item.id}-key" data-glossary-worksheet-key="${_glossWorksheetVariant}"><h3>${_escTxt(_glp('glossary.worksheet_key_title', 'Answer key: {title}', { title }))}</h3><ol>${keyRows}</ol>${wordSearchHtml}</div>`;
+              return `<div class="section alloflow-glossary-worksheet-key" id="${_escTxt(item.id)}-key" data-glossary-worksheet-key="${_glossWorksheetVariant}"><h3>${_escTxt(_glp('glossary.worksheet_key_title', 'Answer key: {title}', { title }))}</h3><ol>${keyRows}</ol>${wordSearchHtml}</div>`;
           }
           if (isTeacher && !isIndependentMode) {
-              return wordSearchHtml ? `<div class="section" id="${item.id}-key">${wordSearchHtml}</div>` : '';
+              return wordSearchHtml ? `<div class="section" id="${_escTxt(item.id)}-key">${wordSearchHtml}</div>` : '';
           }
           // Keep author descriptions and stale-image protection consistent with the live glossary.
           // A picture with no usable description (none written, or one written for an
@@ -44910,7 +45102,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       .alloflow-glossary-bilingual tr { break-inside:avoid; page-break-inside:avoid; }
                     }
                   </style>
-                  <div class="section alloflow-glossary-bilingual" id="${item.id}" data-glossary-bilingual="${languages.length}" style="border-left:4px solid #059669;border-radius:12px;">
+                  <div class="section alloflow-glossary-bilingual" id="${_escTxt(item.id)}" data-glossary-bilingual="${languages.length}" style="border-left:4px solid #059669;border-radius:12px;">
                       ${enhancedHeader}
                       <div class="alloflow-glossary-bilingual-scroll" role="region" tabindex="0" aria-label="${_escTxt(_gl('glossary.export_bilingual_aria', 'Bilingual glossary table'))}" style="overflow-x:auto;">
                           <table data-gloss-bilingual><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>
@@ -44964,7 +45156,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       .alloflow-word-wall-credit { font-size:9pt; line-height:1.3; color:#000; }
                     }
                   </style>
-                  <div class="section alloflow-word-wall-section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
+                  <div class="section alloflow-word-wall-section" id="${_escTxt(item.id)}" style="border-left:4px solid #059669;border-radius:12px;">
                       ${enhancedHeader}
                       <div class="alloflow-word-wall" data-per-page="${perPage}" style="--wall-card-height:${wallCardHeight.toFixed(2)}in;--wall-term-size:${wallTermSize.toFixed(1)}pt;--wall-picture-height:${wallPictureHeight.toFixed(2)}in;">${pages.join('')}</div>
                       ${_glossCreditsHtml}
@@ -44994,7 +45186,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     .alloflow-glossary-worksheet li,.alloflow-glossary-worksheet label,.alloflow-glossary-worksheet strong { min-width:0; max-width:100%; }
                     @media print { .alloflow-glossary-worksheet { padding:0 !important; border:0 !important; break-inside:auto !important; } }
                   </style>
-                  <div class="section alloflow-glossary-worksheet" id="${item.id}" data-glossary-worksheet="${_glossWorksheetVariant}" style="border-left:4px solid #059669;border-radius:12px;">
+                  <div class="section alloflow-glossary-worksheet" id="${_escTxt(item.id)}" data-glossary-worksheet="${_glossWorksheetVariant}" style="border-left:4px solid #059669;border-radius:12px;">
                       ${enhancedHeader}
                       <p style="margin:0 0 12px;font-weight:600;">${_escTxt(_glossWorksheetVariant === 'matching'
                           ? _gl('glossary.worksheet_matching_directions', 'Write the letter of the matching definition next to each word.')
@@ -45065,7 +45257,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       html[data-alloflow-theme] .alloflow-glossary-card :is(.alloflow-glossary-card-front,.alloflow-glossary-card-back) * { color:inherit !important; }
                     }
                   </style>
-                  <div class="section alloflow-glossary-cards-section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
+                  <div class="section alloflow-glossary-cards-section" id="${_escTxt(item.id)}" style="border-left:4px solid #059669;border-radius:12px;">
                       ${enhancedHeader}
                       ${instructionsHtml}
                       ${cardsHtml}
@@ -45089,7 +45281,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const _glossImgPxMap = { small: 40, medium: 64, large: 96, xl: 140 };
           const _glossImgPx = _glossImgPxMap[cfg.glossaryImageSize] || _glossImgPxMap.medium;
           return `
-              <div class="section alloflow-glossary-section" id="${item.id}" data-glossary-section="${item.id}" style="--gloss-img: ${_glossImgPx}px; border-left:4px solid #059669;border-radius:12px;">
+              <div class="section alloflow-glossary-section" id="${_escTxt(item.id)}" data-glossary-section="${_escTxt(item.id)}" style="--gloss-img: ${_glossImgPx}px; border-left:4px solid #059669;border-radius:12px;">
                   ${enhancedHeader}
                   <style>
                     /* Scoped glossary polish — overrides the global zebra/hover
@@ -45169,8 +45361,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </style>
                   ${_glossarySelfTest ? `
                     <div class="alloflow-glossary-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-                        <button type="button" class="alloflow-glossary-reveal-all" data-glossary-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ ${_escTxt(_gl('glossary.export_reveal_all', 'Reveal all'))}</button>
-                        <button type="button" class="alloflow-glossary-hide-all-tbl" data-glossary-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ ${_escTxt(_gl('glossary.export_hide_all', 'Hide all'))}</button>
+                        <button type="button" class="alloflow-glossary-reveal-all" data-glossary-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ ${_escTxt(_gl('glossary.export_reveal_all', 'Reveal all'))}</button>
+                        <button type="button" class="alloflow-glossary-hide-all-tbl" data-glossary-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ ${_escTxt(_gl('glossary.export_hide_all', 'Hide all'))}</button>
                         <span style="font-size:11px;color:#64748b;font-style:italic;">${_escTxt(_gl('glossary.export_selftest_help', 'Self-test: try to recall each definition, then reveal to check.'))}</span>
                     </div>
                   ` : ''}
@@ -45216,7 +45408,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     // the shipped HTML, roles applied by measurement.
                     (function () {
                       var script = document.currentScript;
-                      var section = script && script.closest ? script.closest('[data-glossary-section]') : document.querySelector('[data-glossary-section="${item.id}"]');
+                      var section = script && script.closest ? script.closest('[data-glossary-section]') : document.getElementById(${_resourceIdJson});
                       var tbl = section && section.querySelector('[data-gloss-table]');
                       if (!tbl) return;
                       var ROLES = [['table', 'table'], ['thead', 'rowgroup'], ['tbody', 'rowgroup'], ['tr', 'row'], ['th', 'columnheader'], ['td', 'cell']];
@@ -45271,7 +45463,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             // The independent-mode teacher appendix can repeat the
                             // resource ID; bind to this script's own rendered copy.
                             var script = document.currentScript;
-                            var sec = script && script.closest ? script.closest('[data-glossary-section]') : document.querySelector('[data-glossary-section="${item.id}"]');
+                            var sec = script && script.closest ? script.closest('[data-glossary-section]') : document.getElementById(${_resourceIdJson});
                             if (!sec) return;
                             var items = sec.querySelectorAll('details.alloflow-glossary-cell');
                             var btnShow = sec.querySelector('.alloflow-glossary-reveal-all');
@@ -46405,7 +46597,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               `;
           })();
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${innerContent}
                   ${_textFallback}
@@ -46557,7 +46749,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               _vpBody = '<p style="text-align:center;color:#64748b;font-style:italic;">No visual content.</p>';
           }
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   <style>
                       .vp-label { position:absolute; transform:translate(-50%,-50%); background:rgba(255,255,255,0.92); color:#1e293b; border:1px solid #6366f1; border-radius:4px; padding:2px 6px; font-size:12px; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.12); white-space:nowrap; z-index:3; pointer-events:none; }
@@ -46674,9 +46866,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const quizHeading = typeof translatedQuizHeading === 'string' && translatedQuizHeading.trim() && translatedQuizHeading !== quizHeadingKey
               ? translatedQuizHeading : openResponsesOnly ? 'Open responses' : multipleChoiceOnly ? 'Multiple Choice' : 'Questions';
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  <div class="quiz-box" data-quiz-id="${item.id}">
+                  <div class="quiz-box" data-quiz-id="${_escTxt(item.id)}">
                       <h3>${_escTxt(quizHeading)}</h3>
                       ${quizQuestions.map((q, i) => {
                           const itemType = q.type === 'shortAnswer' ? 'short-answer' : (q.type || 'mcq');
@@ -46929,13 +47121,47 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const readingLevelDisplay = record(source.readingLevel)
               ? `<strong>${escape(source.readingLevel.range)}</strong><br/><em style="color:#666; font-size:0.9em;">${escape(explanation)}</em>`
               : escape(source.readingLevel);
-          const citationsHtml = source.accuracy?.citations
+          const normalize = value => text(value).trim().replace(/\s+/g, ' ');
+          const publicSource = studentReadingText(source.originalText);
+          const canShowFindings = isTeacher || publicSource === source.originalText;
+          const citationsHtml = canShowFindings && source.accuracy?.citations
             ? `<div style="margin-top:20px; padding-top:15px; border-top:1px solid #e2e8f0; font-size:0.85em; color:#64748b;">
                  ${parseMarkdownToHTML(source.accuracy.citations)}
                </div>`
             : '';
-          const normalize = value => text(value).trim().replace(/\s+/g, ' ');
-          const publicSource = studentReadingText(source.originalText);
+          const coverage = window.AlloModules?.GenerationMatrix?.getSourceAnalysisCoverage?.(item);
+          const incomplete = source.analysisIncomplete === true || window.AlloModules?.GenerationMatrix?.isIncompleteSourceAnalysis?.(item);
+          const coverageLine = coverage && !coverage.legacy ? label('analysis.coverage_progress', 'AI checked {through} of {total} characters. The readability estimate uses the full passage.')
+              .replace('{through}', String(coverage.through)).replace('{total}', String(coverage.total)) : '';
+          const sectionsHtml = coverage && canShowFindings ? coverage.sections.map(({ start, end, report }, index) => {
+              const heading = label('analysis.section_range', 'Section {number} · characters {start}–{end}')
+                  .replace('{number}', String(index + 1)).replace('{start}', String(start + 1)).replace('{end}', String(end));
+              const findings = [report.readingLevel?.range, report.readingLevel?.explanation, ...(report.concepts || []),
+                  report.accuracy?.rating, report.accuracy?.reason, ...(Array.isArray(report.grammar) ? report.grammar : [])].filter(Boolean);
+              const uncited = !coverage.complete && window.AlloModules?.GenDispatcher?.getAnalysisFactRows?.({ ...report.accuracy, verification: 'ai-estimate' });
+              const reviewHtml = uncited?.length ? '<p><strong>' + escape(label('analysis.needs_source', 'Needs a source')) + '</strong></p><ul>'
+                + uncited.map(row => '<li>' + escape(row.text) + '</li>').join('') + '</ul>' : '';
+              return '<section data-analysis-section><h4>' + escape(heading) + '</h4><p>' + findings.map(escape).join(' · ') + '</p>' + reviewHtml + '</section>';
+          }).join('') : '';
+          const coverageHtml = (coverageLine ? '<p data-analysis-coverage>' + escape(coverageLine) + '</p>' : '') + sectionsHtml;
+          if (source.analysisNeedsRecheck === true || incomplete) {
+              return `<div class="section" id="${escape(item.id)}" role="region" aria-label="${escape(title)}">${enhancedHeader}
+                  <p data-analysis-needs-recheck><strong>${escape(source.analysisNeedsRecheck ? label('analysis.needs_recheck', 'Needs recheck') : coverage ? label('analysis.partial', 'Partial analysis') : label('analysis.incomplete', 'Analysis incomplete'))}</strong></p>
+                  ${coverageHtml}
+                  <div class="analysis-original-source" dir="${direction(text(source.sourceLanguage || item.config?.language))}">${parseMarkdownToHTML(publicSource)}</div></div>`;
+          }
+          const factReader = window.AlloModules?.GenDispatcher?.getAnalysisFactRows;
+          const factRows = canShowFindings ? (factReader ? factReader(source.accuracy || {}, report.accuracy) :
+            ['verifiedFacts', 'unsourcedFacts'].flatMap(field => (Array.isArray(source.accuracy?.[field]) ? source.accuracy[field] : [])
+              .filter(fact => typeof fact === 'string').map(text => ({ text, sources: [] })))) : [];
+          const factsHtml = [true, false].map(verified => {
+              const rows = factRows.filter(row => Boolean(row.sources.length) === verified);
+              if (!rows.length) return '';
+              const heading = verified ? label('analysis.verified_facts', 'Verified facts') : label('analysis.needs_source', 'Needs a source');
+              return '<section data-analysis-facts="' + (verified ? 'verified' : 'unsourced') + '"><h4>' + escape(heading) + '</h4><ul>'
+                + rows.map(row => '<li>' + escape(row.text) + (row.sources.length ? '<ul>' + row.sources.map(ref =>
+                  '<li><a href="' + escape(ref.url) + '">' + escape(ref.title) + '</a></li>').join('') + '</ul>' : '') + '</li>').join('') + '</ul></section>';
+          }).join('');
           // A saved translation of a private appendix may have translated its
           // heading too. It cannot inherit permission from a sanitized source.
           const companions = (isTeacher || publicSource === source.originalText) && record(source.sourceTranslations) ? Object.entries(source.sourceTranslations) : [];
@@ -46947,8 +47173,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ${parseMarkdownToHTML(studentReadingText(value))}
               </section>`).join('');
           return `
-              <div class="section" id="${item.id}" role="region" aria-label="${title}">
+              <div class="section" id="${_escTxt(item.id)}" role="region" aria-label="${_escTxt(title)}">
                   ${enhancedHeader}
+                  ${coverageHtml}
                   <div class="analysis-report" data-report-language="${escape(reportLanguage)}" dir="${direction(reportLanguage)}" style="background:#f8fafc; padding:15px; border-radius:5px; border:1px solid #e2e8f0;">
                       <p><strong>${t('simplified.level_estimate_label')}:</strong> ${readingLevelDisplay}</p>
                       <p><strong>${t('output.analysis_accuracy')}:</strong> ${escape(source.accuracy?.rating)} - ${escape(reason)}</p>
@@ -46956,6 +47183,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <p><strong>${t('output.analysis_grammar')}:</strong> ${reportList(selectedGrammar, source.grammar).join('; ')}</p>
                   </div>
                   <div class="analysis-original-source" dir="${direction(text(source.sourceLanguage || item.config?.language))}" style="margin-top:15px; color: #475569;">${parseMarkdownToHTML(publicSource)}</div>
+                  ${factsHtml}
                   ${citationsHtml}
                   ${sourceTranslationsHtml}
               </div>
@@ -46963,7 +47191,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
       } else if (item.type === 'udl-advice') {
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   <div style="background:#eef2ff; padding:15px; border-radius:5px; border:1px solid #c7d2fe; color:#3730a3;">
                       ${parseMarkdownToHTML(item.data)}
@@ -46978,7 +47206,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const _faqAccordion = (cfg.faqAccordion !== false && !isWorksheet);
           if (!_faqAccordion) {
               return `
-                  <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                  <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                       ${enhancedHeader}
                       <div class="quiz-box">
                           ${item.data.map((faq, i) => `
@@ -46997,11 +47225,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               `;
           }
           return `
-              <div class="section alloflow-faq-section" id="${item.id}" data-faq-section="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section alloflow-faq-section" id="${_escTxt(item.id)}" data-faq-section="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   <div class="alloflow-faq-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-                      <button type="button" class="alloflow-faq-expand" data-faq-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:9999px;cursor:pointer;">▾ Show all</button>
-                      <button type="button" class="alloflow-faq-collapse" data-faq-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all</button>
+                      <button type="button" class="alloflow-faq-expand" data-faq-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:9999px;cursor:pointer;">▾ Show all</button>
+                      <button type="button" class="alloflow-faq-collapse" data-faq-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all</button>
                       <span style="font-size:11px;color:#475569;font-style:italic;">Tap a question to reveal its answer.</span>
                   </div>
                   <div class="quiz-box">
@@ -47044,7 +47272,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </style>
                   <script>
                       (function() {
-                          var sec = document.querySelector('[data-faq-section="${item.id}"]');
+                          var sec = document.getElementById(${_resourceIdJson});
                           if (!sec) return;
                           var items = sec.querySelectorAll('details.alloflow-faq-item');
                           var btnExpand = sec.querySelector('.alloflow-faq-expand');
@@ -47153,7 +47381,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        💡 Click any bubble to expand or collapse its details.
                      </div>`;
               return `
-                  <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                  <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                       ${enhancedHeader}
                       ${interactiveHint}
                       <div style="display:flex; justify-content:center; margin-bottom:24px; break-inside:avoid;">
@@ -47175,7 +47403,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // visual coherence between the two modes.
           const _bsColors = ['#b91c1c','#1d4ed8','#047857','#92400e','#6d28d9','#9d174d','#0e7490','#854d0e'];
           return `
-              <div class="section alloflow-brainstorm-grid" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section alloflow-brainstorm-grid" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   <style>
                     /* Scoped polish — overrides the global flat .card style
@@ -47250,7 +47478,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               `;
           }
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${contentHtml}
               </div>
@@ -47262,7 +47490,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               steps: item.data.steps,
               realWorld: item.data.realWorld
           }];
-          const graphData = item.data.graphData;
+          const graphData = _alloSanitizeRemediationBodyFragment(item.data.graphData);
           // Build a screen-reader-speakable form of a LaTeX expression. The
           // visual span class="math-symbol" produces stylized HTML (fractions,
           // superscripts, etc.) that NVDA/JAWS would otherwise read character
@@ -47285,7 +47513,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // flat.
           const _mathHideSolution = (cfg.mathHideSolution !== false && !isWorksheet);
           return `
-              <div class="section alloflow-math-section" id="${item.id}" data-math-section="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section alloflow-math-section" id="${_escTxt(item.id)}" data-math-section="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${graphData ? `
                     <div style="text-align:center; margin:20px 0; padding:20px; background:white; border:1px solid #cbd5e1; border-radius:8px;">
@@ -47294,8 +47522,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ` : ''}
                   ${(isTeacher && _mathHideSolution) ? `
                     <div class="alloflow-math-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-                        <button type="button" class="alloflow-math-reveal-all" data-math-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ Show all solutions</button>
-                        <button type="button" class="alloflow-math-hide-all" data-math-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all solutions</button>
+                        <button type="button" class="alloflow-math-reveal-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ Show all solutions</button>
+                        <button type="button" class="alloflow-math-hide-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all solutions</button>
                         <span style="font-size:11px;color:#64748b;font-style:italic;">Try the problem first, then reveal the steps.</span>
                     </div>
                   ` : ''}
@@ -47321,7 +47549,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                           <ol style="padding-left:20px; color:#334155; margin-bottom: 15px;">
                                               ${p.steps.map(s => `
                                                   <li style="margin-bottom:10px;">
-                                                      <div style="font-weight:500; margin-bottom:4px;">${s.explanation}</div>
+                                                      <div style="font-weight:500; margin-bottom:4px;">${_escTxt(s.explanation)}</div>
                                                       ${s.latex ? `<div style="font-size:1.0em; color:#1e293b; background:white; display:inline-block; padding:4px 8px; border-radius:4px; border:1px solid #f1f5f9;">${formatMath(s.latex)}</div>` : ''}
                                                   </li>
                                               `).join('')}
@@ -47333,7 +47561,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                           </div>
                                           ${p.realWorld ? `
                                           <div style="margin-top:10px; padding:10px; background:#fff7ed; border:1px solid #ffedd5; border-radius:8px; color:#9a3412; font-size:0.9em;">
-                                              <strong>${t('math.display.connection_header')}:</strong> ${p.realWorld}
+                                              <strong>${t('math.display.connection_header')}:</strong> ${_escTxt(p.realWorld)}
                                           </div>
                                           ` : ''}
                                       </div>
@@ -47346,7 +47574,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       <ol style="padding-left:20px; color:#334155; margin-bottom: 15px;">
                                           ${p.steps.map(s => `
                                               <li style="margin-bottom:10px;">
-                                                  <div style="font-weight:500; margin-bottom:4px;">${s.explanation}</div>
+                                                  <div style="font-weight:500; margin-bottom:4px;">${_escTxt(s.explanation)}</div>
                                                   ${s.latex ? `<div style="font-size:1.0em; color:#1e293b; background:white; display:inline-block; padding:4px 8px; border-radius:4px; border:1px solid #f1f5f9;">${formatMath(s.latex)}</div>` : ''}
                                               </li>
                                           `).join('')}
@@ -47358,7 +47586,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       </div>
                                       ${p.realWorld ? `
                                       <div style="margin-top:10px; padding:10px; background:#fff7ed; border:1px solid #ffedd5; border-radius:8px; color:#9a3412; font-size:0.9em;">
-                                          <strong>${t('math.display.connection_header')}:</strong> ${p.realWorld}
+                                          <strong>${t('math.display.connection_header')}:</strong> ${_escTxt(p.realWorld)}
                                       </div>
                                       ` : ''}
                                   </div>
@@ -47391,7 +47619,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <script>
                         (function() {
-                            var sec = document.querySelector('[data-math-section="${item.id}"]');
+                            var sec = document.getElementById(${_resourceIdJson});
                             if (!sec) return;
                             var items = sec.querySelectorAll('details.alloflow-math-solution');
                             var btnShow = sec.querySelector('.alloflow-math-reveal-all');
@@ -47435,7 +47663,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   if (_tlPresentation.every((entry, index) => entry.originalIndex === index)) _tlPresentation.push(_tlPresentation.shift());
               }
               const stripsHtml = `
-                  <div class="alloflow-tl-strips" data-tl-section="${item.id}" role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
+                  <div class="alloflow-tl-strips" data-tl-section="${_escTxt(item.id)}" role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
                       ${_tlInteractive ? `<input type="hidden" class="alloflow-tl-response" data-allo-response-key="${_escTxt((item.id || 'timeline') + ':timeline-order')}" data-allo-response-type="timeline-order" data-allo-part-label="Event order" data-allo-question="${_escTxt(title || 'Timeline')}" aria-label="Student order for ${_escTxt(title || 'timeline')}" value="">` : ''}
                       ${_tlPresentation.map(({ te, originalIndex, responseId }, idx) => `
                           <div class="alloflow-tl-strip"${_tlCanSelfCheck ? ` data-original-index="${originalIndex}"` : ''} data-initial-index="${idx}" data-tl-response-id="${responseId}" data-strip-idx="${idx}" role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
@@ -47483,7 +47711,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </div>
               `;
               const interactiveControlsHtml = _tlInteractive ? `
-                  <div class="alloflow-tl-controls" data-tl-section="${item.id}" style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px;align-items:center;">
+                  <div class="alloflow-tl-controls" data-tl-section="${_escTxt(item.id)}" style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px;align-items:center;">
                       <button type="button" class="alloflow-tl-shuffle-btn" style="padding:8px 16px;background:#f8fafc;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;">🔀 Shuffle</button>
                       ${_tlCanSelfCheck ? '<button type="button" class="alloflow-tl-check-btn" style="padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;">🎯 Check Order</button>' : ''}
                       <button type="button" class="alloflow-tl-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;">↻ Reset</button>
@@ -47491,7 +47719,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </div>
               ` : '';
               return `
-                  <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                  <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                       ${enhancedHeader}
                       ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${progression}</div>` : ''}
                       ${instructionsHtml}
@@ -47502,7 +47730,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               `;
           }
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${progression}</div>` : ''}
                   <ol style="position: relative; padding-left: 24px; border-left: 3px solid #4338ca; margin-left: 10px; list-style: none;">
@@ -47541,7 +47769,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const _csCanSelfCheck = cfg.assessmentMode !== true;
 
           const categoryCardsHtml = `
-              <div class="alloflow-cs-categories" data-cs-section="${item.id}" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="Sorting categories">
+              <div class="alloflow-cs-categories" data-cs-section="${_escTxt(item.id)}" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="Sorting categories">
                   ${categories.map((cat, catIdx) => {
                       const catColor = catColors[catIdx % catColors.length];
                       return `
@@ -47563,7 +47791,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
 
           const stripsHtml = `
-              <div role="list" aria-label="Sortable items" class="alloflow-cs-strips" data-cs-section="${item.id}">
+              <div role="list" aria-label="Sortable items" class="alloflow-cs-strips" data-cs-section="${_escTxt(item.id)}">
                   ${sortItems.map((ci, idx) => {
                       const imageHtml = ci.image
                           ? `<div class="alloflow-cs-image-frame" style="flex-shrink:0;width:${_csImgPx}px;height:${_csImgPx}px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:4px;box-sizing:border-box;overflow:hidden;"><img class="alloflow-cs-image" src="${ci.image}" alt="" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border:0;border-radius:4px;box-shadow:none;box-sizing:border-box;"/></div>`
@@ -47601,14 +47829,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
 
           const interactiveControlsHtml = (cfg.conceptSortInteractive !== false && !isWorksheet) ? `
-              <div class="alloflow-cs-controls" data-cs-section="${item.id}" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 6px; align-items:center;">
+              <div class="alloflow-cs-controls" data-cs-section="${_escTxt(item.id)}" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 6px; align-items:center;">
                   ${_csCanSelfCheck ? '<button type="button" class="alloflow-cs-check-btn" style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9em;">🎯 Check my sort</button>' : ''}
                   <button type="button" class="alloflow-cs-reset-btn" style="padding:8px 16px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.85em;">↻ Reset</button>
                   <div class="alloflow-cs-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95em; font-weight:700; color:#1e293b; margin-left:0.5rem;"></div>
               </div>
           ` : '';
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${instructionsHtml}
                   ${categoryCardsHtml}
@@ -47621,32 +47849,32 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const docs = item.data.documents || [];
           const rubric = item.data.rubric || [];
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  ${item.data.historicalContext ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;"><strong>Historical Context:</strong><br/>${item.data.historicalContext}</div>` : ''}
+                  ${item.data.historicalContext ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;"><strong>Historical Context:</strong><br/>${_escTxt(item.data.historicalContext)}</div>` : ''}
                   ${docs.map(doc => `
                       <div style="border:2px solid #e2e8f0;border-radius:8px;margin-bottom:20px;overflow:hidden;">
                           <div style="background:#f8fafc;padding:12px;border-bottom:1px solid #e2e8f0;">
-                              <strong style="font-size:1.1em;">${doc.title || 'Document ' + doc.id}</strong>
-                              ${doc.source ? `<div style="font-size:0.85em;color:#64748b;margin-top:4px;font-style:italic;">Source: ${doc.source}</div>` : ''}
+                              <strong style="font-size:1.1em;">${_escTxt(doc.title || 'Document ' + doc.id)}</strong>
+                              ${doc.source ? `<div style="font-size:0.85em;color:#64748b;margin-top:4px;font-style:italic;">Source: ${_escTxt(doc.source)}</div>` : ''}
                           </div>
                           <div style="padding:16px;">
-                              <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px;border-radius:4px;margin-bottom:12px;font-size:0.95em;line-height:1.6;">${doc.excerpt || ''}</div>
-                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="color:#7c3aed;font-size:0.85em;">Sourcing Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${q}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
-                              ${doc.analysisQuestions?.length > 0 ? `<div><strong style="color:#2563eb;font-size:0.85em;">Analysis Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${q}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
+                              <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px;border-radius:4px;margin-bottom:12px;font-size:0.95em;line-height:1.6;">${_escTxt(doc.excerpt || '')}</div>
+                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="color:#7c3aed;font-size:0.85em;">Sourcing Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
+                              ${doc.analysisQuestions?.length > 0 ? `<div><strong style="color:#2563eb;font-size:0.85em;">Analysis Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
                           </div>
                       </div>
                   `).join('')}
-                  ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${item.data.synthesisPrompt}</p>${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, 'Your essay:')}</div>` : ''}</div>` : ''}
-                  ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>Rubric:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media (max-width:600px){.alloflow-dbq-rubric-wrap table{font-size:0.7em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:4px !important;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:0.72em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;table-layout:fixed;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${r.criteria}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['1'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['2'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['3'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['4'] || ''}</td></tr>`).join('')}</table></div>` : ''}
-                  ${isTeacher && item.data.teacherNotes ? `<div class="teacher-view" data-allo-teacher-only="1" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>Teacher Notes:</strong> ${item.data.teacherNotes}</div>` : ''}
+                  ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${_escTxt(item.data.synthesisPrompt)}</p>${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, 'Your essay:')}</div>` : ''}</div>` : ''}
+                  ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>Rubric:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media (max-width:600px){.alloflow-dbq-rubric-wrap table{font-size:0.7em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:4px !important;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:0.72em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;table-layout:fixed;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${_escTxt(r.criteria)}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['1'] || '')}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['2'] || '')}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['3'] || '')}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['4'] || '')}</td></tr>`).join('')}</table></div>` : ''}
+                  ${isTeacher && item.data.teacherNotes ? `<div class="teacher-view" data-allo-teacher-only="1" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>Teacher Notes:</strong> ${_escTxt(item.data.teacherNotes)}</div>` : ''}
               </div>
           `;
       } else if (item.type === 'gemini-bridge') {
           return `
-              <div class="section" id="${item.id}">
-                  <h2 class="resource-header" role="heading" aria-level="2">${title} (${item.meta})</h2>
-                  <div style="background: #1e293b; color: #cbd5e1; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap;">${item.data}</div>
+              <div class="section" id="${_escTxt(item.id)}">
+                  <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)} (${_escTxt(item.meta)})</h2>
+                  <div style="background: #1e293b; color: #cbd5e1; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap;">${_escTxt(item.data)}</div>
                   <p style="font-size: 0.8em; color: #666; margin-top: 5px; font-style: italic;">${t('bridge.generated_desc')}</p>
               </div>
           `;
@@ -47660,8 +47888,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             return `<span style="margin-right: 4px; ${colorStyle}">${w.word}</span>`;
         }).join('');
         return `
-            <div class="section" id="${item.id}">
-                <h2 class="resource-header" role="heading" aria-level="2">${title} (${item.meta})</h2>
+            <div class="section" id="${_escTxt(item.id)}">
+                <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)} (${_escTxt(item.meta)})</h2>
                 <!-- Metrics Grid -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: center;">
@@ -47859,7 +48087,7 @@ function projectStudentGuideData(data, mode) {
               `;
           }
           return `
-              <div class="section${!learnerGuideCopy && !_docIsStudentGuide(item) ? ' alloflow-teacher-plan' : ''}" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section${!learnerGuideCopy && !_docIsStudentGuide(item) ? ' alloflow-teacher-plan' : ''}" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${learnerGuideCopy && !['study', 'family'].includes(learnerGuideMode) ? '<p role="status">This learner copy includes structured tasks and learning goals. Teacher narrative sections are omitted because separate learner text was not recorded.</p>' : ''}
                   <div class="alloflow-plan-body" style="background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
@@ -48100,8 +48328,8 @@ function projectStudentGuideData(data, mode) {
                   </div>`;
           })();
           return `
-              <div class="section" id="${item.id}">
-                  <h2 class="resource-header" role="heading" aria-level="2">${title} (${item.meta})</h2>
+              <div class="section" id="${_escTxt(item.id)}">
+                  <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)} (${_escTxt(item.meta)})</h2>
                   ${reports.map(report => `
                       <div style="margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
                           <div style="background: ${report.overallDetermination === 'Pass' ? '#f0fdf4' : '#fef2f2'}; padding: 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
@@ -48260,8 +48488,8 @@ function projectStudentGuideData(data, mode) {
               ? `<div style="margin-top:10px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; padding:10px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#5b21b6; margin-bottom:4px;">Connections &amp; Memory Hooks</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.connections)}</div></div>`
               : '';
           return `
-              <div class="section" id="${item.id}">
-                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${ttColor};">${ttIcon} ${title} <span style="font-size:0.75em; font-weight:normal; color:#475569; margin-left:8px;">(${ttLabel})</span></h2>
+              <div class="section" id="${_escTxt(item.id)}">
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${ttColor};">${ttIcon} ${_escTxt(title)} <span style="font-size:0.75em; font-weight:normal; color:#475569; margin-left:8px;">(${ttLabel})</span></h2>
                   ${renderRows()}
                   ${connectionsBlock}
                   ${blankCornellWorksheet || !isTeacher || isWorksheet ? '' : feedbackBadge}
@@ -48933,8 +49161,8 @@ function projectStudentGuideData(data, mode) {
               : '';
           return `
               ${_acFontImport}
-              <div class="section" id="${item.id}" style="background:#fffdf7;border:1px solid #f0e6d2;border-radius:10px;padding:8px 14px 14px;">
-                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #f59e0b;font-family:${_acTF};color:#7a4a1e;font-size:1.5em;">&#128203; ${title} <span style="font-size:0.6em;font-weight:normal;color:#795548;margin-left:8px;font-family:system-ui,sans-serif;">(Anchor Chart &#8212; ${typeLabel})</span></h2>
+              <div class="section" id="${_escTxt(item.id)}" style="background:#fffdf7;border:1px solid #f0e6d2;border-radius:10px;padding:8px 14px 14px;">
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #f59e0b;font-family:${_acTF};color:#7a4a1e;font-size:1.5em;">&#128203; ${_escTxt(title)} <span style="font-size:0.6em;font-weight:normal;color:#795548;margin-left:8px;font-family:system-ui,sans-serif;">(Anchor Chart &#8212; ${typeLabel})</span></h2>
                   ${_acCaptionHtml}
                   ${sectionsHtml}
                   ${annotationsHtml}
@@ -49222,7 +49450,7 @@ function projectStudentGuideData(data, mode) {
                 return `<li style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px dashed #cbd5e1;">
                   <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:${tv.color};color:white;font-weight:700;font-size:11px;flex-shrink:0;">${i + 1}</span>
                   <span aria-hidden="true" style="font-size:1.05em;flex-shrink:0;">${tv.icon}</span>
-                  <a href="#${item.id}" style="color:#1e293b;text-decoration:none;font-weight:600;font-size:0.94rem;line-height:1.35;flex:1;">${title}</a>
+                  <a href="#${_escAttr(item.id)}" style="color:#1e293b;text-decoration:none;font-weight:600;font-size:0.94rem;line-height:1.35;flex:1;">${_escTxt(title)}</a>
                 </li>`;
               }).join('')}
             </ol>

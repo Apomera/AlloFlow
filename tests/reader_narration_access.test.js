@@ -42,6 +42,25 @@ const region = () => host.querySelector('[role="region"][aria-label="Manage narr
 const original = () => window.AlloModules.InstructionalContext.createSupportedReading(TEXT, { id: 'original-1', config: { language: 'English' } });
 
 describe('narration access without text Edit', () => {
+  it('assigns a recorded repeat to its own row and uses text-only playback only for unambiguous older lines', () => {
+    const text = 'We can. We can. Only once.';
+    const item = { id: 'repeat', type: 'simplified', data: text, config: { language: 'English' } };
+    const previous = window.AlloModules.KaraokeAudioStore;
+    const raw = { has: () => true, get: () => 'blob:older', sourceOf: () => 'human-teacher' };
+    const players = () => Array.from(host.querySelectorAll('[data-audio-sentence-index]'), row => row.querySelector('button'));
+    try {
+      window.AlloModules.KaraokeAudioStore = { current: raw };
+      window.__alloInspectReadAloudAudio = (sentence, lane, opts) => opts.occurrence === 1
+        ? { status: 'ready', source: 'human-teacher', url: 'blob:second' }
+        : { status: 'missing', url: null };
+      const view = mount({ generatedContent: item });
+      act(() => manage().click());
+      expect(players().map(b => b.disabled)).toEqual([true, false, true]);
+      delete window.__alloInspectReadAloudAudio;
+      view.render({ generatedContent: { ...item } });
+      expect(players().map(b => b.disabled)).toEqual([true, true, false]);
+    } finally { window.AlloModules.KaraokeAudioStore = previous; }
+  });
   it.each(['adapted', 'original'])('opens %s sentence controls without exposing or changing text', kind => {
     const changeText = vi.fn(), editText = vi.fn();
     const item = kind === 'original' ? original() : undefined;

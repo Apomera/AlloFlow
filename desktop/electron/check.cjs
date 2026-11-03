@@ -165,7 +165,7 @@ for (const requiredBridgeBoundary of [
 }
 const appBridgeSource = fs.readFileSync(path.join(__dirname, '..', '..', 'desktop/web-app', 'public', 'alloflow_desktop_bridge.js'), 'utf8');
 const bridgeActions = Array.from(appBridgeSource.matchAll(/action === '([^']+)'/g), (match) => match[1]).sort();
-if (JSON.stringify(bridgeActions) !== JSON.stringify(['config.apply', 'kokoro.download', 'kokoro.test', 'sd.download', 'status.get'])) {
+if (JSON.stringify(bridgeActions) !== JSON.stringify(['config.apply', 'images.configure', 'kokoro.download', 'kokoro.test', 'sd.download', 'status.get'])) {
   throw new Error('Isolated app bridge exposes an unexpected capability set: ' + bridgeActions.join(', '));
 }
 const packageMetadata = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));

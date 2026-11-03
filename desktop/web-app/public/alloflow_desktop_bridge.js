@@ -20,6 +20,144 @@
     }
   }
 
+  function isNativeImageParentOrigin(value) {
+    try {
+      var app = new URL(window.location.origin);
+      return app.protocol === 'http:' && app.hostname === 'localhost'
+        && value === 'http://127.0.0.1' + (app.port ? ':' + app.port : '');
+    } catch (_) { return false; }
+  }
+
+  var imageDocumentId = '';
+  try {
+    var randomBytes = new Uint8Array(16);
+    window.crypto.getRandomValues(randomBytes);
+    imageDocumentId = Array.from(randomBytes, function (value) { return value.toString(16).padStart(2, '0'); }).join('');
+  } catch (_) { /* No native image capability without secure randomness. */ }
+  var imageSessionId = '';
+  var imageParentOrigin = '';
+  var imagePending = null;
+  var imageSequence = 0;
+  var MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
+  function imageError(message, aborted) {
+    var error = new Error(message);
+    error.name = aborted ? 'AbortError' : 'Error';
+    error.code = 'allo/local-image-connection';
+    return error;
+  }
+
+  function imageRecord(value, allowed, required) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    var keys = Reflect.ownKeys(value);
+    return keys.every(function (key) {
+      var descriptor = Object.getOwnPropertyDescriptor(value, key);
+      return typeof key === 'string' && allowed.indexOf(key) >= 0 && descriptor && Object.prototype.hasOwnProperty.call(descriptor, 'value');
+    }) && required.every(function (key) { return Object.prototype.hasOwnProperty.call(value, key); });
+  }
+
+  function validImageBytes(value, result) {
+    if (typeof value !== 'string' || !value || value.length > MAX_IMAGE_BYTES) return false;
+    if (result) return /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(value);
+    return /^(?:data:image\/(?:png|jpeg|webp);base64,)?[A-Za-z0-9+/]+={0,2}$/.test(value);
+  }
+
+  function nativeImagesAllowed() {
+    try {
+      if (window.__alloQrStudentMode || window.__alloStudentAiDisabled === true) return false;
+      var controls = window.AlloImageGeneration;
+      return !controls || (typeof controls.isEnabled === 'function' && controls.isEnabled() === true);
+    } catch (_) { return false; }
+  }
+
+  function finishImage(error, result, cancel) {
+    var pending = imagePending;
+    if (!pending) return;
+    imagePending = null;
+    clearTimeout(pending.timer);
+    if (pending.signal) pending.signal.removeEventListener('abort', pending.abort);
+    if (cancel) post(pending.origin, { kind: 'image-cancel', sessionId: pending.sessionId, requestId: pending.requestId });
+    if (error) pending.reject(error);
+    else pending.resolve(result);
+  }
+
+  function configureImages(event, payload) {
+    if (!isNativeImageParentOrigin(event.origin)) throw imageError('Native images require the matching AlloFlow Desktop window.');
+    if (!imageRecord(payload, ['enabled', 'sessionId'], ['enabled']) || typeof payload.enabled !== 'boolean'
+      || (payload.enabled && (!imageDocumentId || typeof payload.sessionId !== 'string' || !/^[a-f0-9]{32}$/.test(payload.sessionId)))) {
+      throw imageError('Invalid native image configuration.');
+    }
+    finishImage(imageError('Local image connection changed. The previous result will be discarded.', true), null, true);
+    imageSessionId = payload.enabled ? payload.sessionId : '';
+    imageParentOrigin = event.origin;
+    return { enabled: Boolean(imageSessionId), documentId: imageDocumentId };
+  }
+
+  function requestImage(operation, payload, options) {
+    return new Promise(function (resolve, reject) {
+      if (!nativeImagesAllowed()) {
+        var blocked = imageError('Image generation is disabled for this app session.', true);
+        finishImage(blocked, null, true);
+        throw blocked;
+      }
+      if (!imageSessionId || !imageParentOrigin) throw imageError('Enable local images in AlloFlow Desktop first.');
+      if (imagePending) throw imageError('A local image request is already waiting for a result.');
+      var fields = operation === 'edit' ? ['prompt', 'width', 'image'] : ['prompt', 'width'];
+      if (!imageRecord(payload, fields, operation === 'edit' ? ['prompt', 'image'] : ['prompt'])
+        || typeof payload.prompt !== 'string' || !payload.prompt.trim() || payload.prompt.length > 4000) {
+        throw imageError('Use an image prompt between 1 and 4,000 characters.');
+      }
+      var width = payload.width === undefined ? 512 : payload.width;
+      if (!Number.isInteger(width) || width < 64 || width > 1024) throw imageError('Choose an image size between 64 and 1024 pixels.');
+      if (operation === 'edit' && !validImageBytes(payload.image, false)) throw imageError('Choose a PNG, JPEG or WebP source image no larger than 8 MiB.');
+      var signal = options && options.signal;
+      if (signal && (typeof signal.addEventListener !== 'function' || typeof signal.removeEventListener !== 'function')) throw imageError('Invalid image cancellation signal.');
+      if (signal && signal.aborted) throw imageError('Image request cancelled.', true);
+      var body = { prompt: payload.prompt, width: width };
+      if (operation === 'edit') body.image = payload.image;
+      var pending = { resolve: resolve, reject: reject, origin: imageParentOrigin, sessionId: imageSessionId,
+        requestId: imageDocumentId + '_' + (++imageSequence).toString(16), signal: signal };
+      pending.abort = function () { finishImage(imageError('Image request cancelled. Its result will be discarded.', true), null, true); };
+      imagePending = pending;
+      pending.timer = setTimeout(function () {
+        finishImage(imageError('The image request timed out. The server may still be finishing it.'), null, true);
+      }, 120000);
+      if (signal) signal.addEventListener('abort', pending.abort, { once: true });
+      post(pending.origin, { kind: 'image-request', sessionId: pending.sessionId, requestId: pending.requestId,
+        operation: operation, payload: body });
+    });
+  }
+
+  function receiveImage(event, data) {
+    var pending = imagePending;
+    if (!pending || event.origin !== pending.origin || data.sessionId !== pending.sessionId || data.requestId !== pending.requestId) return;
+    if (!nativeImagesAllowed()) {
+      finishImage(imageError('Image generation is disabled for this app session. Its result will be discarded.', true), null, true); return;
+    }
+    if (!imageRecord(data, ['channel', 'version', 'kind', 'sessionId', 'requestId', 'ok', 'result', 'error'],
+      ['channel', 'version', 'kind', 'sessionId', 'requestId', 'ok']) || typeof data.ok !== 'boolean') {
+      finishImage(imageError('The desktop image response was invalid.'), null, false); return;
+    }
+    if (!data.ok) {
+      finishImage(imageError(typeof data.error === 'string' ? data.error.slice(0, 500) : 'The desktop image request failed.'), null, false); return;
+    }
+    if (!imageRecord(data.result, ['image'], ['image']) || !validImageBytes(data.result.image, true)) {
+      finishImage(imageError('The desktop image response was invalid.'), null, false); return;
+    }
+    finishImage(null, { image: data.result.image }, false);
+  }
+
+  window.AlloDesktopImages = Object.freeze({
+    isEnabled: function () { return Boolean(imageSessionId) && nativeImagesAllowed(); },
+    generate: function (payload, options) { return requestImage('generate', payload, options); },
+    edit: function (payload, options) { return requestImage('edit', payload, options); },
+  });
+  window.addEventListener('pagehide', function () {
+    finishImage(imageError('The app page closed. Its image result will be discarded.', true), null, true);
+    imageSessionId = '';
+    imageParentOrigin = '';
+  });
+
   function normalizeProgress(progress) {
     var value = progress && typeof progress === 'object' ? progress : {};
     var pct = Number(value.pct);
@@ -129,6 +267,7 @@
   }
 
   async function handleAction(event, id, action, payload) {
+    if (action === 'images.configure') return configureImages(event, payload);
     if (action === 'config.apply') {
       var applied = [];
       if (saveConfig('alloflow_ai_config', payload && payload.aiConfig)) applied.push('ai');
@@ -188,7 +327,12 @@
   window.addEventListener('message', function (event) {
     var data = event && event.data;
     if (event.source !== window.parent || !isAllowedParentOrigin(event.origin)) return;
-    if (!data || data.channel !== CHANNEL || data.version !== VERSION || data.kind !== 'request') return;
+    if (!data || data.channel !== CHANNEL || data.version !== VERSION) return;
+    if (data.kind === 'image-response') {
+      if (isNativeImageParentOrigin(event.origin)) receiveImage(event, data);
+      return;
+    }
+    if (data.kind !== 'request') return;
     var id = String(data.id || '');
     var action = String(data.action || '');
     if (!/^[A-Za-z0-9_-]{8,96}$/.test(id)) return;
@@ -199,7 +343,7 @@
   });
 
   function announceReady() {
-    post('*', { kind: 'ready' });
+    post('*', { kind: 'ready', nativeImages: imageDocumentId ? 1 : 0, documentId: imageDocumentId });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', announceReady, { once: true });

@@ -30,6 +30,27 @@
       if (rawEvidence[key] === true) result[key] = true;
       return result;
     }, {});
+    const stamped = Object.entries(rawEvidence.learnerResourceSources || {}).filter(([id, key]) =>
+      id && id.length <= 160 && typeof key === 'string' && /^\d{1,9}:[a-f0-9]{1,8}$/.test(key));
+    if (stamped.length) deliveryEvidence.learnerResourceSources = Object.fromEntries(stamped);
+    const lessonScopes = Object.entries(rawEvidence.lessonScopes || {}).filter(([key, scope]) =>
+      ['directionsSaved', 'exportCreated', 'liveStarted', 'math', 'ui-tool-wordsounds'].includes(key)
+      && typeof scope === 'string' && /^\d{1,9}:[a-f0-9]{1,8}$/.test(scope));
+    if (lessonScopes.length) deliveryEvidence.lessonScopes = Object.fromEntries(lessonScopes);
+    for (const route of ['print', 'lms']) {
+      const reviewed = rawEvidence.documentReviews?.[route], exported = rawEvidence.documentExports?.[route];
+      if (typeof reviewed?.key === 'string' && /^\d{1,9}:[a-f0-9]{1,8}$/.test(reviewed.key) && typeof reviewed.hasKey === 'boolean') {
+        (deliveryEvidence.documentReviews ||= {})[route] = { key: reviewed.key, hasKey: reviewed.hasKey };
+      }
+      if (typeof exported === 'string' && /^\d{1,9}:[a-f0-9]{1,8}$/.test(exported)) (deliveryEvidence.documentExports ||= {})[route] = exported;
+    }
+    const link = rawEvidence.learnerLink;
+    if (link && typeof link.id === 'string' && /^[a-zA-Z0-9_-]{8,96}$/.test(link.id) && [link.scope, link.urlKey].every(key => typeof key === 'string' && /^\d{1,9}:[a-f0-9]{1,8}$/.test(key))) {
+      deliveryEvidence.learnerLink = { id: link.id, scope: link.scope, urlKey: link.urlKey };
+    } else {
+      delete deliveryEvidence.shareCreated;
+      delete deliveryEvidence.studentPreviewed;
+    }
     return {
       guidedStep: Math.max(0, Math.min(rawStep, Math.max(0, activeIds.length - 1))),
       selectedIds,
@@ -62,7 +83,7 @@
   ];
   const GUIDED_STEPS = [
     { id: 'source-input', phase: 'plan', label: 'Source Material', action: 'Choose, paste, or type the original source for your lesson. Keep its wording and learning goal in view as you add supports.', success: 'Source captured. Review the learning goal and the supports students may need.' },
-    { id: 'analysis', phase: 'understand', label: 'Check your source', action: 'In the source view, press Use this source (or Run check) to see the reading level, key concepts and accuracy.', success: 'Source checked. That shows you where to scaffold.' },
+    { id: 'analysis', phase: 'understand', label: 'Analyze source material', action: 'Choose Analyze source material to open the formatted passage with its reading level, key concepts and accuracy findings.', success: 'Your analyzed source material is ready to review.' },
     { id: 'glossary', phase: 'access', label: 'Glossary & Language Selection', action: 'Generate a glossary of the key terms, in your students’ languages if needed.', success: 'Glossary ready. Front-loading vocabulary helps multilingual learners most.' },
     { id: 'simplified', phase: 'access', label: 'Original with Supports', action: 'Choose Read original with supports to keep the exact source text. Create an adapted companion only when it serves your learning goal; review any changed meaning before sharing.', success: 'Reading ready. Review the original and its word help, check any optional adaptation for accuracy, then preview the student experience before delivery.' },
     { id: 'ui-tool-wordsounds', phase: 'access', label: 'Word Sounds', action: 'Build Word Sounds practice for the decoding and phonics targets.', success: 'Word Sounds set. Great support for your emerging readers.' },
@@ -89,7 +110,7 @@
     { id: '_final', phase: 'finish', label: 'Review & Finish', action: 'Review what you created, revisit anything skipped, and finish when the lesson is ready to use.', success: 'All set. Nice work building this lesson.' },
   ];
   const GUIDED_PRESETS = [
-    { id: 'core-lesson', label: 'Build a core lesson', description: 'A balanced path from analysis through directions and delivery.', stepIds: ['analysis', 'glossary', 'simplified', 'image', 'quiz', 'lesson-plan', 'directions'] },
+    { id: 'core-lesson', label: 'Build a core lesson', description: 'Build vocabulary, reading and visual supports, then assess and share the lesson.', stepIds: ['analysis', 'glossary', 'simplified', 'outline', 'image', 'quiz', 'lesson-plan', 'directions'] },
     { id: 'reading-access', label: 'Read original with supports', description: 'Choose the source, review vocabulary and the original with supports, then preview and deliver. An adapted companion and other tools are optional.', stepIds: ['analysis', 'glossary', 'simplified', 'directions'] },
     { id: 'assessment', label: 'Build an assessment', description: 'Create questions, evidence tasks, alignment, directions, and a delivery-ready package.', stepIds: ['analysis', 'faq', 'dbq', 'quiz', 'alignment', 'lesson-plan', 'directions'] },
     { id: 'engagement', label: 'Boost engagement', description: 'Add visual, discussion, applied, interactive, and game-based options, then assign and deliver.', stepIds: ['image', 'brainstorm', 'applied-challenge', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'quiz', 'directions'] },
@@ -233,6 +254,65 @@ Return ONLY JSON:
     }
 }
 
+// Compact change detection for the local Guided record. Never copy homework
+// URLs (which can contain a mailbox secret or the handout itself) into progress.
+function guidedLinkFingerprint(text) {
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+  return text.length + ':' + (hash >>> 0).toString(16);
+}
+function createGuidedLessonMatcher({ history, sourceText, activeUnitId, observed, normalizeDirections }) {
+  sourceText = typeof sourceText === 'string' ? sourceText : '';
+  const textKey = guidedLinkFingerprint(sourceText);
+  const byId = new Map(history.filter(Boolean).map(item => [item.id, item]));
+  const snapshotText = item => item?.sourceSnapshot?.text ?? item?.config?.sourceSnapshot?.text
+    ?? (item?.type === 'analysis' ? item.data?.originalText : null);
+  const belongs = (candidate, justObserved = false) => {
+    if (!candidate?.id) return false;
+    const item = byId.get(candidate.id) || candidate;
+    const unit = item.unitId || item.config?.unitId;
+    if (activeUnitId && activeUnitId !== 'all' && unit && unit !== activeUnitId) return false;
+    const text = snapshotText(item);
+    if (typeof text === 'string') return text === sourceText;
+    const origin = item.sourceArtifactId || item.config?.sourceArtifactId || item.sourceFamilyId || item.config?.sourceFamilyId;
+    if (origin && byId.has(origin)) {
+      const original = snapshotText(byId.get(origin));
+      if (typeof original === 'string') return original === sourceText;
+    }
+    // Manually authored directions can lack a source snapshot. Only trust an
+    // ID the running lesson itself observed under this exact passage.
+    return Object.hasOwn(observed || {}, item.id) ? observed[item.id] === textKey : justObserved === true;
+  };
+  return (item, justObserved) => {
+    if (!belongs(item, justObserved)) return false;
+    if (item.type !== 'directions' || !normalizeDirections) return true;
+    const directions = normalizeDirections(item.data);
+    const entries = [...directions.objectives, ...(directions.choiceBoard?.choices || [])];
+    return entries.every(entry => !entry?.resourceRef || belongs(byId.get(String(entry.resourceRef))));
+  };
+}
+function guidedLearnerResources({ history, runIds, sourceText, activeUnitId, observed, studentSafe, resolveResources, normalizeDirections }) {
+  const belongs = createGuidedLessonMatcher({ history, sourceText, activeUnitId, observed, normalizeDirections });
+  const run = new Set(runIds || []);
+  let ids = studentSafe(history).filter(item => run.has(item.id) && belongs(item)).map(item => item.id);
+  if (!ids.length || ids.length > 25) return null;
+  let resources = resolveResources(ids);
+  if (resources.some(item => !belongs(item))) {
+    // Directions and reading pairs may pull in linked resources from History.
+    ids = ids.filter(id => resolveResources([id]).every(belongs));
+    resources = ids.length ? resolveResources(ids) : [];
+  }
+  if (!resources.length || !resources.every(belongs)) return null;
+  try { return { ids, signature: guidedLinkFingerprint(JSON.stringify(resources)) }; }
+  catch (_) { return null; }
+}
+function resolveGuidedLearnerLink(link, scope, records, now = Date.now()) {
+  if (!link || !scope || link.scope !== scope || !Array.isArray(records)) return null;
+  return records.find(share => share && share.guidedLearnerLinkId === link.id && !share.revokedAt
+    && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(share.type)
+    && typeof share.url === 'string' && /^https?:\/\//i.test(share.url) && guidedLinkFingerprint(share.url) === link.urlKey
+    && (!share.expiresAt || Date.parse(share.expiresAt) > now)) || null;
+}
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.GuidedModeConfig = {
   GUIDED_STEP_IDS,
@@ -244,5 +324,9 @@ window.AlloModules.GuidedModeConfig = {
   GUIDED_TOUR_MAP,
   normalizeGuidedPlanBrief,
   normalizeGuidedProgress,
+  guidedLinkFingerprint,
+  createGuidedLessonMatcher,
+  guidedLearnerResources,
+  resolveGuidedLearnerLink,
   generateGuidedPlanFromGoal,
 };

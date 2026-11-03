@@ -143,13 +143,13 @@ function parseHeaderTools(dir, prefix) {
 
 // ---------------------------------------------------------------- AlloPacks
 function parseAlloPacks() {
-    return listDir('allopacks')
+    return listDir('allopacks/current')
         .filter((f) => f.endsWith('.allopack.json'))
         .map((f) => {
             let pack = {};
             let sourceTopic = '';
             try {
-                const parsed = JSON.parse(fs.readFileSync(path.join(ROOT, 'allopacks', f), 'utf8'));
+                const parsed = JSON.parse(fs.readFileSync(path.join(ROOT, 'allopacks', 'current', f), 'utf8'));
                 pack = parsed.allopack || {};
                 sourceTopic = parsed.sourceTopic || '';
             } catch (_) { /* unreadable pack still counts as a file */ }

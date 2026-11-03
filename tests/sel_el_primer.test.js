@@ -92,10 +92,10 @@ describe('EL primer · the long form exists and carries the same sources', () =>
 });
 
 describe('EL primer · every Crew Launch pack defines the words and opens its FAQ with them', () => {
-  const packs = readdirSync(resolve(ROOT, 'allopacks')).filter((f) => f.startsWith('crew_') && f.endsWith('.allopack.json'));
+  const packs = readdirSync(resolve(ROOT, 'allopacks', 'current')).filter((f) => f.startsWith('crew_') && f.endsWith('.allopack.json'));
   it('twelve packs', () => { expect(packs.length).toBe(12); });
   it.each(packs)('%s', (f) => {
-    const pack = JSON.parse(readFileSync(resolve(ROOT, 'allopacks', f), 'utf8'));
+    const pack = JSON.parse(readFileSync(resolve(ROOT, 'allopacks', 'current', f), 'utf8'));
     const glossary = pack.history.find((r) => r.type === 'glossary').data;
     const terms = glossary.map((g) => g.term);
     expect(terms).toContain('Crew');

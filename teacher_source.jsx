@@ -7437,16 +7437,17 @@ const LearnerProgressView = React.memo(({
             <div className="flex flex-wrap justify-center gap-3 pt-2">
                 <button type="button"
                     onClick={() => {
+                        const escapePrintText = value => String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                         const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                         const metricBar = (label, value, max, unit, icon) => {
                             const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
                             const barColor = pct >= 80 ? '#16a34a' : pct >= 50 ? '#d97706' : '#e11d48';
-                            return `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:13px;font-weight:600;color:#334155">${icon} ${label}</span><span style="font-size:14px;font-weight:800;color:${barColor}">${value}${unit}</span></div><div style="background:#f1f5f9;border-radius:6px;height:10px;overflow:hidden"><div style="background:${barColor};height:100%;border-radius:6px;width:${pct}%"></div></div></div>`;
+                            return `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:13px;font-weight:600;color:#334155">${escapePrintText(icon)} ${escapePrintText(label)}</span><span style="font-size:14px;font-weight:800;color:${barColor}">${escapePrintText(value)}${escapePrintText(unit)}</span></div><div style="background:#f1f5f9;border-radius:6px;height:10px;overflow:hidden"><div style="background:${barColor};height:100%;border-radius:6px;width:${pct}%"></div></div></div>`;
                         };
                         const masteredCount = Object.entries(phonemeMastery).filter(([_,v]) => isPhonemeMastered(v)).length;
                         const masteredList = Object.entries(phonemeMastery).filter(([_,v]) => isPhonemeMastered(v)).map(([p]) => '/' + p + '/').join(', ');
                         const html = `<!DOCTYPE html><html lang="${String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '')}"${document.documentElement.dir === 'rtl' ? ' dir="rtl"' : ''}><head><meta charset="UTF-8">` +
-                          `<title>${t('learner.progress_report')}</title>` +
+                          `<title>${escapePrintText(t('learner.progress_report'))}</title>` +
                           `<style>` +
                           `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');` +
                           `*{box-sizing:border-box;margin:0;padding:0}` +
@@ -7471,10 +7472,10 @@ const LearnerProgressView = React.memo(({
                           `</div>` +
                           `<div class="content">` +
                           `<div style="display:flex;align-items:center;gap:16px;padding:16px;background:linear-gradient(135deg,#fef3c7,#fef9c3);border:2px solid #fcd34d;border-radius:12px;margin-bottom:20px">` +
-                          `<div style="width:56px;height:56px;background:#eab308;border-radius:50%;display:flex;align-items:center;justify-content:center;border:4px solid #1e1b4b;font-size:24px;font-weight:900;color:#1e1b4b">Lv${globalLevel}</div>` +
+                          `<div style="width:56px;height:56px;background:#eab308;border-radius:50%;display:flex;align-items:center;justify-content:center;border:4px solid #1e1b4b;font-size:24px;font-weight:900;color:#1e1b4b">Lv${escapePrintText(globalLevel)}</div>` +
                           `<div>` +
-                          `<div style="font-size:20px;font-weight:800;color:#1e1b4b">${globalPoints.toLocaleString()} Total XP</div>` +
-                          `<div style="font-size:12px;color:#92400e;font-weight:600">Level ${globalLevel} Learner &bull; ${Math.round(globalProgress)}% to next level</div>` +
+                          `<div style="font-size:20px;font-weight:800;color:#1e1b4b">${escapePrintText(globalPoints.toLocaleString())} Total XP</div>` +
+                          `<div style="font-size:12px;color:#92400e;font-weight:600">Level ${escapePrintText(globalLevel)} Learner &bull; ${Math.round(globalProgress)}% to next level</div>` +
                           `</div></div>` +
                           `<div class="section-title">📊 Performance Summary</div>` +
                           `${metricBar('Word Sounds Accuracy', stats.wsAccuracy, 100, '%', '🔊')}` +
@@ -7486,7 +7487,7 @@ const LearnerProgressView = React.memo(({
                           `${metricBar('Total Activities', stats.totalActivities, 20, '', '📊')}` +
                           `<div class="section-title">🎯 Skills Mastered</div>` +
                           `<div style="font-size:13px;color:#475569;margin-bottom:8px"><strong>${masteredCount}</strong> phoneme sounds mastered${masteredCount > 0 ? ':' : ''}</div>` +
-                          `${masteredCount > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">' + Object.entries(phonemeMastery).filter(([_,v]) => isPhonemeMastered(v)).map(([p]) => '<span style="padding:4px 12px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:20px;font-size:12px;font-weight:700">/' + p + '/</span>').join('') + '</div>' : '<p style="font-size:13px;color:#94a3b8;font-style:italic">Keep practicing to master sounds!</p>'}` +
+                          `${masteredCount > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">' + Object.entries(phonemeMastery).filter(([_,v]) => isPhonemeMastered(v)).map(([p]) => '<span style="padding:4px 12px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:20px;font-size:12px;font-weight:700">/' + escapePrintText(p) + '/</span>').join('') + '</div>' : '<p style="font-size:13px;color:#94a3b8;font-style:italic">Keep practicing to master sounds!</p>'}` +
                           `<div class="section-title">🏅 Achievements Earned</div>` +
                           `<div class="badge-row">` +
                           `${globalPoints >= 10 ? '<div class="badge">👣 First Steps</div>' : ''}` +

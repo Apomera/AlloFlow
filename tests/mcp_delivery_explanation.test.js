@@ -114,8 +114,9 @@ describe('deliveryExplanation', () => {
         { id: 'media_alt_brief', nodes: 7, description: 'Text alternative is more than 150 characters' },
         { id: 'download_keyboard_controllable', nodes: 7, description: 'Verify that the file download mechanism does not cause a keyboard trap' },
         { id: 'aria_landmark_name_unique', nodes: 1, description: 'Multiple landmarks share a name' }] } } });
+    // (2026-11-02) One quoted example of several places says "and N more": "(3 places)" read as if it were the only one.
     expect(plain.needsAPerson).toEqual([
-      'Check whether "Course Syllabus" is a heading; if it is, it should be marked as one. (3 places)',
+      'Check whether "Course Syllabus" is a heading; if it is, it should be marked as one. (and 2 more places)',
       'Check whether "ACHIEVING & ENGAGED STUDENTS," is a quotation; if it is, it should be marked as one.',
       'Check the image descriptions longer than 150 characters: each should still read well, with long detail in the visible text if needed. (7 places)',
       'Check that the download links can be reached and used with the keyboard alone. (7 places)',

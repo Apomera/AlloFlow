@@ -1,40 +1,43 @@
 """
-AlloFlow Flux Image Generation Server
+AlloFlow Local Image Generation Server (SANA-Sprint or Flux)
 OpenAI-compatible API for local image generation and editing.
 
 Endpoints:
-  POST /v1/images/generations  — text-to-image (Flux.1-schnell)
+  POST /v1/images/generations  — text-to-image
   POST /v1/images/edits        — image-to-image editing
   GET  /health                 — health check
 
 Designed to run in Docker with GPU support.
-Falls back to CPU (slow but functional) if no GPU.
+CPU fallback is available for compatibility; GPU use is recommended.
 """
 
-import asyncio
 import base64
 import io
-import json
 import logging
 import os
-import sys
 import time
 from contextlib import asynccontextmanager
 
 import torch
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from typing import Optional
+from fastapi.responses import HTMLResponse
+from studio import STUDIO_HTML, studio_headers
+from image_backends import ImageBackend, SharedImagePipeline
+from security import (FluxSecurity, GenerationGate, MAX_BODY_BYTES, MAX_IMAGE_BYTES,
+                      MAX_IMAGE_PIXELS, MAX_STEPS, MAX_PROMPT_CHARS)
+from pydantic import BaseModel, Field, conint
+from typing import Optional, Literal
+import re
 from PIL import Image
 
 # ── Configuration ──────────────────────────────────────────────
-MODEL_ID = os.getenv("FLUX_MODEL", "black-forest-labs/FLUX.1-schnell")
+BACKEND = ImageBackend.from_env()
+MODEL_ID = BACKEND.model_id
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DTYPE = torch.float16 if DEVICE == "cuda" else torch.float32
 PORT = int(os.getenv("PORT", "7860"))
-MAX_SIZE = int(os.getenv("MAX_IMAGE_SIZE", "1024"))
+MAX_SIZE = max(64, min(1024, int(os.getenv("MAX_IMAGE_SIZE", "1024"))))
+generation_gate = GenerationGate()
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("flux-server")
@@ -49,73 +52,49 @@ async def lifespan(app: FastAPI):
     """Load models at startup, clean up at shutdown."""
     global pipe_txt2img, pipe_img2img
 
-    log.info(f"🎨 Loading Flux model: {MODEL_ID}")
-    log.info(f"   Device: {DEVICE} | Dtype: {DTYPE}")
+    log.info("Loading %s model: %s on %s", BACKEND.name, MODEL_ID, DEVICE)
+    import diffusers
 
-    from diffusers import FluxPipeline, FluxImg2ImgPipeline
-
-    # Text-to-image pipeline
-    pipe_txt2img = FluxPipeline.from_pretrained(
-        MODEL_ID,
-        torch_dtype=DTYPE,
-    )
-    pipe_txt2img = pipe_txt2img.to(DEVICE)
-    if DEVICE == "cuda":
-        pipe_txt2img.enable_model_cpu_offload()
-    log.info("✅ Text-to-image pipeline ready")
-
-    # Image-to-image pipeline (shares the same model weights)
+    runtime = SharedImagePipeline(BACKEND, DEVICE, torch, diffusers)
+    pipe_txt2img, pipe_img2img = runtime.generate, runtime.edit
+    log.info("Text-to-image and image-to-image pipelines ready")
     try:
-        pipe_img2img = FluxImg2ImgPipeline.from_pretrained(
-            MODEL_ID,
-            torch_dtype=DTYPE,
-        )
-        pipe_img2img = pipe_img2img.to(DEVICE)
+        yield
+    finally:
+        pipe_txt2img = pipe_img2img = None
+        runtime.close()
         if DEVICE == "cuda":
-            pipe_img2img.enable_model_cpu_offload()
-        log.info("✅ Image-to-image pipeline ready")
-    except Exception as e:
-        log.warning(f"⚠️ Img2Img pipeline not available for this model: {e}")
-        pipe_img2img = None
-
-    yield
-
-    # Cleanup
-    del pipe_txt2img, pipe_img2img
-    if DEVICE == "cuda":
-        torch.cuda.empty_cache()
+            torch.cuda.empty_cache()
 
 
-app = FastAPI(title="AlloFlow Flux Image Server", lifespan=lifespan)
+app = FastAPI(title="AlloFlow Local Image Server", lifespan=lifespan)
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    FluxSecurity,
+    token=os.getenv("ALLOFLOW_FLUX_API_TOKEN", ""),
+    origins=os.getenv("ALLOFLOW_FLUX_ALLOWED_ORIGINS", ""),
 )
 
 
-# ── Request/Response Models ────────────────────────────────────
-
 class ImageGenerationRequest(BaseModel):
-    model: str = "flux"
-    prompt: str
-    n: int = 1
-    size: str = "512x512"
-    response_format: str = "b64_json"
-    negative_prompt: Optional[str] = None
-    num_inference_steps: Optional[int] = None
-    guidance_scale: Optional[float] = None
+    model: str = Field(default=BACKEND.name, max_length=128)
+    prompt: str = Field(min_length=1, max_length=MAX_PROMPT_CHARS)
+    n: Literal[1] = 1
+    size: str = Field(default="512x512", max_length=16)
+    response_format: Literal["b64_json"] = "b64_json"
+    negative_prompt: Optional[str] = Field(default=None, max_length=MAX_PROMPT_CHARS)
+    num_inference_steps: Optional[conint(strict=True, ge=1, le=min(MAX_STEPS, BACKEND.max_steps))] = None
+    guidance_scale: Optional[float] = Field(default=None, ge=0, le=20, allow_inf_nan=False)
 
-class ImageEditRequest(BaseModel):
-    model: str = "flux"
-    prompt: str
-    image: str  # base64 encoded image
-    n: int = 1
-    size: str = "512x512"
-    response_format: str = "b64_json"
-    strength: float = 0.75
+
+class ImageEditRequest(ImageGenerationRequest):
+    image: str = Field(min_length=1, max_length=MAX_BODY_BYTES)
+    strength: float = Field(default=0.75, gt=0, le=1, allow_inf_nan=False)
+
+
+class OllamaImageRequest(BaseModel):
+    prompt: str = Field(min_length=1, max_length=MAX_PROMPT_CHARS)
+
 
 class ImageResponse(BaseModel):
     created: int
@@ -125,17 +104,13 @@ class ImageResponse(BaseModel):
 # ── Helpers ────────────────────────────────────────────────────
 
 def parse_size(size_str: str) -> tuple:
-    """Parse '512x512' into (width, height), clamped to MAX_SIZE."""
-    try:
-        parts = size_str.lower().split("x")
-        w = min(int(parts[0]), MAX_SIZE)
-        h = min(int(parts[1]) if len(parts) > 1 else w, MAX_SIZE)
-        # Round to nearest 8 (required by most diffusion models)
-        w = (w // 8) * 8
-        h = (h // 8) * 8
-        return max(w, 64), max(h, 64)
-    except:
-        return 512, 512
+    if not re.fullmatch(r"[0-9]{2,4}x[0-9]{2,4}", size_str):
+        raise HTTPException(422, "Invalid image size")
+    width, height = map(int, size_str.split("x"))
+    if not (64 <= width <= MAX_SIZE and 64 <= height <= MAX_SIZE):
+        raise HTTPException(422, "Image size is outside the supported limits")
+    multiple = BACKEND.size_multiple
+    return (width // multiple) * multiple, (height // multiple) * multiple
 
 
 def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
@@ -146,20 +121,39 @@ def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
 
 
 def base64_to_image(b64: str) -> Image.Image:
-    """Convert base64 string to PIL Image."""
-    # Strip data URI prefix if present
-    if "," in b64:
-        b64 = b64.split(",", 1)[1]
-    return Image.open(io.BytesIO(base64.b64decode(b64))).convert("RGB")
+    try:
+        if b64.startswith("data:"):
+            prefix, b64 = b64.split(",", 1)
+            if prefix.lower() not in ("data:image/png;base64", "data:image/jpeg;base64", "data:image/webp;base64"):
+                raise ValueError("unsupported image")
+        if len(b64) > ((MAX_IMAGE_BYTES + 2) // 3) * 4:
+            raise ValueError("encoded image too large")
+        data = base64.b64decode(b64, validate=True)
+        if len(data) > MAX_IMAGE_BYTES:
+            raise ValueError("image too large")
+        with Image.open(io.BytesIO(data)) as image:
+            if image.format not in ("PNG", "JPEG", "WEBP") or image.width * image.height > MAX_IMAGE_PIXELS:
+                raise ValueError("unsupported image dimensions or format")
+            return image.convert("RGB")
+    except Exception:
+        raise HTTPException(400, "Invalid or oversized image") from None
 
 
 # ── Endpoints ──────────────────────────────────────────────────
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def image_studio():
+    return HTMLResponse(content=STUDIO_HTML, headers=studio_headers())
+
 
 @app.get("/health")
 async def health():
     return {
         "status": "ok",
         "model": MODEL_ID,
+        "revision": BACKEND.revision,
+        "offline": BACKEND.offline,
+        "backend": BACKEND.name,
         "device": DEVICE,
         "txt2img": pipe_txt2img is not None,
         "img2img": pipe_img2img is not None,
@@ -167,117 +161,53 @@ async def health():
 
 
 @app.post("/v1/images/generations", response_model=ImageResponse)
-async def generate_image(req: ImageGenerationRequest):
-    """OpenAI-compatible text-to-image generation."""
+def generate_image(req: ImageGenerationRequest):
+    """Blocking GPU work runs in FastAPI's thread pool, with no waiting queue."""
     if pipe_txt2img is None:
         raise HTTPException(503, "Model not loaded yet")
-
     width, height = parse_size(req.size)
-    steps = req.num_inference_steps or (4 if "schnell" in MODEL_ID else 20)
-    guidance = req.guidance_scale or (0.0 if "schnell" in MODEL_ID else 7.5)
-
-    log.info(f"🖼️ Generating: '{req.prompt[:60]}...' @ {width}x{height}, steps={steps}")
-    start = time.time()
-
-    try:
-        result = pipe_txt2img(
-            prompt=req.prompt,
-            width=width,
-            height=height,
-            num_inference_steps=steps,
-            guidance_scale=guidance,
-            max_sequence_length=256,
-        )
-        image = result.images[0]
-        elapsed = time.time() - start
-        log.info(f"✅ Generated in {elapsed:.1f}s")
-
-        b64 = image_to_base64(image)
-        return ImageResponse(
-            created=int(time.time()),
-            data=[{"b64_json": b64}],
-        )
-    except Exception as e:
-        log.error(f"❌ Generation failed: {e}")
-        raise HTTPException(500, f"Image generation failed: {str(e)}")
+    options = BACKEND.options(steps=req.num_inference_steps, guidance=req.guidance_scale,
+                              width=width, height=height)
+    with generation_gate.acquire():
+        try:
+            result = pipe_txt2img(prompt=req.prompt, **options)
+            return ImageResponse(created=int(time.time()), data=[{"b64_json": image_to_base64(result.images[0])}])
+        except Exception as error:
+            log.error("Image generation failed (%s)", type(error).__name__)
+            raise HTTPException(500, "Image generation failed") from None
 
 
 @app.post("/v1/images/edits", response_model=ImageResponse)
-async def edit_image(req: ImageEditRequest):
-    """OpenAI-compatible image editing."""
+def edit_image(req: ImageEditRequest):
     if pipe_img2img is None:
         raise HTTPException(503, "Image-to-image model not available")
-
     width, height = parse_size(req.size)
+    options = BACKEND.options(steps=req.num_inference_steps, guidance=req.guidance_scale,
+                              width=width, height=height)
+    if BACKEND.name == "flux" and int(options["num_inference_steps"] * req.strength) < 1:
+        raise HTTPException(422, "Increase edit strength or inference steps to allow at least one step")
+    with generation_gate.acquire():
+        with base64_to_image(req.image) as original:
+            source_image = original.resize((width, height), Image.Resampling.LANCZOS)
+        try:
+            result = pipe_img2img(prompt=req.prompt, image=source_image, strength=req.strength,
+                                 **options)
+            return ImageResponse(created=int(time.time()), data=[{"b64_json": image_to_base64(result.images[0])}])
+        except Exception as error:
+            log.error("Image edit failed (%s)", type(error).__name__)
+            raise HTTPException(500, "Image edit failed") from None
+        finally:
+            source_image.close()
 
-    log.info(f"✏️ Editing image: '{req.prompt[:60]}...' strength={req.strength}")
-    start = time.time()
-
-    try:
-        source_image = base64_to_image(req.image)
-        source_image = source_image.resize((width, height), Image.Resampling.LANCZOS)
-
-        result = pipe_img2img(
-            prompt=req.prompt,
-            image=source_image,
-            strength=req.strength,
-            num_inference_steps=4 if "schnell" in MODEL_ID else 20,
-            guidance_scale=0.0 if "schnell" in MODEL_ID else 7.5,
-        )
-        image = result.images[0]
-        elapsed = time.time() - start
-        log.info(f"✅ Edited in {elapsed:.1f}s")
-
-        b64 = image_to_base64(image)
-        return ImageResponse(
-            created=int(time.time()),
-            data=[{"b64_json": b64}],
-        )
-    except Exception as e:
-        log.error(f"❌ Edit failed: {e}")
-        raise HTTPException(500, f"Image edit failed: {str(e)}")
-
-
-# ── Ollama-compatible endpoint (for direct Ollama backend) ─────
 
 @app.post("/api/generate")
-async def ollama_generate(body: dict):
-    """Ollama-compatible generate endpoint for image models."""
-    prompt = body.get("prompt", "")
-    if not prompt:
-        raise HTTPException(400, "prompt required")
-
-    if pipe_txt2img is None:
-        raise HTTPException(503, "Model not loaded yet")
-
-    width, height = 512, 512
-    steps = 4 if "schnell" in MODEL_ID else 20
-
-    log.info(f"🖼️ [Ollama compat] Generating: '{prompt[:60]}...'")
-    start = time.time()
-
-    try:
-        result = pipe_txt2img(
-            prompt=prompt,
-            width=width,
-            height=height,
-            num_inference_steps=steps,
-            guidance_scale=0.0 if "schnell" in MODEL_ID else 7.5,
-            max_sequence_length=256,
-        )
-        image = result.images[0]
-        elapsed = time.time() - start
-        log.info(f"✅ Generated in {elapsed:.1f}s")
-
-        b64 = image_to_base64(image)
-        return {"images": [b64]}
-    except Exception as e:
-        log.error(f"❌ Generation failed: {e}")
-        raise HTTPException(500, str(e))
+def ollama_generate(body: OllamaImageRequest):
+    result = generate_image(ImageGenerationRequest(prompt=body.prompt))
+    return {"images": [result.data[0]["b64_json"]]}
 
 
 if __name__ == "__main__":
-    log.info(f"🎨 Starting AlloFlow Flux Image Server on port {PORT}")
+    log.info(f"Starting AlloFlow Local Image Server on port {PORT}")
     log.info(f"   Model: {MODEL_ID}")
     log.info(f"   Endpoints:")
     log.info(f"     POST /v1/images/generations (OpenAI-compatible)")

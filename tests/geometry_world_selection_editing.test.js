@@ -43,6 +43,50 @@ describe('whole creation geometry transforms',()=>{
   it('four rotations return every asymmetric footprint recipe to its original grid corner',()=>{const original=[block(-3,1,2,'stone','halfA',1),block(-1,3,6,'wood','quarter',2)];let current=original;for(let i=0;i<4;i++)current=api.transformCreationBlocks(current,'rotate',{}).additions;expect(current).toEqual(original);});
   it.each(['mirrorX','mirrorZ'])('reflecting twice across %s restores exact recipes',operation=>{const original=[block(-3,1,2,'stone','halfA',1),block(-1,3,6,'wood','quarter',2)];expect(api.transformCreationBlocks(api.transformCreationBlocks(original,operation,{}).additions,operation,{}).additions).toEqual(original);});
   it.each([{x:.5,y:0,z:0},{x:1,y:NaN,z:0},{x:129,y:0,z:0},{x:0,y:0,z:0}])('rejects unsafe or empty offsets %j',offset=>{expect(api.transformCreationBlocks([block(0)],'move',offset).ok).toBe(false);});
+  it.each([
+    ['move',{x:.5,y:NaN,z:129},['x','y','z']],
+    ['duplicate',{x:0,y:0,z:0},['x','y','z']],
+    ['repeat',{axis:'x',direction:1,total:1,gap:0},['total']],
+    ['repeat',{axis:'x',direction:1,total:4,gap:9},['gap']],
+    ['repeat',{axis:'invalid',direction:0,total:4,gap:0},['axis','direction']],
+    ['align',{axis:'x',edge:'start',coordinate:NaN},['coordinate']],
+    ['align',{axis:'invalid',edge:'invalid',coordinate:0},['axis','edge']]
+  ])('identifies the fields preventing a %s preview without inspecting or changing the world',(operation,values,fields)=>{
+    const f=selected(),before=snapshot(f),inspect=vi.spyOn(f.engine,'previewBuildBatch');
+    const result=api.previewSelectionEdit(f.engine,operation,values);
+    expect(result.ok).toBe(false);expect(result.invalidFields).toEqual(fields);
+    expect(inspect).not.toHaveBeenCalled();expect(snapshot(f)).toEqual(before);
+  });
+});
+
+describe('captured selection-edit review descriptions',()=>{
+  it.each([
+    ['move',{x:2,y:1,z:-1},/Move 2 grid cells right \(\+X\), 1 grid cell up \(\+Y\), 1 grid cell in negative depth \(−Z\)/,2],
+    ['duplicate',{x:3,y:0,z:0},/Make a copy offset 3 grid cells right \(\+X\).*Original blocks stay in place/,2],
+    ['repeat',{axis:'z',direction:-1,total:3,gap:1},/3 total instances along Z in the negative direction, with a 1-cell gap/,6],
+    ['align',{axis:'x',edge:'end',coordinate:5},/upper X grid edge to line 5/,2],
+    ['rotate',{},/Rotate 90° around Y, keeping the starting X\/Z grid corner/,2],
+    ['mirrorX',{},/Mirror left and right along X/,2],
+    ['mirrorZ',{},/Mirror depth along Z/,2],
+    ['recolor',{type:'wood'},/Change block material to Wood/,2]
+  ])('describes the actual %s proposal without mutating its source',(operation,values,description,selectedAfter)=>{
+    const f=selected([block(0),block(1)]),before=snapshot(f);
+    const plan=api.previewSelectionEdit(f.engine,operation,values);
+    expect(plan.ok).toBe(true);expect(plan.reviewDescription).toMatch(description);
+    expect(plan.reviewDescription).toContain('After Apply, '+selectedAfter+' blocks will be selected (2 currently).');
+    expect(plan.reviewDescription).toMatch(/Resulting grid span is \d+ wide \(X\), \d+ deep \(Z\), \d+ high \(Y\)/);
+    expect(plan.afterSelection.blocks).toHaveLength(selectedAfter);expect(snapshot(f)).toEqual(before);
+  });
+  it('captures the previewed values so later form drafts cannot rewrite the description',()=>{
+    const f=selected([block(0)]),values={x:2,y:0,z:0},plan=api.previewSelectionEdit(f.engine,'move',values);
+    values.x=20;expect(plan.reviewDescription).toContain('2 grid cells right (+X)');
+    expect(plan.reviewDescription).not.toContain('20 grid cells');expect(plan.additions[0].x).toBe(2);
+  });
+  it('does not describe a blocked destination as an applicable change',()=>{
+    const f=selected([block(0)]);place(f,block(2));
+    const plan=api.previewSelectionEdit(f.engine,'move',{x:2,y:0,z:0});
+    expect(plan.ok).toBe(false);expect(plan.reviewDescription).toBeUndefined();
+  });
 });
 
 describe('selection editing through actual construction transactions',()=>{
@@ -62,11 +106,55 @@ describe('selection editing through actual construction transactions',()=>{
 describe('bounded editable browser-local stamps',()=>{
   it('round-trips named shape recipes without changing the creation, then places them with one Undo',()=>{const f=selected(),e=f.engine,store=memoryStorage(),before=snapshot(f),result=api.saveSelectionStamp(e,'Garden arch',store);expect(result.ok).toBe(true);expect(snapshot(f)).toEqual(before);expect(api.readBuildStamps(store)).toEqual(result);const stamp=result.stamps[0];expect(stamp.name).toBe('Garden arch');expect(stamp.blocks.map(b=>[b.type,b.shape,b.rotation])).toEqual([['stone','halfA',3],['wood','quarter',1]]);const plan=api.previewBuildStamp(e,stamp,{x:20,y:1,z:0});expect(plan.ok).toBe(true);expect(snapshot(f)).toEqual(before);expect(api.commitSelectionEdit(e,plan).ok).toBe(true);expect(e._undoStack).toHaveLength(1);expect(e._builderSelection.blocks).toEqual(plan.additions.map(pos));expect(e.undo()).toBe(true);expect(api.selectionEditSnapshot(e).blocks).toEqual(api.selectionEditSnapshot({blocks:Object.fromEntries(before.identities.map(m=>[key(m.userData.gridPos),m])),_builderSelection:before.selection}).blocks);});
   it('keeps stamp coordinates editable and validates a new destination before mutation',()=>{const f=selected(),store=memoryStorage(),saved=api.saveSelectionStamp(f.engine,'Arch',store).stamps[0],before=snapshot(f);expect(api.previewBuildStamp(f.engine,saved,{x:64,y:1,z:0}).ok).toBe(false);expect(api.previewBuildStamp(f.engine,saved,{x:0,y:1,z:0}).code).toBe('occupied');expect(api.previewBuildStamp(f.engine,saved,{x:0.25,y:1,z:0}).ok).toBe(false);expect(snapshot(f)).toEqual(before);});
+  it('identifies invalid stamp corner axes before sending a placement to the engine',()=>{
+    const f=selected(),store=memoryStorage(),saved=api.saveSelectionStamp(f.engine,'Arch',store).stamps[0];
+    const before=snapshot(f),inspect=vi.spyOn(f.engine,'previewBuildBatch');
+    const result=api.previewBuildStamp(f.engine,saved,{x:.25,y:NaN,z:0});
+    expect(result.invalidFields).toEqual(['x','y']);expect(result.ok).toBe(false);
+    expect(inspect).not.toHaveBeenCalled();expect(snapshot(f)).toEqual(before);
+  });
   it.each(['{','null',JSON.stringify({schema:'alloflow-build-stamps/1',stamps:[{id:'a',name:'Broken',blocks:[block(0,0)]}]})])('does not overwrite malformed stored data %s',raw=>{const f=selected(),store=memoryStorage(raw);expect(api.readBuildStamps(store).ok).toBe(false);expect(api.saveSelectionStamp(f.engine,'Safe',store).ok).toBe(false);expect(store.raw()).toBe(raw);});
   it('rejects duplicate IDs, repeated cells, unknown shapes and oversized libraries',()=>{const recipe={id:'a',name:'Arch',blocks:[block(0)]};for(const stamps of [[recipe,recipe],[{...recipe,blocks:[block(0),block(0)]}],[{...recipe,blocks:[{...block(0),shape:'invented'}]}],Array.from({length:13},(_,i)=>({...recipe,id:'s'+i}))]){expect(api.readBuildStamps(memoryStorage(JSON.stringify({schema:'alloflow-build-stamps/1',stamps}))).ok).toBe(false);}});
   it('handles storage denial or quota exhaustion without losing current blocks or earlier recipes',()=>{const f=selected(),before=snapshot(f);expect(api.saveSelectionStamp(f.engine,'Arch',{getItem(){throw Error('denied');}}).ok).toBe(false);const raw=JSON.stringify({schema:'alloflow-build-stamps/1',stamps:[]});expect(api.saveSelectionStamp(f.engine,'Arch',{getItem:()=>raw,setItem(){throw Error('quota');}}).ok).toBe(false);expect(snapshot(f)).toEqual(before);});
   it('does not silently replace an existing named recipe',()=>{const f=selected(),store=memoryStorage();expect(api.saveSelectionStamp(f.engine,'Arch',store).ok).toBe(true);const raw=store.raw();expect(api.saveSelectionStamp(f.engine,' arch ',store).ok).toBe(false);expect(store.raw()).toBe(raw);});
   it('removes only the chosen stored recipe, leaving placed geometry intact',()=>{const f=selected(),store=memoryStorage(),saved=api.saveSelectionStamp(f.engine,'Arch',store),before=snapshot(f);expect(api.removeBuildStamp(saved.stamps[0].id,store)).toEqual({ok:true,stamps:[]});expect(snapshot(f)).toEqual(before);});
+  it.each([
+    ['name',stamp=>({...stamp,name:'Updated arch'})],
+    ['position',stamp=>({...stamp,blocks:stamp.blocks.map((b,i)=>i?b:{...b,x:b.x+1})})],
+    ['material',stamp=>({...stamp,blocks:stamp.blocks.map((b,i)=>i?b:{...b,type:'glass'})})],
+    ['shape',stamp=>({...stamp,blocks:stamp.blocks.map((b,i)=>i?b:{...b,shape:'cube'})})],
+    ['rotation',stamp=>({...stamp,blocks:stamp.blocks.map((b,i)=>i?b:{...b,rotation:0})})]
+  ])('requires another confirmation after the stamp %s changes',(kind,change)=>{
+    const f=selected(),store=memoryStorage(),confirmed=api.saveSelectionStamp(f.engine,'Arch',store).stamps[0],before=snapshot(f);
+    const updated=change(structuredClone(confirmed));
+    store.setItem('',JSON.stringify({schema:'alloflow-build-stamps/1',stamps:[updated]}));
+    const raw=store.raw(),write=vi.spyOn(store,'setItem');
+    const result=api.removeBuildStamp(confirmed.id,store,confirmed);
+    expect(result).toMatchObject({ok:false,conflict:true,stamps:[updated]});
+    expect(result.reason).toMatch(/changed.*another tab/);
+    expect(write).not.toHaveBeenCalled();expect(store.raw()).toBe(raw);expect(snapshot(f)).toEqual(before);
+  });
+  it('refreshes a missing stamp without writing the library or claiming successful removal',()=>{
+    const f=selected(),confirmed={id:'old_stamp',name:'Old arch',blocks:[block(0)]},remaining={id:'new_stamp',name:'New arch',blocks:[block(2)]};
+    const raw=JSON.stringify({schema:'alloflow-build-stamps/1',stamps:[remaining]}),store=memoryStorage(raw),write=vi.spyOn(store,'setItem'),before=snapshot(f);
+    expect(api.removeBuildStamp(confirmed.id,store,confirmed)).toMatchObject({ok:false,missing:true,stamps:[remaining]});
+    expect(api.removeBuildStamp(confirmed.id,store)).toMatchObject({ok:false,missing:true,stamps:[remaining]});
+    expect(write).not.toHaveBeenCalled();expect(store.raw()).toBe(raw);expect(snapshot(f)).toEqual(before);
+  });
+  it('removes the confirmed normalized recipe while retaining every other latest stored recipe',()=>{
+    const f=selected(),store=memoryStorage(),confirmed=api.saveSelectionStamp(f.engine,'Arch',store).stamps[0];
+    const added={id:'new_stamp',name:'New arch',blocks:[block(2)]};
+    store.setItem('',JSON.stringify({schema:'alloflow-build-stamps/1',stamps:[confirmed,added]}));
+    const before=snapshot(f),expected={...confirmed,name:'  Arch  ',blocks:[...confirmed.blocks].reverse()};
+    expect(api.removeBuildStamp(confirmed.id,store,expected)).toEqual({ok:true,stamps:[added]});
+    expect(api.readBuildStamps(store)).toEqual({ok:true,stamps:[added]});expect(snapshot(f)).toEqual(before);
+  });
+  it('keeps a stamp and refreshed library available when confirmed removal cannot be saved',()=>{
+    const f=selected(),store=memoryStorage(),confirmed=api.saveSelectionStamp(f.engine,'Arch',store).stamps[0],raw=store.raw(),before=snapshot(f);
+    const blocked={getItem:()=>raw,setItem(){throw Error('quota');}};
+    expect(api.removeBuildStamp(confirmed.id,blocked,confirmed)).toMatchObject({ok:false,stamps:[confirmed]});
+    expect(store.raw()).toBe(raw);expect(snapshot(f)).toEqual(before);
+  });
 });
 
 describe('clear-position duplicate suggestions',()=>{

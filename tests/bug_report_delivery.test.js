@@ -27,7 +27,7 @@ function fakeKv(count = 0) {
   };
 }
 
-const envFor = (kv = fakeKv(), extra = {}) => ({ BUG_REPORTS: kv, BUG_REPORTS_ADMIN_TOKEN: token, ...extra });
+const envFor = (kv = fakeKv(), extra = {}) => ({ BUG_REPORTS: kv, BUG_REPORTS_ADMIN_TOKEN: token, SUBMIT_RATE: fakeKv(), ...extra });
 function get(path = '/bugs', env = envFor(), authorization = `Bearer ${token}`) {
   return worker.fetch(new Request(`https://worker.test${path}`, { headers: authorization ? { Authorization: authorization } : {} }), env);
 }

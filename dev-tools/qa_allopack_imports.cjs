@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{chr
 const root=path.resolve(__dirname,'..');
 const reportDate=process.argv[2]||'2026-09-08';assert(/^\d{4}-\d{2}-\d{2}$/.test(reportDate),'Use a YYYY-MM-DD report date');
 async function main(){
-const files=['allopacks','allopacks/illustrated'].flatMap(dir=>fs.readdirSync(path.join(root,dir)).filter(f=>f.endsWith('.allopack.json')).sort().map(f=>dir+'/'+f));
+const files=['allopacks/current'].flatMap(dir=>fs.readdirSync(path.join(root,dir)).filter(f=>f.endsWith('.allopack.json')).sort().map(f=>dir+'/'+f));
 const browser=await chromium.launch({headless:true});
 try{
 const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));

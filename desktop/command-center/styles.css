@@ -507,6 +507,39 @@ body.app-focus-mode .focus-exit:focus-visible::before {
   padding: 0;
 }
 
+.local-images-steps,
+.local-images-issues {
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.local-images-panel .hint {
+  line-height: 1.5;
+}
+
+.local-images-panel .check-row {
+  align-items: flex-start;
+}
+
+.local-images-panel .check-row input {
+  flex-shrink: 0;
+}
+
+.local-images-panel dd {
+  overflow-wrap: anywhere;
+}
+
+.local-images-app-connection {
+  border-top: 1px solid var(--line, #cbd5cf);
+  margin-top: 16px;
+  padding-top: 12px;
+}
+
+.local-images-app-connection .hint {
+  overflow-wrap: anywhere;
+}
+
 .provider-title {
   display: flex;
   gap: 8px;

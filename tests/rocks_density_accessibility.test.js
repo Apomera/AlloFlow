@@ -110,6 +110,22 @@ describe('density calculation error recovery', () => {
 });
 
 describe('density measurements and trial review access', () => {
+  it('names each instrument using measured values, clearing stale readings when settings change', () => {
+    const app = mount();
+    const balance = app.get('[data-rk-density-balance]');
+    const cylinder = app.get('[data-rk-density-cylinder]');
+    expect(balance.getAttribute('aria-label')).toBe('Dry specimen mass: Not measured');
+    expect(cylinder.getAttribute('aria-label')).toBe('Initial water level: Not measured. Water level with specimen: Not measured');
+    expect(app.get('[data-rk-density-instruments]').hasAttribute('tabindex')).toBe(false);
+    app.read();
+    expect(balance.getAttribute('aria-label')).toBe('Dry specimen mass: 26.5 g');
+    expect(cylinder.getAttribute('aria-label')).toBe('Initial water level: 30.0 mL. Water level with specimen: 40.0 mL');
+    app.change('data-rk-density-water','40');
+    expect(balance.getAttribute('aria-label')).toContain('Not measured');
+    expect(cylinder.getAttribute('aria-label')).not.toContain('40.0 mL');
+    expect(cylinder.getAttribute('aria-label')).not.toContain('30.0 mL');
+  });
+
   it('describes unread measurements explicitly and exposes units and reset consequences', () => {
     const app = mount();
     for (const kind of ['mass','before','after']) {

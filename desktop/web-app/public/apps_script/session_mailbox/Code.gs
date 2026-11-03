@@ -25,7 +25,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 27;
+var VERSION = 28;
 // Apps Script allows 30 simultaneous runs per owner and a run waiting on the
 // script lock still counts, so live writes give up quickly and answer "busy"
 // (the app retries with backoff) instead of queueing for seconds.
@@ -160,6 +160,49 @@ function newToken() {
   return Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
 }
 
+function requireMailboxOwner_() {
+  var active = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();
+  var effective = String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase();
+  var bound = PropertiesService.getScriptProperties().getProperty('admin_owner_email');
+  if (!active || !effective || active !== effective || (bound && bound !== active)) {
+    throw new Error('Owner identity could not be verified. Run setupMailboxOwner in the Apps Script editor as the deploying owner.');
+  }
+  return active;
+}
+
+// Editor-only enrollment/recovery. Public HTTP actions never call these helpers.
+function setupMailboxOwner() {
+  return configureMailboxOwner_(false);
+}
+
+function rotateMailboxOwnerToken() {
+  return configureMailboxOwner_(true);
+}
+
+function configureMailboxOwner_(rotate) {
+  requireMailboxOwner_();
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) throw new Error('Mailbox is busy. Retry owner setup.');
+  try {
+    var owner = requireMailboxOwner_();
+    var props = PropertiesService.getScriptProperties();
+    var token = props.getProperty('admin');
+    var records = rotate ? props.getProperties() : {};
+    if (rotate && Object.keys(records).some(function(key) {
+      return key.indexOf('sess_') === 0 && sessionMarker(records[key], Date.now());
+    })) {
+      throw new Error('Close active sessions before rotating the token, or wait for their six-hour access window to end.');
+    }
+    if (!token || rotate) {
+      token = newToken();
+      props.setProperty('admin', token);
+    }
+    props.setProperty('admin_owner_email', owner);
+    saveTokenNote(token);
+    return 'Owner setup complete. Copy admin from Project Settings > Script properties into the AlloFlow Admin token field. Keep it private.';
+  } finally { lock.releaseLock(); }
+}
+
 function participantToken(admin, code, uid, secret) {
   var bytes = Utilities.computeHmacSha256Signature(code + '|' + uid + '|' + secret, admin);
   return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/g, '');
@@ -191,15 +234,8 @@ function handle(p) {
 
   var props = PropertiesService.getScriptProperties();
   if (a === 'claim') {
-    var lock = LockService.getScriptLock();
-    if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
-    try {
-      if (props.getProperty('admin')) return out({ ok: false, e: 'claimed' });
-      var token = newToken();
-      props.setProperty('admin', token);
-      saveTokenNote(token);
-      return out({ ok: true, admin: token, t: Date.now() });
-    } finally { lock.releaseLock(); }
+    return out({ ok: false, e: props.getProperty('admin') ? 'claimed' : 'owner-setup-required',
+      d: 'Run setupMailboxOwner in the Apps Script editor as the deploying owner, then paste the admin token from Script properties into AlloFlow.' });
   }
 
   var cache = CacheService.getScriptCache();
@@ -1295,8 +1331,9 @@ function saveTokenNote(token) {
       + token + '\n\n'
       + 'Paste it into AlloFlow (Live class without accounts -> Admin token field)\n'
       + 'when reconnecting from a new device or a fresh Canvas paste.\n\n'
-      + 'To invalidate it: Apps Script editor -> Project Settings -> Script\n'
-      + 'properties -> delete "admin", then reconnect from AlloFlow.';
+      + 'To replace it: close active sessions, then run rotateMailboxOwnerToken\n'
+      + 'in the Apps Script editor as the deploying owner. Paste the replacement\n'
+      + 'admin token from Script properties into AlloFlow.';
     var folder = packFolder();
     var it = folder.getFilesByName(name);
     if (it.hasNext()) it.next().setContent(body);

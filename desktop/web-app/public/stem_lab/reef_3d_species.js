@@ -273,7 +273,7 @@
       'transformed.z+=reefFinAmp*reefFinEnvelope*sin(reefFinPhase);' +
       'if(reefRigged>0.5){vec4 reefT1=vec4(transformed,1.0);transformed=vec3(dot(reefTo0,reefT1),dot(reefTo1,reefT1),dot(reefTo2,reefT1));}' +
       'vReefUv=uv;vReefRough=reefRough;vReefFlags=reefFlags;');
-    f = inject(f, '#include <common>', 'uniform vec3 reefSheenA;uniform vec3 reefSheenB;uniform float reefSheenK;uniform vec3 reefIrisColor;uniform vec4 reefFeature;varying vec2 vReefUv;varying float vReefRough;varying vec2 vReefFlags;' +
+    f = inject(f, '#include <common>', 'uniform vec3 reefSheenA;uniform vec3 reefSheenB;uniform float reefSheenK;uniform vec3 reefIrisColor;uniform vec4 reefIrisBar;uniform vec4 reefFeature;varying vec2 vReefUv;varying float vReefRough;varying vec2 vReefFlags;' +
       (derivatives ? 'float reefFinRidgeSlope(float phase,float width){float x=(fract(phase)-0.5)/width;return 2.0*x*exp(-1.6*x*x);}' : ''));
     f = inject(f, '#include <color_fragment>',
       'float reefWeb=0.0;float reefDistal=0.0;float reefRayDetail=0.0;float reefEyeMask=0.0;float reefEyeR=0.0;vec2 reefFinSlope=vec2(0.0);\n' +
@@ -314,7 +314,8 @@
       'float reefIrisStreak=smoothstep(0.48,0.62,reefEyeR)*(1.0-smoothstep(0.86,1.0,reefEyeR));' +
       'float reefIrisPigment=0.94+reefEyeDetail*(reefIrisGrain*0.11*reefIrisStreak+sin(reefIrisAngle*5.0+reefEyeR*16.0)*0.035);' +
       'float reefIrisRim=(0.76+0.24*smoothstep(0.48,0.61,reefEyeR))*(1.0-0.68*smoothstep(0.78,1.06,reefEyeR));' +
-      'vec3 reefEyePigment=mix(vec3(0.0006966,0.0012384,0.0016254),reefIrisColor*reefIrisPigment*reefIrisRim,reefPupil);' +
+      'vec3 reefIrisTint=reefIrisColor;if(reefIrisBar.w>0.0){float reefBar=1.0-smoothstep(reefIrisBar.w-0.06,reefIrisBar.w+0.06,abs(reefEyeUV.x));reefIrisTint=mix(reefIrisTint,reefIrisBar.xyz,reefBar);}' +
+      'vec3 reefEyePigment=mix(vec3(0.0006966,0.0012384,0.0016254),reefIrisTint*reefIrisPigment*reefIrisRim,reefPupil);' +
       'diffuseColor.rgb=mix(diffuseColor.rgb,reefEyePigment*diffuse,reefEyeMask);}');
     f = inject(f, '#include <roughnessmap_fragment>',
       'if(vReefRough>=0.0)roughnessFactor=vReefRough;' +
@@ -342,12 +343,13 @@
   // batch (the Float32Array(80) rig of a batchMerge mesh).
   function patchMaterial(kit, m, cfg) {
     var T = kit.T, derivatives = kit.derivatives; cfg = cfg || {};
-    var sheen = cfg.sheen, U = {
+    var sheen = cfg.sheen, irisBar = cfg.irisBar, barColor = irisBar ? lin(irisBar[0]) : [0, 0, 0], U = {
       reefSwim: cfg.swim || { value: new T.Vector4(0, 0, 0, 0) },
       reefSwimShape: cfg.swimShape || { value: new T.Vector4(0, 0, 0, 0) },
       reefFinFlex: cfg.flex || { value: new T.Vector4(0, 0, 1, 0) },
       reefSheenA: { value: sheen ? sheen[0] : new T.Color(0, 0, 0) }, reefSheenB: { value: sheen ? sheen[1] : new T.Color(0, 0, 0) }, reefSheenK: { value: sheen ? sheen[2] : 0 },
       reefIrisColor: { value: new T.Color().fromArray(cfg.iris || [0.75, 0.6, 0.2]).convertSRGBToLinear() },
+      reefIrisBar: { value: new T.Vector4(barColor[0], barColor[1], barColor[2], irisBar ? irisBar[1] : 0) },
       reefFeature: { value: new T.Vector4(cfg.rays ? 1 : 0, cfg.eye ? 1 : 0, derivatives ? (cfg.finRelief || 0) : 0, 0) },
       reefBatch: { value: cfg.batch ? 1 : 0 }
     };
@@ -358,7 +360,7 @@
       for (var k in U) shader.uniforms[k] = U[k];
       patchSource(shader, derivatives);
     };
-    m.customProgramCacheKey = function () { return 'reef3d-species-v7|' + (derivatives ? 'd' : 'n'); };
+    m.customProgramCacheKey = function () { return 'reef3d-species-v8|' + (derivatives ? 'd' : 'n'); };
   }
   function sheenOf(T, a, b, k) { return [new T.Color(a).convertSRGBToLinear(), new T.Color(b).convertSRGBToLinear(), k]; }
 
@@ -704,12 +706,12 @@
     var s = prof(x), yc = (s[0] + s[1]) / 2, hh = (s[0] - s[1]) / 2, yn = clamp(Math.abs(y - yc) / hh, 0, 0.999);
     return s[2] * Math.pow(1 - Math.pow(yn, sq), 1 / sq);
   }
-  function addEye(T, geo, prof, sq, eye, side, iris, high, bulge, school) {
+  function addEye(T, geo, prof, sq, eye, side, iris, high, bulge, school, segments) {
     // Seat the cornea against the actual head surface, including its slope.
     // UVs above 2 identify eyes inside the shared detail mesh, allowing a wet
     // cornea over a matte operculum without another mesh or material.
     var x = eye[0], y = eye[1], r = eye[2] * 0.88, z = surfZ(prof, sq, x, y), b = bulge || 0.6;
-    var radii = school ? [0.51, 1] : [0.44, 0.53, 0.79, 0.95, 1.06], ns = school ? 6 : high ? 24 : 12;
+    var radii = school ? [0.51, 1] : [0.44, 0.53, 0.79, 0.95, 1.06], ns = segments || (school ? 6 : high ? 24 : 12);
     var first = geo.count(), pupil = lin([0.009, 0.016, 0.021]);
     geo.v(x, y, side * (z + r * b * 0.72), pupil, 2.5, 0.5);
     for (var q = 0; q < radii.length; q++) for (var a = 0; a < ns; a++) {
@@ -832,6 +834,13 @@
       var col = cols[i], up = rowsUp[j];
       P.u = u; P.v = v; P.x = col[0]; P.top = col[1]; P.bottom = col[2]; P.hw = col[3]; P.yc = col[4]; P.hh = col[5];
       P.up = up; P.side = rowsSide[j]; P.yn = rowsYn[j]; P.y = P.yc + P.yn * P.hh;
+      if (def.facetedPaint) {
+        // Rigid square forms need pigment coordinates from their real facets;
+        // the analytic superellipse has an infinite UV slope at each flat face.
+        var gu=u*nx,gv=v*na,ru=Math.min(nx-1,Math.floor(gu)),rv=Math.min(na-1,Math.floor(gv)),fu=gu-ru,fv=gv-rv,i0=ru*(na+1)+rv,i1=i0+1,j0=i0+na+1,j1=j0+1;
+        var va,vb,vc,wa,wb,wc;if(fu+fv<=1){va=i0;vb=i1;vc=j0;wa=1-fu-fv;wb=fv;wc=fu;}else{va=i1;vb=j1;vc=j0;wa=1-fu;wb=fu+fv-1;wc=1-fv;}
+        P.y=body.p[va*3+1]*wa+body.p[vb*3+1]*wb+body.p[vc*3+1]*wc;P.z=body.p[va*3+2]*wa+body.p[vb*3+2]*wb+body.p[vc*3+2]*wc;
+      }
       P.aay = col[6];
       P.lateral = 0; P.gill = 0; P.gillD = 0; P.gillFace = 0;
       if (marks) {
@@ -940,7 +949,7 @@
       });
     }
     var extras = [];
-    var ctx = { T: T, def: def, prof: prof, sq: sq, high: high, school: school, fins: fins, detail: detail, body: body, xP: xP, x0: x0,
+    var ctx = { T: T, def: def, prof: prof, sq: sq, high: high, school: school, fins: fins, detail: detail, body: body, tailSurface:tail,pectoralSurfaces:pecs,xP: xP, x0: x0,
       surfZ: function (x, y) { return surfZ(prof, sq, x, y); }, part: function (name, geo, pos, kind) { extras.push({ name: name, geo: geo, pos: pos, kind: kind || 'fin' }); } };
     if (def.extra) def.extra(ctx);
     // A school draws each part as one instanced mesh, so extras join their part.
@@ -962,7 +971,7 @@
     }
     function membrane(bending, flexKind, rig) {
       var flex = flexKind ? { value: flexOf(flexKind) } : null;
-      return kit.std({ vertexColors: true, side: T.DoubleSide, roughness: 0.59, metalness: 0 }, { swim: swim.u, swimShape: bending ? swim.shape : still, flex: flex, rays: true, iris: def.iris, finRelief: def.smoothSkin ? 0 : 0.22, batch: rig });
+      return kit.std({ vertexColors: true, side: T.DoubleSide, roughness: 0.59, metalness: 0 }, { swim: swim.u, swimShape: bending ? swim.shape : still, flex: flex, rays: true, iris: def.iris, irisBar: def.irisBar, finRelief: def.smoothSkin ? 0 : 0.22, batch: rig });
     }
     var free = null, finsRig = new Float32Array(80), detailRig = null, detail = null;
     var out = {
@@ -977,7 +986,7 @@
       out.pectoralFlex = def.pectoral ? membrane(false, 'pectoral') : null;
     }
     // Details draw in the fins' batch; a separate detail mesh only if the batch has no slot left.
-    out.detail = function () { return detail || (detail = kit.std({ vertexColors: true, roughness: 0.57, metalness: 0 }, { swim: swim.u, swimShape: swim.shape, eye: true, iris: def.iris, batch: detailRig = new Float32Array(80) })); };
+    out.detail = function () { return detail || (detail = kit.std({ vertexColors: true, roughness: 0.57, metalness: 0 }, { swim: swim.u, swimShape: swim.shape, eye: true, iris: def.iris, irisBar: def.irisBar, batch: detailRig = new Float32Array(80) })); };
     out.detailRig = function () { return detailRig; };
     return out;
   }
@@ -1423,26 +1432,29 @@
         if (kind === 'pectoral') { mixc(BANGGAI.clear, BANGGAI.pearl, (1 - v) * 0.18, out); return; }
         setc(out, BANGGAI.ink);
         mixc(out, BANGGAI.silver, smooth(0.94, 1, v) * 0.62, out);
-        if (kind !== 'dorsal0') {
-          var d = Math.sqrt(Math.pow(fract(u * 5 + 0.18) - 0.5, 2) + Math.pow(fract(v * 3 + 0.1) - 0.5, 2));
-          mixc(out, BANGGAI.white, 1 - smooth(0.11, 0.25, d), out);
-        }
       },
       extra: function (c) {
-        // Small circular pigment patches remain clear on the broad soft fins.
-        // They are part of the existing detail batch, with no material or draw.
-        function spots(spec, sign) {
-          var shape = finShape(spec.shape), samples = [[0.18, 0.46], [0.28, 0.76], [0.4, 0.48], [0.55, 0.71], [0.67, 0.44], [0.79, 0.58]];
-          samples.forEach(function (s) {
-            var u = s[0], v = s[1], x = lerp(spec.from, spec.to, u), p = c.prof(x), h = spec.h * shape(u), y = sign > 0 ? p[0] : p[1];
-            var cx = x - spec.rake * h * v, cy = y + sign * h * v;
-            var radius = 0.0085 * (0.8 + 0.2 * v), first = c.detail.count(), n = c.high ? 10 : 6;
-            c.detail.v(cx, cy, 0.004, lin(BANGGAI.white), 0, 0);
-            for (var j = 0; j < n; j++) c.detail.v(cx + radius * Math.cos(j / n * TAU), cy + radius * Math.sin(j / n * TAU), 0.004, lin(BANGGAI.white), 0, 0);
-            for (j = 0; j < n; j++) c.detail.i.push(first, first + 1 + j, first + 1 + (j + 1) % n);
+        // Seat bilateral pigment on actual triangles, inside each fin's rig.
+        var broad = [[0.18,0.46],[0.28,0.76],[0.4,0.48],[0.55,0.71],[0.67,0.44],[0.79,0.58]],small = [[0.23,0.4],[0.52,0.7],[0.77,0.55]];
+        function spots(geo, samples, accept) {
+          var limit=geo.i.length,ns=c.high?8:6,white=lin(BANGGAI.white);
+          samples.forEach(function(uv){
+            for(var q=0;q<limit;q+=3){var ia=geo.i[q],ib=geo.i[q+1],ic=geo.i[q+2],u0=geo.t[ia*2],v0=geo.t[ia*2+1],u1=geo.t[ib*2],v1=geo.t[ib*2+1],u2=geo.t[ic*2],v2=geo.t[ic*2+1];
+              var den=(v1-v2)*(u0-u2)+(u2-u1)*(v0-v2);if(Math.abs(den)<1e-9)continue;
+              var wa=((v1-v2)*(uv[0]-u2)+(u2-u1)*(uv[1]-v2))/den,wb=((v2-v0)*(uv[0]-u2)+(u0-u2)*(uv[1]-v2))/den,wc=1-wa-wb;if(Math.min(wa,wb,wc)<-1e-7)continue;
+              var A=new c.T.Vector3().fromArray(geo.p,ia*3),B=new c.T.Vector3().fromArray(geo.p,ib*3),C=new c.T.Vector3().fromArray(geo.p,ic*3),centre=A.clone().multiplyScalar(wa).addScaledVector(B,wb).addScaledVector(C,wc);if(!accept(centre))continue;
+              var axis=B.clone().sub(A).normalize(),normal=new c.T.Vector3().crossVectors(B.clone().sub(A),C.clone().sub(A)).normalize(),across=new c.T.Vector3().crossVectors(normal,axis).normalize(),radius=0.0075;
+              [-1,1].forEach(function(side){var origin=centre.clone().addScaledVector(normal,side*0.0003),first=geo.v(origin.x,origin.y,origin.z,white,uv[0],uv[1]);
+                for(var j=0;j<ns;j++){var a=j/ns*TAU,p=origin.clone().addScaledVector(axis,Math.cos(a)*radius).addScaledVector(across,Math.sin(a)*radius);geo.v(p.x,p.y,p.z,white,uv[0],uv[1]);}
+                for(j=0;j<ns;j++)geo.i.push(first,first+1+j,first+1+(j+1)%ns);
+              });break;
+            }
           });
         }
-        spots(c.def.dorsal[1], 1); spots(c.def.anal[0], -1);
+        spots(c.fins,broad,function(p){return p.x<0.005&&p.y>0;});
+        spots(c.fins,broad,function(p){return p.x<0.02&&p.y<0&&Math.abs(p.z)<0.032;});
+        [-1,1].forEach(function(side){spots(c.fins,small,function(p){return p.y<0&&p.z*side>0.032;});});
+        spots(c.tailSurface,[[0.12,0.45],[0.2,0.73],[0.28,0.85],[0.72,0.85],[0.8,0.73],[0.88,0.45]],function(){return true;});
       }
     },
 
@@ -1473,7 +1485,7 @@
       }
     },
     pajama_cardinalfish: {
-      lengthM: 0.07, tex: [160, 96], scaleSize: 0.023, eye: [0.32, 0.075, 0.064], iris: hex(0xc94122), eyeBulge: 0.72, sheen: [0xd9e7d1, 0xf5d7e1, 0.11],
+      lengthM: 0.07, tex: [160, 96], scaleSize: 0.023, eye: [0.32, 0.075, 0.064], iris: hex(0xe4d18b), irisBar: [hex(0xc94122),0.68], eyeBulge: 0.72, sheen: [0xd9e7d1, 0xf5d7e1, 0.11],
       beat: 0.55, tailBeat: 0.8, wiggle: 0.35, pecBeat: 0.5, pecRate: 1.18,
       rows: [[0.5, 0.023, -0.049, 0.013], [0.465, 0.07, -0.085, 0.033], [0.405, 0.132, -0.143, 0.064], [0.31, 0.192, -0.193, 0.085], [0.2, 0.237, -0.23, 0.095], [0.065, 0.257, -0.244, 0.09], [-0.065, 0.221, -0.209, 0.077], [-0.18, 0.143, -0.14, 0.051], [-0.28, 0.058, -0.05, 0.026], [-0.32, 0.038, -0.032, 0.018]],
       tail: { type: 'forked', span: 0.23, len: 0.18 },
@@ -1713,6 +1725,11 @@
         var px = 0.2 - 0.4 * 0.18 - 0.85 * 0.32, py = c.prof(0.2 - 0.4 * 0.18)[0] + 0.32, pts = [];
         for (var i = 0; i <= (c.high ? 14 : 8); i++) { var t = i / (c.high ? 14 : 8); pts.push([px - t * 0.62, py + 0.04 * Math.sin(PI * t) - t * 0.22, 0]); }
         ribbon(c.fins, pts, function (t) { return 0.03 * (1 - t) + 0.006; }, [0.35, -0.94, 0], function (t, s, o) { setc(o, IDOL.w); });
+        // Adults have a short bony projection immediately above each eye.
+        [-1, 1].forEach(function (side) {
+          var x=0.317,y=0.112,z=side*c.surfZ(x,y),tip=[x+0.016,y+0.038,z+side*0.004];
+          c.detail.tube([[x-0.005,y-0.008,z],[x+0.004,y+0.014,z+side*0.003],tip],function(t){return 0.009*(1-t)+0.001;},c.high?6:4,function(t){return lin(mixc(IDOL.k,IDOL.w,t*.28,[0,0,0]));});
+        });
       }
     },
     threadfin_butterflyfish: {
@@ -1876,7 +1893,7 @@
       anim: function (a, t) { var s = Math.sin(t * 0.9); a.pose.rotation.z = 0.02 * s; }
     },
     peacock_grouper: {
-      lengthM: 0.4, tex: [128, 64], eye: [0.38, 0.065, 0.026], iris: hex(0x9a6a2a), beat: 0.8, wiggle: 0.8,
+      lengthM: 0.4, tex: [256, 128], eye: [0.38, 0.065, 0.026], iris: hex(0x9a6a2a), beat: 0.8, wiggle: 0.8,
       rows: [[0.5, 0.0, -0.045, 0.02], [0.48, 0.05, -0.08, 0.05], [0.43, 0.11, -0.12, 0.075], [0.35, 0.15, -0.14, 0.09], [0.24, 0.165, -0.15, 0.095], [0.12, 0.165, -0.15, 0.095], [0.0, 0.155, -0.14, 0.09], [-0.11, 0.13, -0.12, 0.075], [-0.2, 0.09, -0.08, 0.055], [-0.26, 0.065, -0.055, 0.04], [-0.29, 0.058, -0.05, 0.036]],
       tail: { type: 'round', span: 0.13, len: 0.19 },
       dorsal: [{ from: 0.28, to: -0.24, h: 0.07, shape: 'rear', rake: 0.3 }], anal: [{ from: -0.04, to: -0.23, h: 0.08, shape: 'arch', rake: 0.3 }],
@@ -1894,13 +1911,34 @@
       },
       fin: function (kind, u, v, out) {
         setc(out, ARGUS.b);
-        var spot = noise2(u * 9 + v * 3, v * 5) > 0.72 ? 0.8 : 0;
-        mixc(out, ARGUS.s, spot, out);
         if (kind !== 'pectoral') mixc(out, ARGUS.s, smooth(0.88, 1, v) * 0.6, out);
+      },
+      extra: function (c) {
+        // Dark-edged blue pigment lies on both faces of each moving membrane.
+        // Project every ring vertex onto the original triangles so small marks
+        // follow the billow without floating above it or adding a new draw.
+        function spots(geo, sign, paired) {
+          var samples = c.high ? (paired ? [[.16,.35],[.32,.68],[.49,.4],[.66,.72],[.82,.44]] : [[.16,.35],[.3,.68],[.45,.4],[.6,.74],[.75,.43],[.85,.7]]) : [[.22,.45],[.48,.72],[.75,.46]];
+          var limit = geo.i.length, ns = c.high ? 8 : 5, blue = lin(ARGUS.s), edge = lin(ARGUS.d), triangles = [];
+          for (var q = 0; q < limit; q += 3) triangles.push(new c.T.Triangle(new c.T.Vector3().fromArray(geo.p,geo.i[q]*3),new c.T.Vector3().fromArray(geo.p,geo.i[q+1]*3),new c.T.Vector3().fromArray(geo.p,geo.i[q+2]*3)));
+          samples.forEach(function (uv) {
+            for (var q = 0; q < limit; q += 3) {
+              var ia=geo.i[q],ib=geo.i[q+1],ic=geo.i[q+2],u0=geo.t[ia*2],v0=geo.t[ia*2+1],u1=geo.t[ib*2],v1=geo.t[ib*2+1],u2=geo.t[ic*2],v2=geo.t[ic*2+1],den=(v1-v2)*(u0-u2)+(u2-u1)*(v0-v2);
+              if(Math.abs(den)<1e-9)continue;
+              var wa=((v1-v2)*(uv[0]-u2)+(u2-u1)*(uv[1]-v2))/den,wb=((v2-v0)*(uv[0]-u2)+(u0-u2)*(uv[1]-v2))/den,wc=1-wa-wb;if(Math.min(wa,wb,wc)<-1e-7)continue;
+              var tri=triangles[q/3],centre=tri.a.clone().multiplyScalar(wa).addScaledVector(tri.b,wb).addScaledVector(tri.c,wc);if(sign&&(centre.y*sign<0||Math.abs(centre.z)>.018))continue;
+              var axis=tri.b.clone().sub(tri.a).normalize(),normal=tri.getNormal(new c.T.Vector3()),across=new c.T.Vector3().crossVectors(normal,axis).normalize(),radius=paired?.0038:.0045;
+              function vertex(p,side,col){var nearest=new c.T.Vector3(),candidate=new c.T.Vector3(),best=Infinity,bestNormal=normal.clone();triangles.forEach(function(t){t.closestPointToPoint(p,candidate);var d=candidate.distanceToSquared(p);if(d<best){best=d;nearest.copy(candidate);t.getNormal(bestNormal);if(bestNormal.dot(normal)<0)bestNormal.negate();}});nearest.addScaledVector(bestNormal,side*.00018);return geo.v(nearest.x,nearest.y,nearest.z,col,uv[0],uv[1]);}
+              [-1,1].forEach(function(side){var first=vertex(centre,side,blue);for(var ring=0;ring<2;ring++)for(var j=0;j<ns;j++){var a=j/ns*TAU,p=centre.clone().addScaledVector(axis,Math.cos(a)*radius*(ring?1:.72)).addScaledVector(across,Math.sin(a)*radius*(ring?1:.72));vertex(p,side,ring?edge:blue);}function face(a,b,d){if(side>0)geo.i.push(a,b,d);else geo.i.push(a,d,b);}for(j=0;j<ns;j++){var a=first+1+j,b=first+1+(j+1)%ns;face(first,a,b);face(a,a+ns,b);face(b,a+ns,b+ns);}});break;
+            }
+          });
+        }
+        spots(c.fins,1,false);spots(c.fins,-1,false);spots(c.tailSurface,0,false);
+        if(c.pectoralSurfaces.length)spots(c.pectoralSurfaces[0].geo,0,true);
       }
     },
     humphead_wrasse: {
-      lengthM: 1.4, tex: [128, 64], eye: [0.39, 0.075, 0.018], iris: hex(0xd09030), beat: 0.6, pecBeat: 0.6, pecRate: 1.0, wiggle: 0.6,
+      lengthM: 1.4, tex: [256, 128], scaleSize: 0.045, eye: [0.39, 0.075, 0.018], iris: hex(0xd09030), beat: 0.6, pecBeat: 0.6, pecRate: 1.0, wiggle: 0.6,
       rows: [[0.5, 0.015, -0.06, 0.03], [0.48, 0.075, -0.09, 0.055], [0.445, 0.16, -0.125, 0.08], [0.4, 0.232, -0.15, 0.1], [0.36, 0.258, -0.162, 0.108], [0.3, 0.24, -0.172, 0.114], [0.2, 0.245, -0.18, 0.118], [0.08, 0.235, -0.178, 0.117], [-0.04, 0.21, -0.165, 0.108], [-0.14, 0.165, -0.13, 0.088], [-0.22, 0.115, -0.088, 0.064], [-0.27, 0.085, -0.066, 0.049], [-0.3, 0.076, -0.058, 0.043]],
       tail: { type: 'round', span: 0.14, len: 0.19 },
       dorsal: [{ from: 0.28, to: -0.26, h: 0.08, shape: 'rear', rake: 0.3 }], anal: [{ from: -0.02, to: -0.25, h: 0.085, shape: 'rear', rake: 0.3 }],
@@ -1908,12 +1946,15 @@
       paint: function (P, out) {
         var x = P.x, y = P.y, aa = Math.max(P.aa, P.aay);
         setc(out, NAPO.g); mixc(out, NAPO.d, 0.35 * smooth(0.3, 1, P.up), out); mixc(out, NAPO.l, 0.4 * smooth(0.2, 1, -P.up), out);
-        var gy = y / 0.05, row = Math.floor(gy), fx = fract(x / 0.045 + (row & 1) * 0.5) - 0.5;
-        mixc(out, NAPO.d, band(fx, 0.06 + aa / 0.045, aa / 0.045) * 0.75 * smooth(0.3, 0.24, x), out);
+        var gy = y / (0.045 * 0.78), row = Math.floor(gy), fy = fract(gy) - 0.5, fx = fract(x / 0.045 + (row & 1) * 0.5) - 0.5;
+        var bar = band(fx + 0.06 * Math.sin(fy * TAU), 0.055, aa / 0.045) * (1 - smooth(0.27, 0.47, Math.abs(fy)));
+        mixc(out, NAPO.d, bar * 0.75 * smooth(0.3, 0.24, x), out);
         var head = smooth(0.27, 0.33, x);
         mixc(out, NAPO.head, head * 0.55, out);
-        var w = fract(y * 26 + Math.sin(x * 70) * 0.55);
-        mixc(out, NAPO.wave, band(w - 0.5, 0.14, 0.12) * head * 0.85, out);
+        // Fine irregular lines continue from the face onto the lower chest.
+        var chest = smooth(0.08, 0.24, x) * (1 - smooth(-0.08, 0.02, y));
+        var w = fract(y * 29 + Math.sin(x * 49 + y * 21) * 0.55 + Math.sin(x * 91 - y * 37) * 0.2);
+        mixc(out, NAPO.wave, band(w - 0.5, 0.09, Math.max(0.025, aa * 29)) * Math.max(head, chest * 0.8) * 0.85, out);
         var lines = Math.min(polyDist(x, y, [[0.38, 0.065], [0.33, 0.05], [0.28, 0.045]]), polyDist(x, y, [[0.38, 0.045], [0.33, 0.015], [0.29, 0.0]]));
         mixc(out, NAPO.d, 1 - smooth(0.006 - aa, 0.006 + aa, lines), out);
       },
@@ -1928,7 +1969,7 @@
       }
     },
     cleaner_wrasse: {
-      lengthM: 0.1, tex: [128, 32], eye: [0.42, 0.012, 0.03], iris: hex(0x1a1a20), beat: 1.6, pecBeat: 0.6, pecRate: 1.6,
+      lengthM: 0.1, tex: [256, 64], eye: [0.42, 0.012, 0.03], iris: hex(0x1a1a20), beat: 1.6, pecBeat: 0.6, pecRate: 1.6,
       rows: [[0.5, 0.0, -0.012, 0.008], [0.47, 0.025, -0.032, 0.02], [0.42, 0.05, -0.052, 0.032], [0.33, 0.07, -0.07, 0.04], [0.2, 0.08, -0.075, 0.045], [0.05, 0.08, -0.072, 0.044], [-0.1, 0.07, -0.062, 0.038], [-0.2, 0.055, -0.048, 0.03], [-0.27, 0.042, -0.036, 0.022], [-0.3, 0.038, -0.032, 0.02]],
       tail: { type: 'truncate', span: 0.1, len: 0.19 },
       dorsal: [{ from: 0.28, to: -0.26, h: 0.035, shape: 'plateau', rake: 0.3 }], anal: [{ from: 0.05, to: -0.25, h: 0.032, shape: 'plateau', rake: 0.3 }],
@@ -1938,12 +1979,18 @@
         mixc(CLEANER.pale, CLEANER.b, rear, out); mixc(out, CLEANER.w, 0.6 * smooth(0.2, 0.8, -P.up) * (1 - 0.6 * rear), out);
         var hw = lerp(0.012, 0.04, clamp((0.5 - x) / 0.8, 0, 1)), cy = P.yc - 0.004;
         mixc(out, CLEANER.k, band(P.y - cy, hw, aa) * smooth(0.505, 0.48, x), out);
+        mixc(out, CLEANER.k, smooth(0.91, 0.98, P.up) * smooth(0.2, 0.28, x), out);
       },
       fin: function (kind, u, v, out) {
         setc(out, CLEANER.b);
         if (kind === 'tail') mixc(out, CLEANER.k, band(u - 0.5, 0.2, 0.06), out);
-        if (kind === 'dorsal0' || kind === 'anal0') mixc(out, CLEANER.k, band(v - 0.55, 0.15, 0.1), out);
+        if (kind === 'dorsal0') mixc(out, CLEANER.k, Math.max(1-smooth(0.38,0.62,u),1-smooth(0.18,0.42,v)) * (1-smooth(0.9,1,v)), out);
+        if (kind === 'anal0') mixc(out, CLEANER.k, 1-smooth(lerp(0.2,0.55,u)-0.06,lerp(0.2,0.55,u)+0.06,v), out);
         if (kind === 'pectoral' || kind === 'pelvic') mixc(out, CLEANER.pale, 0.7, out);
+      },
+      extra: function (c) {
+        // A small terminal opening, rather than an underside blenny mouth.
+        blob(c.T,c.detail,0.5034,-0.006,0,0.0016,0.0032,0.0052,lin(CLEANER.k),c.high?12:8,4);
       }
     },
   };
@@ -1979,6 +2026,14 @@
       if (kind === 'tail') { mixc(out, TRIG.w, band(v - 0.45, 0.14, 0.06), out); mixc(out, TRIG.y, 0.4 * smooth(0.0, 0.2, v) * (1 - smooth(0.2, 0.3, v)), out); }
       else if (kind === 'dorsal1' || kind === 'anal0') mixc(out, TRIG.y, 0.5 * (1 - smooth(0.2, 0.4, v)), out);
       else if (kind === 'pectoral') mixc(out, TRIG.y, 0.5, out);
+    },
+    extra: function(c) {
+      // The first dorsal fin carries one stout spine and two shorter spines.
+      var root=lin(hex(0x3b362c)),tip=lin(hex(0xa8976b));
+      [[.18,.15,.008],[.125,.085,.004],[.082,.026,.003]].forEach(function(spec){
+        var x=spec[0],y=c.prof(x)[0]-.004,h=spec[1];
+        c.detail.tube([[x,y,0],[x-.012,y+h*.55,.002],[x-.035,y+h,.003]],function(t){return spec[2]*(1-t)+.0008;},c.high?6:4,function(t){return mixc(root,tip,t*.7,[0,0,0]);});
+      });
     }
   };
   FISH.porcupinefish = {
@@ -1995,7 +2050,7 @@
       var r = 0.16 + 0.14 * cc[2];
       mixc(out, PORC.d, (1 - smooth(r - aa, r + aa, cc[0])) * smooth(-0.55, -0.2, P.yn), out);
     },
-    fin: function (kind, u, v, out) { mixc(PORC.b, PORC.w, 0.4, out); if (noise2(u * 8, v * 6) > 0.7) setc(out, PORC.d); },
+    fin: function(kind,u,v,out){mixc(PORC.b,PORC.w,.4,out);},
     extra: function (c) {
       // Folded spines lie back over the body (they stand only when it inflates).
       var n = c.school ? 24 : (c.high ? 150 : 56), s = [0, 0, 0], tip = lin(PORC.sp), root = lin(PORC.b);
@@ -2007,30 +2062,70 @@
         var d = [-0.95, 0.3 * sa / nl, 0.3 * ca / nl], dl = Math.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
         c.detail.spike(b, [d[0] / dl, d[1] / dl, d[2] / dl], 0.075, 0.007, root, tip);
       }
-      blob(c.T, c.detail, 0.497, -0.015, 0, 0.012, 0.02, 0.03, lin(PORC.w), 8, 6);
+      // One fused dental plate per jaw, separated by the narrow mouth gap.
+      [-1,1].forEach(function(side){blob(c.T,c.detail,.503,-.015+side*.009,0,.009,.007,.025,lin(PORC.w),c.high?8:6,c.high?5:4);});
+      // Pigment discs lie on both sides of the actual fin triangles. Tail and
+      // pectoral marks stay in their own existing moving geometry and rig slot.
+      function spotFin(geo,sign) {
+        var samples=c.high?[[.18,.3],[.35,.55],[.55,.28],[.72,.65],[.25,.78],[.8,.35],[.5,.82],[.65,.48]]:[[.23,.35],[.52,.7],[.77,.4]],limit=geo.i.length,ns=c.high?8:6;
+        samples.forEach(function(uv){
+          for(var q=0;q<limit;q+=3){var ia=geo.i[q],ib=geo.i[q+1],ic=geo.i[q+2],u0=geo.t[ia*2],v0=geo.t[ia*2+1],u1=geo.t[ib*2],v1=geo.t[ib*2+1],u2=geo.t[ic*2],v2=geo.t[ic*2+1];
+            var den=(v1-v2)*(u0-u2)+(u2-u1)*(v0-v2);if(Math.abs(den)<1e-9)continue;
+            var wa=((v1-v2)*(uv[0]-u2)+(u2-u1)*(uv[1]-v2))/den,wb=((v2-v0)*(uv[0]-u2)+(u0-u2)*(uv[1]-v2))/den,wc=1-wa-wb;if(Math.min(wa,wb,wc)<-1e-7)continue;
+            var A=new c.T.Vector3().fromArray(geo.p,ia*3),B=new c.T.Vector3().fromArray(geo.p,ib*3),C=new c.T.Vector3().fromArray(geo.p,ic*3),centre=A.clone().multiplyScalar(wa).addScaledVector(B,wb).addScaledVector(C,wc);if(sign&&centre.y*sign<0)continue;
+            var axis=B.clone().sub(A).normalize(),normal=new c.T.Vector3().crossVectors(B.clone().sub(A),C.clone().sub(A)).normalize(),across=new c.T.Vector3().crossVectors(normal,axis).normalize(),radius=.0038;
+            [-1,1].forEach(function(side){var origin=centre.clone().addScaledVector(normal,side*.00035),first=geo.v(origin.x,origin.y,origin.z,lin(PORC.d),uv[0],uv[1]);
+              for(var j=0;j<ns;j++){var a=j/ns*TAU,p=origin.clone().addScaledVector(axis,Math.cos(a)*radius).addScaledVector(across,Math.sin(a)*radius);geo.v(p.x,p.y,p.z,lin(PORC.d),uv[0],uv[1]);}
+              for(j=0;j<ns;j++)geo.i.push(first,first+1+j,first+1+(j+1)%ns);
+            });break;
+          }
+        });
+      }
+      spotFin(c.fins,1);spotFin(c.fins,-1);spotFin(c.tailSurface,0);
+      if(c.pectoralSurfaces.length)spotFin(c.pectoralSurfaces[0].geo,0);
     }
   };
   FISH.yellow_boxfish = {
-    smoothSkin: true,
-    lengthM: 0.12, tex: [128, 96], square: 4.5, eye: [0.38, 0.06, 0.04], iris: hex(0x3a3618), beat: 0.6, wiggle: 0.04, tailBeat: 0.7, pecBeat: 0.6, pecRate: 3.2,
+    smoothSkin: true, facetedPaint: true,
+    lengthM: 0.12, tex: [256, 192], square: 4.5, eye: [0.38, 0.06, 0.04], iris: hex(0x3a3618), beat: 0.6, wiggle: 0.04, tailBeat: 0.7, pecBeat: 0.6, pecRate: 3.2,
     rows: [[0.5, 0.02, -0.035, 0.018], [0.47, 0.08, -0.09, 0.075], [0.42, 0.13, -0.13, 0.12], [0.33, 0.155, -0.155, 0.14], [0.2, 0.165, -0.165, 0.145], [0.05, 0.16, -0.16, 0.14], [-0.08, 0.14, -0.14, 0.12], [-0.16, 0.1, -0.1, 0.085], [-0.21, 0.06, -0.05, 0.045], [-0.25, 0.045, -0.038, 0.032]],
     tail: { type: 'round', span: 0.12, len: 0.24 },
     dorsal: [{ from: -0.12, to: -0.2, h: 0.07, shape: 'arch', rake: 0.3 }], anal: [{ from: -0.12, to: -0.2, h: 0.065, shape: 'arch', rake: 0.3 }],
     pectoral: { x: 0.24, y: 0.0, len: 0.08, width: 0.07, spread: 0.5 },
     paint: function (P, out) {
-      var cc = P.cc || (P.cc = [0, 0, 0, 0, 0]), aa = Math.max(P.aa, P.aay) / 0.055;
+      var aa = Math.max(P.aa, P.aay) / 0.055;
       // Young boxfish: bright yellow with black spots (adults turn dull mustard to bluish).
       setc(out, BOX.y); mixc(out, BOX.d, 0.35 * smooth(0.5, 1, P.up), out);
-      cells(P.x / 0.055 + P.side * 3.1, P.y / 0.055, 9, cc);
-      var r = 0.2 + 0.07 * cc[2];
-      mixc(out, BOX.k, 1 - smooth(r - aa, r + aa, cc[0]), out);
+      // Isotropic spots sample the actual 3D surface. A flank projection would
+      // stretch into streaks where the square shell turns over the back.
+      var gx=P.x/.055,gy=P.y/.055,gz=P.z/.055,ix=Math.floor(gx),iy=Math.floor(gy),iz=Math.floor(gz),nearest=Infinity,r=.32;
+      for(var dx=-1;dx<=1;dx++)for(var dy=-1;dy<=1;dy++)for(var dz=-1;dz<=1;dz++){
+        var x=ix+dx,y=iy+dy,z=iz+dz,salt=x*17+z*53,px=x+.14+.72*hash2(salt,y*7+9),py=y+.14+.72*hash2(salt+31,y*11+3),pz=z+.14+.72*hash2(salt+71,y*13+5),d=(gx-px)*(gx-px)+(gy-py)*(gy-py)+(gz-pz)*(gz-pz);
+        if(d<nearest){nearest=d;r=.30+.05*hash2(salt+101,y*19);}
+      }
+      mixc(out, BOX.k, 1 - smooth(r - aa, r + aa, Math.sqrt(nearest)), out);
     },
     fin: function (kind, u, v, out) { mixc(BOX.y, BOX.w, 0.25, out); },
-    extra: function (c) { blob(c.T, c.detail, 0.5, -0.01, 0, 0.015, 0.018, 0.022, lin(hex(0xf2c060)), 8, 6); }
+    extra: function (c) {
+      // Replace the original solid snout fan with a small lip and recessed
+      // lumen. The attachment ring copies the actual first body section.
+      var snout=c.body.count()-2,kept=[];for(var i=0;i<c.body.i.length;i+=3)if(c.body.i[i]!==snout&&c.body.i[i+1]!==snout&&c.body.i[i+2]!==snout)kept.push(c.body.i[i],c.body.i[i+1],c.body.i[i+2]);c.body.i=kept;
+      var ns=c.body.seams[0][1]-c.body.seams[0][0],first=c.detail.count(),lip=lin(hex(0xf2c060)),inner=lin(hex(0x9d6c25)),dark=lin(hex(0x342617)),yc=-.0075;
+      for(var ring=0;ring<4;ring++)for(var j=0;j<ns;j++){
+        var a=-PI/2+j/ns*TAU,x=ring===0?.5:ring===3?.5055:.513,y=yc+Math.sin(a)*(ring===1?.013:ring===2?.006:.005),z=Math.cos(a)*(ring===1?.016:ring===2?.0075:.0065);
+        if(ring===0){y=c.body.p[j*3+1];z=c.body.p[j*3+2];}
+        c.detail.v(x,y,z,ring<2?lip:inner,0,0);
+      }
+      function face(a,b,d){c.detail.i.push(a,b,d);}
+      for(ring=0;ring<3;ring++)for(j=0;j<ns;j++){var a=first+ring*ns+j,b=first+ring*ns+(j+1)%ns;face(a,b,a+ns);face(b,b+ns,a+ns);}
+      var floor=c.detail.v(.505,yc,0,dark,0,0),rim=c.detail.count();for(j=0;j<ns;j++){var a=-PI/2+j/ns*TAU;c.detail.v(.5055,yc+Math.sin(a)*.005,Math.cos(a)*.0065,dark,0,0);}for(j=0;j<ns;j++)face(floor,rim+j,rim+(j+1)%ns);
+      // Short lateral gill slits sit just ahead of the pectoral-fin roots.
+      [-1,1].forEach(function(side){var pts=[],n=c.high?5:3;for(var j=0;j<n;j++){var u=j/(n-1),x=.268-.006*Math.sin(u*PI),y=.025-.055*u;pts.push([x,y,side*(c.surfZ(x,y)+.0003)]);}c.detail.tube(pts,.0014,3,function(){return lin(hex(0x625221));});});
+    }
   };
   FISH.giant_moray = {
     smoothSkin: true,
-    lengthM: 1.5, unit: 0.57, tex: [256, 32], eye: [0.43, 0.05, 0.013], iris: hex(0xd0b040), beat: 0.3, wiggle: 0.12, offset: [-0.22, 0, 0],
+    lengthM: 1.5, unit: 0.57, tex: [256, 64], eye: [0.43, 0.05, 0.013], iris: hex(0x9b5d32), beat: 0.3, wiggle: 0.12, offset: [-0.22, 0, 0],
     rows: [[0.5, 0.012, -0.012, 0.014], [0.47, 0.034, -0.026, 0.03], [0.42, 0.06, -0.034, 0.045], [0.35, 0.082, -0.042, 0.055], [0.27, 0.094, -0.05, 0.06], [0.15, 0.098, -0.06, 0.062], [0.0, 0.097, -0.064, 0.062], [-0.2, 0.092, -0.064, 0.06], [-0.5, 0.086, -0.062, 0.058]],
     spine: function (x) { return [0.16 * smooth(-0.35, 0.25, x) - 0.08 - 0.04 * smooth(0.25, 0.5, x), 0.04 * Math.sin(x * 4.2 + 0.6) * smooth(0.45, -0.1, x)]; },
     dorsal: [{ from: 0.33, to: -0.5, h: 0.03, shape: 'plateau', rake: 0.1, n: 16 }], anal: [{ from: 0.0, to: -0.5, h: 0.024, shape: 'plateau', rake: 0.1, n: 10 }],
@@ -2049,6 +2144,17 @@
       // Seat their limbus on the same curved spine as the head before appending
       // the separately positioned jaw and teeth; otherwise the eyes are buried.
       c.detail.map(0, function (p) { var offset = c.def.spine(p[0]); p[1] += offset[0]; p[2] += offset[1]; });
+      // The anterior nostrils are short open tubes; the dark lumen is recessed.
+      [-1,1].forEach(function(side){
+        var offset=c.def.spine(0.486),base=new c.T.Vector3(0.486,0.012+offset[0],side*(c.surfZ(0.486,0.012)+0.0003)+offset[1]);
+        var direction=new c.T.Vector3(0.88,0.16,side*0.45).normalize(),axis=new c.T.Vector3().crossVectors(direction,new c.T.Vector3(0,1,0)).normalize(),across=new c.T.Vector3().crossVectors(direction,axis).normalize();
+        var ns=c.high?8:6,first=c.detail.count(),length=0.018,levels=[0,1,1,0.76],radii=[0.0036,0.0029,0.0017,0.0017],outer=lin(MORAY.l),inner=lin(hex(0x39291b));
+        for(var ring=0;ring<4;ring++)for(var j=0;j<ns;j++){var a=j/ns*TAU,p=base.clone().addScaledVector(direction,length*levels[ring]).addScaledVector(axis,Math.cos(a)*radii[ring]).addScaledVector(across,Math.sin(a)*radii[ring]);c.detail.v(p.x,p.y,p.z,ring<2?outer:inner,0,0);}
+        for(ring=0;ring<3;ring++)for(j=0;j<ns;j++){var a0=first+ring*ns+j,b0=first+ring*ns+(j+1)%ns;c.detail.i.push(a0,b0,a0+ns,b0,b0+ns,a0+ns);}
+        var centre=base.clone().addScaledVector(direction,length*0.76),dark=lin(hex(0x17100b)),cap=c.detail.v(centre.x,centre.y,centre.z,dark,0,0),rim=c.detail.count();
+        for(j=0;j<ns;j++){var a=j/ns*TAU,p=centre.clone().addScaledVector(axis,Math.cos(a)*radii[3]).addScaledVector(across,Math.sin(a)*radii[3]);c.detail.v(p.x,p.y,p.z,dark,0,0);}
+        for(j=0;j<ns;j++)c.detail.i.push(cap,rim+j,rim+(j+1)%ns);
+      });
       // Open lower jaw on a hinge, with fang rows along both jaws.
       var jaw = new Geo(), hinge = [0.355, c.prof(0.355)[1] + c.def.spine(0.355)[0] + 0.006, c.def.spine(0.355)[1]];
       jaw.loft([[0.155, 0.006, -0.008, 0.008], [0.13, 0.012, -0.02, 0.022], [0.09, 0.014, -0.03, 0.034], [0.04, 0.014, -0.036, 0.042], [0.0, 0.016, -0.036, 0.046]], c.high ? 10 : 6, c.high ? 12 : 8,
@@ -2110,7 +2216,7 @@
     schoolTint: function (r, color) { color.setRGB(0.95 + 0.1 * r, 0.95 + 0.08 * r, 0.95 + 0.05 * r); }
   };
   FISH.oriental_sweetlips = {
-    lengthM: 0.5, tex: [128, 96], eye: [0.38, 0.06, 0.026], iris: hex(0x302010), beat: 0.8, pecBeat: 0.5, spacing: 1.5,
+    lengthM: 0.5, tex: [256, 128], eye: [0.38, 0.06, 0.026], iris: hex(0x302010), beat: 0.8, pecBeat: 0.5, spacing: 1.5,
     rows: [[0.5, 0.005, -0.045, 0.02], [0.48, 0.05, -0.075, 0.045], [0.43, 0.11, -0.11, 0.07], [0.35, 0.155, -0.14, 0.088], [0.24, 0.18, -0.155, 0.096], [0.12, 0.185, -0.158, 0.097], [0.0, 0.175, -0.15, 0.092], [-0.12, 0.145, -0.125, 0.078], [-0.21, 0.1, -0.085, 0.056], [-0.27, 0.07, -0.058, 0.04], [-0.3, 0.06, -0.05, 0.034]],
     tail: { type: 'truncate', span: 0.14, len: 0.19 },
     dorsal: [{ from: 0.28, to: -0.25, h: 0.085, shape: 'spiny', rake: 0.3 }], anal: [{ from: -0.02, to: -0.22, h: 0.08, shape: 'arch', rake: 0.35 }],
@@ -2122,8 +2228,21 @@
       // Yellow snout and forehead.
       mixc(out, SWEET.y, Math.max(smooth(0.41, 0.46, P.x), smooth(0.3, 0.4, P.x) * smooth(0.45, 0.75, yn)), out);
     },
-    fin: function (kind, u, v, out) { setc(out, SWEET.y); if (noise2(u * 10 + 3, v * 6) > 0.66) setc(out, SWEET.k); },
-    extra: function (c) { var lip = lin(SWEET.lip); blob(c.T, c.detail, 0.494, -0.012, 0, 0.02, 0.016, 0.034, lip, 10, 6); blob(c.T, c.detail, 0.488, -0.044, 0, 0.018, 0.015, 0.032, lip, 10, 6); }
+    fin: function (kind, u, v, out) { setc(out, SWEET.y); },
+    extra: function (c) {
+      var lip = lin(SWEET.lip); blob(c.T, c.detail, 0.494, -0.012, 0, 0.02, 0.016, 0.034, lip, 10, 6); blob(c.T, c.detail, 0.488, -0.044, 0, 0.018, 0.015, 0.032, lip, 10, 6);
+      // Adult spots belong to the median fins; paired fins stay plain yellow.
+      function spots(geo,sign){
+        var samples=c.high?[[0.16,0.32],[0.28,0.64],[0.42,0.38],[0.55,0.73],[0.69,0.42],[0.82,0.62],[0.36,0.82],[0.72,0.82]]:[[0.2,0.36],[0.35,0.68],[0.5,0.38],[0.65,0.74],[0.78,0.4],[0.84,0.7]],limit=geo.i.length,ns=c.high?8:6,ink=lin(SWEET.k);
+        samples.forEach(function(uv){for(var q=0;q<limit;q+=3){var ia=geo.i[q],ib=geo.i[q+1],ic=geo.i[q+2],u0=geo.t[ia*2],v0=geo.t[ia*2+1],u1=geo.t[ib*2],v1=geo.t[ib*2+1],u2=geo.t[ic*2],v2=geo.t[ic*2+1],den=(v1-v2)*(u0-u2)+(u2-u1)*(v0-v2);if(Math.abs(den)<1e-9)continue;
+          var wa=((v1-v2)*(uv[0]-u2)+(u2-u1)*(uv[1]-v2))/den,wb=((v2-v0)*(uv[0]-u2)+(u0-u2)*(uv[1]-v2))/den,wc=1-wa-wb;if(Math.min(wa,wb,wc)<-1e-7)continue;
+          var A=new c.T.Vector3().fromArray(geo.p,ia*3),B=new c.T.Vector3().fromArray(geo.p,ib*3),C=new c.T.Vector3().fromArray(geo.p,ic*3),centre=A.clone().multiplyScalar(wa).addScaledVector(B,wb).addScaledVector(C,wc);if(sign&&(centre.y*sign<0||Math.abs(centre.z)>0.018))continue;
+          var axis=B.clone().sub(A).normalize(),normal=new c.T.Vector3().crossVectors(B.clone().sub(A),C.clone().sub(A)).normalize(),across=new c.T.Vector3().crossVectors(normal,axis).normalize(),radius=0.008;
+          [-1,1].forEach(function(side){var origin=centre.clone().addScaledVector(normal,side*0.0003),first=geo.v(origin.x,origin.y,origin.z,ink,uv[0],uv[1]);for(var j=0;j<ns;j++){var a=j/ns*TAU,p=origin.clone().addScaledVector(axis,Math.cos(a)*radius).addScaledVector(across,Math.sin(a)*radius);geo.v(p.x,p.y,p.z,ink,uv[0],uv[1]);}for(j=0;j<ns;j++)geo.i.push(first,first+1+j,first+1+(j+1)%ns);});break;
+        }});
+      }
+      spots(c.fins,1);spots(c.fins,-1);spots(c.tailSurface,0);
+    }
   };
   KAS.k = K.black;
 
@@ -2604,7 +2723,7 @@
       });
       // The neck, tail and eyes draw as one skin batch (the eyes keep their own
       // wet roughness); the four paddles as another, written each update.
-      var skinRig = new Float32Array(80), skinMat = kit.std({ vertexColors: true, roughness: 0.5, side: T.DoubleSide }, { batch: skinRig }), skinParts = [];
+      var skinRig = new Float32Array(80), skinMat = kit.std({ vertexColors: true, roughness: 0.5, side: T.DoubleSide }, { batch: skinRig, iris: hex(0xb8a070) }), skinParts = [];
       kit.mesh(kit.geo(plas, 1), kit.std({ map: plastronTex, bumpMap: kit.flat('bump'), roughnessMap: kit.flat('rough'), roughness: 0.62 }), 'plastron', holder);
 
       // Head on a neck pivot, painted with scales and the diagnostic prefrontals.
@@ -2612,7 +2731,7 @@
       hp.position.set(a * 0.9, -0.01 * CL, 0);
       head.loft(def.head, high ? 16 : 8, high ? 20 : 10, function (t, ang, x, y, z, out) { setc(out, white); });
       var hx1 = def.head[def.head.length - 1][0], cc = [0, 0, 0, 0, 0];
-      var headMaps = bakedPair(kit, 'turtle|' + c.id + '|head|' + tier, high ? 256 : 128, high ? 256 : 128, function (u, v, out, rel) {
+      var headMaps = bakedPair(kit, 'turtle|' + c.id + '|head|' + tier, high ? 512 : 256, high ? 256 : 128, function (u, v, out, rel) {
         var hx = lerp(1, hx1, u), ang = -PI / 2 + v * TAU, up = Math.sin(ang), side = Math.cos(ang);
         cells(hx * 9, (v - 0.5) * 14, 5, cc);
         rel[0] = rel[1] = rel[2] = 0.3 + 0.55 * smooth(0.018, 0.1, cc[1] - cc[0]) + 0.025 * noise2(u * 120, v * 120);
@@ -2629,17 +2748,51 @@
         var jaw = -0.24 + (hx - 0.55) * 0.22;
         mixc(out, hex(0x25261b), band(up - jaw, 0.028, 0.02) * smooth(0.46, 0.6, hx) * (1 - smooth(0.96, 1, hx)), out);
       }, true, [false, true]);
+      // Project details onto the actual tessellated head, including the narrow
+      // hawksbill snout and the coarser low-detail surface. Coordinates stay in
+      // head units until every detail has been seated.
+      var headPoints = head.p.slice(), headIndices = head.i, headProfile = profile(def.head);
+      function headSurface(axis, x, cross) {
+        var other = axis === 1 ? 2 : 1, best = -Infinity;
+        for (var n = 0; n < headIndices.length; n += 3) {
+          var ia = headIndices[n] * 3, ib = headIndices[n + 1] * 3, ic = headIndices[n + 2] * 3;
+          var ax = headPoints[ia], ay = headPoints[ia + other], bx = headPoints[ib], by = headPoints[ib + other], cx = headPoints[ic], cy = headPoints[ic + other];
+          var d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy);
+          if (Math.abs(d) < 1e-12) continue;
+          var u = ((by - cy) * (x - cx) + (cx - bx) * (cross - cy)) / d;
+          var v = ((cy - ay) * (x - cx) + (ax - cx) * (cross - cy)) / d, w = 1 - u - v;
+          if (Math.min(u, v, w) >= -1e-7) best = Math.max(best, u * headPoints[ia + axis] + v * headPoints[ib + axis] + w * headPoints[ic + axis]);
+        }
+        return best;
+      }
       scaleGeo(head, HL);
       var headMat = kit.std({ map: headMaps[0], bumpMap: headMaps[1], bumpScale: CL * 0.00065, roughnessMap: kit.flat('rough'), roughness: 0.51 });
       kit.mesh(kit.geo(head, 1), headMat, 'head', hp);
-      var eyes = new Geo(), ez = (def.pre === 2 ? 0.17 : 0.24) * HL;
+      var eyes = new Geo(), nostrils = new Geo(), nasalSides = high ? 12 : 8;
       [-1, 1].forEach(function (s) {
-        blob(T, eyes, 0.7 * HL, 0.13 * HL, s * ez, 0.07 * HL, 0.06 * HL, 0.05 * HL, lin(hex(0xb8a070)), high ? 10 : 6, high ? 8 : 4);
-        blob(T, eyes, 0.72 * HL, 0.135 * HL, s * (ez + 0.025 * HL), 0.045 * HL, 0.04 * HL, 0.03 * HL, lin(hex(0x0c0c0c)), high ? 10 : 6, high ? 8 : 4);
-        blob(T, eyes, 0.73 * HL, 0.153 * HL, s * (ez + 0.051 * HL), 0.009 * HL, 0.009 * HL, 0.004 * HL, lin(hex(0xdce9d7)), high ? 6 : 4, high ? 4 : 3);
-        blob(T, eyes, 0.95 * HL, 0.072 * HL, s * 0.044 * HL, 0.017 * HL, 0.008 * HL, 0.012 * HL, lin(hex(0x27271b)), high ? 6 : 4, high ? 4 : 3);
+        var first = eyes.count();
+        addEye(T, eyes, headProfile, 2, [0.7, 0.13, 0.065], s, hex(0xb8a070), high, 0.48, false, high ? 24 : 8);
+        for (var e = first * 3; e < eyes.p.length; e += 3) {
+          var ex = eyes.p[e], ey = eyes.p[e + 1], lift = Math.abs(eyes.p[e + 2]) - surfZ(headProfile, 2, ex, ey);
+          eyes.p[e + 2] = s * (headSurface(2, ex, ey) + lift);
+        }
+        // Small nasal depressions lie flush with the snout, below a restrained
+        // skin rim. These static study details do not depict an opening valve.
+        var nx = 0.95, nz = s * headProfile(nx)[2] * 0.35, base = nostrils.count();
+        nostrils.v(nx, headSurface(1, nx, nz) + 0.0006, nz, lin(hex(0x24231c)), 0, 0);
+        for (var ring = 0; ring < 2; ring++) for (var n = 0; n < nasalSides; n++) {
+          var ang = n / nasalSides * TAU, rx = ring ? 0.018 : 0.0115, rz = ring ? 0.012 : 0.0075;
+          var px = nx + Math.cos(ang) * rx, pz = nz + Math.sin(ang) * rz;
+          nostrils.v(px, headSurface(1, px, pz) + (ring ? 0.0024 : 0.0018), pz, lin(ring ? def.skin : hex(0x24231c)), 0, 0);
+        }
+        for (n = 0; n < nasalSides; n++) {
+          var inner = base + 1 + n, next = base + 1 + (n + 1) % nasalSides, outer = inner + nasalSides, outerNext = next + nasalSides;
+          nostrils.i.push(base, next, inner, outer, inner, next, outer, next, outerNext);
+        }
       });
-      skinParts.push({ geo: eyes.build(T, 1), part: 'eyes', node: hp, rough: 0.2 });
+      scaleGeo(eyes, HL); scaleGeo(nostrils, HL);
+      skinParts.push({ geo: eyes.build(T, 1), part: 'eyes', node: hp, rough: 0.2, eye: 1 });
+      skinParts.push({ geo: nostrils.build(T, 1), part: 'nostrils', node: hp, rough: 0.5, eye: 0 });
 
       // Long flattened front paddles, with one claw for green turtles and two
       // for hawksbills. Scales follow the paddle instead of random blotches.
@@ -2770,21 +2923,34 @@
     for (i = 0; i <= nh; i++) for (j = 0; j < ns; j++) {
       var t = i / nh, a = j / ns * TAU, r = R * lerp(0.82, 1.04, smooth(0, 1, t)) * (1 + 0.04 * Math.sin(a * 5 + t * 3)) * (1 + 0.025 * noise2(j * 0.7, i * 1.3));
       mixc(colA, colB, 0.3 * t + 0.3 * noise2(j * 1.7, i * 2.1), col); if (noise2(j * 3.1, i * 3.3) > 0.7) mixc(col, colB, 0.6, col);
-      geo.v(Math.cos(a) * r, H * t, Math.sin(a) * r, lin(col), 0, 0);
+      geo.v(Math.cos(a) * r, H * t, Math.sin(a) * r, lin(col), j / ns, t * 0.8);
     }
     for (i = 0; i < nh; i++) for (j = 0; j < ns; j++) { var a0 = first + i * ns + j, a1 = first + i * ns + (j + 1) % ns; geo.i.push(a0, a0 + ns, a1, a1, a0 + ns, a1 + ns); }
+    // Close the basal pedal disc against the substrate in the existing body mesh.
+    var sole=geo.v(0,-0.003,0,lin(mixc(colA,colB,.18,[0,0,0])),.5,.95);
+    for(j=0;j<ns;j++)geo.i.push(sole,first+j,first+(j+1)%ns);
     var disc = hex(tips[0]), mouth = hex(0xf0a060);
     // Its algae live in the oral disc and tentacles, so a bleached anemone goes
     // white on top, often with a pastel tint, while the column keeps its own colour.
     if (bleached) { disc = mixc(BLEACH, hex(pastel[0]), 0.6, [0, 0, 0]); mouth = mixc(BLEACH, mouth, 0.18, [0, 0, 0]); }
+    var oralStart=geo.count();
     geo.polar(high ? 6 : 3, ns, function (r, a, out) {
       mixc(mouth, disc, smooth(0.05, 0.2, r), out); setc(out, lin(out));
       var rr = R * 1.04 * r * (1 + 0.04 * Math.sin(a * 5));
       return [Math.cos(a) * rr, H + 0.02 * Math.sin(a * 6) * r * r - 0.008 * (1 - r), Math.sin(a) * rr];
     });
-    var body = kit.mesh(kit.geo(geo, 1), kit.std({ vertexColors: true, roughness: 0.42, metalness: 0.02 }, { sheen: sheenOf(T, pal[1], 0xffffff, 0.15) }), 'column', c.root);
+    for(i=oralStart;i<geo.count();i++){geo.t[i*2]=.5;geo.t[i*2+1]=.95;}
+    // A single elongated oral opening, with a shallow raised soft-tissue lip.
+    var mouthStart=geo.count(),opening=lin(hex(0x39252a)),lip=lin(mouth);
+    geo.polar(2,high?16:8,function(r,a,out){mixc(opening,lip,smooth(.55,1,r),out);return [.018*Math.cos(a)*r,H-.0065+.002*r*r,.0035*Math.sin(a)*r];});
+    for(i=mouthStart;i<geo.count();i++){geo.t[i*2]=.5;geo.t[i*2+1]=.95;}
+    var surface=kit.baked('anemone|column-relief',high?256:128,high?128:64,function(u,v,out){
+      var folds=.5+.5*Math.sin(u*TAU*23+1.3*Math.sin(v*8)),grain=noise2(u*180,v*110),weight=1-smooth(.78,.86,v);
+      out[0]=out[2]=.5+weight*((folds-.5)*.11+(grain-.5)*.05);out[1]=.9+weight*(grain-.5)*.08;
+    },true,false,true);
+    var body = kit.mesh(kit.geo(geo, 1), kit.std({ vertexColors: true,bumpMap:surface,bumpScale:.0008,roughnessMap:surface,roughness:0.5,metalness:0 }, { sheen: sheenOf(T, pal[1], 0xffffff, 0.15) }), 'column', c.root);
     // Tentacles: one finger geometry instanced over the oral disc.
-    var tg = new Geo(), tip = lin(hex(tips[1])), base = lin(hex(tips[0])), segs = high ? 3 : 2, sides = high ? 6 : 5, pts = [];
+    var tg = new Geo(), tip = lin(hex(tips[1])), base = lin(hex(tips[0])), segs = high ? 4 : 2, sides = high ? 6 : 5, pts = [];
     // Bleached fingers: a cool, see-through-looking white base and pastel tips.
     if (bleached) { tip = lin(hex(pastel[0])); base = lin(mixc(BLEACH, BLEACH_SH, 0.5, [0, 0, 0])); }
     for (i = 0; i <= segs; i++) { var tt = i / segs; pts.push([0.2 * Math.sin(tt * PI * 0.8), tt, 0.08 * tt * tt]); }
@@ -2797,7 +2963,7 @@
     // The instanced finger has different length/radius scales. Keep its cap
     // short in this unit space so it remains a rounded tentacle, not a spike.
     var capIndex = tg.p.length - 3; tg.p[capIndex] = pts[segs][0]; tg.p[capIndex + 1] = 1.045; tg.p[capIndex + 2] = pts[segs][2];
-    var n = high ? 140 : 64, tGeo = kit.geo(tg, 1), tMat = kit.std({ vertexColors: true, roughness: 0.48 }, { sheen: bleached ? sheenOf(T, pastel[0], pastel[1], 0.22) : sheenOf(T, tips[1], 0xb0ff80, 0.1) });
+    var n = high ? 112 : 64, tGeo = kit.geo(tg, 1), tMat = kit.std({ vertexColors: true, roughness: 0.48 }, { sheen: bleached ? sheenOf(T, pastel[0], pastel[1], 0.22) : sheenOf(T, tips[1], 0xb0ff80, 0.1) });
     var mesh = kit.tag(new T.InstancedMesh(tGeo, tMat, n), 'tentacles'); c.root.add(mesh);
     var slots = [], m4 = new T.Matrix4(), q = new T.Quaternion(), e = new T.Euler(), p = new T.Vector3(), s = new T.Vector3(), tc = new T.Color(), reach = 0;
     var tilt = new T.Quaternion(), q2 = new T.Quaternion(), flowTilt = new T.Quaternion(), zAxis = new T.Vector3(0, 0, 1), current = {};
@@ -2878,21 +3044,49 @@
     // around the centre form a recessed inhalant opening with soft tissue lips;
     // its floor stays inside the valve instead of exposing the background.
     var mantle = new Geo(), mantleRows = high ? [0, 1 / 12, 2 / 12, 3 / 12, 4 / 12, 0.435, 0.465, 0.5, 0.535, 0.565, 8 / 12, 9 / 12, 10 / 12, 11 / 12, 1] : [0, 0.2, 0.4, 0.465, 0.5, 0.535, 0.6, 0.8, 1];
+    function mantlePoint(u,s) {
+      var l=valve(u,1,-1),r=valve(u,1,1),over=.018*k*Math.cos(PI*s)*Math.pow(Math.sin(PI*u),.3);
+      var bulge=(.028+.004*Math.sin(u*folds*TAU+s*PI))*k*Math.sin(PI*s)*Math.pow(Math.sin(PI*u),.6),drop=.012*k*Math.pow(Math.abs(Math.cos(PI*s)),3);
+      var inlet=smooth(.29,.36,u)*smooth(.79,.72,u),inset=1-smooth(.015,.065,Math.abs(s-.5)),lip=band(Math.abs(s-.5)-.068,.009,.018);
+      return [lerp(l[0],r[0],s),lerp(l[1],r[1],s)+bulge-drop+inlet*k*(.003*lip-.022*inset),lerp(l[2],r[2],s)-over*1.6];
+    }
     var nm = mantleRows.length - 1;
     for (i = 0; i <= nu; i++) for (j = 0; j <= nm; j++) {
-      var u2 = i / nu, s = mantleRows[j], l = valve(u2, 1, -1), r = valve(u2, 1, 1), over = 0.018 * k * Math.cos(PI * s) * Math.pow(Math.sin(PI * u2), 0.3);
-      var bulge = (0.028 + 0.004 * Math.sin(u2 * folds * TAU + s * PI)) * k * Math.sin(PI * s) * Math.pow(Math.sin(PI * u2), 0.6), drop = 0.012 * k * Math.pow(Math.abs(Math.cos(PI * s)), 3);
+      var u2 = i / nu, s = mantleRows[j], mp=mantlePoint(u2,s);
       var inlet = smooth(0.29, 0.36, u2) * smooth(0.79, 0.72, u2), inset = 1 - smooth(0.015, 0.065, Math.abs(s - 0.5));
-      var lip = band(Math.abs(s - 0.5) - 0.068, 0.009, 0.018), shade = 1 - 0.64 * inlet * inset;
-      mantle.v(lerp(l[0], r[0], s), lerp(l[1], r[1], s) + bulge - drop + inlet * k * (0.003 * lip - 0.022 * inset), lerp(l[2], r[2], s) - over * 1.6, [shade, shade, shade], u2, s);
+      var shade = 1 - 0.64 * inlet * inset;
+      mantle.v(mp[0],mp[1],mp[2],[shade,shade,shade],u2,s);
     }
     for (i = 0; i < nu; i++) for (j = 0; j < nm; j++) { var m0 = i * (nm + 1) + j, m1 = m0 + nm + 1; mantle.i.push(m0, m0 + 1, m1, m0 + 1, m1 + 1, m1); }
+    // A sample of the mantle's many pinhole eyes: small rims with dark apertures.
+    // Share the mantle mesh and deformation; the marked UV patch bypasses pigment.
+    var mantleSurfaceVertices=mantle.count(),eyeCoordinates=[];
+    var eyePairs=high?20:10,eyeSides=high?6:4,eyeRim=lin(hex(0x31568f)),eyeDark=lin(hex(0x05070a));
+    for(var es=0;es<2;es++)for(var ei=0;ei<eyePairs;ei++) {
+      var eu=.12+.76*(ei+.5)/eyePairs,ev=es?.91:.09,ef=mantle.count(),iu=Math.floor(eu*nu),iv=0;
+      while(mantleRows[iv+1]<ev)iv++;
+      var fu=eu*nu-iu,fv=(ev-mantleRows[iv])/(mantleRows[iv+1]-mantleRows[iv]);
+      function gridPoint(u,v){return new T.Vector3().fromArray(mantle.p,((u*(nm+1)+v)*3));}
+      var a0=gridPoint(iu,iv),b0=gridPoint(iu,iv+1),c0=gridPoint(iu+1,iv),epv;
+      var ex=c0.clone().sub(a0).normalize(),en=new T.Vector3().crossVectors(b0.clone().sub(a0),c0.clone().sub(a0)).normalize();
+      if(fu+fv<=1)epv=a0.clone().addScaledVector(c0.clone().sub(a0),fu).addScaledVector(b0.clone().sub(a0),fv);
+      else{var d0=gridPoint(iu+1,iv+1);epv=d0.clone().addScaledVector(b0.clone().sub(d0),1-fu).addScaledVector(c0.clone().sub(d0),1-fv);en.crossVectors(c0.clone().sub(d0),b0.clone().sub(d0)).normalize();ex=c0.clone().sub(d0).normalize();}
+      var ep=epv.toArray(),ez=new T.Vector3().crossVectors(ex,en).normalize();
+      for(var er=0;er<2;er++)for(var ej=0;ej<eyeSides;ej++) {
+        var ea=ej/eyeSides*TAU,rad=(er?.00007:.00055)*k,lift=(er?.00032:.00014)*k;
+        mantle.v(ep[0]+ex.x*Math.cos(ea)*rad+ez.x*Math.sin(ea)*rad+en.x*lift,ep[1]+ex.y*Math.cos(ea)*rad+ez.y*Math.sin(ea)*rad+en.y*lift,ep[2]+ex.z*Math.cos(ea)*rad+ez.z*Math.sin(ea)*rad+en.z*lift,er?eyeDark:eyeRim,.999,.999);
+      }
+      mantle.v(ep[0]+en.x*.00017*k,ep[1]+en.y*.00017*k,ep[2]+en.z*.00017*k,eyeDark,.999,.999);
+      for(ej=0;ej<eyeSides;ej++){var a=ef+ej,b=ef+(ej+1)%eyeSides,cc=ef+eyeSides+ej,dd=ef+eyeSides+(ej+1)%eyeSides;mantle.i.push(a,cc,b,b,cc,dd,cc,ef+2*eyeSides,dd);}
+      for(var ec=ef;ec<mantle.count();ec++)eyeCoordinates.push(eu,ev);
+    }
     var pals = [[0x1f5fe0, 0x40c8f0, 0x0c2a80], [0x14a07a, 0x60f0c0, 0x0a5040], [0x6a3ab8, 0xf0c040, 0x2a1460], [0x2a8ad8, 0x9af060, 0x123a70]];
     var palIndex = Math.floor(rng() * pals.length), pal = pals[palIndex], m1c = hex(pal[0]), m2c = hex(pal[1]), m3c = hex(pal[2]), cc = [0, 0, 0, 0, 0];
     // Bleached: the algae that colour the mantle are gone, so it turns a pale
     // cream-white and its own pattern shows only faintly. The shell is unchanged.
     var bleached = c.health === 'bleached', pastel = PASTELS[(c.seed >>> 0) % PASTELS.length], pale = mixc(hex(0xe8e2d2), hex(pastel[0]), 0.3, [0, 0, 0]);
     var mtex = kit.baked('clam|mantle|' + palIndex + (bleached ? '|bleached' : ''), high ? 256 : 128, high ? 128 : 64, function (u, v, out) {
+      if(u>.98&&v>.98){setc(out,[1,1,1]);return;}
       var edge = Math.min(v, 1 - v);
       setc(out, m1c); mixc(out, m3c, 0.45 * noise2(u * 14, v * 6), out);
       cells(u * 26 + noise2(u * 12, v * 6) * 1.4, v * 7, 3, cc); mixc(out, m2c, (1 - smooth(0.18, 0.3, cc[0])) * 0.85, out);
@@ -2908,6 +3102,7 @@
       if (bleached) { var lu = 0.2126 * out[0] + 0.7152 * out[1] + 0.0722 * out[2]; mixc(out, pale, 0.86, out); mulc(out, 0.7 + 0.52 * lu); }
     }, false, false);
     var mantleRelief = kit.baked('clam|mantle-relief', high ? 128 : 64, high ? 64 : 32, function (u, v, out) {
+      if(u>.98&&v>.98){setc(out,[.5,.5,.5]);return;}
       var h = 0.46 + 0.10 * Math.sin(v * 68 + 3 * Math.sin(u * folds * TAU)) + 0.08 * noise2(u * 90, v * 45);
       out[0] = out[1] = out[2] = h;
     }, false, false, true);
@@ -2931,7 +3126,8 @@
     deform(c, mantleGeo, function (base, out, t, motion) {
       currentAt(c.root, motion, t, ph, current);
       for (var q = 0; q < base.length; q += 3) {
-        var uv = q / 3 * 2, u = mantleGeo.attributes.uv.array[uv], v = mantleGeo.attributes.uv.array[uv + 1], ends = Math.pow(Math.sin(PI * u), 2), across = Math.sin(PI * v);
+        var vertex=q/3,uv=vertex*2,eyeUV=(vertex-mantleSurfaceVertices)*2;
+        var u=vertex<mantleSurfaceVertices?mantleGeo.attributes.uv.array[uv]:eyeCoordinates[eyeUV],v=vertex<mantleSurfaceVertices?mantleGeo.attributes.uv.array[uv+1]:eyeCoordinates[eyeUV+1],ends=Math.pow(Math.sin(PI*u),2),across=Math.sin(PI*v);
         var breath = 0.0025 * k * Math.sin(t * 0.7 + ph) * ends * across;
         var flutter = 0.0016 * k * Math.sin(t * 0.85 - u * 8 + ph) * ends * Math.pow(Math.abs(Math.cos(PI * v)), 3) * current.pulse;
         out[q + 1] = base[q + 1] + breath + flutter * Math.hypot(current.x, current.z);
@@ -2949,12 +3145,13 @@
       mixc(body, alt, 0.5 * noise2(Math.cos(a) * r * 9 + 4, Math.sin(a) * r * 9), out); setc(out, lin(out));
       return [Math.cos(a) * rd * r, cfg.thick * k * (1.1 - 0.6 * r * r), Math.sin(a) * rd * r];
     });
-    var segs = high ? 10 : 4, sides = high ? 8 : 5, armCaps = [];
+    var blueStar = c.id === 'blue_sea_star',crownStar=c.id==='crown_of_thorns';
+    var segs = blueStar ? (high ? 12 : 5) : (high ? 10 : 4), sides = blueStar ? (high ? 12 : 7) : (high ? 8 : 5), armCaps = [];
     for (i = 0; i < n; i++) {
       var a = i / n * TAU + 0.3, pts = [];
       // Arms start at the centre so their open start rings stay buried under the disc.
-      for (j = 0; j <= segs; j++) { var t = j / segs, r = lerp(rd * 0.08, R, t); pts.push([Math.cos(a) * r, cfg.thick * k * (0.75 - 0.35 * t) + cfg.curl * k * t * t, Math.sin(a) * r]); }
-      var armFirst = geo.tube(pts, function (t) { return cfg.armR * k * (1 - cfg.taper * t); }, sides, function (t, s) { mixc(body, alt, 0.45 * noise2(t * 9 + i * 3, s * 5), col); if (cfg.dots && noise2(t * 30 + i, s * 12) > 0.72) mixc(col, dark, 0.6, col); return lin(col); });
+      for (j = 0; j <= segs; j++) { var t = j / segs, r = lerp(rd * 0.08, R, t), armAngle=a+(blueStar ? .11*Math.sin(PI*t)*Math.sin(i*2.7+c.seed) : 0); pts.push([Math.cos(armAngle) * r, cfg.thick * k * (0.75 - 0.35 * t) + cfg.curl * k * t * t, Math.sin(armAngle) * r]); }
+      var armFirst = geo.tube(pts, function (t) { return cfg.armR * k * (1 - cfg.taper * t); }, sides, function (t, s) { mixc(body, alt, (blueStar ? 0.24 : 0.45) * noise2(t * 9 + i * 3, s * 5), col); if (cfg.dots && noise2(t * 30 + i, s * 12) > 0.72) mixc(col, dark, blueStar ? 0.24 : 0.6, col); return lin(col); });
       if (c.id === 'blue_sea_star') armCaps.push({ last: armFirst + segs * sides, tip: armFirst + (segs + 1) * sides, index: geo.i.length - sides * 3, centre: pts[segs] });
     }
     // Linckia has blunt, rounded arm ends. Add a shoulder inside the existing
@@ -2991,8 +3188,58 @@
         geo.spike([Math.cos(aa) * rr, cfg.thick * k * (1.1 - 0.6 * f), Math.sin(aa) * rr], [dd[0] / dl2, dd[1] / dl2, dd[2] / dl2], cfg.spineLen * k, (cfg.spineR || 0.003) * k, sb, st);
       }
     }
+    if (blueStar) {
+      blob(T,geo,0,.012*k,0,rd*.85,.019*k,rd*.85,lin(body),high?16:8,high?8:4);
+      var feetColor=lin(hex(0xa8a084)), eyeColor=lin(hex(0x8d3430)), grooveColor=lin(hex(0x174d99));
+      // Small compound eyes sit at the arm ends, on the ambulacral surface.
+      // Their actual scale makes them a close-inspection feature.
+      for (i=0;i<n;i++) {
+        var direction=i/n*TAU+.3, ux=Math.cos(direction), uz=Math.sin(direction), pairs=high?8:3;
+        for (j=0;j<pairs;j++) {
+          var along=.24+.63*(j+.5)/pairs, rr=lerp(rd*.08,R,along), footAngle=direction+.11*Math.sin(PI*along)*Math.sin(i*2.7+c.seed);
+          ux=Math.cos(footAngle);uz=Math.sin(footAngle);
+          var midY=cfg.thick*k*(.75-.35*along), radius=cfg.armR*k*(1-cfg.taper*along);
+          for(var side=-1;side<=1;side+=2) {
+            blob(T,geo,ux*rr-uz*side*radius*.32,midY-radius*.82,uz*rr+ux*side*radius*.32,
+              .0014*k,.0026*k,.0014*k,feetColor,4,3);
+          }
+        }
+        ux=Math.cos(direction);uz=Math.sin(direction);
+        var endY=cfg.thick*k*.4;
+        blob(T,geo,ux*(R+.0009*k),endY-.0041*k,uz*(R+.0009*k),
+          .00065*k,.00065*k,.00065*k,eyeColor,6,4);
+        // A short dark groove surrounds the sensory foot without enlarging the eye.
+        blob(T,geo,ux*(R-.001*k),endY-.006*k,uz*(R-.001*k),
+          .0018*k,.0012*k,.0018*k,grooveColor,5,3);
+      }
+    }
+    if(crownStar){
+      var sole=lin(hex(0x9c846d)),mouthColor=lin(hex(0x33252a));
+      // The resting oral surface is below the spiny back; the stomach is not everted.
+      geo.polar(high?2:1,high?16:6,function(r,a,out){mixc(mouthColor,sole,smooth(0,.35,r),out);return [Math.cos(a)*rd*.93*r,cfg.thick*k*(.08+.22*r*r),Math.sin(a)*rd*.93*r];},true);
+      for(i=0;i<n;i++){
+        var aa=i/n*TAU+.3,ux=Math.cos(aa),uz=Math.sin(aa),pairs=high?2:1;
+        for(j=0;j<pairs;j++){
+          var t=.46+.29*(j+.5)/pairs,rr=lerp(rd*.08,R,t),radius=cfg.armR*k*(1-cfg.taper*t),yy=cfg.thick*k*(.75-.35*t)+cfg.curl*k*t*t-radius*.85;
+          for(var side=-1;side<=1;side+=2)blob(T,geo,ux*rr-uz*side*radius*.3,yy-.002*k,uz*rr+ux*side*radius*.3,
+            .0018*k,.004*k,.0018*k,sole,high?4:3,high?3:2);
+        }
+      }
+    }
     var g = kit.geo(geo, 1);
-    kit.mesh(g, kit.std({ vertexColors: true, roughness: cfg.rough }), 'body', c.root);
+    var starMaterial={vertexColors:true,roughness:cfg.rough};
+    if(blueStar) {
+      var starSkin=kit.baked('linckia|skin',high?256:128,high?128:64,function(u,v,out){
+        var a=v*TAU,grain=noise3(u*110,Math.cos(a)*25,Math.sin(a)*25);
+        out[0]=.46+.15*grain;out[1]=.85+.1*grain;out[2]=.5;
+      },false,true,true);
+      starMaterial.bumpMap=starSkin;starMaterial.bumpScale=.00028*k;starMaterial.roughnessMap=starSkin;
+    }
+    if(crownStar){
+      var crownSkin=kit.baked('acanthaster|skin',high?128:64,high?64:32,function(u,v,out){var a=v*TAU,grain=noise3(u*95,Math.cos(a)*22,Math.sin(a)*22);out[0]=.46+.18*grain;out[1]=.9;out[2]=.5;},false,true,true);
+      starMaterial.bumpMap=crownSkin;starMaterial.bumpScale=.00045*k;starMaterial.roughnessMap=crownSkin;
+    }
+    kit.mesh(g, kit.std(starMaterial), 'body', c.root);
     var ph = rng() * TAU;
     deform(c, g, function (base, out, t) {
       for (var q = 0; q < base.length; q += 3) {
@@ -3003,12 +3250,37 @@
   }
   function buildUrchin(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(57), k = 0.9 + 0.2 * rng(), R = 0.042 * k, cy = 0.028 * k, test = new Geo();
-    var black = lin(hex(0x101114)), white = lin(hex(0xf0f0f0)), orange = lin(hex(0xf07020));
+    var black = lin(hex(0x101114)), white = lin(hex(0xf0f0f0)), orange = lin(hex(0xf07020)), blue = lin(hex(0x3b9fda));
     test.absorb(T, new T.SphereGeometry(1, high ? 20 : 10, high ? 14 : 7), new T.Matrix4().makeScale(R, R * 0.68, R).setPosition(0, cy, 0), black);
     for (var i = 0; i < 5; i++) { var a = i / 5 * TAU + 0.3; blob(T, test, Math.cos(a) * R * 0.44, cy + R * 0.6, Math.sin(a) * R * 0.44, R * 0.11, R * 0.06, R * 0.11, white, 6, 4); }
-    test.absorb(T, new T.TorusGeometry(R * 0.2, R * 0.06, 5, high ? 16 : 8), new T.Matrix4().makeRotationX(PI / 2).setPosition(0, cy + R * 0.66, 0), orange);
-    kit.mesh(kit.geo(test, 1), kit.std({ vertexColors: true, roughness: 0.25 }, { sheen: sheenOf(T, 0x2040ff, 0x40c0ff, 0.6) }), 'test', c.root);
-    var sp2 = new Geo(), n = high ? 240 : 90, tipc = lin(hex(0x2a2a30)), spineMotion = [];
+    // Paired dotted iridophores, not continuous glowing stripes (NMNS account).
+    for(i=0;i<5;i++) for(var pair=-1;pair<=1;pair+=2) for(var dot=0;dot<(high?6:2);dot++) {
+      var aa=i/5*TAU+.3+PI/5+pair*.08, rr=R*(.25+.5*(dot+.5)/(high?6:2));
+      blob(T,test,Math.cos(aa)*rr,cy+R*.68*Math.sqrt(1-rr*rr/(R*R))+.0003*k,Math.sin(aa)*rr,
+        .0009*k,.00045*k,.0009*k,blue,4,3);
+    }
+    var coneY=cy+R*.68,coneHeight=R*.23;
+    test.absorb(T,new T.CylinderGeometry(R*.13,R*.2,coneHeight,high?14:8,1,true),
+      new T.Matrix4().setPosition(0,coneY+coneHeight*.5,0),black);
+    test.absorb(T, new T.TorusGeometry(R * 0.145, R * 0.035, 5, high ? 16 : 8), new T.Matrix4().makeRotationX(PI / 2).setPosition(0, coneY+coneHeight, 0), orange);
+    // The ring surrounds a recessed opening, rather than a flat cylinder cap.
+    var analFirst=test.count(),analSides=high?14:8,analTop=coneY+coneHeight;
+    var analRings=[[R*.13,analTop],[R*.11,analTop],[R*.075,analTop-R*.10]];
+    for(var row=0;row<analRings.length;row++)for(var j=0;j<analSides;j++){
+      var a=j/analSides*TAU,q=analRings[row];test.v(Math.cos(a)*q[0],q[1],Math.sin(a)*q[0],row<2?black:linHex(0x050507),.5,.5);
+    }
+    for(row=0;row<2;row++)for(j=0;j<analSides;j++){
+      var a=analFirst+row*analSides+j,b=analFirst+row*analSides+(j+1)%analSides,w=a+analSides,w1=b+analSides;
+      test.i.push(a,w,b,b,w,w1);
+    }
+    var analFloor=test.count();test.v(0,analTop-R*.105,0,linHex(0x030304),.5,.5);
+    for(j=0;j<analSides;j++)test.i.push(analFloor,analFirst+2*analSides+(j+1)%analSides,analFirst+2*analSides+j);
+    var testSkin=kit.baked('diadema|test',high?128:64,high?64:32,function(u,v,out){
+      var grain=noise3(u*52,Math.cos(v*TAU)*15,Math.sin(v*TAU)*15);out[0]=.47+.12*grain;out[1]=.86;out[2]=.5;
+    },false,true,true);
+    var testGeo=kit.geo(test,1);testGeo.userData.urchin={analOpening:{first:analFirst,count:test.count()-analFirst,top:analTop,radius:R*.11,floor:analTop-R*.105}};
+    kit.mesh(testGeo, kit.std({ vertexColors: true, roughness: 0.58,bumpMap:testSkin,bumpScale:.00018*k,roughnessMap:kit.flat('rough') }, { sheen: sheenOf(T, 0x2040ff, 0x40c0ff, 0.12) }), 'test', c.root);
+    var sp2 = new Geo(), n = high ? 240 : 90, tipc = lin(hex(0x2a2a30)), spineMotion = [],spineSides=high?6:3,spineVertices=spineSides*2+1;
     for (i = 0; i < n; i++) {
       var f = (i + 0.5) / n, yy = 1 - f * 1.75, rr = Math.sqrt(Math.max(0, 1 - yy * yy)), aa = i * 2.39996;
       // The anal cone and its orange ring stay visible among the spines.
@@ -3017,7 +3289,11 @@
       d = [d[0] / dl, d[1] / dl, d[2] / dl];
       var len = (0.1 + 0.08 * smooth(-0.3, 0.9, yy) + 0.03 * rng()) * k;
       var bx = d[0] * R * 0.9, by = cy + d[1] * R * 0.6, bz = d[2] * R * 0.9;
-      sp2.spike([bx, by, bz], d, len, 0.0026 * k, black, tipc);
+      // Narrow closed shafts keep their round silhouette from every viewpoint.
+      sp2.tube([[bx,by,bz],[bx+d[0]*len,by+d[1]*len,bz+d[2]*len]],
+        function(t){return k*(.00115*(1-t)+.000035*t);},spineSides,function(t,s){
+          var c1=[0,0,0];mixc(black,tipc,.2+.55*t+.1*Math.cos(s*TAU),c1);return c1;
+        });
       spineMotion.push(bx, by, bz, aa, 0.42 + 0.17 * f, 0.31 + 0.13 * (1 - f));
     }
     var g = kit.geo(sp2, 1);
@@ -3032,7 +3308,7 @@
         var ax = 0.04 * Math.sin(t * spineRig[s + 4] + spineRig[s + 3]) + drift;
         var az = 0.035 * Math.sin(t * spineRig[s + 5] + spineRig[s + 3] * 1.37);
         var sx = Math.sin(ax), cx = Math.cos(ax), sz = Math.sin(az), cz = Math.cos(az);
-        for (var v = 0; v < 4; v++, q += 3) {
+        for (var v = 0; v < spineVertices; v++, q += 3) {
           var x = base[q] - spineRig[s], y = base[q + 1] - spineRig[s + 1], z = base[q + 2] - spineRig[s + 2], ry = cx * y - sx * z;
           out[q] = spineRig[s] + cz * x - sz * ry; out[q + 1] = spineRig[s + 1] + sz * x + cz * ry; out[q + 2] = spineRig[s + 2] + sx * y + cx * z;
           x = normal[q]; y = normal[q + 1]; z = normal[q + 2]; ry = cx * y - sx * z;
@@ -3071,9 +3347,13 @@
       var fold = 1.3 * (noise2(mu * 4.7 + mantlePhase, side * 0.8 + 4.1) - 0.5) + 0.7 * (noise2(mu * 9.3 - mantlePhase, side * 1.3 + 7.4) - 0.5);
       g.p[mv * 3 + 1] += 0.008 * margin * ends * fold;
     }
-    scaleGeo(g, L); g.map(0, function (p) { p[1] += 0.004 * L / 0.05; });
-    kit.mesh(kit.geo(g, 1), kit.std({ map: tex, bumpMap: kit.flat('bump'), roughnessMap: kit.flat('rough'), roughness: 0.35 }, { sheen: sheenOf(T, 0x6090ff, 0xffffff, 0.2) }), 'body', c.root);
-    var org = lin(orng), wh = lin(wht), rh = new Geo(), gills = new Geo();
+    scaleGeo(g, L); g.map(0, function (p) { p[1] += 0.005 * L / 0.05; });
+    var skin=kit.baked('nudibranch|skin-relief',high?128:64,high?64:32,function(u,v,out){var a=-PI/2+v*TAU,grain=noise3(u*87,Math.cos(a)*17,Math.sin(a)*17);out[0]=out[2]=.5+(grain-.5)*.045;out[1]=.88+(grain-.5)*.1;},false,true,true);
+    kit.mesh(kit.geo(g, 1), kit.std({map:tex,bumpMap:skin,bumpScale:L*.0007,roughnessMap:skin,roughness:.42}, { sheen: sheenOf(T, 0x6090ff, 0xffffff, 0.2) }), 'body', c.root);
+    var org = lin(orng), wh = lin(wht), rh = new Geo(), gills = new Geo(),pedal=new Geo();
+    // The smaller muscular foot sits beneath the overhanging mantle; its tail projects.
+    pedal.loft([[.47,.016,-.014,.07],[.35,.026,-.016,.15],[.1,.027,-.016,.17],[-.2,.025,-.014,.15],[-.43,.022,-.01,.09],[-.57,.007,-.004,.015]],high?16:8,high?10:8,function(t,a,x,y,z,o){mixc(foot,wht,.45,o);mixc(o,orng,smooth(.83,.98,Math.abs(Math.cos(a)))*.85,o);},3);
+    scaleGeo(pedal,L);pedal.map(0,function(p){p[1]+=.016*L;});
     [-1, 1].forEach(function (s) {
       // The sensory clubs have stacked lamellae around a narrow stalk, with a
       // smooth tip. Build the collars into the existing batched crown.
@@ -3103,11 +3383,13 @@
         });
       }
     }
-    // The rhinophores and the gill crown draw as one batch, each on its pivot.
+    // Sensory clubs, gills and the static foot share one batch.
     var rig = new Float32Array(80), mat = kit.std({ vertexColors: true, roughness: 0.4 }, { batch: rig });
-    var rp = kit.node('rhinophores', c.root), gp = kit.node('gills-pivot', c.root); gp.position.set(-0.3 * L, 0.13 * L, 0);
+    rh.map(0,function(p){p[1]+=.02*L;});
+    var rp = kit.node('rhinophores', c.root), gp = kit.node('gills-pivot', c.root); gp.position.set(-0.3 * L, 0.15 * L, 0);
     var rhg = rh.build(T, 1), gg = gills.build(T, 1), reach = [{ center: rp.position.clone(), reach: batchExtent(rhg), margin: 0.01 * L }, { center: gp.position.clone(), reach: batchExtent(gg) * 1.08, margin: 0.01 * L }];
-    var crown = batchMesh(kit, [{ geo: rhg, part: 'rhinophores', node: rp }, { geo: gg, part: 'gills', node: gp }], mat, rig, 'gills', c.root);
+    var pg=pedal.build(T,1);reach.push({center:new T.Vector3(),reach:batchExtent(pg),margin:.01*L});
+    var crown = batchMesh(kit, [{ geo:rhg,part:'rhinophores',node:rp },{geo:gg,part:'gills',node:gp},{geo:pg,part:'foot',rough:.52}], mat, rig, 'gills', c.root);
     batchReach(crown, reach);
     var ph = rng() * TAU;
     c.anim(function (t) { gp.rotation.set(0.12 * Math.sin(t * 1.1 + ph), 0.2 * Math.sin(t * 0.5), 0.1 * Math.cos(t * 0.9)); var s = 1 + 0.08 * Math.sin(t * 1.7); gp.scale.set(s, s, s); rp.rotation.z = 0.05 * Math.sin(t * 0.8 + ph); batchPose(crown); });
@@ -3122,14 +3404,28 @@
       mixc(yel, pale, smooth(-0.2, -0.7, up), out);
       mixc(out, red, smooth(0.15, 0.35, up), out);
       mixc(out, wht, smooth(0.9, 0.95, up), out);
-      mixc(out, wht, 0.5 * band(fract(u * 6) - 0.5, 0.04, 0.03) * smooth(0.3, 0.6, up) * (1 - smooth(0.9, 0.95, up)), out);
+      var joint=band(fract(u*6)-.5,.025,.018)*smooth(.4,.95,u);
+      mulc(out,1-.12*joint);
     }, false, true);
     scaleGeo(g, L);
-    kit.mesh(kit.geo(g, 1), kit.std({ map: tex, bumpMap: kit.flat('bump'), roughnessMap: kit.flat('rough'), roughness: 0.3, metalness: 0.02 }), 'body', c.root);
+    var shellRelief=kit.baked('shrimp|shell-relief',high?128:64,high?64:32,function(u,v,out){
+      var joint=band(fract(u*6)-.5,.025,.018)*smooth(.4,.95,u),grain=noise2(u*80,v*40);
+      out[0]=.5-.18*joint+.025*(grain-.5);out[1]=.85;out[2]=.5;
+    },false,true,true);
+    kit.mesh(kit.geo(g, 1), kit.std({ map: tex, bumpMap: shellRelief,bumpScale:L*.0007, roughnessMap: kit.flat('rough'), roughness: 0.3, metalness: 0.02 }), 'body', c.root);
     var leg = new Geo(), rl = lin(red), wl = lin(wht), i;
+    // Short toothed rostrum and the small chelae of the first two leg pairs.
+    var amber=lin(yel),rostrumFirst=leg.count();
+    [[.39,lift+.02,-.006],[.39,lift+.02,.006],[.55,lift+.018,0],[.43,lift+.075,0]].forEach(function(p){leg.v(p[0]*L,p[1]*L,p[2]*L,amber,0,0);});
+    leg.i.push(rostrumFirst,rostrumFirst+3,rostrumFirst+2,rostrumFirst+3,rostrumFirst+1,rostrumFirst+2);
+    for(i=0;i<6;i++) {var tooth=.407+i*.019;leg.spike([tooth*L,(lift+.075-(tooth-.43)*.44)*L,0],[.2,1,0],.006*L,.0018*L,wl,wl);}
     for (i = 0; i < 5; i++) {
       var x = (0.26 - i * 0.085) * L;
       [-1, 1].forEach(function (s) { leg.tube([[x, lift * L - 0.04 * L, s * 0.05 * L], [x + 0.02 * L, lift * L * 0.5, s * 0.17 * L], [x + 0.03 * L, 0.0, s * 0.22 * L]], 0.006 * L, 3, function (t) { return t > 0.5 ? wl : rl; }); });
+      if(i<2) [-1,1].forEach(function(s){
+        leg.tube([[x+.03*L,0,s*.22*L],[x+.05*L,.012*L,s*.225*L],[x+.068*L,.014*L,s*.218*L]],.0035*L,3,function(){return wl;});
+        leg.tube([[x+.05*L,.012*L,s*.225*L],[x+.064*L,.023*L,s*.23*L]],.0025*L,3,function(){return wl;});
+      });
     }
     // Paired stalked compound eyes sit beside the rostrum. Their dark rounded
     // surfaces catch the existing light; the supports share the amber shell.
@@ -3141,7 +3437,7 @@
     var tail = new Geo();
     for (i = 0; i < 5; i++) {
       var a = (i - 2) * 0.32;
-      tail.membrane([[-0.44 * L, lift * L - 0.12 * L, 0], [-0.44 * L, lift * L - 0.13 * L, 0]], [[-0.44 * L - Math.cos(a) * 0.14 * L, lift * L - 0.17 * L, Math.sin(a) * 0.14 * L], [-0.44 * L - Math.cos(a + 0.2) * 0.14 * L, lift * L - 0.17 * L, Math.sin(a + 0.2) * 0.14 * L]], 2, function (u, v, out) { setc(out, v > 0.6 && v < 0.85 ? wht : red); });
+      tail.membrane([[-0.44 * L, lift * L - 0.12 * L, 0], [-0.44 * L, lift * L - 0.13 * L, 0]], [[-0.44 * L - Math.cos(a) * 0.14 * L, lift * L - 0.17 * L, Math.sin(a) * 0.14 * L], [-0.44 * L - Math.cos(a + 0.2) * 0.14 * L, lift * L - 0.17 * L, Math.sin(a + 0.2) * 0.14 * L]], 4, function (u, v, out) { setc(out, v > 0.6 && v < 0.85 ? wht : red); });
     }
     // The legs, tail fan and antennae draw as one batch; the antennae keep their pivot.
     var rig = new Float32Array(80), mat = kit.std({ vertexColors: true, roughness: 0.4, side: T.DoubleSide }, { batch: rig }), limbs = [{ geo: leg.build(T, 1), part: 'legs' }, { geo: tail.build(T, 1), part: 'tail-fan' }];
@@ -3209,7 +3505,7 @@
   }
   function buildTreeWorms(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(71), k = 0.9 + 0.2 * rng(), R = 0.12 * k, H = 0.11 * k, head = new Geo();
-    // They bore into living massive Porites, so the head is that coral: lumpy, finely pored.
+    // The host coral grows around the secreted tube, leaving its opening exposed.
     var cream = hex(0xae9862), mauve = hex(0x86704e), col = [0, 0, 0], h = c.health, bl = [0, 0, 0];
     // Porites has algae partners and bleaches in a heatwave; the worms have none
     // and keep their own colours, so a bleached head shows them off.
@@ -3218,11 +3514,19 @@
       mixc(cream, mauve, 0.5 * noise3(x * 30, y * 30, z * 30), col); mulc(col, 0.72 + 0.22 * smooth(0, H, y) + 0.2 * pore);
       return lin(h === 'bleached' ? health(h, col, x, y, z, bl, 0.45 * (1 - smooth(0, H, y)) + 0.5 * pore) : col);
     });
-    // Vertex colours only: a mapped head would add a shader program to the dive.
-    kit.mesh(kit.geo(head, 1), kit.std({ vertexColors: true, roughness: h === 'bleached' ? coralRough(h) : 0.85 }, coralSheen(c)), 'coral-head', c.root);
+    var hostIndices=head.i.length;
+    function hostSurface(x,z,normal){
+      var best=-Infinity;
+      for(var at=0;at<hostIndices;at+=3){var ai=head.i[at]*3,bi=head.i[at+1]*3,ci=head.i[at+2]*3;
+        var ax=head.p[ai],az=head.p[ai+2],bx=head.p[bi],bz=head.p[bi+2],cx=head.p[ci],cz=head.p[ci+2],den=(bz-cz)*(ax-cx)+(cx-bx)*(az-cz);
+        if(Math.abs(den)<1e-12)continue;var a=((bz-cz)*(x-cx)+(cx-bx)*(z-cz))/den,b=((cz-az)*(x-cx)+(ax-cx)*(z-cz))/den,d=1-a-b;
+        if(a<-.00001||b<-.00001||d<-.00001)continue;var y=a*head.p[ai+1]+b*head.p[bi+1]+d*head.p[ci+1];
+        if(y>best){best=y;var uy=head.p[bi+1]-head.p[ai+1],vy=head.p[ci+1]-head.p[ai+1];normal.set(uy*(cz-az)-(bz-az)*vy,(bz-az)*(cx-ax)-(bx-ax)*(cz-az),(bx-ax)*vy-uy*(cx-ax));if(normal.y<0)normal.negate();normal.normalize();}
+      }return best;
+    }
     // One spiral plume, instanced twice per worm (they live in pairs of crowns).
     // Radioles spiral up a cone like a Christmas tree; the frilly band slopes down and out.
-    var plume = new Geo(), turns = high ? 5 : 4, segs = Math.round(turns * (high ? 16 : 10)), ph = 0.04 * k, pr = 0.005 * k, pw = 0.012 * k, rim = [1.3, 1.3, 1.3], core = [0.7, 0.7, 0.7], dim = [0.95, 0.95, 0.95], first = plume.count(), i;
+    var plume = new Geo(), turns = high ? 5 : 4, segs = Math.round(turns * (high ? 12 : 6.5)), ph = 0.032 * k, pr = 0.0025 * k, pw = 0.01 * k, rim = [1.3, 1.3, 1.3], core = [0.7, 0.7, 0.7], dim = [0.95, 0.95, 0.95], first = plume.count(), i;
     for (i = 0; i <= segs; i++) {
       var t = i / segs, a = t * turns * TAU, w = pw * (1 - 0.75 * t), r = pr * (1 - 0.6 * t), y = ph * t, cx = Math.cos(a), cz = Math.sin(a);
       plume.v(cx * r, y, cz * r, core, t, 0);
@@ -3242,28 +3546,45 @@
       var b = first + i * 2, inner = i === segs - 1 ? b + 2 : plumeBetween(b, b + 2, 0.82), outer = i === segs - 1 ? b + 3 : plumeBetween(b + 1, b + 3, 0.34);
       plume.i.push(b, inner, b + 1, b + 1, inner, outer);
     }
-    var nWorms = high ? 14 : 8, n = nWorms * 2, pGeo = kit.geo(plume, 1);
+    var hostVertexCount = head.count(), nWorms = high ? 14 : 8, n = nWorms * 2, pGeo = kit.geo(plume, 1);
     var mesh = kit.tag(new T.InstancedMesh(pGeo, kit.std({ vertexColors: true, roughness: 0.45, side: T.DoubleSide }), n), 'worms'); c.root.add(mesh);
     var palette = [0xe8281e, 0xf08a1a, 0xffd21e, 0x2a6ae8, 0xf4f4f4, 0x9a3ad8, 0x20b0a0], tc = new T.Color(), worms = [];
-    var m4 = new T.Matrix4(), q = new T.Quaternion(), p = new T.Vector3(), s = new T.Vector3(), up = new T.Vector3(0, 1, 0), nrm = new T.Vector3(), qs = new T.Quaternion();
+    var m4 = new T.Matrix4(), q = new T.Quaternion(), p = new T.Vector3(), s = new T.Vector3(), up = new T.Vector3(0, 1, 0), nrm = new T.Vector3(), qs = new T.Quaternion(), plugs=[];
     for (i = 0; i < nWorms; i++) {
       var f = (i + 0.5) / nWorms, ang = i * 2.39996 + rng(), rr = R * 0.78 * Math.sqrt(f) + 0.01;
-      var yy = H * Math.pow(Math.max(0, 1 - Math.pow(rr / R, 2)), 0.7);
-      nrm.set(Math.cos(ang) * rr / R * 0.9, 1, Math.sin(ang) * rr / R * 0.9).normalize();
+      var yy=hostSurface(Math.cos(ang)*rr,Math.sin(ang)*rr,nrm);
       tc.setHex(palette[Math.floor(rng() * palette.length)]).convertSRGBToLinear();
       var tint = tc.clone(), period = 12 + 14 * rng(), phase = rng() * 40;
+      var site=new T.Vector3(Math.cos(ang)*rr,yy+.001*k,Math.sin(ang)*rr),basis=new T.Quaternion().setFromUnitVectors(up,nrm),tangent=new T.Vector3(-Math.sin(ang),0,Math.cos(ang));
+      m4.compose(site,basis,new T.Vector3(1,1,1));
+      head.absorb(T,new T.TorusGeometry(.009*k,.001*k,3,high?8:5).rotateX(PI/2),m4,lin(hex(0xcfc2a2)));
+      var darkM=new T.Matrix4().compose(site,basis,new T.Vector3(.0077*k,.0008*k,.0077*k));
+      head.absorb(T,new T.SphereGeometry(1,4,2),darkM,lin(hex(0x3d3629)));
+      var cap=new Geo(),capColor=lin(hex(0xc9bfa5));
+      cap.polar(1,high?8:4,function(r,a,out){setc(out,capColor);return [Math.cos(a)*r*.0085*k,.001*k*(1-r),Math.sin(a)*r*.0085*k];});
+      for(var spine=0;spine<(high?3:2);spine++){var ca=spine/(high?3:2)*TAU;cap.spike([Math.cos(ca)*.004*k,0,Math.sin(ca)*.004*k],[Math.cos(ca)*.25,1,Math.sin(ca)*.25],.004*k,.001*k,capColor,capColor);}
+      cap.tube([[0,-.004*k,0],[0,0,0]],.001*k,3,function(){return capColor;});
+      var capFirst=head.count(),capLocal=new Float32Array(cap.p),capMatrix=new T.Matrix4().compose(site.clone().addScaledVector(nrm,.002*k),basis,new T.Vector3(1,1,1));
+      head.absorb(T,cap.build(T,1),capMatrix,capColor);
+      plugs.push({first:capFirst,count:capLocal.length/3,local:capLocal,site:site,normal:nrm.clone(),basis:basis,tangent:tangent,period:period,phase:phase});
       for (var j = 0; j < 2; j++) {
-        var side = j ? 1 : -1, off = new T.Vector3(-Math.sin(ang), 0, Math.cos(ang)).multiplyScalar(side * 0.016 * k);
-        worms.push({ pos: new T.Vector3(Math.cos(ang) * rr, yy - 0.004, Math.sin(ang) * rr).add(off), q: new T.Quaternion().setFromUnitVectors(up, nrm), spin: rng() * TAU, period: period, phase: phase });
+        var side = j ? 1 : -1, off = new T.Vector3(-Math.sin(ang), 0, Math.cos(ang)).multiplyScalar(side * 0.0045 * k);
+        worms.push({ pos:site.clone().add(off), q: new T.Quaternion().setFromUnitVectors(up, nrm), spin: rng() * TAU, period: period, phase: phase });
         mesh.setColorAt(i * 2 + j, tint);
       }
     }
+    var coralRelief=kit.baked('porites|worm-host',high?256:128,high?128:64,function(u,v,out){
+      var sample=[0,0,0,0,0];cells(u*85,v*48,71,sample);out[0]=.53-.18*(1-smooth(.08,.3,sample[0]));out[1]=.94;out[2]=.5;
+    },false,true,true);
+    var headGeo=kit.geo(head,1),headNormal=headGeo.attributes.normal;
+    headGeo.userData.wormHostVertexCount=hostVertexCount;
+    plugs.forEach(function(plug){var inv=plug.basis.clone().invert(),normals=new Float32Array(plug.local.length);for(var v=0;v<plug.count;v++){p.fromBufferAttribute(headNormal,plug.first+v).applyQuaternion(inv);normals[v*3]=p.x;normals[v*3+1]=p.y;normals[v*3+2]=p.z;}plug.normals=normals;});
+    kit.mesh(headGeo,kit.std({vertexColors:true,bumpMap:coralRelief,bumpScale:.00045*k,roughnessMap:kit.flat('rough'),roughness:h==='bleached'?coralRough(h):.85},coralSheen(c)),'coral-head',c.root);
     var forced = false, held = 1;
+    function extension(w,t,moving){if(forced)return .04;if(!moving)return 1;var x=fract((t+w.phase)/w.period);return x<.015?1-.96*x/.015:x<.07?.04:Math.min(1,.04+(x-.07)/.16);}
     function place(t, moving) {
       for (var i = 0; i < n; i++) {
-        var w = worms[i], ext = 1;
-        if (forced) ext = 0.04;
-        else if (moving) { var x = fract((t + w.phase) / w.period); ext = x < 0.015 ? 1 - 0.96 * x / 0.015 : x < 0.07 ? 0.04 : Math.min(1, 0.04 + (x - 0.07) / 0.16); }
+        var w = worms[i], ext = extension(w,t,moving);
         // Anchored crowns gently twist around their resting pose; never accumulate a full turn.
         // Existing worm phases keep each pair together and neighbouring worms independent.
         var twist = moving ? 0.06 * (Math.sin(t * TAU / w.period + w.phase) - Math.sin(w.phase)) : 0;
@@ -3271,6 +3592,9 @@
         s.set(ext, ext, ext); m4.compose(w.pos, q, s); mesh.setMatrixAt(i, m4);
       }
       mesh.instanceMatrix.needsUpdate = true;
+      var pos=headGeo.attributes.position.array,norm=headGeo.attributes.normal.array;
+      plugs.forEach(function(plug){var open=smooth(.04,.7,extension(plug,t,moving));p.copy(plug.site).addScaledVector(plug.normal,(.002+.006*open)*k).addScaledVector(plug.tangent,.01*k*open);qs.setFromAxisAngle(new T.Vector3(1,0,0),open*PI*.55);q.copy(plug.basis).multiply(qs);m4.compose(p,q,new T.Vector3(1,1,1));for(var v=0;v<plug.count;v++){var at=(plug.first+v)*3;p.fromArray(plug.local,v*3).applyMatrix4(m4);pos[at]=p.x;pos[at+1]=p.y;pos[at+2]=p.z;p.fromArray(plug.normals,v*3).applyQuaternion(q);norm[at]=p.x;norm[at+1]=p.y;norm[at+2]=p.z;}});
+      headGeo.attributes.position.needsUpdate=true;headGeo.attributes.normal.needsUpdate=true;
     }
     place(0, false);
     var lastT = 0;
@@ -3310,6 +3634,14 @@
     }
     var funnelEnd = body.count(); body.v(0.052 - funnelAxis.x * 0.014, 0.038 - funnelAxis.y * 0.014, 0.061 - funnelAxis.z * 0.014, white, 1, 0.5);
     for (var fs = 0; fs < funnelSides; fs++) body.i.push(funnelFirst + 4 * funnelSides + fs, funnelFirst + 4 * funnelSides + (fs + 1) % funnelSides, funnelEnd);
+    // The resting buccal opening lies centrally beneath the arms; the beak stays inside.
+    var oralFirst=eyes.count(),oralSides=high?8:6,oralRim=lin(hex(0xa88773)),oralDark=lin(hex(0x211916));
+    for(var oralRing=0;oralRing<2;oralRing++)for(var oj=0;oj<oralSides;oj++){
+      var oa=oj/oralSides*TAU,orr=oralRing?.004:.011;
+      eyes.v(.035+Math.cos(oa)*orr,oralRing?.020:.017,Math.sin(oa)*orr,oralRing?oralDark:oralRim,0,0);
+    }
+    var oralCentre=eyes.v(.035,.021,0,oralDark,0,0);
+    for(oj=0;oj<oralSides;oj++){var a=oralFirst+oj,b=oralFirst+(oj+1)%oralSides,cc=a+oralSides,dd=b+oralSides;eyes.i.push(a,b,cc,b,dd,cc,cc,dd,oralCentre);}
     var nb = body.count();
     scaleGeo(body, k); scaleGeo(eyes, k);
     // Arms: eight tapered tubes rebuilt each frame (reach, meander and curl).
@@ -3464,7 +3796,40 @@
       });
     var bend = (rng() - 0.5) * 0.16;
     scaleGeo(g, L); g.map(0, function (p) { var t = p[0] / L; p[2] += bend * L * (0.25 - t * t) * 2; p[1] += 0.087 * L; });
+    // Sparse, low papillae soften the upper surface without making a spiny animal.
+    for(var pap=0;pap<(high?16:5);pap++) {
+      var pu=-.29+.58*(pap+.5)/(high?16:5),pa=.7*Math.sin(pap*2.4+ph0);
+      blob(T,g,pu*L,(.087+.101*Math.cos(pa))*L,.098*Math.sin(pa)*L+bend*L*(.25-pu*pu)*2,
+        .0045*L,.0035*L,.0045*L,lin(dusk),high?5:4,3);
+    }
+    // Small tube feet line the underside. Keeping these in the skin mesh means
+    // they follow the existing slow body deformation and add no draw call.
+    var footColor=lin(hex(0xba7787)), tentacleColor=lin(hex(0xb4a69e));
+    var feetPerRow=high?12:6;
+    for(var row=-1;row<=1;row++) for(var foot=0;foot<feetPerRow;foot++) {
+      var along=-.33+.66*(foot+.5)/feetPerRow, x=along*L, z=row*.041*L+bend*L*(.25-along*along)*2;
+      blob(T,g,x,.012*L,z,.0048*L,.012*L,.0048*L,footColor,4,3);
+    }
+    // The specimen shows the short oral tentacles extended around the front mouth.
+    // A peltate tentacle ends in a small, lobed feeding pad.
+    var mouthX=.44*L, mouthY=.028*L, mouthZ=bend*L*(.25-.44*.44)*2, tentacles=20;
+    blob(T,g,mouthX,.032*L,mouthZ,.024*L,.007*L,.024*L,lin(rose),high?8:5,3);
+    blob(T,g,mouthX,.025*L,mouthZ,.01*L,.003*L,.01*L,lin(black),high?8:5,3);
+    var feedingPads=[];
+    for(var digit=0;digit<tentacles;digit++) {
+      var angle=digit/tentacles*TAU, dx=Math.sin(angle), dz=Math.cos(angle), baseR=.018*L;
+      var tipX=mouthX+dx*baseR*1.8, tipY=.012*L, tipZ=mouthZ+dz*baseR*1.8;
+      g.tube([[mouthX+dx*baseR,mouthY,mouthZ+dz*baseR],
+        [mouthX+dx*baseR*1.45,.018*L,mouthZ+dz*baseR*1.45],[tipX,tipY,tipZ]],.0028*L,high?5:3,function(){return tentacleColor;});
+      var padFirst=g.count(),padSides=high?18:9;
+      [-1,1].forEach(function(face){g.polar(1,padSides,function(r,a,out){
+        var edge=(1+.20*Math.cos(3*a))*.0055*L*r,along=Math.cos(a)*edge,across=Math.sin(a)*edge;
+        setc(out,tentacleColor);return [tipX+dx*along+dz*across,tipY+face*.0017*L*(1-r),tipZ+dz*along-dx*across,.5,.5];
+      },face>0);});
+      feedingPads.push({first:padFirst,count:g.count()-padFirst,center:[tipX,tipY,tipZ],sides:padSides});
+    }
     var geo = kit.geo(g, 1);
+    geo.userData.cucumber={feedingPads:feedingPads,scale:L};
     // Smooth, pliable skin has a fine surface grain, not raised spines. Pack
     // tiny relief and roughness into one linear map; the dark/pink pigment
     // stays in the original vertex colours. Circular sampling closes the seam.
@@ -3532,6 +3897,8 @@
       mixc(red, org, 0.4 * noise2(u * 9, v * 9) + 0.4 * r, out);
       mixc(out, polyp, net * smooth(0.6, 0.78, noise2(u * 170, v * 170)) * 0.7, out);
       mulc(out, 0.86 + 0.14 * smooth(0.03, 0.6, r) + 0.06 * noise2(u * 95, v * 95) - 0.12 * main);
+      // Soft edge shading gives fine branchlets volume within the existing texture.
+      mulc(out,(.8+.2*smooth(.42,.96,a))*(.96+.04*noise2(u*211,v*197)));
       out[3] = a;
     }
     var full = c.key('fan') + '|' + tw, tex = kit.share(full + '|cov', function () {
@@ -3539,7 +3906,7 @@
       t.mipmaps = mips; t.generateMipmaps = false; t.encoding = T.sRGBEncoding; t.magFilter = T.LinearFilter; t.minFilter = T.LinearMipmapLinearFilter; t.anisotropy = 4; t.needsUpdate = true;
       return t;
     });
-    var mat = kit.std({ map: tex, alphaTest: 0.42, side: T.DoubleSide, roughness: 0.77 });
+    var mat = kit.std({map:tex,alphaTest:0.42,side:T.DoubleSide,roughness:0.83});
     var sway = kit.node('sway', c.root);
     var fanGeo = kit.geo(fan, 1); kit.mesh(fanGeo, mat, 'fan', sway);
     var trunk = new Geo(), tc = lin(mixc(red, hex(0x5a2418), 0.4, [0, 0, 0])), base = lin(hex(0x5a4a3a));
@@ -3554,7 +3921,8 @@
       }
       trunk.tube(pts, function (t) { return (0.012 - 0.008 * t) * k; }, high ? 6 : 4, function () { return tc; });
     }
-    var trunkGeo = kit.geo(trunk, 1); kit.mesh(trunkGeo, kit.std({ vertexColors: true, roughness: 0.7 }), 'trunk', sway);
+    var branchSurface=kit.baked('fan|branch-surface',high?128:64,high?64:32,function(u,v,out){var grain=noise2(u*113,v*137),ribs=Math.sin(u*TAU*11+v*3);out[0]=out[2]=.5+(grain-.5)*.12+ribs*.025;out[1]=.92+(grain-.5)*.1;},true,false,true);
+    var trunkGeo = kit.geo(trunk, 1); kit.mesh(trunkGeo, kit.std({vertexColors:true,bumpMap:branchSurface,bumpScale:.0008*k,roughnessMap:branchSurface,roughness:.8}), 'trunk', sway);
     var ph = rng() * TAU, current = {};
     function fanSway(base, out, t, motion) {
       currentAt(c.root, motion, t, ph, current);
@@ -3638,14 +4006,14 @@
       var n = noise2(t * 30 + s * 7, s * 13), c2 = mixc(stalkC, spicule, 0.06 + smooth(0.6, 0.78, n) * 0.5 + 0.25 * t * t, [0, 0, 0]);
       return lin(mulc(c2, 0.86 + 0.14 * t + 0.06 * n));
     }
-    stalk.tube([[0, -0.01, 0], [0, 0.04 * k, 0], [0.005, 0.09 * k, 0], [0, 0.13 * k, 0]], function (t) { return (0.044 - 0.014 * t) * k; }, high ? 10 : 6, scol);
+    stalk.tube([[0, -0.01, 0], [0, 0.04 * k, 0], [0.005, 0.09 * k, 0], [0, 0.13 * k, 0]], function (t) { return (0.035 - 0.012 * t) * k; }, high ? 10 : 6, scol);
     var tips = [], sides = high ? 6 : 4;
     function grow(p, dir, len, r, depth) {
       var end = [p[0] + dir[0] * len, p[1] + dir[1] * len, p[2] + dir[2] * len], mid = [(p[0] + end[0]) / 2 + dir[2] * len * 0.08, (p[1] + end[1]) / 2, (p[2] + end[2]) / 2 - dir[0] * len * 0.08];
       // Bury each narrow branch collar inside its parent, then swell gently
       // into the fleshy branch. This avoids exposed overlapping tube rims.
       var buried = [p[0] - dir[0] * r * 0.5, p[1] - dir[1] * r * 0.5, p[2] - dir[2] * r * 0.5];
-      stalk.tube([buried, mid, end], function (t) { return r * (0.73 + 0.19 * Math.sin(t * PI) - 0.08 * t); }, sides, scol);
+      stalk.tube([buried, mid, end], function (t) { return r * (0.74 + 0.16 * Math.sin(t * PI) - (depth===0?.38:.08) * t); }, sides, scol);
       if (depth === 0) { tips.push(end); return; }
       var kids = depth === 2 ? (high ? 3 : 2) : 2;
       for (var q = 0; q < kids; q++) {
@@ -3660,13 +4028,15 @@
     }
     // Each twig ends in a rounded cluster of eight-armed polyps facing outward,
     // like a carnation head (the octocoral crown).
-    var per = high ? 8 : 4, arms = high ? 8 : 6, cr = 0.017 * k;
+    var per = 3, arms = 8, cr = 0.011 * k;
     for (i = 0; i < tips.length; i++) for (var j = 0; j < per; j++) {
       var p = tips[i], f = (j + 0.5) / per, el = Math.acos(1 - 1.4 * f), az = j * 2.399963 + i;
       var nx = Math.sin(el) * Math.cos(az), ny = Math.cos(el), nz = Math.sin(el) * Math.sin(az);
       var px = p[0] + nx * cr, py = p[1] + ny * cr * 0.8, pz = p[2] + nz * cr;
       var tx = -nz, tz = nx, tl = Math.hypot(tx, tz) || 1; tx /= tl; tz /= tl;
       var bx = ny * tz, by = nz * tx - nx * tz, bz = -ny * tx;
+      if(high)polyps.tube([p,[px,py,pz]],function(t){return k*(.0015-.0003*t);},3,function(){return pc;});
+      else {var stem=polyps.count(),w=.0012*k;polyps.v(p[0]-tx*w,p[1],p[2]-tz*w,pc,0,0);polyps.v(p[0]+tx*w,p[1],p[2]+tz*w,pc,0,0);polyps.v(px-tx*w,py,pz-tz*w,pc,0,0);polyps.v(px+tx*w,py,pz+tz*w,pc,0,0);polyps.i.push(stem,stem+1,stem+2,stem+1,stem+3,stem+2);}
       var core = polyps.v(px, py, pz, pc, 0.5, 0.5), rimFirst = polyps.count(), reach = 0.0075 * k, lift = 0.0055 * k;
       for (var arm = 0; arm < arms; arm++) {
         var pa2 = arm / arms * TAU + az, ca = Math.cos(pa2), sa = Math.sin(pa2);
@@ -3676,8 +4046,20 @@
       for (arm = 0; arm < arms; arm++) {
         var r0 = rimFirst + arm * 2, r1 = rimFirst + ((arm + 1) % arms) * 2;
         polyps.i.push(core, r1, r0);
-        if (high) polyps.i.push(r0, r1, r0 + 1);
-        else if (arm % 2 === 0) polyps.i.push(r0, r1, r0 + 1);
+        polyps.i.push(r0, r1, r0 + 1);
+        if(high){
+          var pa3=arm/arms*TAU+az,rx=tx*Math.cos(pa3)+bx*Math.sin(pa3),ry=by*Math.sin(pa3),rz=tz*Math.cos(pa3)+bz*Math.sin(pa3);
+          var sx=-tx*Math.sin(pa3)+bx*Math.cos(pa3),sy=by*Math.cos(pa3),sz=-tz*Math.sin(pa3)+bz*Math.cos(pa3);
+          // Paired side branches make each tentacle pinnate.
+          for(var pair=0;pair<(j===0?2:1);pair++){
+            var along=.43+pair*.3,distance=reach*(.35+.65*along),cx=px+rx*distance+nx*lift*along,cy=py+ry*distance+ny*lift*along,cz=pz+rz*distance+nz*lift*along;
+            for(var side=-1;side<=1;side+=2){var edge=polyps.count(),width=.0022*k*(1-.35*along);
+              polyps.v(cx-rx*.00035*k,cy-ry*.00035*k,cz-rz*.00035*k,pc,0,0);
+              polyps.v(cx+rx*.00035*k,cy+ry*.00035*k,cz+rz*.00035*k,pc,0,0);
+              polyps.v(cx+sx*side*width+rx*.0005*k,cy+sy*side*width+ry*.0005*k,cz+sz*side*width+rz*.0005*k,pt,1,1);polyps.i.push(edge,edge+1,edge+2);
+            }
+          }
+        }
       }
     }
     for (i = 0; i < stalk.count(); i++) {
@@ -4078,6 +4460,87 @@
   // growing while side branches split off and turn upward. Every growing tip
   // ends in a pale axial corallite; tubular radial corallites roughen the walls.
   // The branching draws are tier independent: both tiers grow the same colony.
+  function buildFieldPlateAcropora(c) {
+    var g = new Geo(), rng = c.rng(379), phase = rng() * TAU;
+    var lattice = c.id === 'acropora_clathrata', fingers = c.id === 'acropora_humilis';
+    var base = hex(lattice ? 0x596647 : fingers ? 0x806787 : 0x9c664b);
+    var tip = hex(lattice ? 0xc4c5a3 : fingers ? 0xe5d5de : 0xdfbe94);
+    var pigment = [0,0,0], shifted = [0,0,0];
+    function color(t, around) {
+      mixc(base, tip, .12 + .55 * t, pigment);
+      return lin(health(c.health,pigment,around,t,phase,shifted));
+    }
+    // Each tapered tube gets cylindrical UVs, so the corallite texture wraps the skeleton.
+    function branch(points, radius, sides, paint) {
+      var first = g.tube(points,radius,sides,paint || color);
+      for (var v = first; v < g.count(); v++) {
+        g.t[2*v] = (v-first)%sides/sides;
+        g.t[2*v+1] = 2.5*Math.min(points.length-1,Math.floor((v-first)/sides))/(points.length-1);
+      }
+    }
+    if (lattice) {
+      // Side attachment and gently rising interconnected spokes form an open horizontal shelf.
+      var rays = [], rayCount = c.high ? 17 : 11, stations = 6;
+      for (var i = 0; i < rayCount; i++) {
+        var az = -1.45 + 2.9*i/(rayCount-1), reach = .65+.38*Math.cos(az)+.06*rng(), path = [];
+        for (var j = 0; j <= stations; j++) {
+          var u = j/stations, angle = phase+az+.095*Math.sin(4*u+az*4)*u;
+          path.push([Math.cos(angle)*reach*u,.045+.19*u+.04*u*Math.sin(az*3+u*4),Math.sin(angle)*reach*u]);
+        }
+        branch(path,function(t){return .048-.033*t;},c.high?8:5);
+        if (i) for (j=2; j<=stations; j++) {
+          if ((i+j)%4===0) continue;
+            var start = path[j], end = rays[i-1][j-((i+j)%2)];
+            branch([start,[(start[0]*2+end[0])/3-.009,(start[1]*2+end[1])/3-.008,(start[2]*2+end[2])/3],
+              [(start[0]+end[0]*2)/3-.007,(start[1]+end[1]*2)/3-.006,(start[2]+end[2]*2)/3],end],.020,c.high?6:4);
+        }
+        rays.push(path);
+      }
+      blob(c.T,g,0,.045,0,.12,.045,.12,function(){return color(0,0);},10,5);
+    } else {
+      // Basal crust joins the branches. The finer species has an even crown of short branchlets.
+      var spread = fingers ? .235 : .325, count = fingers ? 14 : 32;
+      blob(c.T,g,0,.052,0,spread*1.05,.052,spread*.97,function(){return color(0,0);},c.high?20:12,6);
+      for (var k=0; k<count; k++) {
+        var radial = Math.sqrt((k+.5)/count), a = phase+k*2.399963+.12*rng();
+        var x = Math.cos(a)*radial*spread, z = Math.sin(a)*radial*spread;
+        var tall = fingers ? (.20+.18*(1-radial)+.14*rng()) : (.21+.14*(1-radial*radial)+.035*rng());
+        var r = fingers ? .043+.015*rng() : .019+.008*rng(), lean = .23+.24*radial;
+        function point(t) {return [x*(1+lean*t),.045+t*tall,z*(1+lean*t)];}
+        var sides = c.high?12:7, first = g.count();
+        var heights = [0,.33,.72,.93,1,.995,.961], widths = [1.3,1,.82,.65,.44,.25,.065];
+        for (var row=0;row<heights.length;row++) {
+          var p=point(heights[row]);
+          for (var side=0;side<sides;side++) {
+            var turn=side/sides*TAU, rr=r*widths[row]*(1+.04*Math.sin(turn*3+a));
+            var col=color(heights[row],side/sides);
+            if (row===6) mulc(col,.22);
+            g.v(p[0]+Math.cos(turn)*rr,p[1],p[2]+Math.sin(turn)*rr,col,side/sides,heights[row]*1.9);
+            if (row) {
+              var v=first+row*sides+side, next=first+row*sides+(side+1)%sides;
+              g.i.push(v-sides,v,next,next,next-sides,v-sides);
+            }
+          }
+        }
+        // Close the recessed axial cup below its raised rim.
+        for (var side=1;side<sides-1;side++) g.i.push(first+6*sides,first+6*sides+side+1,first+6*sides+side);
+        // Short outward lips give the close-up a scaly surface; fewer lips in the dive LOD.
+        var lips = c.high ? (fingers?12:8) : (fingers?5:2);
+        for (var m=0; m<lips; m++) {
+          var at=(m+.5)/lips*.78+.10, mid=point(at), side=a+m*2.399963;
+          var dx=Math.cos(side), dz=Math.sin(side), rr=r*(1-.26*at), w=rr*(fingers?.27:.53);
+          var bx=mid[0]+dx*(rr*.96), bz=mid[2]+dz*(rr*.96);
+          branch([[bx-dz*w,mid[1]+w*.35,bz+dx*w],[bx+dx*w*.48,mid[1]-w*.35,bz+dz*w*.48],
+            [bx+dz*w,mid[1]+w*.35,bz-dx*w]],w*.45,c.high?5:3);
+        }
+      }
+    }
+    scaleGeo(g,lerp(.14,1,c.growth));
+    var maps = coralMaps(c.kit,c.health,c.high?128:64,14,1);
+    var mat = c.kit.std({map:maps[0],normalMap:maps[1],vertexColors:true,roughness:coralRough(c.health)},coralSheen(c,0xccb8a3));
+    mat.normalScale.set(.5,.5);
+    c.kit.mesh(c.kit.geo(g,1),mat,'colony',c.root);
+  }
   function buildStaghorn(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(95), gr = c.growth, g = new Geo(), h = c.health;
     var pals = [[0x8a6a46, 0xece4f4], [0x7a6649, 0xbcd4f2], [0x8e7c50, 0xf2eee0], [0x6c5c46, 0xe2c6ec]], pal = pals[Math.floor(rng() * pals.length)];
@@ -4409,10 +4872,16 @@
     // Small clear eyes, a dark gill aperture and tiny pectoral lobes, kept at
     // the same biological stations at both detail tiers.
     var eye = center(0.925), gill = center(0.80), eyeR = 0.0016 * k;
+    var eyeFirst=detail.count(),headIndexCount=body.i.length;
+    function eyeProfile(x){return[eye[1]+.004*k,eye[1]-.004*k,.0038*k];}
+    function headSide(x,y){
+      var best=-Infinity;for(var n=0;n<headIndexCount;n+=3){var a=body.i[n]*3,b=body.i[n+1]*3,d=body.i[n+2]*3,ax=body.p[a],ay=body.p[a+1],bx=body.p[b],by=body.p[b+1],dx=body.p[d],dy=body.p[d+1],den=(by-dy)*(ax-dx)+(dx-bx)*(ay-dy);if(Math.abs(den)<1e-15)continue;var u=((by-dy)*(x-dx)+(dx-bx)*(y-dy))/den,v=((dy-ay)*(x-dx)+(ax-dx)*(y-dy))/den,w=1-u-v;if(Math.min(u,v,w)>=-1e-7)best=Math.max(best,u*body.p[a+2]+v*body.p[b+2]+w*body.p[d+2]);}return best;
+    }
+    // Clear corneas follow the actual head facets at both tiers; their glints
+    // come from the light rather than a fixed white bead on either side.
+    [-1,1].forEach(function(side){var first=detail.count();addEye(T,detail,eyeProfile,2,[eye[0],eye[1]+.0012*k,eyeR],side,hex(0xc0b34e),high,.55,false,high?16:8);for(var e=first*3;e<detail.p.length;e+=3){var x=detail.p[e],y=detail.p[e+1],lift=Math.abs(detail.p[e+2])-surfZ(eyeProfile,2,x,y);detail.p[e+2]=side*(headSide(x,y)+lift);}});
+    var eyeCount=detail.count()-eyeFirst;
     [-1, 1].forEach(function (s) {
-      blob(T, detail, eye[0], eye[1] + 0.0012 * k, s * 0.00375 * k, eyeR, eyeR, eyeR * 0.55, silver, high ? 10 : 6, high ? 6 : 4);
-      blob(T, detail, eye[0] + 0.0003 * k, eye[1] + 0.0013 * k, s * 0.00455 * k, eyeR * 0.62, eyeR * 0.69, eyeR * 0.2, dark, high ? 10 : 6, high ? 6 : 4);
-      blob(T, detail, eye[0] + 0.0007 * k, eye[1] + 0.0018 * k, s * 0.0048 * k, 0.0003 * k, 0.0003 * k, 0.00012 * k, white, 5, 3);
       blob(T, detail, gill[0] - 0.0004 * k, gill[1], gill[2] + s * 0.00425 * k, 0.00045 * k, 0.0015 * k, 0.00024 * k, dark, 6, 4);
       blob(T, detail, gill[0] - 0.0001 * k, gill[1] - 0.002 * k, gill[2] + s * 0.0047 * k, 0.0011 * k, 0.0022 * k, 0.00065 * k, cream, high ? 8 : 5, 4);
     });
@@ -4425,6 +4894,7 @@
     detail.tube(mouth, 0.00018 * k, high ? 6 : 4, function () { return dark; });
     detail.tube(lower, 0.00030 * k, high ? 6 : 4, function () { return cream; });
     var detailGeo = kit.geo(detail, 1);
+    detailGeo.userData.gardenEel={eyes:{first:eyeFirst,count:eyeCount},scale:k};
     kit.mesh(detailGeo, kit.std({ vertexColors: true, roughness: 0.52 }, { eye: true, iris: hex(0xc0b34e) }), 'detail', c.root);
     var geometries = [bodyGeo, detailGeo], bases = geometries.map(function (g) { return g.attributes.position.array.slice(); }), flow = { x: 0, z: 0, pulse: 0 };
     // Bending uses a frozen rest pose and absolute time. The burrow attachment,
@@ -4512,8 +4982,23 @@
     kit.mesh(bodyGeo, bodyMat, 'body', c.root);
     // Seated corneal domes at the same biological station at both tiers.
     function eyeProfile(x) { var s = section(x / k); return [(s[0] + s[1]) * k, (s[0] - s[1]) * k, s[2] * k]; }
+    function headSide(x, y) {
+      var best = -Infinity;
+      for (var n = 0; n < body.i.length; n += 3) {
+        var a = body.i[n] * 3, b = body.i[n + 1] * 3, d = body.i[n + 2] * 3, ax = body.p[a], ay = body.p[a + 1], bx = body.p[b], by = body.p[b + 1], dx = body.p[d], dy = body.p[d + 1];
+        var den = (by - dy) * (ax - dx) + (dx - bx) * (ay - dy); if (Math.abs(den) < 1e-15) continue;
+        var u = ((by - dy) * (x - dx) + (dx - bx) * (y - dy)) / den, v = ((dy - ay) * (x - dx) + (ax - dx) * (y - dy)) / den, w = 1 - u - v;
+        if (Math.min(u, v, w) >= -1e-7) best = Math.max(best, u * body.p[a + 2] + v * body.p[b + 2] + w * body.p[d + 2]);
+      }
+      return best;
+    }
     [-1, 1].forEach(function (side) {
+      var firstEye = eye.count();
       addEye(T, eye, eyeProfile, 2.4, [0.050 * k, 0.00145 * k, 0.0010 * k], side, hex(0xb69a65), high, 0.55, false);
+      for (var e = firstEye * 3; e < eye.p.length; e += 3) {
+        var ex = eye.p[e], ey = eye.p[e + 1], lift = Math.abs(eye.p[e + 2]) - surfZ(eyeProfile, 2.4, ex, ey);
+        eye.p[e + 2] = side * (headSide(ex, ey) + lift);
+      }
       blob(T, eye, 0.040 * k, -0.0001 * k, side * 0.00193 * k, 0.00028 * k, 0.00085 * k, 0.00013 * k, dark, 6, 4);
     });
     // The caudal fan is rounded, with pale upper/lower margins and central
@@ -4625,12 +5110,19 @@
       var v = 2.0 + f / (high ? 7 : 3) * 0.95, p = point(end, v, true), pts = [[p[0] - 0.004 * k, p[1] - 0.001 * k, p[2]], [p[0], p[1], p[2] + 0.0018 * k], [p[0] + 0.004 * k, p[1] + 0.001 * k, p[2]]];
       shell.tube(pts, 0.001 * k, high ? 4 : 3, function () { return lin(cream); });
     }
+    var crescentBrown = hex(0x6b414b);
     var pigment = kit.baked(c.key('triton-shell'), high ? 512 : 256, high ? 256 : 128, function (u, v, out) {
       if (v > 0.85 && v < 0.9) { mixc(white, chestnut, band(fract(u * 12) - 0.5, 0.22, 0.04) * 0.9, out); return; }
       if (v > 0.815) { setc(out, white); return; }
       var a = v / 0.8 * TAU, s = u * end, flame = Math.sin(s * 6.5 + Math.sin(a * 3) * 1.3 + 0.4 * Math.sin(s * 1.7));
       var bands = smooth(0.18, 0.65, flame) * (0.65 + 0.35 * noise2(s * 3 + phase, Math.cos(a) * 6));
-      mixc(cream, ochre, 0.2 + 0.15 * Math.cos(a * 9), out); mixc(out, chestnut, bands * 0.9, out);
+      // Crescentic purple-brown marks break up the cream/fawn outer shell.
+      // Keep the orange chamber, lip teeth and their atlas gutters separate.
+      var row = Math.floor(v / 0.8 * 9), gx = u * 46 + 0.5 * (row % 2) + 0.12 * Math.sin(a * 3);
+      var cx = (fract(gx) - 0.5) * 1.25, cy = fract(v / 0.8 * 9) - 0.5;
+      var crescent = (1 - smooth(0.33, 0.42, Math.sqrt(cx * cx + cy * cy))) * smooth(0.27, 0.35, Math.sqrt((cx - 0.15) * (cx - 0.15) + (cy + 0.025) * (cy + 0.025)));
+      mixc(cream, ochre, 0.2 + 0.15 * Math.cos(a * 9), out); mixc(out, chestnut, bands * 0.74, out);
+      mixc(out, crescentBrown, crescent * (0.42 + 0.20 * noise2(Math.floor(gx) + phase, row)), out);
       mulc(out, 0.96 + 0.04 * noise2(s * 21, Math.cos(a) * 31));
     }, false, true);
     var relief = kit.baked(c.key('triton-ridges'), high ? 512 : 256, high ? 256 : 128, function (u, v, out) {
@@ -4647,7 +5139,8 @@
     blob(T, animal, 0.11, 0.035, 0.031, 0.032, 0.018, 0.025, lin(pale), high ? 10 : 6, high ? 6 : 4);
     blob(T, animal, 0.015, 0.038, -0.015, 0.05, 0.026, 0.027, lin(skinDark), high ? 12 : 8, high ? 8 : 4);
     // A short relaxed proboscis; this is an illustrative crawl, not a feeding act.
-    animal.tube([[0.125, 0.032, 0.04], [0.139, 0.027, 0.047], [0.148, 0.024, 0.051]], function (u) { return 0.009 - 0.003 * u; }, high ? 6 : 4, function (u) { return lin(mixc(pale, skinDark, u * 0.4, [0, 0, 0])); });
+    var mouthSides = high ? 6 : 4;
+    var proboscisFirst = animal.tube([[0.125, 0.032, 0.04], [0.139, 0.027, 0.047], [0.148, 0.024, 0.051]], function (u) { return 0.009 - 0.003 * u; }, mouthSides, function (u) { return lin(mixc(pale, skinDark, u * 0.4, [0, 0, 0])); });
     // Cream-and-ochre mottling continues across the living head and mantle.
     for (var sk = 0; sk < animal.count(); sk++) {
       var sx = animal.p[sk * 3], sy = animal.p[sk * 3 + 1], sz = animal.p[sk * 3 + 2];
@@ -4656,6 +5149,13 @@
       animal.c[sk * 3] = skin[0]; animal.c[sk * 3 + 1] = skin[1]; animal.c[sk * 3 + 2] = skin[2];
       if (sy < 0.022 && Math.abs(sz) > 0.027) animal.p[sk * 3 + 2] += 0.0015 * Math.sin(sx * 83 + phase) * (sz > 0 ? 1 : -1);
     }
+    // The mouth is terminal on the proboscis. Recess its existing cap inside
+    // the last ring; the shallow depth and shaded interior are illustrative.
+    var mouthTip = proboscisFirst + 3 * mouthSides, mouthAxis = new T.Vector3(0.009, -0.003, 0.004).normalize(), mouthShade = lin(hex(0x332a22));
+    animal.p[mouthTip * 3] = 0.148 - mouthAxis.x * 0.0018;
+    animal.p[mouthTip * 3 + 1] = 0.024 - mouthAxis.y * 0.0018;
+    animal.p[mouthTip * 3 + 2] = 0.051 - mouthAxis.z * 0.0018;
+    for (var mc = 0; mc < 3; mc++) animal.c[mouthTip * 3 + mc] = mouthShade[mc];
     [-1, 1].forEach(function (side) { blob(T, animal, 0.12, 0.048, 0.031 + side * 0.018, 0.0028, 0.003, 0.003, ink, high ? 6 : 4, high ? 4 : 3); });
     var baseY = Infinity; for (var bi = 1; bi < animal.p.length; bi += 3) baseY = Math.min(baseY, animal.p[bi]);
     animal.map(0, function (p) { p[1] -= baseY; }); scaleGeo(animal, k);
@@ -4669,6 +5169,7 @@
     });
     var animalMaterial = kit.std({ vertexColors: true, roughness: 0.49, side: T.DoubleSide }, { batch: rig });
     var bodyBatch = batchMesh(kit, entries, animalMaterial, rig, 'animal', c.root);
+    bodyBatch.geometry.userData.tritonMouth = { first: proboscisFirst + 2 * mouthSides, count: mouthSides, center: mouthTip };
     bodyBatch.geometry.boundingBox.expandByScalar(0.003 * k);
     batchReach(bodyBatch, pivots.map(function (p) { return { center: p.position, reach: 0.058 * k, margin: 0.003 * k }; }));
     c.anim(function (t) { for (var i = 0; i < pivots.length; i++) { pivots[i].rotation.y = 0.045 * Math.sin(t * 0.33 + phase + i * 1.7); pivots[i].rotation.z = 0.022 * Math.sin(t * 0.27 + phase + i); } batchPose(bodyBatch); });
@@ -4811,7 +5312,7 @@
   // convention is posed leg/claw span, excluding the long slender antennae.
   function buildPorcelainAnemoneCrab(c) {
     var T=c.T,kit=c.kit,high=c.high,rng=c.rng(347),L=.04*(.98+.04*rng()),phase=rng()*TAU;
-    var body=new Geo(),fans=new Geo(),ranges={},legs=[],fanParts=[],antennae=[],white=[1,1,1],cream=hex(0xe8dfca),shade=hex(0xbab49c),wine=hex(0x843b38),ink=linHex(0x252e2b);
+    var body=new Geo(),fans=new Geo(),ranges={},legs=[],fanParts=[],antennae=[],eyeSurfaces=[],white=[1,1,1],cream=hex(0xe8dfca),shade=hex(0xbab49c),wine=hex(0x843b38),ink=linHex(0x252e2b);
     function mark(name,first){ranges[name]={first:first,count:body.count()-first};}
     function neutral(g,first){for(var i=first;i<g.count();i++){g.t[i*2]=.5;g.t[i*2+1]=.5;}}
     // A low convex shield, slightly longer than broad; the three shallow
@@ -4845,7 +5346,11 @@
     first=body.count();for(j=0;j<3;j++)blob(T,body,-.07+j*.043,.065-j*.003,0,.036,.009,.071-j*.013,lin(mixc(cream,shade,j*.10,[0,0,0])),high?10:6,high?4:2);
     for(j=-1;j<=1;j++)blob(T,body,-.115,.062,j*.027,.026,.006,.021,lin(cream),high?8:4,high?4:2);neutral(body,first);mark('folded-abdomen-tail-fan',first);
     first=body.count();blob(T,body,.146,.091,0,.013,.010,.017,lin(shade),high?10:6,high?5:3);neutral(body,first);mark('oral-centre',first);
-    first=body.count();[-1,1].forEach(function(side){body.tube([[.12,.117,side*.066],[.162,.135,side*.085]],function(u){return .012-.003*u;},high?7:4,function(){return lin(cream);});blob(T,body,.170,.137,side*.088,.018,.016,.016,ink,high?12:6,high?7:4);});neutral(body,first);mark('paired-stalked-eyes',first);
+    first=body.count();[-1,1].forEach(function(side){var stalk=body.count();body.tube([[.12,.117,side*.066],[.162,.135,side*.085]],function(u){return .012-.003*u;},high?7:4,function(){return lin(cream);});neutral(body,stalk);
+      var at=body.count();blob(T,body,.170,.137,side*.088,.018,.016,.016,white,high?12:6,high?7:4);
+      for(var v=at;v<body.count();v++){body.t[v*2]=.025+.45*clamp(body.t[v*2],0,1);body.t[v*2+1]=.525+.45*body.t[v*2+1];}
+      eyeSurfaces.push({side:side,first:at,count:body.count()-at});
+    });mark('paired-stalked-eyes',first);
     // Two bristled third maxillipeds, distinct from the claws. Their sparse
     // setae are real geometry and leave open water between the feather combs.
     [-1,1].forEach(function(side){var root=[.153,.089,side*.027],at=fans.count(),stalk=[root.slice(),[.192,.135,side*.055],[.22,.205,side*.092],[.222,.239,side*.103]];
@@ -4866,12 +5371,15 @@
       var coverage=kind==='carapace'?1-smooth(.71,1,Math.hypot((u-.5)/.45,(v-.5)/.45)):kind==='claw'?(1-smooth(.65,.83,u))*smooth(.02,.16,v)*(1-smooth(.86,.98,v)):(1-smooth(.28,.60,u))*smooth(.02,.15,u);
       mixc(cream,hex(0xc6ac89),coverage*(1-smooth(1.1,2.5,d))*.24,out);mixc(out,wine,coverage*(1-smooth(.85,1.05,d))*.96,out);mixc(out,hex(0x5b2930),coverage*(1-smooth(.25,.68,d))*(.40+.15*radius),out);
     }
-    var map=kit.baked(c.key('porcelain-crab-spots'),high?512:256,high?512:256,function(u,v,out){setc(out,white);var left=u>=.02&&u<=.48,right=u>=.52&&u<=.98,bottom=v>=.02&&v<=.48,top=v>=.52&&v<=.98;if((!left&&!right)||(!bottom&&!top))return;if(left&&top)return;dots((u-(left?.02:.52))/.46,(v-(bottom?.02:.52))/.46,out,left?'carapace':bottom?'claw':'leg');},false,false);
-    var bump=kit.baked(c.key('porcelain-crab-shell'),high?128:64,high?128:64,function(u,v,out){out[0]=out[1]=out[2]=.5+.035*(noise2(u*111+phase,v*109)-.5);},false,false,true);
+    // Fine corneal surface detail suggests compound eyes. The illustrated
+    // facet spacing is not a measurement or a species-identification character.
+    function eyeFacet(u,v){var d=Math.max(Math.abs(fract(u*24)-.5),Math.abs(fract(v*16)-.5));return(1-smooth(.31,.48,d))*smooth(0,.10,v)*(1-smooth(.90,1,v));}
+    var map=kit.baked(c.key('porcelain-crab-spots'),high?512:256,high?512:256,function(u,v,out){setc(out,white);var left=u>=.02&&u<=.48,right=u>=.52&&u<=.98,bottom=v>=.02&&v<=.48,top=v>=.52&&v<=.98;if((!left&&!right)||(!bottom&&!top))return;if(left&&top){setc(out,hex(0x293431));mulc(out,.82+.18*eyeFacet((u-.025)/.45,(v-.525)/.45));return;}dots((u-(left?.02:.52))/.46,(v-(bottom?.02:.52))/.46,out,left?'carapace':bottom?'claw':'leg');},false,false);
+    var bump=kit.baked(c.key('porcelain-crab-shell'),high?128:64,high?128:64,function(u,v,out){out[0]=out[2]=.5+.035*(noise2(u*111+phase,v*109)-.5);out[1]=1;if(u>=.02&&u<=.48&&v>=.52&&v<=.98){var facet=eyeFacet((u-.025)/.45,(v-.525)/.45);out[0]=out[2]=.5+.05*facet;out[1]=.42-.04*facet;}},false,false,true);
     scaleGeo(body,L);scaleGeo(fans,L);var bg=kit.geo(body,1),fg=kit.geo(fans,1);
-    bg.userData.porcelainCrab={ranges:ranges,nominalLegClawSpanM:.04,nominalCarapaceLengthM:.012,antennaeExcludedFromSpan:true,scaleM:L,appearance:'finely-red-spotted-unsexed',walkingPairs:3,reducedPair:1,legs:legs,claws:clawStations,hostOmitted:true};
+    bg.userData.porcelainCrab={ranges:ranges,nominalLegClawSpanM:.04,nominalCarapaceLengthM:.012,antennaeExcludedFromSpan:true,scaleM:L,appearance:'finely-red-spotted-unsexed',walkingPairs:3,reducedPair:1,legs:legs,claws:clawStations,hostOmitted:true,eyes:eyeSurfaces};
     fg.userData.porcelainCrab={fans:fanParts,antennae:antennae,maximumDisplacementM:.050*L};
-    var material=kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.00045*L,roughness:.46,side:T.DoubleSide});
+    var material=kit.std({vertexColors:true,map:map,bumpMap:bump,roughnessMap:bump,bumpScale:.00045*L,roughness:.46,side:T.DoubleSide});
     kit.mesh(bg,material,'fixed-shell-chelae-legs',c.root);kit.mesh(fg,material,'feeding-fans-antennae',c.root);
     var rest=fg.attributes.position.array.slice();fg.boundingBox.expandByScalar(.050*L);fg.boundingSphere.radius+=.050*L;
     c.anim(function(t){var out=fg.attributes.position.array;fanParts.forEach(function(f){var angle=.16*Math.sin(t*.73+phase+f.side*.8),ca=Math.cos(angle),sa=Math.sin(angle),rx=f.root[0]*L,ry=f.root[1]*L,rz=f.root[2]*L;for(var j=high?6:3;j<f.count;j++){var k=(f.first+j)*3,x=rest[k]-rx,y=rest[k+1]-ry,z=rest[k+2]-rz;out[k]=rx+x*ca+y*sa;out[k+1]=ry+y*ca-x*sa;out[k+2]=rz+z;}});antennae.forEach(function(a){for(var j=3;j<a.count;j++){var k=(a.first+j)*3,weight=Math.pow(clamp((rest[k]/L-a.root[0])/.51,0,1),2);out[k]=rest[k];out[k+1]=rest[k+1]+.008*L*weight*Math.sin(t*.55+phase+a.side);out[k+2]=rest[k+2]+a.side*.007*L*weight*Math.sin(t*.43+phase);}});fg.computeVertexNormals();fg.attributes.position.needsUpdate=true;});
@@ -4904,6 +5412,7 @@
     // One small off-centre madreporite, plus an inconspicuous central mouth
     // on the oral surface. Neither is an eye or a second upper mouth.
     first=body.count();var ma=angle+PI/5,mr=.105,mx=Math.cos(ma)*mr,mz=Math.sin(ma)*mr;blob(T,body,mx,topY(mr,ma)+.001,mz,.013,.0025,.010,lin(pale),high?10:5,high?4:2);mark('madreporite',first);
+    for(var v=first;v<body.count();v++){body.t[v*2]=.75+.23*(body.p[v*3]-mx)/.013;body.t[v*2+1]=.75+.23*(body.p[v*3+2]-mz)/.010;}
     first=body.count();body.polar(high?2:1,high?20:10,function(u,a,out){var r=.015*u*(1+.10*Math.cos(a*5));setc(out,lin(mixc(hex(0x58413b),groove,smooth(.40,1,u),[0,0,0])));return[Math.cos(a)*r,.035-.001*u,Math.sin(a)*r,.5,.5];},true);mark('central-oral-mouth',first);
     // Paired tube feet in all five real, recessed oral grooves. The sparse
     // low tier samples the same stations; count is a rendering simplification.
@@ -4911,8 +5420,11 @@
     for(i=0;i<5;i++){var a=angle+i*TAU/5,ca=Math.cos(a),sa=Math.sin(a);for(j=0;j<pairs;j++){var station=high?j:j*2,r=.065+.375*station/11;[-1,1].forEach(function(side){var across=.0095*(1-.3*station/11),x=ca*r-sa*across*side,z=sa*r+ca*across*side,ry=bottomY(Math.hypot(x,z),Math.atan2(z,x))+.001,start=feet.count(),levels=high?[[ry,.0020],[.004,.0018],[.001,.0038]]:[[ry,.0020],[.001,.0038]];
         for(var row=0;row<levels.length;row++)for(var q=0;q<sides;q++){var aa=q/sides*TAU,col=lin(mixc(lilac,pale,row/(levels.length-1)*.45,[0,0,0]));feet.v(x+Math.cos(aa)*levels[row][1],levels[row][0],z+Math.sin(aa)*levels[row][1],col,.5,.5);}for(row=0;row<levels.length-1;row++)for(q=0;q<sides;q++){var v=start+row*sides+q,n=start+row*sides+(q+1)%sides;feet.i.push(v,n,v+sides,n,n+sides,v+sides);}var sole=feet.v(x,0,z,lin(lilac),.5,.5),last=start+(levels.length-1)*sides;for(q=0;q<sides;q++)feet.i.push(last+q,sole,last+(q+1)%sides);footStations.push({arm:i,station:station,side:side,first:start,count:feet.count()-start,root:[x,ry,z],contact:[x,0,z],probing:station%3===1});
       });}}
-    var map=kit.baked(c.key('chip-granules'),high?256:128,high?256:128,function(u,v,out){setc(out,white);if(u<.02||u>.48||v<.02||v>.48)return;var n=noise2(u*370+phase,v*390),grit=smooth(.54,.80,n);mulc(out,.93+.10*noise2(u*80,v*86)-.09*grit);},false,false);
-    var bump=kit.baked(c.key('chip-relief'),high?256:128,high?256:128,function(u,v,out){out[0]=out[1]=out[2]=u>=.02&&u<=.48&&v>=.02&&v<=.48?.5+.22*(noise2(u*370+phase,v*390)-.5):.5;},false,false,true);
+    // The small sieve plate has illustrative furrows; its microscopic pore
+    // count is not resolved. The surrounding body keeps its original atlas.
+    function plateGrooves(u,v){var x=(u-.75)/.23,z=(v-.75)/.23,r=Math.hypot(x,z),a=Math.atan2(z,x);return Math.pow(.5+.5*Math.sin(a*12+2.4*Math.sin(r*5)),10)*smooth(.14,.30,r)*(1-smooth(.82,1,r));}
+    var map=kit.baked(c.key('chip-granules'),high?256:128,high?256:128,function(u,v,out){setc(out,white);if(u>=.52&&u<=.98&&v>=.52&&v<=.98){mulc(out,.96-.14*plateGrooves(u,v));return;}if(u<.02||u>.48||v<.02||v>.48)return;var n=noise2(u*370+phase,v*390),grit=smooth(.54,.80,n);mulc(out,.93+.10*noise2(u*80,v*86)-.09*grit);},false,false);
+    var bump=kit.baked(c.key('chip-relief'),high?256:128,high?256:128,function(u,v,out){out[0]=out[1]=out[2]=u>=.52&&u<=.98&&v>=.52&&v<=.98?.56-.18*plateGrooves(u,v):u>=.02&&u<=.48&&v>=.02&&v<=.48?.5+.22*(noise2(u*370+phase,v*390)-.5):.5;},false,false,true);
     scaleGeo(body,L);scaleGeo(feet,L);var bg=kit.geo(body,1),fg=kit.geo(feet,1);bg.userData.chocolateChipStar={ranges:ranges,arms:5,knobs:knobs,nominalTipSpanM:.28,scaleM:L,appearance:'cream-ochre-unsexed',oralGrooves:5,armAngle:angle,armRadiusUnit:radius};fg.userData.chocolateChipStar={feet:footStations,pairsPerArm:pairs,renderedTubeFeet:footStations.length,maximumProbeDisplacementM:.0033*L};
     kit.mesh(bg,kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.0011*L,roughness:.81,side:T.DoubleSide}),'fixed-body-knobs',c.root);
     kit.mesh(fg,kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.0001*L,roughness:.56,side:T.DoubleSide}),'paired-tube-feet',c.root);
@@ -5251,7 +5763,15 @@
     // Small oral disc above the centrodorsal; a subtle eccentric mouth remains
     // on the upper surface rather than a fabricated central underside hole.
     var start = fixed.count(); blob(T, fixed, 0, discY - 0.001, 0, 0.0105, 0.0042, 0.0105, lin(shade), high ? 12 : 8, high ? 4 : 3); ranges.disc = { first: start, count: fixed.count() - start };
+    var discIndices=fixed.i.length;
     start = fixed.count(); blob(T, fixed, 0.005, discY + 0.0029, 0, 0.0012, 0.00035, 0.0012, lin(brown), high ? 6 : 4, 2); ranges.oralOpening = { first: start, count: fixed.count() - start };
+    // Seat the small oral marker on the actual disc triangles at both tiers.
+    var ray=new T.Ray(new T.Vector3(),new T.Vector3(0,-1,0)),hit=new T.Vector3(),A=new T.Vector3(),B=new T.Vector3(),C=new T.Vector3();
+    for(var v=start;v<fixed.count();v++){
+      var at=v*3,oldY=fixed.p[at+1],surface=-Infinity;ray.origin.set(fixed.p[at],.1,fixed.p[at+2]);
+      for(var q=0;q<discIndices;q+=3){A.fromArray(fixed.p,fixed.i[q]*3);B.fromArray(fixed.p,fixed.i[q+1]*3);C.fromArray(fixed.p,fixed.i[q+2]*3);if(ray.intersectTriangle(A,B,C,false,hit))surface=Math.max(surface,hit.y);}
+      fixed.p[at+1]=surface+.000025+(oldY-(discY+.0029))/.00035*.00006;
+    }
     // Thirty robust segmented cirri grip the illustrated reef perch. Their
     // hooked ends stay fixed; fine pinnules never substitute for gripping feet.
     start = fixed.count();
@@ -5298,7 +5818,7 @@
     var n = high ? 44 : 22, sides = high ? 18 : 8, start = body.count();
     for (var i = 0; i <= n; i++) {
       var u = i / n, s = trunk(u), joint = Math.pow(Math.abs(Math.cos(u * PI * 11)), 16), ring = 1 - 0.055 * joint;
-      for (var j = 0; j <= sides; j++) { var v = j / sides, a = v * TAU, ca = Math.cos(a), sa = Math.sin(a), ridge = 1 + 0.035 * Math.cos(a * 4); body.v(s[1] + sp(ca, 0.79) * s[2] * ring * ridge, s[0], sp(sa, 0.79) * s[3] * ring * ridge, white, 0.02 + 0.46 * u, 0.02 + 0.46 * v); }
+      for (var j = 0; j <= sides; j++) { var v = j / sides, a = v * TAU, ca = Math.cos(a), sa = Math.sin(a), knob = Math.pow(Math.abs(Math.cos(u * PI * 11)), 10) * Math.pow(Math.abs(Math.cos(a * 2)), 10), ridge = 1 + 0.035 * Math.cos(a * 4) + 0.045 * knob; body.v(s[1] + sp(ca, 0.79) * s[2] * ring * ridge, s[0], sp(sa, 0.79) * s[3] * ring * ridge, white, 0.02 + 0.46 * u, 0.02 + 0.46 * v); }
       body.seams.push([start + i * (sides + 1), start + i * (sides + 1) + sides]);
     }
     for (i = 0; i < n; i++) for (j = 0; j < sides; j++) { var a = start + i * (sides + 1) + j, b = a + sides + 1; body.i.push(a, a + 1, b, a + 1, b + 1, b); }
@@ -5333,13 +5853,22 @@
     function pigment(kind, u, v, out) {
       var a = v * TAU, mottle = noise2(u * (kind === 'tail' ? 37 : 13) + phase, Math.cos(a) * 4 + Math.sin(a) * 3), light = 0.25 + 0.42 * mottle + 0.12 * Math.max(0, Math.cos(a)); mixc(gold, pale, light, out);
       var fleck = smooth(0.64, 0.83, noise2(u * 73 + phase, Math.sin(a) * 21 + Math.cos(a) * 13)); mixc(out, brown, fleck * 0.34, out);
-      if (kind !== 'head') { var count = kind === 'tail' ? 36 : 11, joint = band(fract(u * count) - 0.5, 0.06, 0.045), saddle = Math.pow(Math.max(0, Math.sin(u * PI * (kind === 'tail' ? 7 : 3) + 0.6)), 8) * smooth(0.2, -0.3, Math.cos(a)); mixc(out, brown, joint * 0.22 + saddle * 0.18, out); }
+      if (kind !== 'head') { var count = kind === 'tail' ? 36 : 11, joint = band(Math.sin(u * PI * count), 0.15, 0.08), saddle = Math.pow(Math.max(0, Math.sin(u * PI * (kind === 'tail' ? 7 : 3) + 0.6)), 8) * smooth(0.2, -0.3, Math.cos(a)); mixc(out, brown, joint * 0.22 + saddle * 0.18, out); }
     }
     var atlas = kit.baked(c.key('spotted-seahorse-pigment'), high ? 256 : 128, high ? 256 : 128, function (u, v, out) {
       setc(out, white); var left = u >= 0.02 && u <= 0.48, right = u >= 0.52 && u <= 0.98, bottom = v >= 0.02 && v <= 0.48, top = v >= 0.52 && v <= 0.98; if ((!left && !right) || (!bottom && !top)) return;
       var x = (u - (left ? 0.02 : 0.52)) / 0.46, y = (v - (bottom ? 0.02 : 0.52)) / 0.46; if (right && top) { mixc(hex(0xa1a88d), hex(0xd3cda8), y * 0.35, out); return; } pigment(right ? 'head' : top ? 'tail' : 'trunk', x, y, out);
     }, false, false);
-    var relief = kit.baked(c.key('spotted-seahorse-relief'), high ? 256 : 128, high ? 256 : 128, function (u, v, out) { var left = u >= 0.02 && u <= 0.48, top = v >= 0.52, t = clamp((u - 0.02) / 0.46, 0, 1), joint = left ? band(fract(t * (top ? 36 : 11)) - 0.5, 0.075, 0.04) : 0; out[0] = out[1] = out[2] = 0.5 - joint * 0.11 + 0.022 * (noise2(u * 173 + phase, v * 179) - 0.5); }, false, false, true);
+    // Colour and relief share the actual ring stations, at integer multiples
+    // of eleven trunk rings or thirty-six tail rings. The corners carry low,
+    // rounded tubercles; this species does not acquire long sharp spines.
+    var relief = kit.baked(c.key('spotted-seahorse-relief'), high ? 512 : 256, high ? 128 : 64, function (u, v, out) {
+      var left = u >= 0.02 && u <= 0.48, bottom = v >= 0.02 && v <= 0.48, top = v >= 0.52 && v <= 0.98;
+      if (!left || (!bottom && !top)) { out[0] = out[1] = out[2] = 0.5; return; }
+      var t = (u - 0.02) / 0.46, a = (v - (top ? 0.52 : 0.02)) / 0.46 * TAU, wave = Math.sin(t * PI * (top ? 36 : 11));
+      var joint = band(wave, 0.15, 0.08), bump = top ? 0 : Math.pow(Math.abs(Math.cos(t * PI * 11)), 10) * Math.pow(Math.abs(Math.cos(a * 2)), 10);
+      out[0] = out[1] = out[2] = 0.5 - joint * 0.11 + bump * 0.16 + 0.022 * (noise2(u * 173 + phase, v * 179) - 0.5);
+    }, false, false, true);
     var bodyGeo = kit.geo(body, 1); bodyGeo.userData.spottedSeahorse = { ranges: ranges, posedHeightNominalM: 0.12, visibleSex: 'unspecified', tailTerminalCentreUnit: tailTip, tailTerminalRadiusUnit: tailRadius(1), holdfastContactCentreUnit: [0, 0.14, 0], baseYCorrectionM: baseY * L };
     kit.mesh(bodyGeo, kit.std({ vertexColors: true, map: atlas, bumpMap: relief, bumpScale: L * 0.00065, roughness: 0.62, side: T.DoubleSide }, { eye: true, iris: hex(0xbfa864) }), 'body-tail-holdfast', c.root);
     var rig = new Float32Array(80), entries = [], pivots = [], reaches = [], dorsal = new Geo(), roots = [], edges = [], n = high ? 18 : 8;
@@ -5677,12 +6206,29 @@
     for (var f = 0; f < foot.count(); f++) { var x = foot.p[f * 3], y = foot.p[f * 3 + 1], z = foot.p[f * 3 + 2], patch = smooth(0.40, 0.58, noise2(x * 230 + phase, z * 265 + y * 120)), skin = lin(mixc(cream, skinBrown, patch * smooth(0.001, 0.009, y) * 0.87, [0, 0, 0])); foot.c[f * 3] = skin[0]; foot.c[f * 3 + 1] = skin[1]; foot.c[f * 3 + 2] = skin[2]; }
     [-1, 1].forEach(function (side) { blob(T, foot, 0.041, 0.0135, side * 0.0065, 0.0010, 0.0008, 0.0008, linHex(0x201d15), high ? 7 : 4, high ? 5 : 3); });
     kit.mesh(kit.geo(foot, k), kit.std({ vertexColors: true, roughness: 0.53, side: T.DoubleSide }), 'foot-head', c.root);
-    function appendage(name, pts, radius, color, phaseOffset) { var at = feelers.count(), sides = high ? 6 : 4; feelers.tube(pts, radius, sides, color); appendages.push({ name: name, first: at, count: feelers.count() - at, sides: sides, root: pts[0].slice(), phase: phaseOffset }); }
+    function appendage(name, pts, radius, color, phaseOffset, open) {
+      var at=feelers.count(),sides=open?(high?10:6):(high?6:4),lumen=null;feelers.tube(pts,radius,sides,color);
+      if(open){
+        // Remove the closed tube tip, then roll the coloured rim inward around
+        // a true water-intake opening. Its dark floor sits behind the lip.
+        var tip=at+pts.length*sides,last=at+(pts.length-1)*sides,end=new T.Vector3().fromArray(pts[pts.length-1]),axis=end.clone().sub(new T.Vector3().fromArray(pts[pts.length-2])).normalize(),ringFirst=feelers.count();
+        feelers.i.length-=sides*3;
+        for(var ring=0;ring<3;ring++)for(var j=0;j<sides;j++){
+          var offset=new T.Vector3().fromArray(feelers.p,(last+j)*3).sub(end),p=end.clone().addScaledVector(axis,ring===2?-.0014:.0004).addScaledVector(offset,ring===0?1.01:ring===1?.62:.48);
+          feelers.v(p.x,p.y,p.z,ring===0?color(1):linHex(ring===1?0xa56e55:0x5b3a2f),0,0);
+        }
+        for(ring=0;ring<3;ring++)for(j=0;j<sides;j++){var a=(ring===0?last:ringFirst+(ring-1)*sides)+j,b=(ring===0?last:ringFirst+(ring-1)*sides)+(j+1)%sides,d=ringFirst+ring*sides+j,e=ringFirst+ring*sides+(j+1)%sides;feelers.i.push(a,b,d,b,e,d);}
+        var floor=end.clone().addScaledVector(axis,-.00145),dark=linHex(0x251d18),cap=feelers.v(floor.x,floor.y,floor.z,dark,0,0),rim=feelers.count();
+        for(j=0;j<sides;j++){var p=new T.Vector3().fromArray(feelers.p,(ringFirst+2*sides+j)*3);feelers.v(p.x,p.y,p.z,dark,0,0);}for(j=0;j<sides;j++)feelers.i.push(cap,rim+j,rim+(j+1)%sides);
+        lumen={axis:axis.toArray(),lipCenter:end.clone().addScaledVector(axis,.0004).toArray(),floorCenter:floor.toArray(),openingRadius:radius(1)*.62,closedTipVertex:tip,lipFirst:ringFirst+sides,floorVertex:cap};
+      }
+      appendages.push({name:name,first:at,count:feelers.count()-at,sides:sides,root:pts[0].slice(),phase:phaseOffset,lumen:lumen});
+    }
     [-1, 1].forEach(function (side) { var pts = [], n = high ? 7 : 3; for (var j = 0; j <= n; j++) { var u = j / n; pts.push([0.041 + 0.014 * u, 0.014 + 0.004 * u + 0.002 * Math.sin(PI * u), side * (0.006 + 0.006 * u)]); } appendage('tentacle-' + side, pts, function (u) { return 0.0011 * (1 - 0.80 * u); }, function (u) { return lin(mixc(cream, skinBrown, 0.12 + 0.22 * u, [0, 0, 0])); }, side * 1.8); });
     var pts = [], n = high ? 10 : 5;
     for (i = 0; i <= n; i++) { var u = i / n; pts.push([0.022 + 0.036 * u, 0.014 + 0.013 * Math.sin(u * 1.1), 0.016 + 0.003 * Math.sin(u * PI)]); }
-    appendage('siphon', pts, function (u) { return 0.0014 - 0.00065 * u; }, function (u) { var col = mixc(cream, hex(0x302921), smooth(0.37, 0.44, u) * (1 - smooth(0.67, 0.74, u)), [0, 0, 0]); mixc(col, hex(0xa54e37), smooth(0.85, 0.98, u), col); return lin(col); }, 0.5);
-    var fg = kit.geo(feelers, k), rest = new Float32Array(fg.attributes.position.array); fg.userData.textileCone = { appendages: appendages };
+    appendage('siphon', pts, function (u) { return 0.0014 - 0.00065 * u; }, function (u) { var col = mixc(cream, hex(0x302921), smooth(0.37, 0.44, u) * (1 - smooth(0.67, 0.74, u)), [0, 0, 0]); mixc(col, hex(0xa54e37), smooth(0.85, 0.98, u), col); return lin(col); }, 0.5, true);
+    var fg = kit.geo(feelers, k), rest = new Float32Array(fg.attributes.position.array); fg.userData.textileCone = { appendages: appendages,scale:k };
     fg.boundingBox.expandByScalar(0.0014 * k); fg.boundingSphere.radius += 0.002 * k;
     kit.mesh(fg, kit.std({ vertexColors: true, roughness: 0.44, side: T.DoubleSide }), 'sensory-appendages', c.root);
     c.anim(function (t) { var p = fg.attributes.position.array; appendages.forEach(function (a) { for (var j = a.sides; j < a.count; j++) { var at = (a.first + j) * 3, u = clamp((rest[at] / k - a.root[0]) / (a.name === 'siphon' ? 0.036 : 0.014), 0, 1), w = u * u; p[at + 1] = rest[at + 1] + 0.0008 * k * w * Math.sin(t * 0.42 + phase + a.phase); p[at + 2] = rest[at + 2] + 0.0009 * k * w * Math.sin(t * 0.31 + phase + a.phase); } }); fg.computeVertexNormals(); fg.attributes.position.needsUpdate = true; });
@@ -5756,27 +6302,50 @@
     }
     for (i = 0; i < nr; i++) for (j = 0; j < ns; j++) { var a0 = i * (ns + 1) + j, a1 = a0 + ns + 1; body.i.push(a0, a1, a0 + 1, a0 + 1, a1, a1 + 1); }
     for (i = 0; i <= nr; i++) body.seams.push([i * (ns + 1), i * (ns + 1) + ns]);
-    var pigment = kit.baked(c.key('krait-bands'), high ? 1024 : 512, high ? 192 : 96, function (u, v, out) {
+    // Broad transverse belly plates contrast with the small overlapping body
+    // scales. Stop the single ventral series at the flattened tail region.
+    function ventralPlate(u, v) {
+      var dv = Math.abs(v - 0.5), mask = (1 - smooth(0.06, 0.08, dv)) * (1 - smooth(0.755, 0.785, u));
+      var q = fract(u * 292 + 0.08 * Math.pow(dv / 0.08, 2)), seam = Math.min(q, 1 - q);
+      return [mask, 1 - smooth(0.035, 0.15, seam)];
+    }
+    var pigment = kit.baked(c.key('krait-bands'), high ? 2048 : 1024, high ? 192 : 96, function (u, v, out) {
       var a = v * TAU, underside = smooth(0.05, 0.65, -Math.cos(a)), warp = 0.047 * Math.sin(a * 3 + u * 17) + 0.05 * (noise2(u * 13 + phase, Math.cos(a) * 2 + Math.sin(a) * 2) - 0.5), q = fract(u * 33.8 + warp), ring = 1 - smooth(0.20, 0.235, Math.abs(q - 0.5));
       mixc(blue, pale, underside * 0.85, out); mixc(out, ink, ring * (0.95 + 0.05 * noise2(u * 98, Math.cos(a) * 23)), out);
       var scales = Math.pow(0.5 + 0.5 * Math.sin(u * 810 + Math.floor(v * 22) % 2 * PI), 12) * Math.pow(0.5 + 0.5 * Math.cos(v * TAU * 22), 7);
-      mulc(out, 0.93 + 0.055 * noise2(u * 290, Math.cos(a) * 44) + 0.035 * scales);
+      var plate = ventralPlate(u, v);
+      mulc(out, 0.93 + 0.055 * noise2(u * 290, Math.cos(a) * 44) + 0.035 * scales * (1 - plate[0]) - 0.055 * plate[0] * plate[1]);
     }, false, true);
-    var relief = kit.baked(c.key('krait-scale-relief'), high ? 768 : 384, 128, function (u, v, out) { var row = Math.floor(v * 22), f = fract(u * 128 + (row % 2) * 0.5), edge = Math.pow(Math.sin(PI * f), 1.5) * Math.pow(Math.sin(PI * fract(v * 22)), 0.6); out[0] = out[1] = out[2] = 0.38 + 0.24 * edge; }, false, true, true);
+    var relief = kit.baked(c.key('krait-scale-relief'), high ? 2048 : 1024, 128, function (u, v, out) { var row = Math.floor(v * 22), f = fract(u * 128 + (row % 2) * 0.5), edge = Math.pow(Math.sin(PI * f), 1.5) * Math.pow(Math.sin(PI * fract(v * 22)), 0.6), plate = ventralPlate(u, v); out[0] = out[1] = out[2] = lerp(0.38 + 0.24 * edge, 0.62 - 0.26 * plate[1], plate[0]); }, false, true, true);
     var bg = kit.geo(body, k); bg.userData.bandedSeaKrait = { rings: nr + 1, sides: ns + 1, nominalTotalLengthM: 1.2, verticalPaddleTail: true, paddleStartsAt: 0.77 };
     kit.mesh(bg, kit.std({ vertexColors: true, map: pigment, bumpMap: relief, bumpScale: 0.00013 * k, roughness: 0.47, side: T.DoubleSide }), 'banded-body-paddle', c.root);
     var start = head.count();
-    head.loft([[0.601, 0.004, -0.005, 0.006], [0.590, 0.012, -0.010, 0.014], [0.568, 0.017, -0.012, 0.018], [0.549, 0.014, -0.012, 0.015], [0.521, 0.013, -0.013, 0.012]], high ? 18 : 8, high ? 16 : 8, function (u, a, x, y, z, out) { var lip = Math.max(smooth(0.564, 0.583, x), 1 - smooth(-0.006, 0.001, y)); mixc(ink, yellow, lip * 0.97, out); mulc(out, 0.89 + 0.11 * noise2(x * 880 + phase, z * 870)); }, 2.5);
+    var headRows = [[0.601, 0.004, -0.005, 0.006], [0.590, 0.012, -0.010, 0.014], [0.568, 0.017, -0.012, 0.018], [0.549, 0.014, -0.012, 0.015], [0.521, 0.013, -0.013, 0.012]], headProfile = profile(headRows);
+    head.loft(headRows, high ? 18 : 8, high ? 16 : 8, function (u, a, x, y, z, out) { var lip = Math.max(smooth(0.564, 0.583, x), 1 - smooth(-0.006, 0.001, y)); mixc(ink, yellow, lip * 0.97, out); mulc(out, 0.89 + 0.11 * noise2(x * 880 + phase, z * 870)); }, 2.5);
     ranges.head = { first: start, count: head.count() - start };
+    var headIndexCount = head.i.length, eyeFirst = head.count();
+    function headSide(x, y) {
+      var best = -Infinity;
+      for (var n = 0; n < headIndexCount; n += 3) {
+        var a = head.i[n] * 3, b = head.i[n + 1] * 3, d = head.i[n + 2] * 3, ax = head.p[a], ay = head.p[a + 1], bx = head.p[b], by = head.p[b + 1], dx = head.p[d], dy = head.p[d + 1];
+        var den = (by - dy) * (ax - dx) + (dx - bx) * (ay - dy); if (Math.abs(den) < 1e-12) continue;
+        var u = ((by - dy) * (x - dx) + (dx - bx) * (y - dy)) / den, v = ((dy - ay) * (x - dx) + (ax - dx) * (y - dy)) / den, w = 1 - u - v;
+        if (Math.min(u, v, w) >= -1e-7) best = Math.max(best, u * head.p[a + 2] + v * head.p[b + 2] + w * head.p[d + 2]);
+      }
+      return best;
+    }
     [-1, 1].forEach(function (side) {
-      blob(T, head, 0.571, 0.0065, side * 0.0168, 0.0034, 0.0037, 0.0019, linHex(0x050b0c), high ? 10 : 5, high ? 6 : 3);
-      blob(T, head, 0.572, 0.0078, side * 0.0181, 0.0008, 0.0009, 0.00045, linHex(0x8bacae), high ? 6 : 4, 3);
+      var first = head.count(); addEye(T, head, headProfile, 2.5, [0.571, 0.0065, 0.0037], side, hex(0x574e35), high, 0.38, false, high ? 16 : 8);
+      for (var e = first * 3; e < head.p.length; e += 3) { var x = head.p[e], y = head.p[e + 1], lift = Math.abs(head.p[e + 2]) - surfZ(headProfile, 2.5, x, y); head.p[e + 2] = side * (headSide(x, y) + lift); }
+    });
+    ranges.eyes = { first: eyeFirst, count: head.count() - eyeFirst };
+    [-1, 1].forEach(function (side) {
       blob(T, head, 0.592, 0.0070, side * 0.0088, 0.0010, 0.0007, 0.0006, lin(ink), high ? 6 : 4, 3);
       var mouth = []; for (var j = 0; j <= (high ? 7 : 3); j++) { var u = j / (high ? 7 : 3); mouth.push([0.597 - 0.042 * u, -0.004 - 0.002 * u, side * (0.008 + 0.0083 * Math.sin(u * PI * 0.72))]); }
       head.tube(mouth, 0.00045, 3, function () { return lin(ink); });
     });
     var hg = kit.geo(head, k); hg.userData.bandedSeaKrait = { ranges: ranges, yellowUpperLip: true };
-    kit.mesh(hg, kit.std({ vertexColors: true, roughness: 0.42, side: T.DoubleSide }), 'yellow-lipped-head', c.root);
+    kit.mesh(hg, kit.std({ vertexColors: true, roughness: 0.42, side: T.DoubleSide }, { eye: true, iris: hex(0x574e35) }), 'yellow-lipped-head', c.root);
     [bg, hg].forEach(function (g) {
       g.boundingBox.expandByScalar(0.031 * k); g.boundingSphere.radius += 0.042 * k;
       deform(c, g, function (rest, out, t, motion) {
@@ -5791,7 +6360,7 @@
   // not a species-specific shell or an exposed soft abdomen.
   function buildWhiteSpottedHermitCrab(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(449), k = 0.97 + 0.06 * rng(), phase = rng() * TAU;
-    var shell = new Geo(), animal = new Geo(), fine = new Geo(), limbs = [], hairs = [], sensory = [], ranges = {}, red = hex(0xa74328), rust = hex(0x702d1d), ivory = hex(0xe8dcc1), dark = hex(0x201a16), white = [1, 1, 1];
+    var shell = new Geo(), animal = new Geo(), fine = new Geo(), limbs = [], hairs = [], sensory = [], ranges = {}, corneas=[], red = hex(0xa74328), rust = hex(0x702d1d), ivory = hex(0xe8dcc1), dark = hex(0x201a16), white = [1, 1, 1];
     var rows = [[-0.086, 0.0008], [-0.075, 0.008], [-0.061, 0.015], [-0.048, 0.022], [-0.032, 0.028], [-0.012, 0.034], [0.013, 0.028]], nx = high ? 28 : 12, ns = high ? 32 : 16;
     function radius(x) { var j = 1; while (j < rows.length - 1 && x > rows[j][0]) j++; return lerp(rows[j - 1][1], rows[j][1], clamp((x - rows[j - 1][0]) / (rows[j][0] - rows[j - 1][0]), 0, 1)); }
     function shellY(x) { return 0.045 + 0.010 * (1 - smooth(-0.086, 0.013, x)); }
@@ -5837,14 +6406,19 @@
       var palm = [0.077, 0.021, side * 0.034], fixed = [[palm[0], palm[1], palm[2] + side * 0.003], [0.093, 0.019, side * 0.036], [0.101, 0.020, side * 0.029]], moving = [[palm[0] - 0.002, palm[1] + 0.004, palm[2] - side * 0.004], [0.089, 0.027, side * 0.024], [0.098, 0.022, side * 0.027]];
       spottedTube('fixed-finger-' + side, fixed, function (u) { return big * (0.0045 * (1 - 0.90 * u)); }, high ? 7 : 4, 'claw', side); spottedTube('moving-finger-' + side, moving, function (u) { return big * (0.0041 * (1 - 0.90 * u)); }, high ? 7 : 4, 'claw', side);
       first = fine.count(); var stalk = [[0.040, 0.041, side * 0.008], [0.047, 0.051, side * 0.011], [0.050, 0.058, side * 0.014]]; fine.tube(stalk, function (u) { return 0.0025 * (1 - u * 0.25); }, high ? 7 : 4, function (u) { return lin(mixc(red, ivory, (1 - smooth(0.08, 0.24, u)) * 0.72, [0, 0, 0])); });
-      blob(T, fine, 0.050, 0.059, side * 0.014, 0.0034, 0.0031, 0.0037, linHex(0x161b16), high ? 10 : 5, high ? 6 : 3); blob(T, fine, 0.051, 0.060, side * 0.0165, 0.0007, 0.0008, 0.0006, linHex(0x8da49b), high ? 6 : 4, 3); ranges['eye-' + side] = { first: first, count: fine.count() - first };
+      var eyeFirst=fine.count();blob(T, fine, 0.050, 0.059, side * 0.014, 0.0034, 0.0031, 0.0037, white, high ? 10 : 5, high ? 6 : 3);
+      corneas.push({side:side,first:eyeFirst,count:fine.count()-eyeFirst,uv:fine.t.slice(eyeFirst*2)});ranges['eye-' + side] = { first: first, count: fine.count() - first };
       for (var ant = 0; ant < 2; ant++) { var pts = [], count = high ? 9 : 4, length = ant ? 0.036 : 0.074; for (var j = 0; j <= count; j++) { var u = j / count; pts.push([0.046 + length * u, 0.045 + 0.012 * Math.sin(u * PI * 0.82) - 0.005 * u, side * (0.009 + (ant ? 0.012 : 0.028) * u)]); }
         first = fine.count(); fine.tube(pts, function (u) { return (ant ? 0.0009 : 0.00065) * (1 - 0.8 * u); }, 3, function (u) { return lin(ant ? mixc(red, rust, 0.18 + 0.15 * Math.sin(u * PI * 7), [0, 0, 0]) : mixc(ivory, hex(0xc4c0a8), 0.18 + 0.12 * Math.sin(u * PI * 7), [0, 0, 0])); }); sensory.push({ first: first, count: fine.count() - first, sides: 3, segments: count, side: side, phase: ant * 2.2 });
       }
     });
-    var ag = kit.geo(animal, k), fg = kit.geo(fine, k); ag.userData.whiteSpottedHermitCrab = { limbs: limbs, walkingLegCount: 4, largerClaw: 'left', illustrativeSpanM: 0.20, carapace: ranges.carapace }; fg.userData.whiteSpottedHermitCrab = { sensory: sensory, hairCount: hairs.length, ranges: ranges };
+    neutral(fine,0);corneas.forEach(function(e){for(var j=0;j<e.count;j++){fine.t[(e.first+j)*2]=e.uv[j*2];fine.t[(e.first+j)*2+1]=e.uv[j*2+1]*.90;}});
+    function eyeFacet(u,v){var x=u*32,y=v*18,ry=Math.floor(y/.8660254),d=9;for(var row=-1;row<=1;row++){var yy=ry+row,cx=Math.floor(x-.5*(yy&1));for(var col=-1;col<=1;col++){var xx=cx+col,dx=x-xx-.5*(yy&1),dy=y-yy*.8660254;d=Math.min(d,Math.hypot(dx,dy));}}return(1-smooth(.36,.56,d))*smooth(0,.10,v)*(1-smooth(.90,1,v));}
+    var eyeMap=kit.baked(c.key('hermit-compound-cornea'),high?256:128,high?128:64,function(u,v,out){setc(out,white);if(v>.94)return;setc(out,hex(0x374034));mulc(out,.82+.18*eyeFacet(u,clamp(v/.90,0,1)));},true,false);
+    var eyeFinish=kit.baked(c.key('hermit-cornea-finish'),high?256:128,high?128:64,function(u,v,out){out[0]=out[2]=.5;out[1]=1;if(v>.94)return;var facet=eyeFacet(u,clamp(v/.90,0,1));out[0]=out[2]=.5+.055*facet;out[1]=.32+.06*facet;},true,false,true);
+    var ag = kit.geo(animal, k), fg = kit.geo(fine, k); ag.userData.whiteSpottedHermitCrab = { limbs: limbs, walkingLegCount: 4, largerClaw: 'left', illustrativeSpanM: 0.20, carapace: ranges.carapace }; fg.userData.whiteSpottedHermitCrab = { sensory: sensory, hairCount: hairs.length, ranges: ranges,eyes:corneas.map(function(e){return{side:e.side,first:e.first,count:e.count};}),scale:k };
     var cuticleRelief = kit.baked(c.key('hermit-cuticle-grain'), 256, 128, function (u, v, out) { var grain = noise2(u * 93 + phase, v * 78), pits = Math.pow(noise2(u * 150, v * 120 + phase), 3); out[0] = out[1] = out[2] = 0.40 + 0.19 * grain - 0.09 * pits; }, false, false, true);
-    kit.mesh(ag, kit.std({ vertexColors: true, map: pigment, bumpMap: cuticleRelief, bumpScale: 0.00028 * k, roughness: 0.65, side: T.DoubleSide }), 'spotted-legs-claws', c.root); kit.mesh(fg, kit.std({ vertexColors: true, roughness: 0.55, side: T.DoubleSide }), 'eyes-antennae-setae', c.root);
+    kit.mesh(ag, kit.std({ vertexColors: true, map: pigment, bumpMap: cuticleRelief, bumpScale: 0.00028 * k, roughness: 0.65, side: T.DoubleSide }), 'spotted-legs-claws', c.root); kit.mesh(fg, kit.std({ vertexColors: true, map:eyeMap,bumpMap:eyeFinish,roughnessMap:eyeFinish,bumpScale:.000016*k,roughness: 0.55, side: T.DoubleSide }), 'eyes-antennae-setae', c.root);
     var restA = new Float32Array(ag.attributes.position.array), restF = new Float32Array(fg.attributes.position.array);
     [ag, fg].forEach(function (g) { g.boundingBox.expandByScalar(0.0035 * k); g.boundingSphere.radius += 0.005 * k; });
     function moveLimb(rest, out, first, count, limb, t) { for (var j = first; j < first + count; j++) { var at = j * 3, dx = (rest[at] / k - limb.root[0]), dz = (rest[at + 2] / k - limb.root[2]), full = Math.hypot(limb.tip[0] - limb.root[0], limb.tip[2] - limb.root[2]) || 1, u = clamp(Math.hypot(dx, dz) / full, 0, 1), w = limb.role === 'walking' ? Math.pow(Math.sin(PI * u), 2) : u * u; out[at + 1] = rest[at + 1] + k * 0.00085 * w * Math.sin(t * 0.51 + phase + limb.side * 1.1); } }
@@ -5998,10 +6572,11 @@
       var x=cx+Math.cos(a)*r*lump,z=Math.sin(a)*r*.81*lump;
       body.v(x*scale,y*scale,z*scale,[1,1,1],j/n,row/stacks);
       if(row&&j){var p=(row-1)*(n+1)+j-1,q=p+n+1;body.i.push(p,q,p+1,p+1,q,q+1);}
+      if(j===n)body.seams.push([row*(n+1),row*(n+1)+n]);
     }
     var bodyGeo=kit.geo(body,1);
-    var skin=kit.baked(c.key('tunicate-mottled-skin'),high?512:256,high?512:128,function(u,v,out){var a=u*TAU,s=section(v),x=-.008*smooth(.04,.10,s[0])+Math.cos(a)*s[1],z=Math.sin(a)*s[1]*.81;setc(out,pigment(x,s[0],z));},false,false);
-    var relief=kit.baked(c.key('tunicate-leathery-tunic'),high?256:128,high?256:128,function(u,v,out){var crease=Math.sin(u*TAU*26+noise2(u*31,v*17)*3+v*11);out[0]=out[1]=out[2]=.43+.12*noise2(u*203+phase,v*221)+.16*noise2(u*61,v*73)+.12*Math.pow(Math.max(0,crease),6);},true,false,true);
+    var skin=kit.baked(c.key('tunicate-mottled-skin'),high?512:256,high?512:128,function(u,v,out){var a=u*TAU,s=section(v),x=-.008*smooth(.04,.10,s[0])+Math.cos(a)*s[1],z=Math.sin(a)*s[1]*.81;setc(out,pigment(x,s[0],z));},true,false);
+    var relief=kit.baked(c.key('tunicate-leathery-tunic'),high?256:128,high?256:128,function(u,v,out){var a=u*TAU,ca=Math.cos(a),sa=Math.sin(a),crease=Math.sin(a*26+noise3(ca*5,sa*5,v*17)*3+v*11);out[0]=out[1]=out[2]=.43+.12*noise3(ca*32+phase,sa*32,v*221)+.16*noise3(ca*10,sa*10,v*73)+.12*Math.pow(Math.max(0,crease),6);},true,false,true);
     kit.mesh(bodyGeo,kit.std({vertexColors:true,map:skin,bumpMap:relief,bumpScale:.00075*scale,roughness:.83,side:T.DoubleSide}),'tunic',c.root);
     var openings=[];
     function siphon(name,center,axis,radius,height) {
@@ -6018,6 +6593,7 @@
         mouths.v((center[0]+up.x*axial+u.x*Math.cos(a)*ri+e.x*Math.sin(a)*ri)*scale,(center[1]+up.y*axial+u.y*Math.cos(a)*ri+e.y*Math.sin(a)*ri)*scale,(center[2]+up.z*axial+u.z*Math.cos(a)*ri+e.z*Math.sin(a)*ri)*scale,color,s/segments,k/6);
         if(k&&s){var p=start+(k-1)*(segments+1)+s-1,q=p+segments+1;mouths.i.push(p,q,p+1,p+1,q,q+1);}
       }
+      for(var k=0;k<rings.length;k++)mouths.seams.push([start+k*(segments+1),start+k*(segments+1)+segments]);
       openings.push({name:name,first:start,count:mouths.count()-start,center:center.map(function(v){return v*scale;}),axis:up.toArray(),lipHeight:(height+.001)*scale,throatDepth:.017*scale,openingRadius:radius*.72*scale});
     }
     siphon('oral',[-.008,.096,0],[.04,.995,-.08],.016,.020);
@@ -6030,7 +6606,12 @@
         var p=k*3,x=base[p]-s.center[0],y=base[p+1]-s.center[1],z=base[p+2]-s.center[2],dot=x*s.axis[0]+y*s.axis[1]+z*s.axis[2],weight=smooth(0,s.lipHeight,dot);
         out[p]=base[p]+(x-dot*s.axis[0])*pulse*weight;out[p+1]=base[p+1]+(y-dot*s.axis[1])*pulse*weight;out[p+2]=base[p+2]+(z-dot*s.axis[2])*pulse*weight;
       }});
-    },true);
+      mouthGeo.computeVertexNormals();
+      for(var s=0;s<mouths.seams.length;s++){
+        var pair=mouths.seams[s],normal=mouthGeo.attributes.normal,a=pair[0],b=pair[1],x=normal.getX(a)+normal.getX(b),y=normal.getY(a)+normal.getY(b),z=normal.getZ(a)+normal.getZ(b),length=Math.hypot(x,y,z)||1;
+        normal.setXYZ(a,x/length,y/length,z/length);normal.setXYZ(b,x/length,y/length,z/length);
+      }
+    },false);
   }
 
   // Sabellastarte spectabilis: two inrolled, almost circular radiolar lobes,
@@ -6042,14 +6623,15 @@
     var profiles=[[0,1.24],[.014,1.06],[.031,1.03],[top,1.12],[top+.002,.86],[top-.007,.70],[top-.010,0]];
     for(var row=0;row<profiles.length;row++)for(var j=0;j<=n;j++){
       var a=j/n*TAU,y=profiles[row][0],r=profiles[row][1]*rad*(1+.055*Math.sin(a*5+phase)+.04*Math.sin(a*9-y*230));
-      var color=lin(mixc(tubeBase,tubeDark,row>4?.88:.15+.27*noise2(j*.71,row*1.3+phase),[0,0,0]));
+      var color=lin(mixc(tubeBase,tubeDark,row>4?.88:.15+.27*noise3(Math.cos(a)*n*.71/TAU+phase,Math.sin(a)*n*.71/TAU,row*1.3),[0,0,0]));
       tube.v(Math.cos(a)*r*scale,y*scale,Math.sin(a)*r*scale,color,j/n,y/top);
       if(row&&j){var p=(row-1)*(n+1)+j-1,q=p+n+1;tube.i.push(p,q,p+1,p+1,q,q+1);}
+      if(j===n)tube.seams.push([row*(n+1),row*(n+1)+n]);
     }
     // The tube's brown pigment is already in its vertices. Keep the sand map
     // close to neutral so underwater absorption does not turn it into black.
-    var grain=kit.baked(c.key('worm-tube-sand-v2'),high?128:64,high?256:128,function(u,v,out){var n=noise2(u*211+phase,v*307);out[0]=out[1]=out[2]=.87+.13*n;},true,false);
-    var tubeRelief=kit.baked(c.key('worm-tube-fibres'),high?128:64,high?256:128,function(u,v,out){out[0]=out[1]=out[2]=.32+.30*noise2(u*211+phase,v*307)+.12*Math.sin(v*257+noise2(u*17,v*21));},true,false,true);
+    var grain=kit.baked(c.key('worm-tube-sand-v2'),high?128:64,high?256:128,function(u,v,out){var a=u*TAU,n=noise3(Math.cos(a)*34+phase,Math.sin(a)*34,v*307);out[0]=out[1]=out[2]=.87+.13*n;},true,false);
+    var tubeRelief=kit.baked(c.key('worm-tube-fibres'),high?128:64,high?256:128,function(u,v,out){var a=u*TAU,ca=Math.cos(a),sa=Math.sin(a);out[0]=out[1]=out[2]=.32+.30*noise3(ca*34+phase,sa*34,v*307)+.12*Math.sin(v*257+noise3(ca*3,sa*3,v*21));},true,false,true);
     kit.mesh(kit.geo(tube,1),kit.std({vertexColors:true,map:grain,bumpMap:tubeRelief,bumpScale:.00038*scale,roughness:.94,side:T.DoubleSide}),'tube',c.root);
     // High detail resolves individual curved pinnules. Low detail preserves
     // the same full paired crown with bowed feather vanes and coverage-safe
@@ -6219,10 +6801,14 @@
     ,white_spotted_hermit_crab: I('invertebrate', 'bottom', 0.20, [0, 50], null, 'base')
     ,longfin_bannerfish: I('fish', 'pair', 0.15, [2, 75], null, 'centre')
     ,bigfin_reef_squid: I('invertebrate', 'hover', 0.40, [0, 100], null, 'centre')
+    ,acropora_clathrata: I('coral', 'sessile', 1.15, [5, 40], null, 'base')
+    ,acropora_humilis: I('coral', 'sessile', 0.65, [2, 15], null, 'base')
+    ,acropora_millepora: I('coral', 'sessile', 0.88, [2, 15], null, 'base')
     ,goldmouth_sea_squirt: I('invertebrate', 'sessile', 0.12, [3, 20], null, 'base')
     ,feather_duster_worm: I('invertebrate', 'sessile', 0.16, [3, 16], null, 'base')
   };
   var BUILDERS = {
+    acropora_clathrata:buildFieldPlateAcropora, acropora_humilis:buildFieldPlateAcropora, acropora_millepora:buildFieldPlateAcropora,
     goldmouth_sea_squirt: buildGoldmouthSeaSquirt,
     feather_duster_worm: buildFeatherDusterWorm,
     longfin_bannerfish: buildLongfinBannerfish,
@@ -6291,6 +6877,7 @@
   // and look-at height (lookY) in model radii, for a 360 x 240 picture.
   function V(x, y, z, lookY) { return { dir: [x, y, z], lookY: lookY }; }
   var PORTRAIT = {
+    acropora_clathrata:V(1.35,2.2,2.6,.25), acropora_humilis:V(1.3,.95,2.6,.45), acropora_millepora:V(1.3,1.2,2.6,.45),
     goldmouth_sea_squirt: V(2.0, 1.4, 2.7, 0.65),
     feather_duster_worm: V(0.65, 1.4, 2.7, 0.65),
     longfin_bannerfish: V(0.25, 0.30, 2.7, 0.24),

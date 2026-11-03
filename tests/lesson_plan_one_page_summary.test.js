@@ -131,7 +131,7 @@ describe('Print 1-page summary', () => {
     expect(mount(plan, { isTeacherMode: false }).querySelector('[data-lesson-plan-print-summary]')).toBeNull();
   });
   it('summarises the real Thinking Together teacher guide with its 60 planned minutes', () => {
-    const pack = JSON.parse(readFileSync('allopacks/academic_discourse_reading_space_grade6.allopack.json', 'utf8'));
+    const pack = JSON.parse(readFileSync('allopacks/current/academic_discourse_reading_space_grade6.allopack.json', 'utf8'));
     const guide = pack.history.find(r => r.id === 'reading-space-teaching-playbook');
     const { html } = printSummary(mount(guide.data, { title: guide.title }));
     const doc = new DOMParser().parseFromString(html, 'text/html');

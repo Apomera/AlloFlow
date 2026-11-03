@@ -5,7 +5,7 @@ import { GlHarness } from './helpers/stem_gl_harness';
 
 test.describe.configure({ timeout: 240_000, retries: 0 });
 test.use({ video: 'off', trace: 'off' });
-const report = path.resolve('reports/dinolab-form-depth');
+const report = path.resolve(process.env.DINO_FORM_DEPTH_REPORT_DIR || 'reports/dinolab-form-depth');
 const probes = 'var DepthRenderer=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){var r=new DepthRenderer(o),f=r.render.bind(r);r.render=function(s,c){window.__depthScene=s;window.__depthCamera=c;window.__depthRenderer=r;return f(s,c)};return r};';
 const options = { toolFile: 'stem_lab/stem_tool_dinolab.js', toolId: 'dinoLab', width: 1280, height: 960, layout: 'document' as const, appStyles: true, probes };
 const harness = new GlHarness(options);
@@ -129,7 +129,7 @@ test('student model observations persist through exploration and reach the noteb
   const pending = page.waitForEvent('download'); await page.getByRole('button', { name: 'Download notebook', exact: true }).click();
   const download = await pending, text = fs.readFileSync((await download.path())!, 'utf8');
   expect(text).toContain('MODEL LANDMARK COMPARISONS'); expect(text).toContain('Latest recorded comparison');
-  expect(text).toContain('Current unrecorded draft'); expect(text).toContain('https://doi.org/10.1126/science.abo7877');
+  expect(text).toContain('Current unrecorded draft'); expect(text).toContain('https://www.app.pan.pl/archive/published/app44/app44-189.pdf');
   await page.locator('.dinolab-model-comparisons-notebook').screenshot({ path: path.join(report, 'comparison-notebook.png') });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.locator('.dinolab-model-comparisons-notebook').evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);

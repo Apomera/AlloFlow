@@ -577,6 +577,28 @@ describe('ReadAloudAudioService resilience contracts', () => {
     expect(harness.persist).toHaveBeenCalledWith(expect.objectContaining({ reason: 'prepare-reconcile' }));
   });
 
+  it('uses an older text-only take only when it belongs to a unique line, then keeps new recordings per occurrence', async () => {
+    const repeated = 'We can.', unique = 'Only once.';
+    const harness = makeLegacyBridgeHarness({ enumerateResourceSegments: () =>
+      [repeated, repeated, unique].map((spokenText, i) => ({ spokenText, segmentId: 'line/' + i, scopeId: 'main' })) });
+    const { bridge, studentStore, referenceStore } = harness;
+    for (const [lane, store, source] of [['student', studentStore, 'human-student'], ['reference', referenceStore, 'human-teacher']]) {
+      const older = store.put(repeated, clipB64('older'), 'audio/mpeg', source);
+      const playable = store.put(unique, clipB64('unique'), 'audio/mpeg', source);
+      expect(older).toBeTruthy();
+      expect(bridge.inspect(unique, lane, { occurrence: 0 }).url).toBe(playable);
+      for (const occurrence of [0, 1]) {
+        expect(bridge.inspect(repeated, lane, { occurrence })).toMatchObject({ status: 'missing', url: null, storedUrl: null });
+      }
+      expect(await bridge.saveRecording(repeated, new Blob(['take']), source, lane, { occurrence: 1 })).toBe(true);
+      const newTake = bridge.inspect(repeated, lane, { occurrence: 1 });
+      expect(newTake).toMatchObject({ status: 'ready', source });
+      expect(newTake.url).not.toBe(older);
+      expect(bridge.inspect(repeated, lane, { occurrence: 0 }).status).toBe('missing');
+      expect(store.get(repeated)).toBe(older);
+    }
+  });
+
   it('forwards occurrence and options through bridge regenerate, recording, quarantine, and remove', async () => {
     const repeated = [
       { spokenText: 'Repeated bridge sentence.', segmentId: 'body/repeat/0', scopeId: 'main' },

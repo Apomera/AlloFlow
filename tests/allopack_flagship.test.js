@@ -1,5 +1,5 @@
 // AlloPack format v0.1 — executable spec (2026-07-20).
-// The flagship pack (allopacks/water_cycle_grade6.allopack.json) is validated the way the APP
+// The flagship pack (allopacks/current/water_cycle_grade6.allopack.json) is validated the way the APP
 // will consume it: shapes checked against what the renderers actually read, directions run
 // through the REAL normalizer (eval-sliced from ANTI), the envelope through the REAL Agent
 // Core artifact contract. A pack that passes here loads via Load Project and renders.
@@ -9,7 +9,7 @@ import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
 
 const require_ = createRequire(import.meta.url);
-const pack = JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks/water_cycle_grade6.allopack.json'), 'utf8'));
+const pack = JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks/current/water_cycle_grade6.allopack.json'), 'utf8'));
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 
 // The REAL directions normalizer + evaluator, eval-sliced from the app.
@@ -29,7 +29,8 @@ describe('envelope + loader compatibility', () => {
   });
   it('every item carries the envelope: unique id, registered type, title, timestamp, data', () => {
     const seen = new Set();
-    const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'anchor-chart', 'memory-aid', 'applied-challenge']);
+    const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'anchor-chart', 'memory-aid', 'applied-challenge',
+      'image']); // 2026-11-02: the flagship is now the illustrated pack (lesson images + visual-reference companions)
     for (const it2 of items) {
       expect(it2.id && !seen.has(it2.id)).toBe(true);
       seen.add(it2.id);
@@ -140,17 +141,21 @@ describe('directions: the REAL app normalizer accepts every objective intact', (
 
 describe('authoring rules (the ones that bite)', () => {
   it('privacy: no accommodation/grouping/level language anywhere in the pack', () => {
-    const s = JSON.stringify(pack).toLowerCase();
+    // Embedded base64 pictures can contain any letter sequence; check the authored text only.
+    const s = JSON.stringify(pack).replace(/data:image\/[a-z]+;base64,[A-Za-z0-9+/=]+/g, '').toLowerCase();
     for (const banned of ['iep', '504', 'accommodation', 'reading level group', 'low group', 'high group', 'sped']) {
       expect(s).not.toContain(banned);
     }
   });
-  it('size: comfortably under the 2M-char contract cap', () => {
-    expect(JSON.stringify(pack).length).toBeLessThan(500000);
+  it('size: under the 2M-char contract cap (the illustrated flagship embeds its pictures)', () => {
+    expect(JSON.stringify(pack).length).toBeLessThan(2000000);
   });
-  it('image slots are SLOTS (shot-list), not embedded payloads', () => {
-    expect(JSON.stringify(pack)).not.toMatch(/data:image\//);
+  it('pictures are embedded WebP payloads (no remote images) and the shot list still resolves', () => {
+    const s = JSON.stringify(pack);
+    expect([...new Set(s.match(/data:image\/[a-z]+/g))]).toEqual(['data:image/webp']);
+    expect(s).not.toMatch(/"https?:[^"]*\.(?:png|jpe?g|webp|gif)"/i);
     expect(pack.allopack.imageShotList).toContain('IMAGES.md');
+    expect(require_('node:fs').existsSync(resolve(process.cwd(), pack.allopack.imageShotList))).toBe(true);
   });
   it('meta is a DISPLAY STRING on every item (the history panel renders it verbatim)', () => {
     for (const it2 of items) {

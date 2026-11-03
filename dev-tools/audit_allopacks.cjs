@@ -12,7 +12,7 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 // ALLOPACK_DIR lets a calibration run point the audit at known-bad fixtures without touching the
 // real catalog. A gate that has never been shown to fail on a defect it was written for is a hope.
-const dir = process.env.ALLOPACK_DIR ? path.resolve(process.env.ALLOPACK_DIR) : path.join(root, 'allopacks');
+const dir = process.env.ALLOPACK_DIR ? path.resolve(process.env.ALLOPACK_DIR) : path.join(root, 'allopacks', 'current'); // one current pack per topic (2026-11-02)
 const files = fs.readdirSync(dir).filter((f) => f.endsWith('.allopack.json')).sort();
 // Include downloadable illustrated editions; keep explicit fixture directories isolated.
 if (!process.env.ALLOPACK_DIR && fs.existsSync(path.join(dir, 'illustrated'))) {

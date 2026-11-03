@@ -127,7 +127,7 @@ describe('FaqView read-aloud parity', () => {
     expect(host.textContent).toContain('TTS 0/1 ready to play; 1 settings changed');
   });
 
-  it('shows an accessible playback-loading spinner independently of Save TTS progress', () => {
+  it('shows an accessible playback-loading spinner independently of Save audio progress', () => {
     window.AlloModules.PhaseKHelpers = {
       toSpokenText: (sentence) => String(sentence || '').replace(/^#{1,6}\s+/gm, '').trim(),
     };
@@ -153,7 +153,7 @@ describe('FaqView read-aloud parity', () => {
     expect(spinner.classList.contains('animate-spin')).toBe(true);
     expect(spinner.classList.contains('motion-reduce:animate-none')).toBe(true);
     expect(Array.from(host.querySelectorAll('button'))
-      .some((button) => button.textContent.includes('Save TTS'))).toBe(true);
+      .some((button) => button.textContent.includes('Save audio'))).toBe(true);
 
     view.render({ ...props, isGeneratingAudio: false });
     const readingStatus = Array.from(host.querySelectorAll('[role="status"]'))

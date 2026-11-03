@@ -25,12 +25,13 @@ import path from 'node:path';
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..');
 const APP = 'https://alloflow-cdn.pages.dev/app/';
 const CATALOG_URL = '**/raw.githubusercontent.com/Apomera/AlloFlow/main/catalog/index.json*';
-const PACK_URL = '**/raw.githubusercontent.com/Apomera/AlloFlow/main/allopacks/illustrated/water_cycle_grade6.allopack.json*';
-const CARD = 'Illustrated Grade 6 Pilot';
+// 2026-11-02: the catalog serves one current pack per topic from allopacks/current/.
+const PACK_URL = '**/raw.githubusercontent.com/Apomera/AlloFlow/main/allopacks/current/water_cycle_grade6.allopack.json*';
+const CARD = "Earth's Recycling System";
 
 const deep = process.argv.includes('--deep');
 const filter = process.argv.slice(2).find((a) => !a.startsWith('--')) || '';
-const dir = path.join(ROOT, 'allopacks');
+const dir = path.join(ROOT, 'allopacks', 'current');
 const slugs = fs.readdirSync(dir).filter((f) => f.endsWith('.allopack.json')).map((f) => f.replace('.allopack.json', ''))
   .filter((s) => !filter || s.includes(filter)).sort();
 const catalog = fs.readFileSync(path.join(ROOT, 'catalog/index.json'), 'utf8');

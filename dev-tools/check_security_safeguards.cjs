@@ -12,6 +12,7 @@ function selectWorkflows(names) {
 
 const MCP_TAG_GUARD = "github.event_name == 'push' && github.repository == 'Apomera/AlloFlow' && startsWith(github.ref, 'refs/tags/mcpb-v')";
 const REGISTRY_GUARD = "github.event_name == 'workflow_dispatch' && github.repository == 'Apomera/AlloFlow' && github.ref == 'refs/heads/main'";
+const CANDIDATE_GUARD = "github.event_name == 'workflow_dispatch' && github.repository == 'Apomera/AlloFlow' && startsWith(github.ref, 'refs/heads/')";
 const conditionIs = (value, expected) => typeof value === 'string'
   && value.trim().replace(/^\$\{\{\s*([\s\S]*?)\s*\}\}$/, '$1').replace(/\s/g, '') === expected.replace(/\s/g, '');
 const needsAre = (job, expected) => JSON.stringify((Array.isArray(job.needs) ? job.needs : [job.needs]).slice().sort()) === JSON.stringify(expected.slice().sort());
@@ -38,6 +39,11 @@ function reviewedWriteScopes(workflow, name, job, config, triggers) {
       && conditionIs(config.if, REGISTRY_GUARD) && needsAre(config, ['verify']) && workflow.jobs.verify
       && on.workflow_dispatch?.inputs?.release_tag?.required === true
       && on.workflow_dispatch?.inputs?.confirmation?.required === true) return ['id-token'];
+  if (name === 'release-candidate.yml' && job === 'attest'
+      && triggers.length === 1 && triggers[0] === 'workflow_dispatch'
+      && conditionIs(config.if, CANDIDATE_GUARD) && needsAre(config, ['build'])
+      && workflow.jobs.build && conditionIs(workflow.jobs.build.if, CANDIDATE_GUARD)
+      && on.workflow_dispatch?.inputs?.source_sha?.required === true) return ['id-token', 'attestations'];
   return [];
 }
 
@@ -104,6 +110,16 @@ function inspectWorkflow(source, name) {
     }
     if (name === 'mcpb-release.yml' && job === 'attest') {
       for (const step of config.steps || []) if (step.run || !/^actions\/(?:download-artifact|attest)@[a-f0-9]{40}$/.test(step.uses || '')) errors.push('MCP attestation job may only download and attest already-built artifacts');
+    }
+    if (name === 'release-candidate.yml' && job === 'attest') {
+      if (workflow.defaults || config.defaults || workflow.env || config.env) errors.push('Candidate signing must use the reviewed default execution environment');
+      const steps = config.steps || [];
+      if (steps.length !== 2 || !/^actions\/download-artifact@[a-f0-9]{40}$/.test(steps[0]?.uses || '')
+          || JSON.stringify(steps[0]?.with) !== JSON.stringify({ name: 'alloflow-release-candidate-${{ github.sha }}-${{ github.run_attempt }}', path: 'release-candidate' })
+          || !/^actions\/attest@[a-f0-9]{40}$/.test(steps[1]?.uses || '')
+          || JSON.stringify(steps[1]?.with) !== JSON.stringify({ 'subject-path': 'release-candidate/manifest.json' })) errors.push('Candidate signing must bind the current run artifact and its exact manifest');
+      for (const step of steps) if (step.run || step.env || step.if || step['working-directory'] || step['continue-on-error']
+          || !/^actions\/(?:download-artifact|attest)@[a-f0-9]{40}$/.test(step.uses || '')) errors.push('Candidate signing may only download and attest already-built artifacts');
     }
   }
   return errors;

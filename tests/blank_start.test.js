@@ -257,7 +257,8 @@ describe('host (AlloFlowANTI.txt): editors and edit mode', () => {
 describe('sidebar: "Other ways to start"', () => {
   let Ways, Notice;
   beforeAll(() => {
-    const code = [sliceBlock(SIDEBAR, 'function useAiTextAvailable('), sliceBlock(SIDEBAR, 'function OtherWaysToStart('), sliceBlock(SIDEBAR, 'function SourceNeededNotice(')].join('\n');
+    const code = [sliceBlock(SIDEBAR, 'function useAiTextAvailable('), sliceBlock(SIDEBAR, 'function createPathFork('),
+      'const PathFork = createPathFork();', sliceBlock(SIDEBAR, 'function OtherWaysToStart('), sliceBlock(SIDEBAR, 'function SourceNeededNotice(')].join('\n');
     ({ Ways, Notice } = new Function('React', code + '\nreturn { Ways: OtherWaysToStart, Notice: SourceNeededNotice };')(React));
   });
   const t = () => '';

@@ -9,7 +9,7 @@ function post(path, body, env, token) {
   if (token) headers.Authorization = `Bearer ${token}`;
   return worker.fetch(new Request('https://worker.test' + path, {
     method: 'POST', headers, body: body == null ? undefined : JSON.stringify(body),
-  }), env);
+  }), { SUBMIT_RATE: fakeKv(), ...env });
 }
 function postPd(body, env) { return post('/submitPd', body, env); }
 function fakeKv() {

@@ -75,13 +75,22 @@ describe('Blueprint creation freezes and preserves GenerationMatrix decisions', 
 
   it('uses matching latest analysis as the stable workspace source anchor', () => {
     const choice = UdlChat.resolveBlueprintSourceChoice({
-      requestedSourceText: ' Same source  text. ',
+      requestedSourceText: 'Same source text.',
       latestAnalysis: { id: 'analysis-current', data: { originalText: 'Same source text.' } },
     });
     expect(choice.text).toBe('Same source text.');
     expect(choice.metadata).toMatchObject({
       selectedSource: 'latest-analysis', divergentFromLatestAnalysis: false,
     });
+  });
+
+  it('keeps whitespace edits in the current source instead of silently restoring the checked text', () => {
+    const choice = UdlChat.resolveBlueprintSourceChoice({
+      requestedSourceText: 'Same source  text.',
+      latestAnalysis: { id: 'analysis-current', data: { originalText: 'Same source text.' } },
+    });
+    expect(choice.text).toBe('Same source  text.');
+    expect(choice.metadata.divergentFromLatestAnalysis).toBe(true);
   });
 
   it('freezes every language/differentiation input and resolves grade x language cells', async () => {

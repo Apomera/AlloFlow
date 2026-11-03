@@ -100,6 +100,57 @@ describe('Live timeline data integrity', () => {
     expect(empty[0].role).toBe('current');
   });
 
+  it('preserves each usable field in the evidence series while the scene retains complete hours', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const current = { ...live(), retrievedAt: '2026-10-29T16:01:00Z' };
+    const payload = hourly(['2026-10-29T13:00', '2026-10-29T14:00', '2026-10-29T15:00'], {
+      temperature_2m: [null, 5, 8], surface_pressure: [1012, null, 1010], precipitation: [0, 0, 0.1],
+    });
+    const loaded = kernel.normalizeHourlyWeatherTimeline(payload, current, { includePartial: true });
+    const state = { liveWeather: { ...current, partialHours: loaded.filter(hour => hour.partial) }, liveWeatherTimeline: loaded.filter(hour => !hour.partial) };
+    const evidence = kernel.liveForecastEvidenceTimeline(state);
+    expect(state.liveWeatherTimeline.map(hour => hour.offsetHours)).toEqual([0, 3]);
+    expect(evidence.map(hour => hour.offsetHours)).toEqual([0, 1, 2, 3]);
+    const atTwo = evidence.find(hour => hour.offsetHours === 2);
+    expect(atTwo).toMatchObject({ temperature: 5, pressure: null, precipitation: 0, partial: true });
+    const temperature = kernel.buildLiveTimelineExploration(evidence, state.liveWeather, { metric: 'temperature' });
+    const pressure = kernel.buildLiveTimelineExploration(evidence, state.liveWeather, { metric: 'pressure' });
+    expect(temperature.points.map(point => point.value)).toEqual([0, null, 5, 8]);
+    expect(pressure.points.map(point => point.value)).toEqual([1012, 1012, null, 1010]);
+    expect(kernel.liveTimelineExplorerCsv(pressure).split('\r\n').find(line => line.includes('2026-10-29T14:00'))).toContain('"","excluded"');
+    const saved = kernel.createLiveForecastCheckpoint(kernel.liveForecastPointWeather(current, atTwo), '2026-10-29T16:05Z');
+    expect(saved.predicted).toMatchObject({ temperature: 5, precipitation: 0 });
+    expect(saved.predicted.pressure).toBeUndefined();
+    const legacy = { time: atTwo.time, role: 'forecast', temperature: 5 };
+    expect(kernel.createLiveForecastCheckpoint(kernel.liveForecastPointWeather(current, legacy), '2026-10-29T16:05Z').predicted).toEqual({ temperature: 5 });
+    expect(kernel.liveForecastPointWeather(current, { ...legacy, retrievedAt: '2026-10-29T17:30Z' })).toBeNull();
+    expect(kernel.liveForecastPointWeather(current, { ...legacy, latitude: 43, longitude: -75 })).toBeNull();
+  });
+
+  it('prefers a complete record over a duplicate partial row and validates restored partial records', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const current = { ...live(), retrievedAt: '2026-10-29T16:01Z' };
+    const loaded = kernel.normalizeHourlyWeatherTimeline(hourly(
+      ['2026-10-29T13:00', '2026-10-29T13:00', '2026-10-29T14:00', '2026-10-29T14:00'],
+      { temperature_2m: [5, 8, 6, 7], surface_pressure: [null, 1004, -100, null] },
+    ), current, { includePartial: true });
+    expect(loaded).toHaveLength(3);
+    expect(loaded[1]).toMatchObject({ temperature: 8, pressure: 1004 });
+    expect(loaded[1].partial).toBeUndefined();
+    const partial = loaded[2];
+    const state = { liveWeather: { ...current, partialHours: [null, { ...partial, note: 'private-extra', visibility: 6750 }, { ...partial }, { ...partial, time: '2026-10-29T15:00', source: 'Unknown provider' }, { ...partial, time: '2026-10-29T16:00', latitude: 2, longitude: 9 }] }, liveWeatherTimeline: loaded.slice(0, 2) };
+    state.liveWeather.partialHours.push({ ...partial, time: '2026-10-29T17:00', latitude: undefined, longitude: undefined });
+    const payload = kernel.immersiveLocalWorkspacePayload(state);
+    expect(payload.weatherSystems.liveWeather.partialHours).toHaveLength(1);
+    expect(payload.weatherSystems.liveWeather.partialHours[0].note).toBeUndefined();
+    const restored = kernel.validateImmersiveLocalWorkspacePayload(payload);
+    expect(restored.liveWeather.partialHours).toHaveLength(1);
+    expect(restored.liveWeather.partialHours[0]).toMatchObject({ temperature: 6, pressure: null, visibility: 6750, latitude: 40, longitude: -75 });
+    expect(restored.liveWeather.partialHours[0].note).toBeUndefined();
+    expect(kernel.liveForecastEvidenceTimeline(restored).map(point => point.offsetHours)).toEqual([0, 1, 2]);
+    expect(kernel.immersiveSessionSharePayload(state, { includeLocation: false }).weatherSystems.liveWeather).toBeUndefined();
+  });
+
   it('keeps a current anchor when the series lies entirely before or after it', () => {
     const kernel = window.WeatherSystemsKernel;
     const before = kernel.normalizeHourlyWeatherTimeline(hourly(['2026-10-29T09:00']), live());

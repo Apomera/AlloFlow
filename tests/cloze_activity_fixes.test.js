@@ -118,6 +118,8 @@ describe('the word bank', () => {
     const reset = [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Reset');
     expect(reset && reset.hasAttribute('aria-label')).toBe(false);
     act(() => reset.click());
+    expect(setClozeInstanceSet).not.toHaveBeenCalled();
+    act(() => host.querySelector('[data-cloze-reset-confirm]').click());
     expect(setClozeInstanceSet).toHaveBeenCalledTimes(1);
     expect(setClozeInstanceSet.mock.calls[0][0].size).toBe(0);
   });

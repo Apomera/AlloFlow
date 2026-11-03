@@ -179,7 +179,7 @@ describe('published lesson permalinks', () => {
   });
   it('renders the real discussion sample through the native renderer without a model call', async () => {
     new Function('window', readFileSync('doc_pipeline_module.js', 'utf8'))(win);
-    const sample = JSON.parse(readFileSync('allopacks/academic_discourse_reading_space_grade6.allopack.json', 'utf8'));
+    const sample = JSON.parse(readFileSync('allopacks/current/academic_discourse_reading_space_grade6.allopack.json', 'utf8'));
     const html = await catalog._generateCatalogPreview(sample, { title: 'Reading Space' });
     expect(html).toContain('Reading Space');
     expect(html.length).toBeGreaterThan(10000);
@@ -231,7 +231,7 @@ describe('published lesson permalinks', () => {
   it('omits both real Katie teacher guides and their contents entries without changing either source pack', async () => {
     new Function('window', readFileSync('doc_pipeline_module.js', 'utf8'))(win);
     for (const filename of ['academic_discourse_reading_space_grade6', 'reading_decisions_grade6']) {
-      const sample = JSON.parse(readFileSync(`allopacks/${filename}.allopack.json`, 'utf8'));
+      const sample = JSON.parse(readFileSync(`allopacks/current/${filename}.allopack.json`, 'utf8'));
       const before = JSON.stringify(sample), teacher = sample.history.find(item => item.type === 'lesson-plan');
       const html = await catalog._generateCatalogPreview(sample, { title: sample.allopack.title });
       const parsed = new DOMParser().parseFromString(html, 'text/html');
@@ -317,7 +317,7 @@ describe('published lesson permalinks', () => {
   });
   it('supports explicit full/core/individual previews without mutating source data and keeps print chrome concise', async () => {
     new Function('window', readFileSync('doc_pipeline_module.js', 'utf8'))(win);
-    const sample = JSON.parse(readFileSync('allopacks/academic_discourse_reading_space_grade6.allopack.json', 'utf8')), before = JSON.stringify(sample);
+    const sample = JSON.parse(readFileSync('allopacks/current/academic_discourse_reading_space_grade6.allopack.json', 'utf8')), before = JSON.stringify(sample);
     const parse = html => new DOMParser().parseFromString(html, 'text/html');
     const core = parse(await catalog._generateCatalogPreview(sample, entry, 'core'));
     expect(core.querySelectorAll('[data-alloflow-resource-id]')).toHaveLength(5);
@@ -336,7 +336,7 @@ describe('published lesson permalinks', () => {
   it('keeps parent-pack and source attribution with individual Katie resources only', async () => {
     new Function('window', readFileSync('doc_pipeline_module.js', 'utf8'))(win);
     for (const [filename, resourceId, sourceCount] of [['academic_discourse_reading_space_grade6', 'reading-space-glossary', 1], ['reading_decisions_grade6', 'decision-unit-portfolio', 3]]) {
-      const sample = JSON.parse(readFileSync(`allopacks/${filename}.allopack.json`, 'utf8')), before = JSON.stringify(sample);
+      const sample = JSON.parse(readFileSync(`allopacks/current/${filename}.allopack.json`, 'utf8')), before = JSON.stringify(sample);
       const html = await catalog._generateCatalogPreview(sample, { title: sample.allopack.title }, `resource:${resourceId}`);
       const parsed = new DOMParser().parseFromString(html, 'text/html'), footer = parsed.querySelector('footer.alloflow-export-footer');
       expect(footer.querySelector('.catalog-print-credit').textContent).toContain(sample.allopack.title);

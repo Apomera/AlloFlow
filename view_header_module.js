@@ -627,6 +627,11 @@ function HeaderBar(props) {
     return { ok: true, isIOS };
   }, [t]);
   const canUseKokoroVoicePicker = kokoroCapability.ok;
+  let speechProvider = "auto";
+  try {
+    speechProvider = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").ttsProvider || "auto";
+  } catch (_) {
+  }
   const startKokoroVoiceDownload = () => {
     if (!canUseKokoroVoicePicker || window._kokoroTTS?.ready || window.__kokoroTTSDownloading || !window.__loadKokoroTTS) return;
     window.__kokoroTTSDownloading = true;
@@ -637,17 +642,18 @@ function HeaderBar(props) {
     );
     Promise.resolve().then(() => window.__loadKokoroTTS()).then((ok) => {
       if (ok) addToast(t("header.voice_kokoro_ready_toast") || "On-device voice ready. It is saved on this device.", "success");
-      else addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Another voice will read for now.", "error");
+      else addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Retry the download or select another spoken-output voice.", "error");
     }).catch(() => {
-      addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Another voice will read for now.", "error");
+      addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Retry the download or select another spoken-output voice.", "error");
     }).finally(() => {
       window.__kokoroTTSDownloading = false;
       window.__kokoroLoadUserInitiated = false;
+      setKokoroSavedOnDevice(!!window._kokoroTTS?.ready);
     });
   };
   const [kokoroSavedOnDevice, setKokoroSavedOnDevice] = React.useState(null);
   React.useEffect(() => {
-    if (!showVoiceSettings || window._kokoroTTS) return void 0;
+    if (!showVoiceSettings || window._kokoroTTS?.ready) return void 0;
     let live = true;
     const check = window.AlloModules?.AlloCommands?.modelCache?.hasKokoro;
     if (typeof check !== "function") {
@@ -1226,7 +1232,7 @@ function HeaderBar(props) {
            phone loads. This branch used to be cloud voices only. */
         /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup())
       )
-    ), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}`, "data-kokoro-model-status": window._kokoroTTS?.ready ? "ready" : window._kokoroTTS || window.__kokoroTTSDownloading ? "preparing" : kokoroSavedOnDevice ? "saved" : "missing" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS?.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : window._kokoroTTS || window.__kokoroTTSDownloading ? t("header.voice_model_preparing") || "Kokoro (~88MB) \u2014 preparing\u2026 a temporary voice reads aloud until it finishes." : kokoroSavedOnDevice ? t("header.voice_model_saved") || "Kokoro (~88MB) is saved on this device. It starts when reading begins." : t("header.voice_model_missing") || "Kokoro (~88MB) isn't on this device yet, so another voice reads aloud."), !window._kokoroTTS && !window.__kokoroTTSDownloading && kokoroSavedOnDevice === false && window.__loadKokoroTTS && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    ), /^[ab][fm]_/i.test(selectedVoice || "") && (speechProvider === "browser" || speechProvider === "off") && /* @__PURE__ */ React.createElement("p", { role: "status", className: `mt-2 text-xs ${_skin.label}` }, speechProvider === "browser" ? t("header.kokoro_browser_provider") || "The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro." : t("header.kokoro_disabled_provider") || "Speech output is off. Choose Auto or Local in speech provider settings to hear Kokoro."), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}`, "data-kokoro-model-status": window._kokoroTTS?.ready ? "ready" : window.__kokoroTTSDownloading ? "preparing" : kokoroSavedOnDevice ? "saved" : "missing" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS?.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : window.__kokoroTTSDownloading ? t("header.voice_model_preparing") || "Kokoro (~88MB) is preparing. Try reading again when the voice is ready." : kokoroSavedOnDevice ? t("header.voice_model_saved") || "Kokoro (~88MB) is saved on this device. It starts when reading begins." : t("header.voice_model_missing") || "Kokoro (~88MB) is not on this device yet. Get the voice to read aloud with it."), !window._kokoroTTS?.ready && !window.__kokoroTTSDownloading && !kokoroSavedOnDevice && window.__loadKokoroTTS && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       startKokoroVoiceDownload();
       setKokoroSavedOnDevice(null);
     }, "data-kokoro-get-voice": true, className: `mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}` }, t("header.voice_model_get") || "Get the voice (88 MB)")), /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(

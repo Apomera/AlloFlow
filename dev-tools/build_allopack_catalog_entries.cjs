@@ -19,11 +19,20 @@ const fs = require('fs');
 const path = require('path');
 const root = path.resolve(__dirname, '..');
 const { entryFromPack, readPack } = require(path.join(root, 'catalog', 'allopack_entry.js'));
+const { legacyAliases, validateAliases } = require(path.join(root, 'catalog', 'allopack_aliases.js'));
 const gen = require(path.join(root, 'catalog', 'generate_index.js'));
 
 const published = fs.existsSync(gen.PUBLISHED_PATH) ? JSON.parse(fs.readFileSync(gen.PUBLISHED_PATH, 'utf8')) : [];
-const have = new Set(published.map((p) => p.path));
-const files = ['', 'illustrated/'].flatMap((folder) =>
+validateAliases(published);
+const have = new Set(published.flatMap(p => [p.path, ...legacyAliases(p).map(alias => alias.path)]));
+// Older editions kept on disk but deliberately unlisted (one current pack per topic).
+const supersededFile = path.join(root, 'catalog', 'superseded_allopacks.json');
+if (fs.existsSync(supersededFile)) {
+  const unlisted = JSON.parse(fs.readFileSync(supersededFile, 'utf8'));
+  // Withheld packs (awaiting author review) must never be auto-published.
+  [...unlisted.entries, ...(unlisted.withheld || [])].forEach(s => have.add(s.path));
+}
+const files = ['', 'illustrated/', 'current/'].filter((folder) => fs.existsSync(path.join(root, 'allopacks', folder))).flatMap((folder) =>
   fs.readdirSync(path.join(root, 'allopacks', folder)).filter((f) => f.endsWith('.allopack.json')).map((f) => folder + f)).sort();
 
 const additions = [];

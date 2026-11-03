@@ -1134,6 +1134,10 @@
     // Keep chrome quiet around the landscape; state colors and keyboard focus remain distinct.
     ,'@media(forced-colors:none){[data-raptor-sim-shell="true"]{border-color:#526874!important;box-shadow:0 16px 38px #02061730;}[data-raptor-flight-stage] .rh-flight-telemetry-strip{border-color:#718c9b;border-radius:12px;background:linear-gradient(180deg,rgba(15,31,43,.97),rgba(6,17,28,.95));box-shadow:0 5px 18px #02061730,inset 0 1px #d5f3ff12;backdrop-filter:none;}[data-raptor-flight-stage] .rh-flight-metric{border-right-color:#52687480;}[data-raptor-flight-stage] .rh-flight-metric-label{color:#bfd0da;font-weight:650;letter-spacing:.09em;}[data-raptor-flight-stage] .rh-flight-metric-value{color:#f3f8fb;font-variant-numeric:tabular-nums;}[data-raptor-flight-stage] .rh-flight-mission-hud{box-shadow:0 5px 18px #02061730,inset 0 1px #d5f3ff10;}[data-raptor-flight-stage] .rh-flight-key{border-color:#738f9f;background:linear-gradient(180deg,#192c39f5,#0c1b27f5);box-shadow:0 2px 5px #02061725;}[data-raptor-flight-stage] .rh-flight-key kbd{background:#253c4b;color:#f4f8fa;border-color:#849ba8;box-shadow:none;}[data-raptor-flight-stage] .rh-flight-key[data-primary="true"],[data-raptor-flight-stage] .rh-flight-key[data-primary="true"] kbd{border-color:#fbbf24;}[data-raptor-flight-stage] .rh-scenic-toggle,[data-raptor-flight-stage] .rh-practice-toggle{background:#122430ed;border-color:#849ba8;box-shadow:inset 0 1px #d5f3ff12;}[data-raptor-sim-shell] .rh-flight-controls{background:linear-gradient(180deg,#11212e,#0a1723);border-top-color:#526874;}}'
     ,'@media(max-width:540px){.rh-active-flight-bar{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:8px 10px;align-items:center;}.rh-active-flight-copy{grid-column:2/-1;}.rh-active-flight-bar>span{grid-column:2;justify-self:start;}.rh-active-flight-bar>[data-raptor-edit-flight]{grid-column:3;min-height:38px;}.rh-active-flight-copy>div:first-child{line-height:1.4;}.rh-active-flight-copy>div:last-child{white-space:normal;line-height:1.45;}}'
+    ,"@media(min-width:761px) and (forced-colors:none){[data-raptor-flight-stage] .rh-flight-energy-label{font-size:9.5px;font-weight:650;letter-spacing:.01em;color:#d6e2e9;}[data-raptor-flight-stage] .rh-flight-energy-value{font-size:11px;line-height:10px;font-weight:800;color:#f5fbff;}[data-raptor-flight-stage] .rh-flight-energy-row .rh-flight-energy-track{height:3px;bottom:-1px;background:#3b5361;}[data-raptor-flight-stage] .rh-flight-metric[data-energy-state=\"low\"] [data-energy-resource=\"calories\"] .rh-flight-energy-value{color:#fdba74;}[data-raptor-flight-stage] .rh-flight-metric[data-energy-state=\"critical\"] [data-energy-resource=\"calories\"] .rh-flight-energy-value{color:#fca5a5;}[data-raptor-flight-stage] .rh-flight-metric[data-energy-state=\"fatigued\"] [data-energy-resource=\"stamina\"] .rh-flight-energy-value{color:#fde68a;}[data-raptor-flight-stage] .rh-flight-target-cue{top:84px;}[data-raptor-flight-stage] .rh-flight-lock-meters{top:116px;}[data-raptor-flight-stage] .rh-flight-mission-hud{top:116px;}[data-raptor-flight-stage] .rh-flight-altitude-gauge{margin-top:12px;}}"
+    ,"@media(min-width:761px) and (forced-colors:none) and (prefers-contrast:no-preference){[data-raptor-flight-stage] .rh-flight-mission-hud{right:58px;}}@media(min-width:761px){@container(min-width:630px){[data-raptor-flight-stage] .rh-flight-mission-hud{right:58px;max-width:min(330px,calc(50% - 165px));box-sizing:border-box;}[data-raptor-flight-stage] .rh-flight-mission-route-label{white-space:normal;overflow-wrap:anywhere;text-overflow:clip;}[data-raptor-flight-stage] .rh-flight-mission-route-step{align-content:start;}}[data-raptor-sim-shell]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active=true]) [data-raptor-flight-stage] .rh-flight-mission-hud{right:58px;max-width:min(330px,calc(50% - 165px));box-sizing:border-box;}[data-raptor-sim-shell]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active=true]) [data-raptor-flight-stage] .rh-flight-mission-route-label{white-space:normal;overflow-wrap:anywhere;text-overflow:clip;}[data-raptor-sim-shell]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active=true]) [data-raptor-flight-stage] .rh-flight-mission-route-step{align-content:start;}}"
+    ,"@media(min-width:761px){@container(min-width:420px){[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-telemetry-strip{left:8px;right:8px;transform:none;width:auto;max-width:none;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-target-cue{left:calc(50% + 10px);right:8px;transform:none;max-width:none;box-sizing:border-box;overflow-wrap:anywhere;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-wind{top:90px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 5px;max-width:calc(50% - 20px);padding-top:2px;padding-bottom:2px;line-height:10px;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-wind::before{grid-row:1 / span 2;align-self:center;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-heading{top:130px;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-attitude{top:158px;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-wind-main,[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-wind-detail{grid-column:2;min-width:0;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-wind-detail::before{content:none;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-metric{min-width:0;flex:1 1 0;padding:6px 4px;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-metric:nth-child(6){display:none;}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-lock-meters{left:10px;transform:none;top:194px;width:min(190px,calc(50% - 59px));}[data-raptor-flight-stage][data-raptor-mission-docked=true] .rh-flight-key-guide{left:10px;right:auto;transform:none;bottom:64px;width:min(190px,calc(50% - 59px));max-width:none;}}}.rh-flight-mission-dock{box-sizing:border-box;min-width:0;flex:0 0 auto;padding:12px;border-top:1px solid #486975;}.rh-flight-mission-dock[hidden]{display:none!important;}.rh-flight-mission-dock .rh-flight-mission-hud{position:static;inset:auto;width:100%;max-width:none;box-sizing:border-box;margin:0;pointer-events:auto;}.rh-flight-mission-dock .rh-flight-mission-hud .rh-flight-mission-progress{font-size:11px;line-height:1.4;}.rh-flight-mission-dock .rh-flight-mission-hud .rh-flight-mission-phase{font-size:14px;line-height:1.3;}.rh-flight-mission-dock .rh-flight-mission-hud .rh-flight-mission-focus{font-size:12px;line-height:1.4;}.rh-flight-mission-dock .rh-flight-mission-hud .rh-flight-mission-route-step,.rh-flight-mission-dock .rh-flight-mission-hud .rh-flight-mission-route-label{font-size:10px;white-space:normal;overflow-wrap:anywhere;text-overflow:clip;align-content:start;}[data-raptor-flight-stage]:is([data-raptor-scenic-view=true],[data-raptor-perched=true],[data-raptor-flight-trail=true],[data-raptor-trail-result=true],[data-raptor-study=true],[data-raptor-path-review=true])+.rh-flight-mission-dock{display:none!important;}@media(forced-colors:active){.rh-flight-mission-dock{border-color:CanvasText;}}"
+    ,".rh-flight-primary-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:0 0 auto;}.rh-flight-secondary-controls{display:contents;}.rh-flight-aux-controls:empty{display:none;}[data-raptor-sim-shell]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active=true])>.rh-flight-readout{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;min-width:0!important;max-height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important;}[data-raptor-sim-shell]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active=true])>.rh-motion-panel:not([hidden]),[data-raptor-sim-shell]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active=true])>.rh-path-panel:not([hidden]){position:absolute;z-index:40;top:8px;left:8px;right:8px;max-height:calc(68vh - 16px);box-sizing:border-box;overflow:auto;overscroll-behavior:contain;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true]>.rh-flight-controls{display:grid;grid-template-columns:1fr;grid-template-rows:44px minmax(0,1fr);align-items:stretch;gap:4px;height:30vh;max-height:30vh;box-sizing:border-box;padding:4px 8px;overflow:hidden;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-primary-controls{height:44px;min-height:44px;gap:6px;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-primary-controls>.rh-flight-btn{height:44px;min-height:44px;min-width:0;box-sizing:border-box;margin:0;white-space:normal;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-secondary-controls{display:block;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 2px 2px;box-sizing:border-box;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-secondary-controls>.rh-flight-controls-group{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;margin:0 0 8px;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-secondary-controls .rh-flight-control-label{display:none;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-secondary-controls .rh-flight-btn{width:100%;min-width:0;min-height:44px;box-sizing:border-box;white-space:normal;scroll-margin-block:6px;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-settings{width:100%;min-width:0;margin-top:8px;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-settings>summary{width:100%;box-sizing:border-box;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-settings-panel{position:static!important;width:auto;max-width:none;box-sizing:border-box;margin-top:8px;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px;min-width:0;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls:empty{display:none;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls>.rh-flight-wind,[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls>.rh-flight-heading,[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls>.rh-flight-attitude{position:static;inset:auto;transform:none;max-width:none;min-width:0;margin:0;font-size:11px;line-height:1.4;white-space:normal;box-shadow:none;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls>.rh-flight-wind{grid-column:1/-1;display:flex;flex-wrap:wrap;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls>.rh-flight-key-guide{position:static;inset:auto;transform:none;grid-column:1/-1;width:auto;max-width:none;justify-content:flex-start;margin:2px 0;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls>.rh-practice-toggle{position:static;inset:auto;transform:none;width:auto;max-width:none;min-height:44px;box-sizing:border-box;font-size:12px;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls>.rh-flight-telemetry-strip{position:static;inset:auto;transform:none;grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:auto;max-width:none;overflow:visible;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls .rh-flight-metric{min-width:0;padding:6px 8px;}[data-raptor-flight-stage][data-raptor-fullscreen-compact=true] .rh-flight-target-cue{left:calc(50% + 49px);right:8px;top:64px;transform:none;max-width:none;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;}[data-raptor-flight-stage][data-raptor-fullscreen-compact=true] .rh-flight-lock-meters{left:10px;top:calc(50% - 16px);transform:none;width:min(190px,calc(50% - 59px));}[data-raptor-flight-stage][data-raptor-fullscreen-compact=true] .rh-flight-altitude-gauge{display:none;}[data-raptor-flight-stage][data-raptor-fullscreen-compact=true] .rh-scenic-toggle{left:8px;bottom:8px;top:auto;min-height:44px;padding:6px 8px;font-size:11px;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true]:has([data-raptor-flight-stage]:is([data-raptor-scenic-view=true],[data-raptor-trail-result=true])) .rh-flight-aux-controls>.rh-flight-wind,[data-raptor-sim-shell][data-raptor-compact-fullscreen=true]:has([data-raptor-flight-stage]:is([data-raptor-scenic-view=true],[data-raptor-trail-result=true])) .rh-flight-aux-controls>.rh-flight-heading,[data-raptor-sim-shell][data-raptor-compact-fullscreen=true]:has([data-raptor-flight-stage]:is([data-raptor-scenic-view=true],[data-raptor-trail-result=true])) .rh-flight-aux-controls>.rh-flight-attitude,[data-raptor-sim-shell][data-raptor-compact-fullscreen=true]:has([data-raptor-flight-stage]:is([data-raptor-scenic-view=true],[data-raptor-trail-result=true])) .rh-flight-aux-controls>.rh-flight-key-guide,[data-raptor-sim-shell][data-raptor-compact-fullscreen=true]:has([data-raptor-flight-stage]:is([data-raptor-scenic-view=true],[data-raptor-trail-result=true])) .rh-flight-aux-controls>.rh-flight-telemetry-strip{display:none!important;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true]:has([data-raptor-path-review=true]) .rh-flight-aux-controls{display:none!important;}[data-raptor-sim-shell][data-raptor-short-fullscreen=true]>.rh-flight-mission-dock{padding:4px 8px;}[data-raptor-sim-shell][data-raptor-short-fullscreen=true] .rh-flight-mission-dock .rh-flight-mission-hud{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;padding:6px 10px;}[data-raptor-sim-shell][data-raptor-short-fullscreen=true] .rh-flight-mission-dock .rh-flight-mission-progress{grid-column:1;font-size:11px;line-height:1.3;}[data-raptor-sim-shell][data-raptor-short-fullscreen=true] .rh-flight-mission-dock .rh-flight-mission-phase{grid-column:1;margin:0;font-size:13px;line-height:1.3;}[data-raptor-sim-shell][data-raptor-short-fullscreen=true] .rh-flight-mission-dock .rh-flight-mission-clock{grid-column:2;grid-row:1/3;align-self:center;margin:0;padding:5px 7px;}[data-raptor-sim-shell][data-raptor-short-fullscreen=true] .rh-flight-mission-dock .rh-flight-mission-clock>span,[data-raptor-sim-shell][data-raptor-short-fullscreen=true] .rh-flight-mission-dock .rh-flight-mission-focus,[data-raptor-sim-shell][data-raptor-short-fullscreen=true] .rh-flight-mission-dock .rh-flight-mission-route,[data-raptor-sim-shell][data-raptor-short-fullscreen=true] .rh-flight-mission-dock .rh-flight-mission-meter-label,[data-raptor-sim-shell][data-raptor-short-fullscreen=true] .rh-flight-mission-dock .rh-flight-mission-meter{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;min-width:0!important;max-height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important;}[data-raptor-sim-shell][data-raptor-short-fullscreen=true] [data-raptor-flight-stage] .rh-flight-state{top:8px;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls>.rh-flight-key-guide:not([hidden]){display:flex;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls .rh-flight-metric{display:block;border:1px solid #526874;border-radius:8px;text-align:left;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls .rh-flight-metric-label{font-size:10px;line-height:1.3;letter-spacing:.04em;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls .rh-flight-metric-value{font-size:13px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls .rh-flight-energy-row{gap:8px;line-height:1.4;padding-bottom:4px;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls .rh-flight-energy-label{font-size:11px;line-height:1.4;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls .rh-flight-energy-value{font-size:12px;line-height:1.4;font-weight:800;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-aux-controls .rh-flight-energy-track{height:3px;}@media(max-width:760px){[data-raptor-sim-shell][data-raptor-compact-fullscreen=true]:has([data-raptor-flight-stage]:is([data-raptor-flight-trail=true],[data-raptor-perched=true])) .rh-flight-aux-controls>:is(.rh-flight-heading,.rh-flight-attitude){display:none!important;}}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-pause-card{max-height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;}[data-raptor-sim-shell][data-raptor-compact-fullscreen=true] .rh-flight-pause-card .rh-pause-resume{min-height:44px;}"
     // Stoop impact scale (visual pass 2026-09-24): text was 6-9 px and the marker line ran through "Current".
     ,'.rh-stoop-impact-panel{gap:12px;padding:14px 16px;}.rh-stoop-impact-kicker{font-size:11px;}.rh-stoop-impact-title{font-size:15px;margin-top:4px;}.rh-stoop-impact-value{font-size:18px;}.rh-stoop-impact-track{height:58px;margin:28px 0 28px;overflow:visible;}.rh-stoop-impact-track::before{inset:0;}.rh-stoop-impact-fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px 0 0 8px;background:linear-gradient(90deg,rgba(251,191,36,.06),rgba(249,115,22,.30) 72%,rgba(239,68,68,.46));pointer-events:none;}.rh-stoop-impact-current{top:-6px;bottom:-6px;}.rh-stoop-impact-current-dot{top:50%;width:14px;height:14px;}.rh-stoop-impact-current-label{top:-26px;padding:3px 9px;border-radius:999px;background:#f97316;color:#1c0a02;font:900 11px/1 ui-sans-serif,system-ui;letter-spacing:.06em;box-shadow:0 2px 8px rgba(0,0,0,.45);}.rh-stoop-impact-marker{bottom:0;height:100%;background:rgba(148,163,184,.75);}.rh-stoop-impact-marker-label,.rh-stoop-impact-marker[data-impact-marker] .rh-stoop-impact-marker-label{bottom:auto;top:calc(100% + 7px);font:800 11px/1.1 ui-sans-serif,system-ui;}.rh-stoop-impact-marker[data-impact-marker="baseball"] .rh-stoop-impact-marker-label{transform:translateX(calc(-100% - 3px));}.rh-stoop-impact-marker[data-impact-marker="bullet"] .rh-stoop-impact-marker-label{transform:translateX(3px);}.rh-stoop-impact-marker[data-impact-marker="harpy"] .rh-stoop-impact-marker-label{transform:translateX(calc(-100% + 1px));}.rh-stoop-impact-axis{font-size:11px;}.rh-stoop-impact-note{font-size:12px;font-weight:600;line-height:1.4;}@media(max-width:430px){.rh-stoop-impact-marker-label,.rh-stoop-impact-marker[data-impact-marker] .rh-stoop-impact-marker-label{font-size:10px;}.rh-stoop-impact-axis{font-size:10px;}.rh-stoop-impact-title{font-size:13px;}.rh-stoop-impact-value{font-size:15px;}}@media(forced-colors:active){.rh-stoop-impact-fill{background:Highlight;opacity:.35;}.rh-stoop-impact-current-label{background:Canvas;color:CanvasText;border:1px solid CanvasText;}}'
   ].join('');
@@ -15103,15 +15107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     role: 'group',
                     'aria-label': __alloT('stem.raptorhunt.a11y_raptor_flight_controls', 'Raptor flight controls')
                   },
-                    h('div', { className: 'rh-flight-controls-group rh-flight-controls-run' },
-                      simToggleButton(__alloT('stem.raptorhunt.motion_lens', 'Motion lens'), 'motionLens', !!simUI.motionLens, __alloT('stem.raptorhunt.motion_lens_toggle', 'Show horizontal motion lens')),
-                      h('button', { type: 'button', className: 'rh-flight-btn', 'data-raptor-path-button': true, disabled: !simUI.ready || !!simUI.studyActive, 'aria-pressed': !!simUI.flightPathActive, onClick: function() { sendHuntCommand('flightPath'); } }, 'Inspect flight path'),
-                      h('span', { className: 'rh-flight-control-label' }, 'Run'),
-                      h('button', {
-                        type: 'button', className: 'rh-flight-btn', disabled: flightResolved || !simUI.ready,
-                        'data-raptor-study-button': true, 'aria-pressed': !!simUI.studyActive,
-                        onClick: function() { sendHuntCommand('study'); }
-                      }, __alloT('stem.raptorhunt.study_moment', 'Study this moment')),
+                    h('div', { className: 'rh-flight-primary-controls', 'data-raptor-primary-controls': 'true' },
                       h('button', {
                         type: 'button',
                         className: 'rh-flight-btn rh-flight-btn-primary',
@@ -15124,18 +15120,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       }, flightResolved ? 'Flight ended' : simUI.paused ? 'Resume' : 'Pause'),
                       h('button', {
                         type: 'button',
-                        className: 'rh-flight-btn rh-flight-btn-danger',
-                        onClick: restartHuntRun,
-                        'aria-label': __alloT('stem.raptorhunt.a11y_restart_this_flight', 'Restart this flight')
-                      }, 'Restart'),
-                      h('button', {
-                        type: 'button',
                         className: 'rh-flight-btn',
                         onClick: requestHuntFullscreen,
                         'aria-label': __alloT('stem.raptorhunt.a11y_toggle_fullscreen_flight_view', 'Toggle fullscreen flight view')
                       }, 'Fullscreen')
                     ),
-                    h('details', { className: 'rh-flight-settings', 'data-raptor-flight-settings': 'true' },
+                    h('div', { className: 'rh-flight-secondary-controls', 'data-raptor-secondary-controls': 'true' },
+                      h('div', { className: 'rh-flight-controls-group rh-flight-controls-flight' },
+                        h('span', { className: 'rh-flight-control-label' }, 'Flight'),
+                        holdFlightButton('Dive (' + (controlLabel('dive') || 'hold') + ')', 'shift', flightGrounded ? '' : 'rh-flight-btn-primary', 'Hold to dive and accelerate - keyboard ' + (controlLabel('dive') || 'unbound')),
+                        holdFlightButton((flightGrounded ? 'Take off (' : 'Pull up (') + (controlLabel('pullUp') || 'hold') + ')', ' ', flightGrounded ? 'rh-flight-btn-primary' : '', (flightGrounded ? 'Hold to take off - keyboard ' : 'Hold to pull up - keyboard ') + (controlLabel('pullUp') || 'unbound')),
+                        !thermalFlight && h('button', {
+                        type: 'button',
+                        className: 'rh-flight-btn rh-flight-btn-strike',
+                        onPointerDown: function(event) {
+                          if (event.button === 0 && event.isPrimary !== false) event.preventDefault();
+                        },
+                        onClick: function(event) { sendHuntCommandFromControl(event, 'strike'); },
+                        disabled: !!strikeButtonState,
+                        'data-raptor-cue': strikeButtonState ? undefined : (simUI.controlCues || {}).strike || undefined,
+                        'aria-label': strikeButtonLabel,
+                        title: strikeHelp || 'Strike when prey is within reach and aligned, or click the prey',
+                        'aria-keyshortcuts': raptorActionShortcuts(activeScheme, 'strike')
+                      }, strikeButtonState || 'Strike' + (controlLabel('strike') ? ' (' + controlLabel('strike') + ')' : '')),
+                        holdFlightButton('\u2193 Alt', 'q', '', 'Hold to descend'),
+                        holdFlightButton('\u2191 Alt', 'e', '', 'Hold to climb')
+                      ),
+                      h('div', { className: 'rh-flight-controls-group rh-flight-controls-run' },
+                        h('span', { className: 'rh-flight-control-label' }, 'Run'),
+                        simToggleButton(__alloT('stem.raptorhunt.motion_lens', 'Motion lens'), 'motionLens', !!simUI.motionLens, __alloT('stem.raptorhunt.motion_lens_toggle', 'Show horizontal motion lens')),
+                        h('button', { type: 'button', className: 'rh-flight-btn', 'data-raptor-path-button': true, disabled: !simUI.ready || !!simUI.studyActive, 'aria-pressed': !!simUI.flightPathActive, onClick: function() { sendHuntCommand('flightPath'); } }, 'Inspect flight path'),
+                        h('button', {
+                        type: 'button', className: 'rh-flight-btn', disabled: flightResolved || !simUI.ready,
+                        'data-raptor-study-button': true, 'aria-pressed': !!simUI.studyActive,
+                        onClick: function() { sendHuntCommand('study'); }
+                      }, __alloT('stem.raptorhunt.study_moment', 'Study this moment')),
+                        h('button', {
+                        type: 'button',
+                        className: 'rh-flight-btn rh-flight-btn-danger',
+                        onClick: restartHuntRun,
+                        'aria-label': __alloT('stem.raptorhunt.a11y_restart_this_flight', 'Restart this flight')
+                      }, 'Restart')
+                      ),
+                      h('details', { className: 'rh-flight-settings', 'data-raptor-flight-settings': 'true' },
                       h('summary', { className: 'rh-flight-btn', 'aria-label': __alloT('stem.raptorhunt.a11y_open_flight_view_and_sound_settings', 'Open flight view and sound settings') }, 'Settings'),
                       h('div', { className: 'rh-flight-settings-panel', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_flight_view_and_sound_settings', 'Flight view and sound settings') },
                         simToggleButton(simUI.camera === 'fp' ? 'First person' : 'Chase view', 'view', simUI.camera === 'fp', 'Toggle chase and first-person camera'),
@@ -15282,25 +15309,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         )
                       )
                     ),
-                    h('div', { className: 'rh-flight-controls-group rh-flight-controls-flight' },
-                      h('span', { className: 'rh-flight-control-label' }, 'Flight'),
-                      holdFlightButton('\u2193 Alt', 'q', '', 'Hold to descend'),
-                      holdFlightButton('\u2191 Alt', 'e', '', 'Hold to climb'),
-                      holdFlightButton('Dive (' + (controlLabel('dive') || 'hold') + ')', 'shift', flightGrounded ? '' : 'rh-flight-btn-primary', 'Hold to dive and accelerate - keyboard ' + (controlLabel('dive') || 'unbound')),
-                      holdFlightButton((flightGrounded ? 'Take off (' : 'Pull up (') + (controlLabel('pullUp') || 'hold') + ')', ' ', flightGrounded ? 'rh-flight-btn-primary' : '', (flightGrounded ? 'Hold to take off - keyboard ' : 'Hold to pull up - keyboard ') + (controlLabel('pullUp') || 'unbound')),
-                      !thermalFlight && h('button', {
-                        type: 'button',
-                        className: 'rh-flight-btn rh-flight-btn-strike',
-                        onPointerDown: function(event) {
-                          if (event.button === 0 && event.isPrimary !== false) event.preventDefault();
-                        },
-                        onClick: function(event) { sendHuntCommandFromControl(event, 'strike'); },
-                        disabled: !!strikeButtonState,
-                        'data-raptor-cue': strikeButtonState ? undefined : (simUI.controlCues || {}).strike || undefined,
-                        'aria-label': strikeButtonLabel,
-                        title: strikeHelp || 'Strike when prey is within reach and aligned, or click the prey',
-                        'aria-keyshortcuts': raptorActionShortcuts(activeScheme, 'strike')
-                      }, strikeButtonState || 'Strike' + (controlLabel('strike') ? ' (' + controlLabel('strike') + ')' : ''))
+                      h('div', { className: 'rh-flight-aux-controls', 'data-raptor-aux-controls': 'true', role: 'group', 'aria-label': __alloT('stem.raptorhunt.more_flight_instruments', 'More flight instruments') })
                     )
                   ),
                   h('section', { className: 'rh-motion-panel', 'data-raptor-motion-lens': 'true', hidden: !simUI.motionLens || !!simUI.studyActive || !!rh.scenicView, 'aria-labelledby': 'rh-motion-lens-title' },
@@ -15997,7 +16006,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               'float surfaceDetail=1.0-smoothstep(0.4,3.0,surfaceFootprint);',
               'float grit=mix(0.5,rhNoise(groundUV*1.7),surfaceDetail);',
               rock
-                ? 'float mineral=rhNoise(groundUV*0.18+vRhWorld.y*0.08); float seam=1.0-smoothstep(0.04,0.18,abs(sin(vRhWorld.y*0.32+macro*5.0))); diffuseColor.rgb*=0.67+macro*0.50+grit*0.10-seam*0.065; diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.10,0.98,0.86),mineral*0.28);'
+                ? [
+                  'float mineral=rhNoise(groundUV*0.18+vRhWorld.y*0.08);',
+                  'float rockLayer=vRhWorld.y*0.52+macro*3.2+rhNoise(groundUV*0.12)*1.4;',
+                  'float layerAA=max(fwidth(rockLayer),0.015);',
+                  'float seam=(1.0-smoothstep(0.035,0.16+layerAA,abs(sin(rockLayer))))*surfaceDetail;',
+                  'float jointPhase=groundUV.x*0.35+groundUV.y*0.17+rhNoise(vec2(vRhWorld.y*0.11,macro*2.0))*2.4;',
+                  'float jointAA=max(fwidth(jointPhase),0.015);',
+                  'float rockJoint=(1.0-smoothstep(0.025,0.10+jointAA,abs(sin(jointPhase))))*surfaceDetail;',
+                  'float rockPatina=smoothstep(0.55,0.76,rhFbm(groundUV*0.27+vec2(7.1,2.8)));',
+                  'diffuseColor.rgb*=0.67+macro*0.50+grit*0.10-seam*0.085-rockJoint*0.055;',
+                  'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.10,0.98,0.86),mineral*0.28);',
+                  'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(0.84,0.98,0.74),rockPatina*0.24);'
+                ].join('\n')
                 : 'float fine=mix(0.5,rhFbm(groundUV*0.45),surfaceDetail); float slope=1.0-abs(normalize(vRhLandNormal).y); float exposed=smoothstep(0.10,0.42,slope+(macro-0.5)*0.13); diffuseColor.rgb*=0.40+macro*0.42+fine*0.16+grit*0.05; vec3 bedrock=vec3(0.19,0.175,0.15)*(0.72+macro*0.4+grit*0.1); diffuseColor.rgb=mix(diffuseColor.rgb,bedrock,exposed*0.82);'
             ].join('\n'));
             if(!rock){
@@ -16024,14 +16045,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             if(rock) shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',[
               '#include <normal_fragment_maps>',
-              'float rockRelief=rhFbm((vRhWorld.xz+vRhWorld.y*vec2(0.31,0.19))*0.55)*0.18*surfaceDetail;',
+              'float rockRelief=rhFbm((vRhWorld.xz+vRhWorld.y*vec2(0.31,0.19))*0.55)*0.18*surfaceDetail-seam*0.026-rockJoint*0.018;',
               'vec3 rockDx=dFdx(-vViewPosition),rockDy=dFdy(-vViewPosition);',
               'vec3 rockR1=cross(rockDy,normal),rockR2=cross(normal,rockDx);',
               'float rockDet=dot(rockDx,rockR1);',
               'normal=normalize(abs(rockDet)*normal-sign(rockDet)*(dFdx(rockRelief)*rockR1+dFdy(rockRelief)*rockR2));'
             ].join('\n'));
           };
-          material.customProgramCacheKey = function() { return rock ? 'raptor-rock-v4' : 'raptor-ground-relief-v3-'+species.biome; };
+          material.customProgramCacheKey = function() { return rock ? 'raptor-weathered-rock-v5' : 'raptor-ground-relief-v3-'+species.biome; };
           applyLandscapeAtmosphere(material, true);
         }
 
@@ -16408,6 +16429,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var landmarkFoliageMaterial = new THREE.MeshStandardMaterial({ color: landmarkFoliage, roughness: 0.9, metalness: 0, flatShading: true, fog: true });
         landmarkBarkMaterial.color.convertSRGBToLinear();
         landmarkSnagMaterial.color.convertSRGBToLinear();
+        finishRaptorBarkMaterial(landmarkBarkMaterial);
+        finishRaptorBarkMaterial(landmarkSnagMaterial);
         landmarkFoliageMaterial.color.convertSRGBToLinear();
         var landmarkCount = graphicsQuality === 'high' ? 6 : graphicsQuality === 'low' ? 3 : 4;
         var landmarkMode = species.biome === 'mountain' || species.biome === 'cliff' || species.biome === 'urban-cliff'
@@ -16843,12 +16866,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         forestShadeTexture.name='raptor-canopy-occlusion';
         terrainGeo.setAttribute('uv2',terrainGeo.attributes.uv);
         terrain.material.aoMap=forestShadeTexture;terrain.material.aoMapIntensity=0.85;
+        // Relief follows the existing instanced cylinders; no extra meshes or maps.
+        function finishRaptorBarkMaterial(material) {
+          material.extensions=Object.assign({},material.extensions,{derivatives:true});
+          material.onBeforeCompile=function(shader) {
+            surfaceVertexShader(shader);
+            shader.vertexShader='varying vec2 vRhBarkUV;\n'+shader.vertexShader;
+            shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>','#include <uv_vertex>\n vRhBarkUV=uv;');
+            shader.fragmentShader='varying vec2 vRhBarkUV;\n'+surfaceNoiseGLSL+'\n'+shader.fragmentShader;
+            shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',[
+              '#include <map_fragment>',
+              'float barkAngle=vRhBarkUV.x*6.28318530718;',
+              'float barkPhase=barkAngle*13.0+sin(vRhWorld.y*0.65)*0.55+sin(barkAngle*3.0+vRhWorld.y*0.22)*0.9;',
+              'float barkFootprint=max(length(dFdx(vec2(barkAngle*2.0,vRhWorld.y))),length(dFdy(vec2(barkAngle*2.0,vRhWorld.y))));',
+              'float barkDetail=1.0-smoothstep(0.15,0.85,barkFootprint);',
+              'float barkAA=max(fwidth(barkPhase),0.015);',
+              'float barkFurrow=(1.0-smoothstep(0.10,0.30+barkAA*0.45,abs(sin(barkPhase))))*barkDetail;',
+              'float barkPlate=rhNoise(vec2(cos(barkAngle)*3.0+sin(barkAngle)*2.1,vRhWorld.y*0.75));',
+              'float barkBreak=smoothstep(0.66,0.82,barkPlate)*barkDetail;',
+              'float barkMoss=(1.0-smoothstep(0.03,0.38,vRhBarkUV.y))*smoothstep(0.36,0.65,rhNoise(vRhWorld.xz*0.8+vRhWorld.y*0.3));',
+              'diffuseColor.rgb*=mix(1.0,0.92+barkPlate*0.32,barkDetail)-barkFurrow*0.30-barkBreak*0.09;',
+              species.biome==='tundra' ? '' : 'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(0.76,1.10,0.65),barkMoss*0.48);',
+            ].filter(Boolean).join('\n'));
+            shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',[
+              '#include <normal_fragment_maps>',
+              'float barkRelief=(barkPlate*0.011-barkFurrow*0.016-barkBreak*0.006)*barkDetail;',
+              'vec3 barkDx=dFdx(-vViewPosition),barkDy=dFdy(-vViewPosition);',
+              'vec3 barkR1=cross(barkDy,normal),barkR2=cross(normal,barkDx);',
+              'float barkDet=dot(barkDx,barkR1);',
+              'normal=normalize(abs(barkDet)*normal-sign(barkDet)*(dFdx(barkRelief)*barkR1+dFdy(barkRelief)*barkR2));'
+            ].join('\n'));
+            shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\n roughnessFactor=mix(roughnessFactor,0.99,barkFurrow*0.7+barkMoss*0.3);');
+            material.userData.barkCompiled=true;
+          };
+          material.customProgramCacheKey=function(){return 'raptor-bark-relief-v1-'+species.biome;};
+          applyLandscapeAtmosphere(material,true);
+        }
         var trunkMaterial = new THREE.MeshStandardMaterial({
           color: species.biome === 'tundra' ? 0x44403c : 0x4a2c1a,
           roughness: 0.95
         });
         trunkMaterial.color.convertSRGBToLinear();
-        applyLandscapeAtmosphere(trunkMaterial);
+        finishRaptorBarkMaterial(trunkMaterial);
         var trunkInstances = new THREE.InstancedMesh(
           new THREE.CylinderGeometry(0.7, 1, 1, 6),
           trunkMaterial,
@@ -16997,19 +17056,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               context.beginPath();context.ellipse(x,y,3+sceneryRandom()*7,2+sceneryRandom()*5,a,0,Math.PI*2);context.fill();
             }
           } else {
-            context.strokeStyle='#666';context.lineWidth=5;context.beginPath();context.moveTo(256,62);context.lineTo(256,468);context.stroke();
+            context.strokeStyle='#555';context.lineWidth=5;context.beginPath();context.moveTo(256,62);context.lineTo(256,468);context.stroke();
             for(var tier=0;tier<13;tier++) {
               // Each crown layer is a spray of boughs, not another miniature tree.
               var y=72+tier*28, reach=210*Math.pow(Math.sin((tier+1)/14*Math.PI),0.65)*(0.84+0.13*Math.sin(tier*2.4));
               [-1,1].forEach(function(side) {
                 var branchReach=reach*(0.82+sceneryRandom()*0.26),tipY=y+14+sceneryRandom()*24;
-                context.strokeStyle='#aaa';context.lineWidth=2.5;context.beginPath();context.moveTo(256,y);context.quadraticCurveTo(256+side*branchReach*0.6,y+8,256+side*branchReach,tipY);context.stroke();
+                context.strokeStyle='#777';context.lineWidth=2.5;context.beginPath();context.moveTo(256,y);context.quadraticCurveTo(256+side*branchReach*0.6,y+8,256+side*branchReach,tipY);context.stroke();
                 for(var needle=0;needle<branchReach*2.2;needle++) {
                   var u=sceneryRandom();
                   if(u>0.2&&Math.sin(u*19+tier*2.4+side)>0.86)continue;
                   var nx=256+side*branchReach*u,ny=y+(tipY-y)*u;
                   var length=5+sceneryRandom()*16,shade=Math.floor(160+sceneryRandom()*95);
-                  context.strokeStyle='rgb('+shade+','+shade+','+shade+')';context.lineWidth=1.4+sceneryRandom()*1.4;
+                  var needleShade=Math.floor(shade*(0.76+0.24*Math.sqrt(u)));
+                  context.strokeStyle='rgb('+needleShade+','+needleShade+','+needleShade+')';context.lineWidth=1.4+sceneryRandom()*1.4;
                   context.beginPath();context.moveTo(nx,ny);context.lineTo(nx+side*(3+sceneryRandom()*9),ny-length*(sceneryRandom()>0.3 ? 1 : -0.5));context.stroke();
                 }
               });
@@ -17838,8 +17898,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         eyeSurrounds.name='raptor-eye-surrounds';headGroup.add(eyeSurrounds);
         var irisCanvas=document.createElement('canvas');irisCanvas.width=irisCanvas.height=256;paintRaptorIris(irisCanvas);
         var irisTexture=new THREE.CanvasTexture(irisCanvas);irisTexture.encoding=THREE.sRGBEncoding;irisTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
-        var eyeMat = new THREE.MeshStandardMaterial({ color: species.id==='peregrine'?0x38291f:0xcb9229, map:irisTexture, roughness: 0.38 });
-        var pupilMat = new THREE.MeshStandardMaterial({ color: 0x0b1114, roughness: 0.12 });
+        var eyeMat = new THREE.MeshPhysicalMaterial({ color: species.id==='peregrine'?0x38291f:0xcb9229, map:irisTexture, roughness: 0.38, clearcoat: 0.85, clearcoatRoughness: 0.07 });
+        var pupilMat = new THREE.MeshPhysicalMaterial({ color: 0x0b1114, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.045 });
         [-1, 1].forEach(function(side) {
           var eye = new THREE.Mesh(createRaptorIrisGeometry(), eyeMat);
           var owlFace=plumageProfile.markKind==='owl-facial-disc';
@@ -23549,6 +23609,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         });
         missionPanel.appendChild(missionRouteEl);
         hudParent2.appendChild(missionPanel);
+        var missionDock = document.createElement('div');
+        missionDock.className = 'rh-flight-mission-dock';
+        missionDock.setAttribute('data-raptor-mission-dock', 'true');
+        missionDock.setAttribute('role', 'region');
+        missionDock.setAttribute('aria-label', 'Flight mission');
+        missionDock.hidden = true;
+        hudParent2.insertAdjacentElement('afterend', missionDock);
+        function layoutMissionPanel() {
+          var width = hudParent2.clientWidth;
+          var fullscreenEl = document.fullscreenElement || document.webkitFullscreenElement;
+          var shell = hudParent2.closest('[data-raptor-sim-shell]');
+          var stageFullscreen = fullscreenEl === hudParent2 || hudParent2.dataset.alloFullscreenActive === 'true';
+          var shellFullscreen = !!(fullscreenEl && fullscreenEl.contains(hudParent2)) || !!(shell && shell.dataset.alloFullscreenActive === 'true');
+          var compactFullscreen = !!shellFullscreen && !stageFullscreen && (width < 628 || window.innerHeight < 600);
+          var shortFullscreen = compactFullscreen && window.innerHeight < 650;
+          var docked = width > 0 && !stageFullscreen && (width < 628 || compactFullscreen);
+          if (hudParent2.dataset.raptorMissionDocked !== String(docked)) hudParent2.dataset.raptorMissionDocked = String(docked);
+          if (hudParent2.dataset.raptorFullscreenCompact !== String(compactFullscreen)) hudParent2.dataset.raptorFullscreenCompact = String(compactFullscreen);
+          if (shell && shell.dataset.raptorCompactFullscreen !== String(compactFullscreen)) shell.dataset.raptorCompactFullscreen = String(compactFullscreen);
+          if (shell && shell.dataset.raptorShortFullscreen !== String(shortFullscreen)) shell.dataset.raptorShortFullscreen = String(shortFullscreen);
+          var aux = compactFullscreen && shell ? shell.querySelector('[data-raptor-aux-controls]') : null;
+          [keyGuide, flightWindEl, flightHeadingEl, flightAttitudeEl, practiceButton, perchButton].forEach(function(node) {
+            if (node && node.parentElement !== (aux || hudParent2)) (aux || hudParent2).appendChild(node);
+          });
+          if (telemetryStrip && telemetryStrip.parentElement !== (aux && shortFullscreen ? aux : hudParent2)) (aux && shortFullscreen ? aux : hudParent2).appendChild(telemetryStrip);
+          [flightWindEl, flightHeadingEl, flightAttitudeEl].forEach(function(node) {
+            if (!node) return;
+            var visibleDetails = !!aux;
+            if (visibleDetails) node.removeAttribute('aria-hidden'); else node.setAttribute('aria-hidden', 'true');
+          });
+          if (docked) {
+            if (missionPanel.parentNode !== missionDock) missionDock.appendChild(missionPanel);
+            missionDock.hidden = false;
+          } else {
+            if (missionPanel.parentNode !== hudParent2) hudParent2.appendChild(missionPanel);
+            missionDock.hidden = true;
+          }
+        }
+        layoutMissionPanel();
         function finishMission(success, message) {
           if (missionOutcome !== 'active') return;
           missionOutcome = success ? 'success' : 'failed';
@@ -25092,6 +25191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         keyGuide.dataset.raptorKeyGuide = 'true';
         keyGuide.hidden = !keyGuideEnabled;
         hudParent.appendChild(keyGuide);
+        layoutMissionPanel();
         var flightStateEl = document.createElement('div');
         flightStateEl.className = 'rh-flight-state';
         flightStateEl.dataset.raptorFlightState = 'true';
@@ -25450,6 +25550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var perchNote=document.createElement('span');perchNote.textContent=perchProfile.note;perchHud.appendChild(perchNote);
           perchHint=document.createElement('span');perchHint.className='rh-perch-keys';perchHud.appendChild(perchHint);hudParent.appendChild(perchHud);
         }
+        layoutMissionPanel();
         var lastHudPaint = 0;
         function setRaptorCanvasData(key, value) {
           var nextValue = String(value);
@@ -27027,6 +27128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // ─── Cleanup hook ───
         var onResize = function() {
           if (disposed) return;
+          layoutMissionPanel();
           targetHudBoundsDirty = true;
           // Long catch names can wrap to three lines on phones. Keep progress below them.
           var cueNode=hudParent.querySelector('.rh-flight-target-cue'),cueRect=cueNode&&cueNode.getBoundingClientRect();
@@ -27057,6 +27159,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (cleanupComplete) return;
           cleanupComplete = true;
           disposed = true;
+          hudParent2.removeAttribute('data-raptor-mission-docked');
+          hudParent2.removeAttribute('data-raptor-fullscreen-compact');
+          var fullscreenShell = hudParent2.closest('[data-raptor-sim-shell]');
+          if (fullscreenShell) { fullscreenShell.removeAttribute('data-raptor-compact-fullscreen'); fullscreenShell.removeAttribute('data-raptor-short-fullscreen'); }
           cancelAnimationFrame(animId);
           pendingFlightActions = [];
           clearHeldInputs();
@@ -27119,10 +27225,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             pauseOverlay,
             flightMarker,
             missionPanel,
+            missionDock,
             reticle,
             diveVig,
             eventLogEl,
             telemetryStrip,
+            keyGuide,
             flightStateEl,
             flightWindEl,
             flightHeadingEl,

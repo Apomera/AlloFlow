@@ -41,39 +41,39 @@ async function type(node,value) {
 async function finish(deferred, value, reject=false) { await act(async()=>{ deferred[reject?'reject':'resolve'](value); await Promise.resolve(); }); }
 const chart = id => ({id,type:'anchor-chart',data:{title:'Water cycle',interactive:{armed:false,rubric:'Existing teacher rubric'},sections:[{id:'s1',label:'Evaporation',bullets:['Water becomes vapor']}]}});
 const chartProps = provider => ({generatedContent:chart('a'),isTeacherMode:true,allowRuntimeAi:true,callGemini:provider,callImagen:null,callGeminiImageEdit:null,handleNoteUpdate:vi.fn(),addToast:vi.fn(),t});
-const rubricInput = () => host.querySelector('textarea[aria-label="Rubric or key concepts"]');
-async function openRubric() { await act(async()=>host.querySelector('[aria-label="Arm interactive mode"]').click()); }
+const rubricInput = () => host.querySelector('textarea[aria-label="Response criteria / key concepts"]');
+async function openRubric() { await act(async()=>host.querySelector('[aria-label="Turn on student responses"]').click()); }
 
 describe('Anchor Chart rubric request ownership',()=>{
   it('preserves a newer typed rubric when the AI suggestion finishes',async()=>{
     const deferred=pending(), config=chartProps(()=>deferred.promise); mount('AnchorChartView',config);
-    await openRubric(); await click('Suggest Rubric with AI'); await type(rubricInput(),'My revised criteria');
+    await openRubric(); await click('Suggest criteria with AI'); await type(rubricInput(),'My revised criteria');
     await finish(deferred,'Old generated criteria');
     expect(rubricInput().value).toBe('My revised criteria');
     expect(config.addToast).not.toHaveBeenCalledWith(expect.stringContaining('suggestion generated'));
   });
   it('applies a current suggestion without changing canonical content until the teacher arms it',async()=>{
     const deferred=pending(), config=chartProps(()=>deferred.promise); mount('AnchorChartView',config);
-    await openRubric(); await click('Suggest Rubric with AI'); await finish(deferred,'New criteria');
+    await openRubric(); await click('Suggest criteria with AI'); await finish(deferred,'New criteria');
     expect(rubricInput().value).toBe('New criteria'); expect(config.handleNoteUpdate).not.toHaveBeenCalled();
-    await click('Arm for students');
+    await click('Turn on student responses');
     expect(config.handleNoteUpdate).toHaveBeenCalledWith('interactive',{armed:true,rubric:'New criteria'});
   });
   it('closes a rubric dialog on chart navigation and ignores the previous suggestion',async()=>{
     const deferred=pending(), config=chartProps(()=>deferred.promise), render=mount('AnchorChartView',config);
-    await openRubric(); await click('Suggest Rubric with AI');
+    await openRubric(); await click('Suggest criteria with AI');
     render({generatedContent:chart('b')}); expect(rubricInput()).toBeNull();
     await openRubric(); await finish(deferred,'Rubric for chart a');
     expect(rubricInput().value).toBe('Existing teacher rubric');
   });
   it('does not inject an abandoned suggestion after closing and reopening the dialog',async()=>{
     const deferred=pending(); mount('AnchorChartView',chartProps(()=>deferred.promise));
-    await openRubric(); await click('Suggest Rubric with AI'); await click('Cancel'); await openRubric();
+    await openRubric(); await click('Suggest criteria with AI'); await click('Cancel'); await openRubric();
     await finish(deferred,'Abandoned suggestion'); expect(rubricInput().value).toBe('Existing teacher rubric');
   });
   it.each(['permission','unmount'])('suppresses a late rubric error after %s',async(change)=>{
     const deferred=pending(), config=chartProps(()=>deferred.promise),render=mount('AnchorChartView',config);
-    await openRubric(); await click('Suggest Rubric with AI');
+    await openRubric(); await click('Suggest criteria with AI');
     if(change==='unmount'){act(()=>root.unmount());root=null;} else render({allowRuntimeAi:false});
     await finish(deferred,new Error('Late failure'),true); expect(config.addToast).not.toHaveBeenCalled();
   });

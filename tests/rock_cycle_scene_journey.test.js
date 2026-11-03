@@ -141,7 +141,10 @@ describe('the rock cycle diagram', () => {
     const fwd = curve(N.igneous, N.sedimentary, 0.2);        // weathering, forward
     const cut = curve(N.metamorphic, N.sedimentary, -0.34);  // weathering, shortcut
     const wrong = curve(N.metamorphic, N.sedimentary, 0.2);  // where the bug put them
-    const grains = drawFrame(W, H).filter((e) => e.op === 'translate').map((e) => [e.x / 2, e.y / 2]);
+    const savedRandom = Math.random;
+    let frame;
+    try { Math.random = () => 0.5; frame = drawFrame(W, H); } finally { Math.random = savedRandom; }
+    const grains = frame.filter((e) => e.op === 'translate').map((e) => [e.x / 2, e.y / 2]);
     expect(grains.length).toBe(20);
     let onCut = 0;
     grains.forEach((p) => {

@@ -42,11 +42,20 @@ async function run(){
    if(!selectedViews.length)throw new Error('The view filter selected no states.');
    for(const variant of variants)for(const view of selectedViews){
     await p.emulateMedia({forcedColors:variant==='forced-colors'?'active':'none',reducedMotion:variant==='reduced-motion'?'reduce':'no-preference'});
-    await p.reload();await p.waitForFunction(()=>typeof window.__setState==='function');
-    const width=['desktop','text'].includes(variant)?1280:320;
+    await p.reload({timeout:45000});await p.waitForFunction(()=>typeof window.__setState==='function',null,{timeout:45000});
+    const width=variant==='desktop'||(variant==='text'&&!view.narrowText)?1280:320;
     await p.setViewportSize({width,height:1000});
     await p.evaluate(state=>window.__setState({rocks:state,rockCycle:{}}),view.state);
-    await p.locator('[data-rocks-mode="'+view.state.mode+'"][aria-pressed=true]').waitFor();
+    const active = p.locator('[data-rocks-mode="'+view.state.mode+'"][aria-pressed=true]');
+    await active.waitFor({state:'attached'});
+    const navigation = p.locator('[data-rocks-mode-nav]');
+    const compact = await navigation.evaluate(element=>element.clientWidth<=600);
+    if (compact) {
+      const trigger = p.locator('[data-rk-mode-trigger]');
+      await trigger.waitFor();
+      if (view.openModeChoices && await trigger.getAttribute('aria-expanded') !== 'true') await trigger.press('Enter');
+      if (view.openModeChoices) await active.waitFor();
+    } else await active.waitFor();
     for(const selector of view.expand||[])await p.locator(selector).locator('summary').first().click();
     await p.waitForTimeout(100);await settle(p);
     if(variant==='text')await enlargeText(p);

@@ -262,6 +262,47 @@ describe('take-home sheet', () => {
     expect(appPrint).not.toHaveBeenCalled();
   });
 
+  it('keeps a large Arabic name label and its writing line inside a narrow preview without shortening the printed line', async () => {
+    const { dialog } = await openChooser();
+    await click(printButton(dialog, 'home'));
+    const doc = lastDoc(), name = doc.querySelector('.ws-print-name');
+    const css = [...doc.querySelectorAll('style')].map(style => style.textContent).join('\n');
+    const { chromium } = await import('playwright');
+    const browser = await chromium.launch({ headless: true });
+    let context;
+    try {
+      context = await browser.newContext({ offline: true });
+      const page = await context.newPage();
+      for (const { width, media, size, label, direction } of [
+        { width: 320, media: 'screen', size: 48, label: 'اسم الطالب أو الطالبة واسم العائلة بالكامل:', direction: 'rtl' },
+        { width: 768, media: 'print', size: 48, label: 'اسم الطالب أو الطالبة واسم العائلة بالكامل:', direction: 'rtl' },
+        { width: 768, media: 'print', size: 18, label: 'Student name:', direction: 'ltr' },
+      ]) {
+        name.firstChild.textContent = label + ' ';
+        name.setAttribute('dir', direction);
+        name.setAttribute('lang', direction === 'rtl' ? 'ar' : 'en');
+        await page.setViewportSize({ width, height: 700 });
+        await page.emulateMedia({ media });
+        await page.setContent('<!doctype html><html><head><style>' + css + '</style></head><body><main class="ws-print-letter">' + name.outerHTML + '</main></body></html>');
+        await page.addStyleTag({ content: 'body{font-family:Arial,sans-serif;font-size:' + size + 'px}' });
+        const geometry = await page.locator('.ws-print-name').evaluate(element => {
+          const line = element.querySelector('.ws-print-line'), a = element.getBoundingClientRect(), b = line.getBoundingClientRect();
+          return { nameText: element.textContent.trim(), parentWidth: a.width, lineWidth: b.width, left: b.left - a.left, right: b.right - a.right,
+            nameOverflow: element.scrollWidth > element.clientWidth + 1, pageOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+            direction: getComputedStyle(element).direction, border: getComputedStyle(line).borderBottomWidth };
+        });
+        expect(geometry.nameText).toBe(label);
+        expect(geometry.direction).toBe(direction);
+        expect(geometry.lineWidth).toBeCloseTo(Math.min(336, geometry.parentWidth), 1);
+        expect(geometry.left).toBeGreaterThanOrEqual(-.5);
+        expect(geometry.right).toBeLessThanOrEqual(.5);
+        expect(geometry.nameOverflow).toBe(false);
+        expect(geometry.pageOverflow).toBe(false);
+        expect(geometry.border).toBe('2px');
+      }
+    } finally { await context?.close(); await browser.close(); }
+  }, 60000);
+
   // Measured in Chromium: 24 words fit one Letter/A4 page at full size, 50 when dense.
   it('switches to a denser word list past 24 words so the letter stays on one page', async () => {
     const many = (n) => Array.from({ length: n }, (_, i) => plain('word' + i, ['w']));
@@ -278,6 +319,46 @@ describe('take-home sheet', () => {
 });
 
 describe('language and direction', () => {
+  it.each([
+    { language: 'ar-Latn', tag: 'ar-Latn', direction: 'ltr', helpers: false },
+    { language: 'ar-Latn', tag: 'ar-Latn', direction: 'ltr', helpers: true },
+    { language: 'pa-Arab', tag: 'pa-Arab', direction: 'rtl', helpers: false },
+    { language: 'pa-Arab', tag: 'pa-Arab', direction: 'rtl', helpers: true },
+    { language: 'az_Arab', tag: 'az-Arab', direction: 'rtl', helpers: true },
+    { language: 'en-u-nu-arab', tag: 'en-u-nu-arab', direction: 'ltr', helpers: true },
+    { language: 'ar-u-ca-gregory', tag: 'ar-u-ca-gregory', direction: 'rtl', helpers: false },
+    ...['und', 'mul', 'zxx'].map(language => ({ language, tag: language, direction: 'auto', helpers: true })),
+    { language: 'en--US', tag: null, direction: 'auto', helpers: false },
+    { language: 'ar--Arab', tag: null, direction: 'auto', helpers: true },
+    { language: 'Unknown fixture', tag: null, direction: 'auto', helpers: true },
+  ])('keeps $language script direction and language across all printouts (helpers: $helpers)', async ({ language, tag, direction, helpers }) => {
+    if (helpers) window.AlloModules.ModuleScopeExtras = {
+      getSpeechLangCode: () => 'en-US',
+      isRtlLang: value => /^ar(?:-|$)/i.test(String(value)),
+    };
+    const { dialog } = await openChooser({ wordSoundsLanguage: language });
+    for (const [kind, selector] of [['cards', '.ws-print-card'], ['boxes', '.ws-print-row'], ['home', '.ws-print-words']]) {
+      await click(printButton(dialog, kind));
+      const doc = lastDoc(), content = [...doc.querySelectorAll(selector)];
+      expect(content.length).toBeGreaterThan(0);
+      for (const node of content) {
+        expect(node.getAttribute('dir'), kind).toBe(direction);
+        expect(node.getAttribute('lang'), kind).toBe(tag);
+      }
+      expect(doc.documentElement.getAttribute('lang'), 'UI language stays independent').toBe('en');
+      expect(doc.documentElement.getAttribute('dir')).toBe('ltr');
+    }
+  });
+
+  it('keeps an explicit document script independent from the word script', async () => {
+    document.documentElement.setAttribute('lang', 'ar-Latn');
+    window.AlloModules.ModuleScopeExtras = { isRtlLang: value => /^ar(?:-|$)/i.test(String(value)) };
+    const { dialog } = await openChooser({ wordSoundsLanguage: 'pa-Arab' });
+    await click(printButton(dialog, 'home'));
+    expect(lastDoc().documentElement.getAttribute('lang')).toBe('ar-Latn');
+    expect(lastDoc().documentElement.getAttribute('dir')).toBe('ltr');
+    expect(lastDoc().querySelector('.ws-print-words').getAttribute('dir')).toBe('rtl');
+  });
   it('marks Arabic words right-to-left (no ModuleScopeExtras: the built-in code list)', async () => {
     const { dialog } = await openChooser({ wordSoundsLanguage: 'ar' });
     await click(printButton(dialog, 'cards'));

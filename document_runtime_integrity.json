@@ -194,34 +194,6 @@
       ],
       "closed": true
     },
-    "sheetjs.0.20.1": {
-      "kind": "script",
-      "path": "runtime_assets/document/sheetjs-0.20.1/xlsx.full.min.js",
-      "bytes": 944491,
-      "sha384": "40221dab650c544a12461477656670773dbfa62bcba30afe7a890531d632ba4abba88dba55847115ae0d97a14a7ad98b",
-      "mirrors": [
-        {
-          "url": "https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js",
-          "bytes": 944491,
-          "sha384": "40221dab650c544a12461477656670773dbfa62bcba30afe7a890531d632ba4abba88dba55847115ae0d97a14a7ad98b"
-        }
-      ],
-      "closed": true
-    },
-    "sheetjs.0.18.5": {
-      "kind": "script",
-      "path": "runtime_assets/document/sheetjs-0.18.5/xlsx.full.min.js",
-      "bytes": 881727,
-      "sha384": "bed8dab3289d528d245bde0ae4c5c35e7b73389a50801297984eded866b82c6d2c9134cb7818bdede1405eca9ec098f0",
-      "mirrors": [
-        {
-          "url": "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
-          "bytes": 881727,
-          "sha384": "bed8dab3289d528d245bde0ae4c5c35e7b73389a50801297984eded866b82c6d2c9134cb7818bdede1405eca9ec098f0"
-        }
-      ],
-      "closed": true
-    },
     "axe-core": {
       "kind": "script",
       "path": "runtime_assets/document/axe-core-4.12.1/axe.min.js",
@@ -246,28 +218,28 @@
     },
     "dompurify": {
       "kind": "script",
-      "path": "runtime_assets/document/dompurify-3.1.7/purify.min.js",
-      "bytes": 21531,
-      "sha384": "5d0a97ff8ca2506bbea32afcee3bd6cd1baa0542bf69dad8d03ba784bfad203f66ffd7704a957c87d164fd283a89f550",
+      "path": "runtime_assets/document/dompurify-3.4.17/purify.min.js",
+      "bytes": 29828,
+      "sha384": "3f424d9de41ff351ce97d5703572bbe9c43d54c0fa35fb277a9c5bd1c08e83cf94cc477380f1c03d5e30550aef6104b1",
       "mirrors": [
         {
-          "url": "https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js",
-          "bytes": 21531,
-          "sha384": "5d0a97ff8ca2506bbea32afcee3bd6cd1baa0542bf69dad8d03ba784bfad203f66ffd7704a957c87d164fd283a89f550"
+          "url": "https://cdn.jsdelivr.net/npm/dompurify@3.4.17/dist/purify.min.js",
+          "bytes": 29828,
+          "sha384": "3f424d9de41ff351ce97d5703572bbe9c43d54c0fa35fb277a9c5bd1c08e83cf94cc477380f1c03d5e30550aef6104b1"
         },
         {
-          "url": "https://unpkg.com/dompurify@3.1.7/dist/purify.min.js",
-          "bytes": 21531,
-          "sha384": "5d0a97ff8ca2506bbea32afcee3bd6cd1baa0542bf69dad8d03ba784bfad203f66ffd7704a957c87d164fd283a89f550"
+          "url": "https://unpkg.com/dompurify@3.4.17/dist/purify.min.js",
+          "bytes": 29828,
+          "sha384": "3f424d9de41ff351ce97d5703572bbe9c43d54c0fa35fb277a9c5bd1c08e83cf94cc477380f1c03d5e30550aef6104b1"
         },
         {
-          "url": "https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.7/purify.min.js",
-          "bytes": 21531,
-          "sha384": "5d0a97ff8ca2506bbea32afcee3bd6cd1baa0542bf69dad8d03ba784bfad203f66ffd7704a957c87d164fd283a89f550"
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.4.17/purify.min.js",
+          "bytes": 29828,
+          "sha384": "3f424d9de41ff351ce97d5703572bbe9c43d54c0fa35fb277a9c5bd1c08e83cf94cc477380f1c03d5e30550aef6104b1"
         }
       ],
       "aliases": [
-        "https://alloflow-cdn.pages.dev/dompurify/3.1.7/purify.min.js"
+        "https://alloflow-cdn.pages.dev/dompurify/3.4.17/purify.min.js"
       ],
       "closed": true
     },
@@ -412,6 +384,23 @@
         "tess.core-simd-lstm",
         "tess.wasm-lstm",
         "tess.wasm-simd-lstm"
+      ],
+      "closed": true
+    },
+    "sheetjs.0.20.3": {
+      "kind": "script",
+      "path": "runtime_assets/document/sheetjs-0.20.3/xlsx.full.min.js",
+      "bytes": 951904,
+      "sha384": "127c98d3f1921d0192c5280cc1a20fcd21126eaa0e2d27b17e748c37600ffb7f429269fddacb700016729ead49cb3753",
+      "mirrors": [
+        {
+          "url": "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js",
+          "bytes": 951904,
+          "sha384": "127c98d3f1921d0192c5280cc1a20fcd21126eaa0e2d27b17e748c37600ffb7f429269fddacb700016729ead49cb3753"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/runtime_assets/document/sheetjs-0.20.3/xlsx.full.min.js"
       ],
       "closed": true
     }

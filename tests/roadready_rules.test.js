@@ -2333,7 +2333,8 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('var puddles = streamedPuddlesForChunk(world, nearbyChunks[ci])');
     expect(src).toContain('crossLocalSurfaceHeight(crossStopX, crossStopLateral) + 0.022');
     expect(src).toContain('var addRailroadStrip = function(material, forwardOffset, stripDepth, lateralSpan, lift)');
-    expect(src).toContain('[-0.72, 0.72].forEach(function(railForwardOff)');
+    expect(src).toContain('[-RR_RAIL_CENTER_OFFSET, RR_RAIL_CENTER_OFFSET].forEach(function(railForwardOff)');
+    expect(src).toContain('[-RR_RAIL_STOP_OFFSET, RR_RAIL_STOP_OFFSET].forEach(function(stopOff)');
     expect(src).toContain('new T.PlaneGeometry(tieStep * 0.62, 2.7)');
     expect(src).toContain('var slabSegmentCount = Math.max(5, Math.ceil(slabSpan / 1.0))');
     expect(src).toContain('markRoadSurfaceHeightAt(bumpZ, slabLat) + 0.04');
@@ -2354,7 +2355,7 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('rrGatePivot.visible = rrCrossingRecord.activeControl');
     expect(src).toContain('var outerTrackExtent = 42');
     expect(src).toContain('var activeBumpDist = Infinity');
-    expect(src).toContain('rrStopRecord.timer += dt');
+    expect(src).toContain('function updateRailroadStop(vehicle, crossing, approach, dt)');
     expect(src).toContain('var rrGatePivot = new T.Group()');
     expect(src).toContain('var rrTrain = new T.Group()');
     expect(src).toContain('gate.rotation.z = (1 - rrState.gateProgress) * Math.PI / 2');

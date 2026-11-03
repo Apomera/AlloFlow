@@ -677,13 +677,52 @@
     var zoom = Number(o.zoom), yaw = Number(o.yaw), pitch = Number(o.pitch);
     if (!(zoom > 0) || !isFinite(zoom)) zoom = 1;
     if (!isFinite(yaw)) yaw = 0; if (!isFinite(pitch)) pitch = 0;
-    var minimum = issFlightNumber(o.minDistance, 3.2, 1, 15), maximum = issFlightNumber(o.maxDistance, 30, minimum, 40);
+    var minimum = issFlightNumber(o.minDistance, 3.2, o.closeInspection === true ? .35 : 1, 15), maximum = issFlightNumber(o.maxDistance, 30, minimum, 40);
     radius = Math.max(minimum, Math.min(maximum, radius * zoom));
     azimuth += yaw;
     var floorPolar = Math.acos(Math.max(-1, Math.min(1, (-3.8 - center[1]) / radius)));
     polar = Math.max(0.06, Math.min(Math.PI - 0.06, floorPolar, polar + pitch));
-    return { position: [center[0] + radius * Math.sin(polar) * Math.sin(azimuth), center[1] + radius * Math.cos(polar), center[2] + radius * Math.sin(polar) * Math.cos(azimuth)],
+    var offset = [radius * Math.sin(polar) * Math.sin(azimuth), radius * Math.cos(polar), radius * Math.sin(polar) * Math.cos(azimuth)];
+    var normal = vector(o.outwardNormal, [0, 0, 0]), normalLength = Math.hypot(normal[0], normal[1], normal[2]);
+    if (normalLength > 1e-9 && isFinite(normalLength)) {
+      normal = normal.map(function (value) { return value / normalLength; });
+      var outward = offset.reduce(function (sum, value, axis) { return sum + value * normal[axis]; }, 0);
+      // A close surface inspection stays outside the intact pressure shell.
+      if (outward < radius * .08) {
+        var tangent = offset.map(function (value, axis) { return value - outward * normal[axis]; });
+        var tangentLength = Math.hypot(tangent[0], tangent[1], tangent[2]);
+        if (tangentLength < 1e-9) {
+          tangent = Math.abs(normal[0]) < .9 ? [1, 0, 0] : [0, 0, 1];
+          var alongNormal = tangent.reduce(function (sum, value, axis) { return sum + value * normal[axis]; }, 0);
+          tangent = tangent.map(function (value, axis) { return value - alongNormal * normal[axis]; });
+          tangentLength = Math.hypot(tangent[0], tangent[1], tangent[2]);
+        }
+        offset = tangent.map(function (value, axis) { return radius * (value / tangentLength * Math.sqrt(1 - .08 * .08) + .08 * normal[axis]); });
+        azimuth = Math.atan2(offset[0], offset[2]); polar = Math.acos(Math.max(-1, Math.min(1, offset[1] / radius)));
+      }
+    }
+    return { position: offset.map(function (value, axis) { return center[axis] + value; }),
       target: center, distance: radius, azimuth: azimuth, polar: polar };
+  }
+  function issMapCameraPan(position, target, options) {
+    var o = options || {}, eye = position.slice(), center = target.slice();
+    var relative = eye.map(function (value, axis) { return value - center[axis]; });
+    var distance = Math.hypot(relative[0], relative[1], relative[2]);
+    var azimuth = Math.atan2(relative[0], relative[2]), polar = Math.acos(Math.max(-1, Math.min(1, relative[1] / (distance || 1))));
+    var right = [Math.cos(azimuth), 0, -Math.sin(azimuth)];
+    var up = [-Math.cos(polar) * Math.sin(azimuth), Math.sin(polar), -Math.cos(polar) * Math.cos(azimuth)];
+    var units = 2 * distance * Math.tan(issFlightNumber(o.fov, 46, 15, 100) * Math.PI / 360) / issFlightNumber(o.height, 320, 1, 10000);
+    var dx = issFlightNumber(o.dx, 0, -100000, 100000), dy = issFlightNumber(o.dy, 0, -100000, 100000);
+    var shift = right.map(function (value, axis) { return units * (-dx * value + dy * up[axis]); });
+    var fraction = 1;
+    shift.forEach(function (value, axis) {
+      var lower = axis === 1 ? Math.max(-3.8 - center[1], -3.8 - eye[1]) : -24 - center[axis];
+      if (value > 0) fraction = Math.min(fraction, (24 - center[axis]) / value);
+      else if (value < 0) fraction = Math.min(fraction, lower / value);
+    });
+    fraction = Math.max(0, fraction); shift = shift.map(function (value) { return value * fraction; });
+    return { position: eye.map(function (value, axis) { return value + shift[axis]; }),
+      target: center.map(function (value, axis) { return value + shift[axis]; }), shift: shift, limited: fraction < 1 };
   }
   // Perspective framing of a rotation-invariant envelope. Use the narrower
   // horizontal/vertical field of view; a distance cap must never imply a fit.
@@ -692,10 +731,48 @@
     var fov = issFlightNumber(o.fov, 46, 15, 100), aspect = issFlightNumber(o.aspect, 1.3, .4, 4);
     var half = fov * Math.PI / 360, horizontal = Math.atan(Math.tan(half) * aspect);
     var required = radius * padding / Math.sin(Math.min(half, horizontal));
-    var minimum = issFlightNumber(o.minDistance, 3.2, 1, 15), maximum = issFlightNumber(o.maxDistance, 40, minimum, 40);
+    var minimum = issFlightNumber(o.minDistance, 3.2, o.closeInspection === true ? .35 : 1, 15), maximum = issFlightNumber(o.maxDistance, 40, minimum, 40);
     var distance = Math.max(minimum, Math.min(maximum, required));
     return { distance: distance, requiredDistance: required, fits: distance + 1e-9 >= required, radius: radius, padding: padding,
       verticalFov: fov, horizontalFov: horizontal * 360 / Math.PI };
+  }
+  function issMapAxisProjection(direction) {
+    var magnitude = Math.hypot(direction[0], direction[1], direction[2]) || 1;
+    var x = direction[0] / magnitude, y = direction[1] / magnitude, depth = direction[2] / magnitude;
+    var fraction = Math.hypot(x, y), mode = fraction < .12 ? (depth > 0 ? 'toward' : 'away') : 'across';
+    return { x: 56 + 31 * x, y: 56 - 31 * y, length: 31 * fraction, depth: depth, mode: mode,
+      labelX: mode === 'across' ? 56 + 40 * x : 69,
+      labelY: mode === 'across' ? 56 - 40 * y : 45 };
+  }
+  function issMapSelectionBrackets(points, viewport) {
+    if (!points.length || !points.every(function (point) { return [point.x, point.y, point.z].every(Number.isFinite) && point.z > -1 && point.z < 1; })) return { visible: false, path: '' };
+    var left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+    points.forEach(function (point) { left = Math.min(left, point.x); right = Math.max(right, point.x); top = Math.min(top, point.y); bottom = Math.max(bottom, point.y); });
+    left = Math.max(8, left - 6); right = Math.min(viewport.width - 8, right + 6);
+    top = Math.max(8, top - 6); bottom = Math.min(viewport.height - 8, bottom + 6);
+    if (right - left <= 8 || bottom - top <= 8) return { visible: false, path: '' };
+    var leg = Math.min(14, (right - left) * .25, (bottom - top) * .25);
+    function n(value) { return value.toFixed(2); }
+    var path = 'M' + n(left + leg) + ' ' + n(top) + ' H' + n(left) + ' V' + n(top + leg) +
+      ' M' + n(right - leg) + ' ' + n(top) + ' H' + n(right) + ' V' + n(top + leg) +
+      ' M' + n(left + leg) + ' ' + n(bottom) + ' H' + n(left) + ' V' + n(bottom - leg) +
+      ' M' + n(right - leg) + ' ' + n(bottom) + ' H' + n(right) + ' V' + n(bottom - leg);
+    return { visible: true, path: path, left: left, right: right, top: top, bottom: bottom, leg: leg };
+  }
+  function issMapLabelLayout(anchor, viewport, size) {
+    var width = viewport.width, height = viewport.height, pad = 10;
+    var top = Math.min(viewport.top || 52, Math.max(pad, height - size.height - pad));
+    var bottom = Math.max(top, height - (viewport.bottom || pad) - size.height);
+    var right = Math.max(pad, width - pad - size.width);
+    var left = anchor.x + 16;
+    if (left > right) left = anchor.x - size.width - 16;
+    left = Math.max(pad, Math.min(right, left));
+    var y = Math.max(top, Math.min(bottom, anchor.y - size.height - 16));
+    return { left: left, top: y,
+      endX: Math.max(left, Math.min(left + size.width, anchor.x)),
+      endY: Math.max(y, Math.min(y + size.height, anchor.y)),
+      visible: [anchor.x, anchor.y, anchor.z].every(Number.isFinite) &&
+        anchor.z > -1 && anchor.z < 1 && anchor.x >= 0 && anchor.x <= width && anchor.y >= 0 && anchor.y <= height };
   }
   function issMapPlaybackRate(value, fallback) {
     function valid(number) { return (typeof number === 'number' || typeof number === 'string' && number.trim() !== '') && [.1, 1, 10, 60, 180].indexOf(Number(number)) >= 0; }
@@ -2319,6 +2396,92 @@
     return rows.join('\r\n') + '\r\n';
   }
 
+  function issArrayGeneration(angle) {
+    // Illustrative peak output in sunlight for the classroom model.
+    return 160 * Math.sin(angle * Math.PI / 180);
+  }
+  function issStationDemand(crew, research) {
+    return 68 + crew * 1.6 + research * .22;
+  }
+  function issOpsPowerOptions(setup) {
+    return { generation: issArrayGeneration(setup.opsArrayAngle),
+      load: issStationDemand(setup.opsCrew, setup.opsResearch), eclipse: setup.opsEclipse, battery: setup.opsBattery, capacity: 210 };
+  }
+
+  function issReserveThresholdPlan(current, candidate, limit, limitKey, neighborKey) {
+    var target = 25;
+    var plan = { target: target, current: current, recommended: null };
+    plan[neighborKey] = null;
+    plan[limitKey] = candidate(limit);
+    if (plan[limitKey].minimumPercent < target) return plan;
+
+    // Candidates go from the preferred setting toward the easiest to sustain:
+    // more charge, more sunlight, or less research demand.
+    var low = 0, high = limit;
+    while (low < high) {
+      var middle = Math.floor((low + high) / 2);
+      if (candidate(middle).minimumPercent >= target) high = middle;
+      else low = middle + 1;
+    }
+    plan.recommended = candidate(low);
+    if (low > 0) plan[neighborKey] = candidate(low - 1);
+    return plan;
+  }
+
+  function issOpsReservePlan(powerSettings) {
+    function candidate(startingPercent) {
+      var options = Object.assign({}, powerSettings, { battery: startingPercent });
+      return { startingPercent: startingPercent, minimumPercent: issPowerState(options, 92).minimumPercent };
+    }
+    var current = { startingPercent: issPowerState(powerSettings, 0).percent, minimumPercent: issPowerState(powerSettings, 92).minimumPercent };
+    return issReserveThresholdPlan(current, candidate, 100, 'full', 'lower');
+  }
+  function issOpsAlignmentPlan(powerSettings, currentAngle) {
+    function candidate(angle) {
+      var options = Object.assign({}, powerSettings, { generation: issArrayGeneration(angle) });
+      return { angle: angle, minimumPercent: issPowerState(options, 92).minimumPercent };
+    }
+    return issReserveThresholdPlan(candidate(issFlightNumber(currentAngle, 86, 0, 90)), candidate, 90, 'maximum', 'lower');
+  }
+  function issOpsResearchPlan(powerSettings, currentResearch, crew) {
+    var crewSize = issFlightNumber(crew, 7, 3, 11);
+    function candidate(research) {
+      var options = Object.assign({}, powerSettings, { load: issStationDemand(crewSize, research) });
+      return { research: research, minimumPercent: issPowerState(options, 92).minimumPercent };
+    }
+    var current = candidate(issFlightNumber(currentResearch, 60, 0, 100));
+    // The research slider runs from 0% to 100% in five-percentage-point steps.
+    return issReserveThresholdPlan(current, function (step) { return candidate(100 - 5 * step); }, 20, 'zero', 'higher');
+  }
+
+  function issOpsEclipseWindow(baselineSetup, comparisonSetup) {
+    var baselinePower = issOpsPowerOptions(issOpsSetup(baselineSetup));
+    var comparisonPower = issOpsPowerOptions(issOpsSetup(comparisonSetup));
+    var baselineEntry = 92 - baselinePower.eclipse, comparisonEntry = 92 - comparisonPower.eclipse;
+    if (baselineEntry === comparisonEntry) return null;
+    var startMinute = Math.min(baselineEntry, comparisonEntry), endMinute = Math.max(baselineEntry, comparisonEntry);
+    var midMinute = startMinute + (endMinute - startMinute) / 2;
+    // If the entries are adjacent representable numbers, the start is the
+    // only inspectable time inside this half-open interval.
+    if (midMinute === endMinute) midMinute = startMinute;
+    function side(power) {
+      var start = issPowerState(power, startMinute), end = issPowerState(power, endMinute);
+      var lit = midMinute < end.sunlightMinutes;
+      var requested = Math.max(0, end.requestedKWh - start.requestedKWh);
+      var unserved = Math.min(requested, Math.max(0, end.unservedKWh - start.unservedKWh));
+      var served = Math.min(requested, Math.max(0, end.servedKWh - start.servedKWh));
+      var storageDraw = Math.max(0, start.storedKWh - end.storedKWh);
+      var batteryDelivered = Math.min(served, storageDraw * end.dischargeEfficiency);
+      // The model gives all served energy in shadow to battery discharge.
+      // A true zero solar source should stay zero despite rounding the ledgers.
+      var solarToLoads = lit && power.generation > 0 ? Math.max(0, served - batteryDelivered) : 0;
+      return { lit: lit, startReserve: start.percent, endReserve: end.percent,
+        batteryDeliveredKWh: batteryDelivered, solarToLoadsKWh: solarToLoads, unservedKWh: unserved, requestedKWh: requested };
+    }
+    return { startMinute: startMinute, endMinute: endMinute, midMinute: midMinute,
+      baseline: side(baselinePower), comparison: side(comparisonPower) };
+  }
+
   function issOpsMeasurementTarget(value, key) {
     if (!ISS_OPS_RESULTS.concat(ISS_OPS_EXTRA_RESULTS).some(function (field) { return field.key === key; })) return null;
     var setup = issOpsSetup(value);
@@ -2328,8 +2491,7 @@
       var need = setup.opsCrew * 3.8;
       return target('eclss', 'water', null, 'setup', need - need * setup.opsRecovery / 100);
     }
-    var power = { generation: 160 * Math.sin(setup.opsArrayAngle * Math.PI / 180),
-      load: 68 + setup.opsCrew * 1.6 + setup.opsResearch * .22, eclipse: setup.opsEclipse, battery: setup.opsBattery, capacity: 210 };
+    var power = issOpsPowerOptions(setup);
     if (key === 'batteryMin' || key === 'batteryEnd') {
       var powerEnd = issPowerState(power, 92);
       if (key === 'batteryEnd') return target('power', null, 92, 'end', powerEnd.percent);
@@ -2371,8 +2533,7 @@
 
   function issOpsTrajectory(value) {
     var setup = issOpsSetup(value);
-    var power = { generation: 160 * Math.sin(setup.opsArrayAngle * Math.PI / 180),
-      load: 68 + setup.opsCrew * 1.6 + setup.opsResearch * .22, eclipse: setup.opsEclipse, battery: setup.opsBattery, capacity: 210 };
+    var power = issOpsPowerOptions(setup);
     var air = issAirRun({ power: power, crew: setup.opsCrew, scrub: setup.opsScrub, flow: setup.opsAirFlow,
       activity: setup.opsAirActivity, startPpm: setup.opsAirStart, restore: setup.opsAirRestore, restoreMinute: setup.opsAirRestoreMinute });
     var thermal = issThermalRun({ power: power, radiator: setup.opsRadiator, cooling: setup.opsCooling, cabinStart: setup.opsCabinStart, crew: setup.opsCrew });
@@ -2578,6 +2739,143 @@
         t('stem.spacestation.playback_hint', 'Playback pauses when you seek, change the setup, or leave this view.')));
   }
 
+  var ISS_BATTERY_PLAN_LABELS = {
+    title: 'Plan the starting battery for a 25% reserve', recommended: 'Lowest passing whole-percent starting charge is {charge}%',
+    unreachable: 'Even a full starting battery falls below the reserve rule',
+    rule: 'The battery must stay at or above 25% for the entire 92-minute orbit. The planner tests the starting-battery slider in one-percentage-point steps using the current crew, research demand, array alignment and eclipse duration.',
+    starting: 'Starting charge', full: 'Full battery', one_lower: 'One point lower',
+    guide_locked: 'The eclipse investigation keeps starting charge fixed for its two trials. Record the second trial or close the guide to try a different starting charge.',
+    using: 'Using {charge}% starting charge', try: 'Try {charge}% starting charge', applied: 'Applied {charge}% starting charge to the working orbit.',
+    change_inputs: 'Try improving array alignment or reducing research demand, then check the forecast again.'
+  };
+  var ISS_ALIGNMENT_PLAN_LABELS = {
+    title: 'Plan the array angle for a 25% reserve', recommended: 'Lowest passing whole-degree array angle is {angle}°',
+    unreachable: 'Even 90° falls below the reserve rule at this starting charge',
+    rule: 'With the battery starting at {battery}%, test array angles from 0° to 90° in whole degrees. The battery must stay at or above 25% throughout the 92-minute orbit. Crew, research demand and eclipse duration stay fixed.',
+    starting: 'Array angle', maximum: 'Best alignment', one_lower: 'One degree lower',
+    guide_locked: 'The eclipse investigation keeps array alignment fixed for its two trials. Record the second trial or close the guide to try another angle.',
+    using: 'Using {angle}° alignment', try: 'Try {angle}° alignment', applied: 'Applied {angle}° array alignment to the working orbit.',
+    change_inputs: 'Try a higher starting charge or less research demand, then check the forecast again.',
+    starts_low: 'The battery is already below 25% at minute zero. Increase the starting charge to at least 25% and check again.'
+  };
+  var ISS_RESEARCH_PLAN_LABELS = {
+    title: 'Plan research within the 25% reserve', recommended: 'Highest passing research setting is {research}%',
+    unreachable: 'Even 0% research falls below the reserve rule',
+    rule: 'With {battery}% starting charge and {angle}° array alignment, how much research can the station support? Test the research slider in five-percentage-point steps. Crew and eclipse duration stay fixed. Battery reserve must stay at or above 25% for all 92 minutes.',
+    starting: 'Research utilization', zero: 'Research off', one_higher: 'Five points higher',
+    guide_locked: 'The eclipse investigation keeps research demand fixed for its two trials. Record the second trial or close the guide to try another research setting.',
+    using: 'Using {research}% research', try: 'Try {research}% research', applied: 'Applied {research}% research to the working orbit.',
+    change_inputs: 'At 0% research, crew and station systems still draw {baseLoad} kW. Try a higher starting charge or better array alignment.',
+    starts_low: ISS_ALIGNMENT_PLAN_LABELS.starts_low
+  };
+
+  var ISS_POWER_PLAN_VIEWS = {
+    reserve: { labels: ISS_BATTERY_PLAN_LABELS, field: 'startingPercent', control: 'opsBattery', token: 'charge',
+      unit: '%', attribute: 'data-start-percent', limit: 'full', neighbor: 'lower', boundary: 25,
+      forecast: function (power) { return issOpsReservePlan(power); },
+      powerPatch: function (charge) { return { battery: charge }; } },
+    alignment: { labels: ISS_ALIGNMENT_PLAN_LABELS, field: 'angle', control: 'opsArrayAngle', token: 'angle',
+      unit: '°', attribute: 'data-angle', limit: 'maximum', neighbor: 'lower', boundary: 0,
+      forecast: function (power, angle) { return issOpsAlignmentPlan(power, angle); },
+      powerPatch: function (angle) { return { generation: issArrayGeneration(angle) }; } },
+    research: { labels: ISS_RESEARCH_PLAN_LABELS, field: 'research', control: 'opsResearch', token: 'research',
+      unit: '%', attribute: 'data-research', limit: 'zero', neighbor: 'higher', boundary: 100,
+      forecast: function (power, research, crew) { return issOpsResearchPlan(power, research, crew); },
+      powerPatch: function (research, crew) { return { load: issStationDemand(crew, research) }; } }
+  };
+
+  function issPowerReservePlanner(props) {
+    var React = props.React, h = React.createElement, settings = props.settings;
+    var prefix = props.kind, view = ISS_POWER_PLAN_VIEWS[prefix], current = props.value;
+    var resultId = 'iss-' + prefix + '-result-title', helpId = 'iss-' + prefix + '-action-help';
+    function planText(key, fallback) { return props.t('stem.spacestation.' + prefix + '_plan_' + key, fallback || view.labels[key]); }
+    var summaryLabels = { reserve: ['Starting battery', 'Find the lowest starting charge'], alignment: ['Array alignment', 'Find the lowest passing angle'], research: ['Research workload', 'Find the highest passing workload'] };
+    var iconPaths = { reserve: 'M6 4h12v17H6z M10 1h4 M12 7l-3 6h5l-2 5',
+      alignment: 'M3 9h18v12H3z M9 9v12 M15 9v12 M3 15h18 M12 1v3 M5 3l2 2 M19 3l-2 2',
+      research: 'M9 2h6 M10 2v7l-6 10a2 2 0 002 3h12a2 2 0 002-3L14 9V2 M7 16h10' };
+    var openState = React.useState(false), open = openState[0], setOpen = openState[1];
+    var appliedState = React.useState(null), appliedKey = appliedState[0], setAppliedKey = appliedState[1];
+    var heading = React.useRef(null);
+    function keyFor(power, value) { return JSON.stringify([power, value, props.crew, props.arrayAngle]); }
+    var setupKey = keyFor(settings, current);
+    var plan = React.useMemo(function () {
+      if (!open) return null;
+      return view.forecast(settings, current, props.crew);
+    }, [open, setupKey, view]);
+    React.useEffect(function () {
+      if (appliedKey && appliedKey !== setupKey) setAppliedKey(null);
+    }, [setupKey, appliedKey]);
+
+    function apply() {
+      if (!plan || !plan.recommended || props.guideLocked) return;
+      var next = plan.recommended[view.field];
+      if (current === next) return;
+      var nextSettings = Object.assign({}, settings, view.powerPatch(next, props.crew));
+      setAppliedKey(keyFor(nextSettings, next));
+      props.onApply({ [view.control]: next });
+      requestAnimationFrame(function () {
+        if (heading.current && heading.current.isConnected) heading.current.focus();
+      });
+    }
+    function row(kind, label, forecast) {
+      var met = forecast.minimumPercent >= plan.target;
+      var value = kind === 'current' ? current : forecast[view.field];
+      var boundarySetting = plan.recommended || plan[view.limit];
+      var boundaries = [view.boundary, boundarySetting[view.field]];
+      var valueText = Number.isInteger(value) ? String(value) : issOpsResultText(value, 2, boundaries);
+      var attributes = { 'data-min-percent': forecast.minimumPercent };
+      attributes[view.attribute] = value;
+      attributes['data-' + prefix + '-' + kind] = true;
+      attributes['data-plan-recommended'] = kind === 'recommended';
+      return h('tr', attributes,
+        h('th', { scope: 'row' }, label),
+        h('td', null, valueText + view.unit),
+        h('td', null, h('strong', null, issOpsResultText(forecast.minimumPercent, 1, [plan.target]) + '%'),
+          h('span', { className: 'iss-reserve-gauge', 'aria-hidden': true, 'data-rule-met': met },
+            h('span', { style: { width: Math.max(0, Math.min(100, forecast.minimumPercent)) + '%' } }), h('i', { style: { left: plan.target + '%' } })),
+          h('small', { 'data-rule-met': met }, met ? planText('met', 'Meets rule') : planText('below', 'Below rule'))));
+    }
+    function results() {
+      if (!plan) return null;
+      var recommended = plan.recommended, value = recommended && recommended[view.field];
+      var sameSetting = recommended && current === value;
+      var substitutions = { battery: Number.isInteger(settings.battery) ? settings.battery : issOpsResultText(settings.battery, 2, [25]),
+        angle: Number.isInteger(props.arrayAngle) ? props.arrayAngle : issOpsResultText(props.arrayAngle, 2, [0, 90]) };
+      substitutions[view.token] = value;
+      if (prefix === 'research') substitutions.baseLoad = issStationDemand(props.crew, 0).toFixed(1);
+      var title = recommended ? props.fill(planText('recommended'), substitutions) : planText('unreachable');
+      return h('div', { className: 'iss-reserve-results', ['data-' + prefix + '-state']: recommended ? 'feasible' : 'unreachable' },
+        h('h4', { id: resultId, ref: heading, tabIndex: -1 }, title),
+        h('p', null, props.fill(planText('rule'), substitutions)),
+        h('table', { className: 'iss-reserve-table', 'aria-labelledby': resultId },
+          h('caption', { className: 'iss-reserve-caption' }, planText('gauge_key', 'Marker · 25% reserve target')),
+          h('thead', null, h('tr', null, h('th', { scope: 'col' }, planText('setting', 'Setting')), h('th', { scope: 'col' }, planText('starting')), h('th', { scope: 'col' }, planText('minimum', 'Lowest reserve'), h('span', { className: 'iss-reserve-horizon' }, planText('horizon', 'Over 92 min'))))),
+          h('tbody', null,
+            row('current', planText('working', 'Current setup'), plan.current),
+            recommended ? row('recommended', prefix === 'research' ? planText('highest', 'Highest passing setting') : planText('lowest', 'Lowest passing setting'), recommended)
+              : row(view.limit, planText(view.limit), plan[view.limit]),
+            plan[view.neighbor] ? row(view.neighbor, planText('one_' + view.neighbor), plan[view.neighbor]) : null)),
+        recommended ? h(React.Fragment, null,
+          h('p', { id: helpId }, props.guideLocked ? planText('guide_locked') : planText('apply_help', 'Trying a setting starts the working orbit at minute zero with playback paused.')),
+          h('button', { type: 'button', ['data-' + prefix + '-apply']: true, disabled: sameSetting || props.guideLocked, 'aria-describedby': helpId, onClick: apply },
+            props.fill(planText(sameSetting ? 'using' : 'try'), substitutions))) :
+          h(React.Fragment, null,
+            h('p', null, props.fill(planText(view.labels.starts_low && settings.battery < plan.target ? 'starts_low' : 'change_inputs'), substitutions)),
+            prefix !== 'research' && settings.battery >= plan.target && h('button', { type: 'button', onClick: function (event) {
+              var parent = event.currentTarget.closest('details').parentElement;
+              var researchPlan = parent.querySelector('details[data-power-research-plan]');
+              if (researchPlan) { researchPlan.open = true; researchPlan.querySelector('summary').focus(); }
+            } }, planText('open_research', 'Check research at the current array angle'))),
+        appliedKey === setupKey ? h('p', { role: 'status', ['data-' + prefix + '-apply-status']: true }, props.fill(planText('applied'), substitutions)) : null);
+    }
+    return h('details', { className: 'iss-reserve-plan', ['data-power-' + prefix + '-plan']: true, onToggle: function (event) { setOpen(event.currentTarget.open); } },
+      h('summary', { id: 'iss-' + prefix + '-plan-title', 'aria-label': planText('title') },
+        h('svg', { className: 'iss-plan-icon', viewBox: '0 0 24 24', 'aria-hidden': true, focusable: false },
+          h('path', { d: iconPaths[prefix], fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' })),
+        h('span', null, h('strong', null, planText('summary', summaryLabels[prefix][0])), h('small', null, planText('summary_hint', summaryLabels[prefix][1])))),
+      results());
+  }
+
   // This viewer owns only comparison preferences. Its memoized forecasts use
   // copied setups; inspecting either curve never loads a trial or seeks a lab.
   function issOpsTrajectoryCompare(props) {
@@ -2587,6 +2885,10 @@
     function trajectoryText(key, fallback) { return __alloT('stem.spacestation.trajectory_' + key, fallback); }
     var open = props.open === true;
     var downloadState = React.useState(''), downloadMessage = downloadState[0], setDownloadMessage = downloadState[1];
+    var observationState = React.useState(null), observation = observationState[0], setObservation = observationState[1];
+    var noticeState = React.useState(''), observationNotice = noticeState[0], setObservationNotice = noticeState[1];
+    var captureButton = React.useRef(null);
+    var previewHeading = React.useRef(null);
     var beforeSetup = JSON.stringify(issOpsSetup(props.baseline.setup));
     var afterSetup = JSON.stringify(issOpsSetup(props.comparison ? props.comparison.setup : props.currentSetup));
     var before = React.useMemo(function () { return open ? issOpsTrajectory(JSON.parse(beforeSetup)) : null; }, [open, beforeSetup]);
@@ -2632,6 +2934,82 @@
     }
     function release(event) {
       if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    function renderObservation(baselinePoint, comparisonPoint) {
+      var comparisonId = props.comparison ? props.comparison.id : null;
+      var context = JSON.stringify([props.baseline.id, comparisonId, beforeSetup, afterSetup, field.key, minute]);
+      var stale = !!observation && observation.context !== context;
+      function capture() {
+        var targets = [{ id: props.baseline.id, label: beforeLabel }];
+        if (comparisonId !== null && comparisonId !== props.baseline.id) targets.push({ id: comparisonId, label: afterLabel });
+        var text = fill(trajectoryText('observation_sentence', '{metric} at T+{minute} min was {before} in the baseline model ({baseline}) and {after} in the comparison model ({comparison}). Comparison minus baseline was {difference}.'), {
+          metric: field.label, minute: String(minute), baseline: beforeLabel, before: valueText(baselinePoint[field.key]),
+          comparison: comparisonId === null ? trajectoryText('current_at_capture', 'Current setup at capture') : afterLabel,
+          after: valueText(comparisonPoint[field.key]), difference: issOpsDeltaText(baselinePoint[field.key], comparisonPoint[field.key], field.digits) + ' ' + field.delta
+        });
+        setObservation({ context: context, text: text, targets: targets, targetId: comparisonId === null ? props.baseline.id : comparisonId });
+        setObservationNotice('');
+        requestAnimationFrame(function () {
+          if (previewHeading.current && previewHeading.current.isConnected) previewHeading.current.focus();
+        });
+      }
+      function finish(message, trialId) {
+        var notebook = captureButton.current && captureButton.current.closest('[data-ops-trial-notebook]');
+        setObservation(null);
+        setObservationNotice(message);
+        if (trialId === undefined) {
+          if (captureButton.current) captureButton.current.focus();
+          return;
+        }
+        requestAnimationFrame(function () {
+          if (!notebook || !notebook.isConnected) return;
+          var editor = notebook.querySelector('textarea[data-ops-reflection-id="' + trialId + '"]');
+          if (!editor || !editor.isConnected || editor.getAttribute('data-ops-reflection-id') !== String(trialId)) {
+            if (captureButton.current && captureButton.current.isConnected) captureButton.current.focus();
+            return;
+          }
+          for (var ancestor = editor.parentElement; ancestor && ancestor !== notebook; ancestor = ancestor.parentElement) {
+            if (ancestor.tagName === 'DETAILS') ancestor.open = true;
+          }
+          editor.focus();
+          editor.setSelectionRange(editor.value.length, editor.value.length);
+        });
+      }
+      var destination = null;
+      if (observation && !stale) {
+        if (observation.targetId === props.baseline.id) destination = props.baseline;
+        else if (props.comparison && observation.targetId === comparisonId) destination = props.comparison;
+      }
+      // Read the destination's current reflection on every render. Edits made
+      // while the preview is open count toward the same textarea length limit.
+      var note = destination ? destination.reflection : '';
+      var separator = note && !/[\r\n]$/.test(note) ? '\n' : '';
+      var appended = observation ? note + separator + observation.text : '';
+      var fits = !!destination && appended.length <= 1200;
+      function append() {
+        if (!fits) return;
+        props.onSaveReflection(destination.id, appended);
+        finish(fill(trajectoryText('observation_saved', 'Reading added to the reflection for Trial {trial}.'), { trial: destination.id }), destination.id);
+      }
+      return h('div', { className: 'iss-trajectory-observation iss-trajectory-export' },
+        h('button', { ref: captureButton, type: 'button', 'data-ops-observation-capture': true, onClick: capture },
+          observation ? trajectoryText('observation_refresh', 'Capture the current reading again') : trajectoryText('observation_capture', 'Use this reading in my reflection')),
+        observation ? h('section', { className: 'iss-observation-preview', 'data-ops-observation-preview': true, 'aria-labelledby': 'iss-observation-preview-title' },
+          h('h6', { id: 'iss-observation-preview-title', ref: previewHeading, tabIndex: -1, 'aria-describedby': 'iss-observation-text' }, trajectoryText('observation_preview', 'Preview the reading')),
+          h('p', { id: 'iss-observation-text', className: 'iss-trial-note', 'data-ops-observation-text': true }, observation.text),
+          h('label', { htmlFor: 'iss-observation-target' }, trajectoryText('observation_target', 'Add to this saved reflection')),
+          h('select', { id: 'iss-observation-target', 'data-ops-observation-target': true, value: observation.targetId, disabled: stale, onChange: function (event) {
+            setObservation(Object.assign({}, observation, { targetId: Number(event.target.value) }));
+          } }, observation.targets.map(function (target) { return h('option', { key: target.id, value: target.id }, target.label); })),
+          destination ? h('p', { id: 'iss-observation-capacity', 'data-ops-observation-capacity': true }, fits
+            ? fill(trajectoryText('observation_length', '{count} of 1200 characters after appending.'), { count: appended.length })
+            : fill(trajectoryText('observation_overflow', 'This reading needs {count} more characters than the reflection has available. Shorten the existing reflection or choose another saved trial.'), { count: appended.length - 1200 })) : null,
+          h('div', { className: 'iss-trial-actions' },
+            h('button', { type: 'button', 'data-ops-observation-append': true, disabled: !fits, 'aria-describedby': stale ? 'iss-observation-status' : 'iss-observation-capacity', onClick: append },
+              fill(trajectoryText('observation_append', 'Append to Trial {trial}'), { trial: observation.targetId })),
+            h('button', { type: 'button', 'data-ops-observation-cancel': true, onClick: function () { finish(trajectoryText('observation_cancelled', 'Preview closed.')); } }, trajectoryText('observation_cancel', 'Cancel')))) : null,
+        h('p', { id: 'iss-observation-status', 'data-ops-observation-status': true, role: 'status' }, stale
+          ? trajectoryText('observation_stale', 'The comparison has changed since you captured this reading. Capture the current reading again to append it.') : observationNotice));
     }
     function downloadComparison() {
       if (!before || !after) return;
@@ -2723,7 +3101,7 @@
           h('small', null, point.lit ? trajectoryText('sunlight', 'Sunlight') : trajectoryText('eclipse', 'Eclipse')));
       }
       return h('div', { id: 'iss-ops-trajectory-panel', 'data-ops-trajectory-panel': true },
-        h('p', { id: 'iss-trajectory-scope' }, trajectoryText('scope', 'Recomputed from each setup using the current classroom model. These curves are separate from saved measurements, including older trials with missing results. The working controls, lab clocks and notebook evidence stay unchanged.')),
+        h('p', { id: 'iss-trajectory-scope' }, trajectoryText('scope_reflection', 'Recomputed from each setup using the current classroom model. These curves are separate from saved measurements, including older trials with missing results. You can preview a comparison reading and append it to a saved reflection.')),
         props.comparison && props.comparison.id === props.baseline.id ? h('p', null, trajectoryText('self', 'The same saved trial is selected on both sides; its curves overlap.')) : null,
         h('label', { htmlFor: 'iss-ops-trajectory-metric' }, trajectoryText('metric', 'Measurement through the orbit')),
         h('select', { id: 'iss-ops-trajectory-metric', 'data-ops-trajectory-metric': true, value: field.key, onChange: function (event) { props.onChange({ opsTrajectoryMetric: event.target.value }); } },
@@ -2758,6 +3136,7 @@
           'aria-valuetext': fill(trajectoryText('time_value', '{minute} minutes; baseline {before}; comparison {after}'), { minute: minute.toFixed(2), before: valueText(a[field.key]), after: valueText(b[field.key]) }),
           'aria-describedby': 'iss-trajectory-graph-help', onChange: function (event) { seek(Number(event.target.value)); }, onKeyDown: seekKey }),
         h('p', { id: 'iss-trajectory-graph-help' }, trajectoryText('graph_help', 'Drag or tap the chart, or use the comparison time slider. Arrow keys move 0.1 minute, Page Up/Down one minute, and Home/End select the endpoints. This comparison cursor is independent of the working orbit clock.')),
+        renderObservation(a, b),
         h('div', { className: 'iss-trajectory-export' },
           h('button', { type: 'button', 'data-ops-trajectory-export': true, 'aria-describedby': 'iss-trajectory-export-help', onClick: downloadComparison }, trajectoryText('export', 'Download comparison CSV')),
           h('p', { id: 'iss-trajectory-export-help', 'data-ops-trajectory-export-help': true }, trajectoryText('export_help', 'Includes all six recomputed measurements, both source setups, lighting phases, key moments and this cursor time. Two rows per timestamp, one per setup. Saved notebook measurements and notes stay in the separate notebook CSV.')),
@@ -2786,60 +3165,1443 @@
   // lab's 0.58 radius. Wings, radiators, the arm and the heat-flow arrows all
   // hang from this one height.
   var ISS_TRUSS_Y = 0.9;
+  var ISS_VISITING_CRAFT = [
+    { id: 'dragon', name: 'Dragon', hostId: 'harmony', portLabel: 'Harmony · forward port', port: [0, 0, -4.2], direction: [1, .6, -1.4],
+      note: 'Inspect Dragon’s capsule and solar trunk at Harmony’s forward port.' },
+    { id: 'progress', name: 'Progress', hostId: 'zvezda', portLabel: 'Zvezda · aft port', port: [0, 0, 6.2], direction: [1, .5, 1.4],
+      note: 'Inspect the Progress cargo section, solar wings and aft engine at Zvezda.' },
+    { id: 'cygnus', name: 'Cygnus', hostId: 'unity', portLabel: 'Unity · Earth-facing berth', port: [0, -.6, .2], direction: [1.4, -.4, 1.4],
+      note: 'Inspect Cygnus and its round solar arrays at Unity’s Earth-facing berth.' }
+  ];
+
   var MODULES = [
     { id: 'zarya', name: 'Zarya (FGB)', agency: '🇷🇺 built / 🇺🇸 owned', launched: 'Nov 20, 1998 — Proton rocket', pos: [0, 0, 2.2], size: [0.55, 3.4], axis: 'z', color: 0xc9b18a,
-      role: 'The very first ISS module. Provided early propulsion, power, and storage; today it is mostly a corridor and storage space.',
-      fact: 'Zarya means "sunrise" in Russian. It was built in Moscow but paid for by NASA — a fitting start for a 15-nation partnership.',
-      eng: 'Early station attitude control came from Zarya until Zvezda arrived — a spacecraft acting as scaffolding for a bigger one.' },
+      role: "Zarya was the first station element launched. Its power, communications and attitude-control systems supported the outpost during early assembly.",
+      fact: "Zarya was built in Russia under a U.S. contract. Its name means sunrise, reflecting its place at the beginning of station assembly.",
+      eng: "A partially assembled station still needs electrical power and a controlled orientation. Zarya supplied these services before the larger station's systems were available." },
     { id: 'unity', name: 'Unity (Node 1)', agency: '🇺🇸 NASA', launched: 'Dec 4, 1998 — Shuttle Endeavour STS-88', pos: [0, 0, 0.2], size: [0.6, 1.4], axis: 'z', color: 0xdfe5ec,
-      role: 'The first U.S. module and the station’s first connecting node: six docking ports link the Russian and U.S. segments.',
-      fact: 'The first ISS assembly job was joining Unity to Zarya by hand-flying the shuttle’s robotic arm — with no camera view of the final inches.',
-      eng: 'Nodes are the station’s hallway intersections; without them, modules could only form one long chain.' },
+      role: "Unity connects station elements and carries services between them. This first U.S. module links the Russian and U.S. portions of the outpost.",
+      fact: "Unity is both a passageway and a utility junction. A usable connection must join the structure and deliver the services that people and equipment need on each side.",
+      eng: "Common Berthing Mechanisms align and capture adjoining elements, then motorized bolts secure the joint. Inside Unity, 216 lines carry fluids and gases, while electrical cables distribute power and signals." },
     { id: 'zvezda', name: 'Zvezda (Service Module)', agency: '🇷🇺 Roscosmos', launched: 'Jul 12, 2000 — Proton rocket', pos: [0, 0, 4.6], size: [0.55, 3.2], axis: 'z', color: 0xb9c4a7,
-      role: 'The early living quarters: two crew cabins, a galley, a toilet, exercise gear, and the station’s main rocket engines for reboosts.',
-      fact: 'Zvezda ("star") made the station habitable — Expedition 1 moved in four months after it arrived and people have lived aboard ever since (Nov 2, 2000).',
-      eng: 'Its engines and visiting cargo ships periodically REBOOST the station, which loses roughly 50-100 m of altitude per day to thin-air drag.' },
+      role: "Zvezda provided living quarters and life support that enabled permanent station habitation. It also supplies communications, flight-control and propulsion systems.",
+      fact: "Sleeping compartments, hygiene facilities, exercise equipment and a galley turn a pressurized spacecraft into a place people can live. The meal table includes a way to secure food in microgravity.",
+      eng: "Its life-support equipment removes carbon dioxide from cabin air and uses recovered wastewater and condensation to generate oxygen. Recycling part of the crew's resources reduces dependence on supplies delivered from Earth." },
     { id: 'destiny', name: 'Destiny (U.S. Lab)', agency: '🇺🇸 NASA', launched: 'Feb 7, 2001 — Shuttle Atlantis STS-98', pos: [0, 0, -1.6], size: [0.58, 2.6], axis: 'z', color: 0xe8e2d4,
-      role: 'The primary U.S. research lab: racks of experiments in biology, physics, materials, and human health line every wall (in space, every wall is a floor).',
-      fact: 'Destiny has a 51-cm optical-quality window pointed at Earth, used for crew photography that scientists use to track storms, glaciers, and city growth.',
-      eng: 'Standardized "rack" slots let whole experiments be swapped like drawers — modular design is what keeps a 25-year-old lab current.' },
+      role: "Destiny is the primary U.S. laboratory for research in biology, physical science, materials and human health. Its equipment includes research facilities and systems that support the station.",
+      fact: "The roughly 51 cm Earth-facing window supports both crew-operated and automated observations. Instruments at its Window Observational Research Facility have helped researchers examine environmental change and natural disasters.",
+      eng: "Destiny accommodates 13 science racks and 11 system racks. Its Microgravity Science Glovebox contains samples while astronauts manipulate them for physical and biological experiments." },
     { id: 'quest', name: 'Quest (Airlock)', agency: '🇺🇸 NASA', launched: 'Jul 12, 2001 — Shuttle Atlantis STS-104', pos: [1.1, 0, 0.2], size: [0.45, 1.2], axis: 'x', color: 0xcfd6dd,
-      role: 'The doorway for U.S. spacewalks (EVAs). Astronauts pre-breathe oxygen here to purge nitrogen so they don’t get the bends in the low-pressure suit.',
-      fact: 'A spacesuit is really a one-person spacecraft: it runs at about 1/3 atmospheric pressure, which is why suited astronauts must prepare for hours before stepping out.',
-      eng: 'Spacewalks are the station’s hardest routine engineering: hundreds have been performed for assembly and repairs, each choreographed minute-by-minute for years in a giant pool on Earth.' },
+      role: "Quest provides spacesuit servicing and the main station entry and exit for astronauts using U.S. spacesuits. Its equipment lock and crew lock serve different stages of a spacewalk.",
+      fact: "The U.S. EMU suit operates at 4.3 psia, below the station's 14.7 psia. Oxygen prebreathe helps remove nitrogen from body tissues before this pressure change, reducing the risk of decompression sickness.",
+      eng: "An internal hatch separates the suit-maintenance area from the crew lock used to enter space. Isolating the exit chamber lets its pressure change without depressurizing the station's living space." },
     { id: 'harmony', name: 'Harmony (Node 2)', agency: '🇺🇸 NASA / built in 🇮🇹 Italy', launched: 'Oct 23, 2007 — Shuttle Discovery STS-120', pos: [0, 0, -3.4], size: [0.6, 1.6], axis: 'z', color: 0xdfe5ec,
-      role: 'The forward node: four crew sleep cabins, and the docking ports where SpaceX Crew Dragon and cargo ships arrive today.',
-      fact: 'Each sleep cabin is phone-booth sized, with a sleeping bag strapped to the wall — you clip in so you don’t drift into a wall (or a crewmate).',
-      eng: 'Its ports carry power, data, and air to visiting vehicles — a standardized interface, like USB for spacecraft.' },
+      role: "Harmony connects the U.S. Destiny laboratory, Europe's Columbus laboratory and Japan's Kibo laboratory. It provides a passageway and distributes services that help those laboratories operate.",
+      fact: "More than 2,200 school students entered NASA's naming challenge. Six schools independently proposed Harmony to represent people from different countries working together.",
+      eng: "A connecting node carries more than people: Harmony distributes air, electrical power, water and other services to the laboratories. Mechanical connections and utility connections must work together." },
     { id: 'columbus', name: 'Columbus', agency: '🇪🇺 ESA', launched: 'Feb 7, 2008 — Shuttle Atlantis STS-122', pos: [1.4, 0, -3.4], size: [0.55, 1.6], axis: 'x', color: 0xe4ddca,
-      role: 'Europe’s laboratory: fluid physics, materials science, and human biology, plus external platforms exposed to raw space.',
-      fact: 'An external Columbus experiment showed some hardy organisms (like tardigrades and certain lichens) can survive direct exposure to space.',
-      eng: 'Columbus is run day-to-day from a control center in Germany — the station is really flown by a network of control rooms across the planet.' },
+      role: "Columbus supports European research in life science, materials and fluid physics. External mounting platforms also allow experiments to encounter the environment outside the pressurized laboratory.",
+      fact: "Some lichens returned from EXPOSE-E outside Columbus resumed normal growth after 18 months of space exposure. Researchers use such experiments to investigate how dormant organisms endure harsh conditions.",
+      eng: "The Fluid Science Laboratory studies processes that buoyancy-driven convection and sedimentation can mask on Earth. Astronauts install experiment containers, and investigators can monitor or control experiments from the ground." },
     { id: 'kibo', name: 'Kibo (JEM)', agency: '🇯🇵 JAXA', launched: '2008-2009 — three Shuttle flights', pos: [-1.5, 0, -3.4], size: [0.6, 2.0], axis: 'x', color: 0xe9e9f2,
-      role: 'The largest station module — "Hope" in Japanese. A pressurized lab plus a back porch (Exposed Facility) and its own small robotic arm.',
-      fact: 'Kibo’s airlock and arm launch shoebox-sized CubeSats built by students around the world — the station doubles as a tiny satellite launch pad.',
-      eng: 'The Exposed Facility lets experiments face vacuum, radiation, and 16 daily 250°C temperature swings without a spacewalk to install them.' },
+      role: "Kibo combines a pressurized experiment laboratory with an exposed research platform and robotic handling equipment. JAXA describes it as the station's largest experiment module.",
+      fact: "Kibo deployed TechEdSat in October 2012. The project gave San Jose State University students experience developing and operating a small spacecraft with NASA and industry partners.",
+      eng: "An equipment airlock and robotic arm transfer suitably sized payloads between the pressurized laboratory and space. This lets researchers place experiments outside without sending an astronaut out for each transfer." },
     { id: 'tranquility', name: 'Tranquility (Node 3)', agency: '🇺🇸 NASA / built in 🇮🇹 Italy', launched: 'Feb 8, 2010 — Shuttle Endeavour STS-130', pos: [-1.2, 0, 0.2], size: [0.6, 1.5], axis: 'x', color: 0xdfe5ec,
-      role: 'The life-support hub: water recycling, oxygen generation, the main toilet, and the treadmill live here.',
-      fact: 'The treadmill has a harness and bungees to hold runners down — and the whole machine floats on a vibration-isolation cradle so jogging doesn’t shake sensitive experiments.',
-      eng: 'ECLSS (Environmental Control and Life Support System) recovers about 98% of the station’s water — including from sweat and urine. "Yesterday’s coffee becomes tomorrow’s coffee."' },
+      role: "Tranquility houses major life-support equipment for air revitalization, oxygen generation and water recycling, alongside hygiene and exercise facilities.",
+      fact: "Astronauts also exercise here. The T2 treadmill uses vibration suppression to reduce the shaking that running would otherwise transmit to sensitive experiments in nearby laboratories.",
+      eng: "In 2023, NASA reported that ECLSS with its brine processor demonstrated 98% total water recovery. A membrane and warm, dry air recover additional water from concentrated urine-processing waste; the humid air then enters the water collection system." },
     { id: 'cupola', name: 'Cupola', agency: '🇪🇺 ESA-built / 🇺🇸 NASA', launched: 'Feb 8, 2010 — with Tranquility', pos: [-1.2, -0.75, 0.2], size: [0.42, 0.5], axis: 'y', color: 0x9fb6c8,
-      role: 'The seven-windowed dome facing Earth: part robotics workstation (flying Canadarm2 during captures), part the best window seat in existence.',
-      fact: 'The central window is 80 cm across — the largest ever flown in space. Astronauts consistently call time here the psychological highlight of a mission.',
-      eng: 'Each window has a shutter closed when not in use — armor against micrometeoroid strikes on the glass.' },
-    { id: 'leonardo', name: 'Leonardo (PMM)', agency: '🇮🇹 ASI / 🇺🇸 NASA', launched: 'Feb 24, 2011 — Shuttle Discovery STS-133', pos: [-1.2, 0, -1.05], size: [0.5, 1.3], axis: 'z', color: 0xd8d3c2,
-      role: 'The station’s walk-in closet: a former cargo carrier bolted on permanently to add storage space.',
-      fact: 'Leonardo flew to orbit and back seven times in the shuttle era as a moving van before being left aboard for good.',
-      eng: 'Stowage is a real engineering problem: every item must be logged and strapped down, because a lost tool can drift into an air vent — or stay lost for years.' },
-    { id: 'nauka', name: 'Nauka (MLM) + Prichal', agency: '🇷🇺 Roscosmos', launched: 'Jul 21, 2021 — Proton rocket', pos: [0, -0.85, 4.6], size: [0.55, 1.9], axis: 'y', color: 0xb9c4a7,
-      role: 'Russia’s multipurpose lab (with the European Robotic Arm) plus the small Prichal docking hub — the newest large additions.',
-      fact: 'Nauka waited over a decade on the ground for repairs and upgrades before finally flying — spacecraft schedules are hard.',
-      eng: 'Minutes after docking, Nauka’s thrusters fired unexpectedly and slowly spun the whole station about 1.5 turns before controllers recovered — a famous reminder that docking two spacecraft makes one new, harder-to-predict spacecraft.' },
+      role: "Cupola provides views of Earth and activities around the station. Its robotics workstation lets astronauts control Canadarm2 while observing operations outside.",
+      fact: "Astronauts use the observation area for spacecraft and spacewalk operations, and also for photographing landmarks on Earth. A working station window can connect daily engineering tasks with views of home.",
+      eng: "Its windows include scratch protection, two pressure panes and an exterior debris pane. Crew-operated shutters provide additional protection; the circular central window is 80 cm across." },
+    { id: 'leonardo', name: 'Leonardo (PMM)', agency: '🇮🇹 ASI / 🇺🇸 NASA', launched: 'Permanent-installation flight: Feb 24, 2011 — STS-133', pos: [-1.2, 0, -1.05], size: [0.5, 1.3], axis: 'z', color: 0xd8d3c2,
+      role: "The Italian-built Leonardo provides pressurized storage for equipment, experiments and supplies. It was converted from a reusable shuttle cargo carrier into the Permanent Multipurpose Module.",
+      fact: "Leonardo completed seven shuttle cargo missions before its eighth launch left it aboard the station. Reusing the module required adapting it for years in space rather than a short visit.",
+      eng: "Permanent exposure required stronger protection against micrometeoroids and orbital debris. Engineers also changed internal cable routing and brackets so astronauts could reach equipment for maintenance in orbit." },
+    { id: 'nauka', name: 'Nauka (MLM) + Prichal', agency: '🇷🇺 Roscosmos', launched: 'Nauka: Jul 21, 2021 / Prichal: Nov 24, 2021', pos: [0, -0.85, 4.6], size: [0.55, 1.9], axis: 'y', color: 0xb9c4a7,
+      role: "Nauka adds laboratory space to the Russian segment and serves as the home base for the European Robotic Arm. Its name is the Russian word for science.",
+      fact: "A robot that changes its anchor point can reach work sites beyond a single fixed mounting position. Nauka combines a place for science inside the station with support for robotic work outside.",
+      eng: "The European Robotic Arm can anchor either end at different attachment points, allowing it to move between work locations. Cameras and remotely controlled joints let astronauts operate it from inside or outside the station." },
     { id: 'truss', name: 'Integrated Truss + Solar Arrays', agency: '🇺🇸 NASA / 🇨🇦 CSA arm', launched: 'Assembled 2000-2009 (+ iROSA 2021-2023)', pos: [0, ISS_TRUSS_Y, -1.6], size: [0.2, 11.0], axis: 'x', color: 0x8a93a6,
-      role: 'The 109-meter backbone: eight paired solar-array wings, the ammonia cooling radiators, and rails that Canadarm2 rides along like a train.',
-      fact: 'The arrays cover about 2,500 m² — near half a football field of solar panels — and the newer roll-out iROSA arrays unrolled over the originals like yoga mats.',
-      eng: 'Sun-tracking joints slowly rotate the wings all orbit long; giant radiators dump waste heat, because in vacuum you can’t cool anything with a breeze.' }
+      role: "The truss supports solar arrays, cooling radiators, external equipment and servicing rails. The original solar power system has eight wings arranged in four pairs.",
+      fact: "The Mobile Base System can help position robots, equipment and spacewalkers for assembly and maintenance. NASA distinguishes the 94 m truss length from the roughly 109 m span across the extended solar arrays.",
+      eng: "Electrical and cooling lines run through the truss. On its rails, the Mobile Transporter carries a base for Canadarm2 and other equipment. The base's grapple fixtures provide mechanical attachment, power and data connections for the robots." }
   ];
+
+  // Source-linked historical and scientific guide; not a live manifest.
+  var ISS_COMPONENT_GUIDE = [
+  {
+    "id": "zarya",
+    "moduleId": "zarya",
+    "name": "Zarya (FGB)",
+    "group": "Modules",
+    "tag": "Early power and control",
+    "metric": {
+      "value": "4.1 m",
+      "label": "maximum diameter"
+    },
+    "purpose": "Zarya was the first station element launched. Its power, communications and attitude-control systems supported the outpost during early assembly.",
+    "milestone": {
+      "date": "November 20, 1998",
+      "text": "Launched from Baikonur on a Proton-K rocket; it orbited alone for 16 days before the shuttle crew joined it to Unity."
+    },
+    "science": "A partially assembled station still needs electrical power and a controlled orientation. Zarya supplied these services before the larger station's systems were available.",
+    "connection": "Zarya was built in Russia under a U.S. contract. Its name means sunrise, reflecting its place at the beginning of station assembly.",
+    "model": "The map uses a simple cylindrical hull and shared insulation texture. It does not reproduce Zarya's full propulsion hardware, original solar arrays or internal equipment layout.",
+    "sources": [
+      {
+        "label": "NASA: Zarya module",
+        "url": "https://www.nasa.gov/international-space-station/zarya-module/"
+      },
+      {
+        "label": "NASA: station reference guide, Zarya entry",
+        "url": "https://www.nasa.gov/wp-content/uploads/2017/09/np-2015-05-022-jsc-iss-guide-2015-update-111015-508c.pdf"
+      }
+    ]
+  },
+  {
+    "id": "unity",
+    "moduleId": "unity",
+    "name": "Unity (Node 1)",
+    "group": "Modules",
+    "tag": "Connections and utilities",
+    "metric": {
+      "value": "6",
+      "label": "berthing ports"
+    },
+    "purpose": "Unity connects station elements and carries services between them. This first U.S. module links the Russian and U.S. portions of the outpost.",
+    "milestone": {
+      "date": "December 6, 1998",
+      "text": "Joined to Zarya during STS-88, two days after Unity launched aboard shuttle Endeavour."
+    },
+    "science": "Common Berthing Mechanisms align and capture adjoining elements, then motorized bolts secure the joint. Inside Unity, 216 lines carry fluids and gases, while electrical cables distribute power and signals.",
+    "connection": "Unity is both a passageway and a utility junction. A usable connection must join the structure and deliver the services that people and equipment need on each side.",
+    "model": "The short cylinder marks Unity's location and connecting role. Its six berthing mechanisms and utility routes are not individually reproduced, and the generic end collars do not depict every real attachment.",
+    "sources": [
+      {
+        "label": "NASA: Unity module and assembly",
+        "url": "https://www.nasa.gov/international-space-station/unity-module/"
+      },
+      {
+        "label": "NASA: Unity's berthing mechanisms",
+        "url": "https://www.nasa.gov/centers-and-facilities/marshall/nasas-marshall-center-celebrates-international-space-station-15th-anniversary/"
+      }
+    ]
+  },
+  {
+    "id": "zvezda",
+    "moduleId": "zvezda",
+    "name": "Zvezda (Service Module)",
+    "group": "Modules",
+    "tag": "Living space and life support",
+    "metric": {
+      "value": "29.7 m",
+      "label": "span across both solar wings"
+    },
+    "purpose": "Zvezda provided living quarters and life support that enabled permanent station habitation. It also supplies communications, flight-control and propulsion systems.",
+    "milestone": {
+      "date": "July 26, 2000 (UTC)",
+      "text": "Completed an automated docking to Zarya's aft port after launching on a Proton rocket on July 12."
+    },
+    "science": "Its life-support equipment removes carbon dioxide from cabin air and uses recovered wastewater and condensation to generate oxygen. Recycling part of the crew's resources reduces dependence on supplies delivered from Earth. Its own two solar wings supplied electrical power during early station assembly. NASA gives their combined span as 97.5 feet (about 29.7 m).",
+    "connection": "Sleeping compartments, hygiene facilities, exercise equipment and a galley turn a pressurized spacecraft into a place people can live. The meal table includes a way to secure food in microgravity.",
+    "model": "The simplified hull does not show all 13 windows or the real three-compartment interior. Its added solar pair has schematic proportions, cell bays and a fixed deployed pose; the wings do not track the Sun or add generation to the separate U.S. array model. The cutaway's repeating racks are illustrative, and the map does not simulate Zvezda's engines or life-support machinery.",
+    "sources": [
+      {
+        "label": "NASA: Zvezda's arrival and interior systems",
+        "url": "https://www.nasa.gov/history/space-station-20th-zvezda-service-module-reaches-iss/"
+      },
+      {
+        "label": "NASA: Zvezda service module",
+        "url": "https://www.nasa.gov/international-space-station/zvezda-service-module/"
+      }
+    ]
+  },
+  {
+    "id": "destiny",
+    "moduleId": "destiny",
+    "name": "Destiny",
+    "group": "Modules",
+    "tag": "U.S. research laboratory",
+    "metric": {
+      "value": "24",
+      "label": "equipment rack positions"
+    },
+    "purpose": "Destiny is the primary U.S. laboratory for research in biology, physical science, materials and human health. Its equipment includes research facilities and systems that support the station.",
+    "milestone": {
+      "date": "10 February 2001",
+      "text": "Astronauts installed Destiny during STS-98, three days after its launch aboard Atlantis."
+    },
+    "science": "Destiny accommodates 13 science racks and 11 system racks. Its Microgravity Science Glovebox contains samples while astronauts manipulate them for physical and biological experiments.",
+    "connection": "The roughly 51 cm Earth-facing window supports both crew-operated and automated observations. Instruments at its Window Observational Research Facility have helped researchers examine environmental change and natural disasters.",
+    "model": "Hull proportions, rack placement and window details are illustrative. The scene does not reproduce individual research instruments or their measurements.",
+    "sources": [
+      {
+        "label": "NASA: Destiny laboratory",
+        "url": "https://www.nasa.gov/international-space-station/destiny-laboratory-module/"
+      },
+      {
+        "label": "NASA: research hardware and Earth observations",
+        "url": "https://www.nasa.gov/missions/station/strong-team-strong-science-space-station-hardware-developers-payload-support-teams-celebrate-two-decades-of-success-prepare-for-third/"
+      }
+    ]
+  },
+  {
+    "id": "quest",
+    "moduleId": "quest",
+    "name": "Quest Airlock",
+    "group": "Modules",
+    "tag": "Preparing for spacewalks",
+    "metric": {
+      "value": "2",
+      "label": "airlock chambers"
+    },
+    "purpose": "Quest provides spacesuit servicing and the main station entry and exit for astronauts using U.S. spacesuits. Its equipment lock and crew lock serve different stages of a spacewalk.",
+    "milestone": {
+      "date": "July 15, 2001",
+      "text": "Installed on the station during STS-104, after launching aboard shuttle Atlantis on July 12."
+    },
+    "science": "An internal hatch separates the suit-maintenance area from the crew lock used to enter space. Isolating the exit chamber lets its pressure change without depressurizing the station's living space.",
+    "connection": "The U.S. EMU suit operates at 4.3 psia, below the station's 14.7 psia. Oxygen prebreathe helps remove nitrogen from body tissues before this pressure change, reducing the risk of decompression sickness.",
+    "model": "The exterior distinguishes the larger equipment lock and narrower crew lock, with a closed nadir hatch and an illustrative 2001 gas-container set. Dimensions and equipment positions are schematic. The matching cutaway uses generic interior texture; hatch and pressure cycles are not animated.",
+    "sources": [
+      {
+        "label": "NASA: Quest airlock",
+        "url": "https://www.nasa.gov/international-space-station/quest-airlock/"
+      },
+      {
+        "label": "NASA: EVA prebreathe technical consultation",
+        "url": "https://ntrs.nasa.gov/citations/20080021669"
+      }
+    ]
+  },
+  {
+    "id": "harmony",
+    "moduleId": "harmony",
+    "name": "Harmony",
+    "group": "Modules",
+    "tag": "Laboratory connections and utilities",
+    "metric": {
+      "value": "3",
+      "label": "international laboratories connected"
+    },
+    "purpose": "Harmony connects the U.S. Destiny laboratory, Europe's Columbus laboratory and Japan's Kibo laboratory. It provides a passageway and distributes services that help those laboratories operate.",
+    "milestone": {
+      "date": "26 October 2007",
+      "text": "The STS-120 crew installed Harmony in its initial station position after Discovery launched it on 23 October."
+    },
+    "science": "A connecting node carries more than people: Harmony distributes air, electrical power, water and other services to the laboratories. Mechanical connections and utility connections must work together.",
+    "connection": "More than 2,200 school students entered NASA's naming challenge. Six schools independently proposed Harmony to represent people from different countries working together.",
+    "model": "Ports and visiting spacecraft form a simplified teaching layout. Their appearance here is not a dated docking manifest or a representation of every adapter and utility connection.",
+    "sources": [
+      {
+        "label": "NASA: Harmony module",
+        "url": "https://www.nasa.gov/international-space-station/harmony-module/"
+      },
+      {
+        "label": "NASA: students name Harmony, page 8",
+        "url": "https://www3.nasa.gov/centers/kennedy/pdf/195769main_nov2color.pdf"
+      }
+    ]
+  },
+  {
+    "id": "columbus",
+    "moduleId": "columbus",
+    "name": "Columbus",
+    "group": "Modules",
+    "tag": "European research laboratory",
+    "metric": {
+      "value": "18 months",
+      "label": "EXPOSE-E exposure experiment"
+    },
+    "purpose": "Columbus supports European research in life science, materials and fluid physics. External mounting platforms also allow experiments to encounter the environment outside the pressurized laboratory.",
+    "milestone": {
+      "date": "11 February 2008",
+      "text": "Columbus was attached to Harmony during STS-122, following its 7 February launch aboard Atlantis."
+    },
+    "science": "The Fluid Science Laboratory studies processes that buoyancy-driven convection and sedimentation can mask on Earth. Astronauts install experiment containers, and investigators can monitor or control experiments from the ground.",
+    "connection": "Some lichens returned from EXPOSE-E outside Columbus resumed normal growth after 18 months of space exposure. Researchers use such experiments to investigate how dormant organisms endure harsh conditions.",
+    "model": "The laboratory and external equipment are simplified. The scene does not simulate an exposure experiment, organism survival or the individual conditions of EXPOSE-E.",
+    "sources": [
+      {
+        "label": "NASA: Columbus laboratory",
+        "url": "https://www.nasa.gov/international-space-station/columbus-laboratory-module/"
+      },
+      {
+        "label": "ESA: Fluid Science Laboratory",
+        "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Columbus/Fluid_Science_Laboratory"
+      },
+      {
+        "label": "ESA: EXPOSE-E and surviving lichens",
+        "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Columbus/The_toughest_life_on_Earth"
+      }
+    ]
+  },
+  {
+    "id": "kibo",
+    "moduleId": "kibo",
+    "name": "Kibo",
+    "group": "Modules",
+    "tag": "Japanese laboratory and exposed platform",
+    "metric": {
+      "value": "11.2 m",
+      "label": "pressurized laboratory length"
+    },
+    "purpose": "Kibo combines a pressurized experiment laboratory with an exposed research platform and robotic handling equipment. JAXA describes it as the station's largest experiment module.",
+    "milestone": {
+      "date": "July 2009",
+      "text": "Installation of the Exposed Facility completed Kibo's assembly, following installation of its main pressurized laboratory in June 2008."
+    },
+    "science": "An equipment airlock and robotic arm transfer suitably sized payloads between the pressurized laboratory and space. This lets researchers place experiments outside without sending an astronaut out for each transfer.",
+    "connection": "Kibo deployed TechEdSat in October 2012. The project gave San Jose State University students experience developing and operating a small spacecraft with NASA and industry partners.",
+    "model": "The hull and added Exposed Facility are schematic. Its six interface markers and generic payload boxes do not identify a current experiment manifest. The study distinguishes cabin, equipment airlock and exposed operations; pressure cycles and robotic motion are not simulated.",
+    "sources": [
+      {
+        "label": "JAXA: Kibo structure and assembly",
+        "url": "https://global.jaxa.jp/projects/iss_human/kibo/index.html"
+      },
+      {
+        "label": "JAXA: equipment airlock",
+        "url": "https://iss.jaxa.jp/iss/kibo/al_e.html"
+      },
+      {
+        "label": "NASA: TechEdSat deployment",
+        "url": "https://www.nasa.gov/news-release/nasas-techedsat-launches-from-international-space-station/"
+      }
+    ]
+  },
+  {
+    "id": "tranquility",
+    "moduleId": "tranquility",
+    "name": "Tranquility",
+    "group": "Modules",
+    "tag": "Life support and exercise",
+    "metric": {
+      "value": "98%",
+      "label": "water recovery demonstrated in 2023"
+    },
+    "purpose": "Tranquility houses major life-support equipment for air revitalization, oxygen generation and water recycling, alongside hygiene and exercise facilities.",
+    "milestone": {
+      "date": "12 February 2010",
+      "text": "Tranquility was installed during STS-130 after its 8 February launch aboard Endeavour."
+    },
+    "science": "In 2023, NASA reported that ECLSS with its brine processor demonstrated 98% total water recovery. A membrane and warm, dry air recover additional water from concentrated urine-processing waste; the humid air then enters the water collection system.",
+    "connection": "Astronauts also exercise here. The T2 treadmill uses vibration suppression to reduce the shaking that running would otherwise transmit to sensitive experiments in nearby laboratories.",
+    "model": "The cutaway equipment is illustrative. The separate water lab uses a simplified budget rather than a replica of flight processors; its chosen recovery setting is not a live efficiency reading.",
+    "sources": [
+      {
+        "label": "NASA: Tranquility module",
+        "url": "https://www.nasa.gov/international-space-station/tranquility-module/"
+      },
+      {
+        "label": "NASA: 2023 water-recovery milestone",
+        "url": "https://www.nasa.gov/missions/station/nasa-achieves-water-recovery-milestone-on-international-space-station/"
+      },
+      {
+        "label": "NASA: T2 treadmill vibration suppression",
+        "url": "https://www.nasa.gov/image-article/astronaut-luca-parmitano-treadmill/"
+      }
+    ]
+  },
+  {
+    "id": "cupola",
+    "moduleId": "cupola",
+    "name": "Cupola",
+    "group": "Modules",
+    "tag": "Observation and robotics workstation",
+    "metric": {
+      "value": "7",
+      "label": "observation windows"
+    },
+    "purpose": "Cupola provides views of Earth and activities around the station. Its robotics workstation lets astronauts control Canadarm2 while observing operations outside.",
+    "milestone": {
+      "date": "8 February 2010",
+      "text": "Cupola launched with Tranquility aboard Endeavour on STS-130 and was installed during the same mission."
+    },
+    "science": "Its windows include scratch protection, two pressure panes and an exterior debris pane. Crew-operated shutters provide additional protection; the circular central window is 80 cm across.",
+    "connection": "Astronauts use the observation area for spacecraft and spacewalk operations, and also for photographing landmarks on Earth. A working station window can connect daily engineering tasks with views of home.",
+    "model": "Six framed side panes and a circular Earth-facing pane show the exterior arrangement. Dimensions and glass shading are schematic. The study below separates the real four-pane window stack from its protective shutter; the map renders one opaque surface per window.",
+    "sources": [
+      {
+        "label": "NASA: Cupola operations and history",
+        "url": "https://www.nasa.gov/international-space-station/cupola/"
+      },
+      {
+        "label": "ESA: Cupola structure and windows",
+        "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Node-3_Cupola/Cupola"
+      }
+    ]
+  },
+  {
+    "id": "leonardo",
+    "moduleId": "leonardo",
+    "name": "Leonardo (PMM)",
+    "group": "Modules",
+    "tag": "Permanent cargo storage",
+    "metric": {
+      "value": "Up to 16",
+      "label": "equipment racks"
+    },
+    "purpose": "The Italian-built Leonardo provides pressurized storage for equipment, experiments and supplies. It was converted from a reusable shuttle cargo carrier into the Permanent Multipurpose Module.",
+    "milestone": {
+      "date": "March 1, 2011",
+      "text": "Installed for permanent service after its February 24 launch on STS-133. It was later moved from Unity to Tranquility on May 27, 2015."
+    },
+    "science": "Permanent exposure required stronger protection against micrometeoroids and orbital debris. Engineers also changed internal cable routing and brackets so astronauts could reach equipment for maintenance in orbit.",
+    "connection": "Leonardo completed seven shuttle cargo missions before its eighth launch left it aboard the station. Reusing the module required adapting it for years in space rather than a short visit.",
+    "model": "The map shows a storage-module hull with a generic rack texture. It does not reproduce Leonardo's cargo inventory, actual rack placement or the layers of its debris shielding.",
+    "sources": [
+      {
+        "label": "NASA: Permanent Multipurpose Module",
+        "url": "https://www.nasa.gov/international-space-station/permanent-multipurpose-module/"
+      },
+      {
+        "label": "NASA: STS-133 press kit, PMM modifications",
+        "url": "https://www.nasa.gov/wp-content/uploads/2023/05/491387main-sts-133-press-kit.pdf"
+      },
+      {
+        "label": "NASA: Leonardo flight history",
+        "url": "https://ntrs.nasa.gov/api/citations/20120016610/downloads/20120016610.pdf"
+      }
+    ]
+  },
+  {
+    "id": "nauka",
+    "moduleId": "nauka",
+    "name": "Nauka (Multipurpose Laboratory)",
+    "group": "Modules",
+    "tag": "Science and robotic support",
+    "metric": {
+      "value": "43 ft",
+      "label": "module length"
+    },
+    "purpose": "Nauka adds laboratory space to the Russian segment and serves as the home base for the European Robotic Arm. Its name is the Russian word for science.",
+    "milestone": {
+      "date": "July 29, 2021",
+      "text": "Docked to Zvezda's Earth-facing port after launching on July 21. Prichal was a separate arrival: it launched on November 24 and docked on November 26, 2021."
+    },
+    "science": "The European Robotic Arm can anchor either end at different attachment points, allowing it to move between work locations. Cameras and remotely controlled joints let astronauts operate it from inside or outside the station.",
+    "connection": "A robot that changes its anchor point can reach work sites beyond a single fixed mounting position. Nauka combines a place for science inside the station with support for robotic work outside.",
+    "model": "The map groups Nauka and Prichal under one simplified selectable shape. It does not reproduce the European Robotic Arm, Nauka's experiment layout or Prichal's separate docking hub.",
+    "sources": [
+      {
+        "label": "NASA: station assembly dates and dimensions",
+        "url": "https://www.nasa.gov/international-space-station/international-space-station-assembly-elements/"
+      },
+      {
+        "label": "NASA: Nauka docking report",
+        "url": "https://www.nasa.gov/blogs/spacestation/2021/07/29/new-module-successfully-docks-to-space-station/"
+      },
+      {
+        "label": "ESA: European Robotic Arm and Nauka",
+        "url": "https://www.esa.int/ESA_Multimedia/Images/2021/06/European_Robotic_Arm_installation_on_Nauka"
+      }
+    ]
+  },
+  {
+    "id": "truss",
+    "moduleId": "truss",
+    "name": "Integrated Truss and Solar Arrays",
+    "group": "Modules",
+    "tag": "External structure, power and servicing",
+    "metric": {
+      "value": "94 m",
+      "label": "truss length listed by NASA"
+    },
+    "purpose": "The truss supports solar arrays, cooling radiators, external equipment and servicing rails. The original solar power system has eight wings arranged in four pairs.",
+    "milestone": {
+      "date": "19 March 2009",
+      "text": "Installation of S6 completed the main truss assembly, whose first segments had reached the station in 2000."
+    },
+    "science": "Electrical and cooling lines run through the truss. On its rails, the Mobile Transporter carries a base for Canadarm2 and other equipment. The base's grapple fixtures provide mechanical attachment, power and data connections for the robots.",
+    "connection": "The Mobile Base System can help position robots, equipment and spacewalkers for assembly and maintenance. NASA distinguishes the 94 m truss length from the roughly 109 m span across the extended solar arrays.",
+    "model": "The scene shows four original wing pairs and six added iROSA blankets as a historical 2021-2023 depiction. Dimensions, thermal performance and some channel positions are simplified; this is not a live inventory of station hardware.",
+    "sources": [
+      {
+        "label": "NASA: station dimensions and original arrays",
+        "url": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+      },
+      {
+        "label": "NASA: truss structure and assembly",
+        "url": "https://www.nasa.gov/international-space-station/integrated-truss-structure/"
+      },
+      {
+        "label": "Canadian Space Agency: Mobile Base System",
+        "url": "https://www.asc-csa.gc.ca/eng/iss/mobile-base/"
+      }
+    ]
+  },
+  {
+    "id": "prichal",
+    "name": "Prichal Docking Module",
+    "group": "Modules",
+    "tag": "Docking and fuel transfer",
+    "metric": {
+      "value": "5",
+      "label": "additional docking ports"
+    },
+    "purpose": "Prichal is a separate docking hub attached to Nauka. Its additional ports provide connection points for Russian spacecraft.",
+    "milestone": {
+      "date": "November 26, 2021",
+      "text": "Docked to Nauka after launching on November 24, four months after Nauka's own July 2021 arrival."
+    },
+    "science": "Prichal provides a route for transferring fuel to Nauka as well as structural docking connections. A spacecraft interface must therefore support useful services across the joint, not just hold two vehicles together.",
+    "connection": "Prichal means pier in Russian. The name captures its role as a place where visiting spacecraft connect to the station.",
+    "model": "Prichal is described separately in this guide but shares the Nauka selection in the 3D map. Its individual docking ports and fuel-transfer connections are not separately modeled or clickable.",
+    "sources": [
+      {
+        "label": "NASA: Prichal assembly and purpose",
+        "url": "https://www.nasa.gov/international-space-station/international-space-station-assembly-elements/"
+      },
+      {
+        "label": "NASA: Prichal arrival report",
+        "url": "https://www.nasa.gov/blogs/spacestation/2021/11/26/russias-new-docking-module-arrives-at-station/"
+      }
+    ]
+  },
+  {
+    "id": "arrays",
+    "name": "Legacy solar arrays & tracking joints",
+    "group": "Power & structure",
+    "tag": "Station backbone and electrical supply",
+    "metric": {
+      "value": "8",
+      "label": "legacy solar-array wings"
+    },
+    "purpose": "Eight original solar-array wings provide electrical power. Their flexible photovoltaic blankets attach to deployable masts on the station truss.",
+    "milestone": {
+      "date": "2000–2009",
+      "text": "The main truss and its four pairs of legacy solar-array wings were assembled across multiple shuttle missions; the final S6 segment arrived in March 2009."
+    },
+    "science": "Each real legacy wing has two flexible blankets of photovoltaic cells, which convert sunlight into electricity. Rotating joints help the wings face the Sun; batteries carry electrical loads during orbital darkness.",
+    "connection": "The truss itself is about 94 metres long. The familiar 109-metre station width includes the extended solar arrays; these are different measurements.",
+    "model": "Four paired groups stand in for eight wings; each broad surface simplifies a real two-blanket wing. The four joint assemblies are schematic: the real system uses two Solar Alpha Rotary Joints and eight Beta Gimbal Assemblies. Cell counts and dimensions are illustrative.",
+    "sources": [
+      {
+        "label": "NASA: Truss, external payloads and assembly history",
+        "url": "https://www.nasa.gov/international-space-station/international-space-station-assembly-elements/"
+      },
+      {
+        "label": "NASA: Legacy solar-array architecture",
+        "url": "https://ntrs.nasa.gov/api/citations/20200002554/downloads/20200002554.pdf"
+      },
+      {
+        "label": "NASA: Station dimensions",
+        "url": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/"
+      },
+      {
+        "label": "NASA · solar-array pointing architecture",
+        "url": "https://ntrs.nasa.gov/api/citations/20100021936/downloads/20100021936.pdf"
+      }
+    ],
+    "focusId": "array"
+  },
+  {
+    "id": "irosa",
+    "name": "Roll-out solar arrays — iROSA",
+    "group": "Power & structure",
+    "tag": "Added generating capacity",
+    "metric": {
+      "value": "6",
+      "label": "overlays in this 2021–2023 configuration"
+    },
+    "purpose": "Compact, efficient ISS Roll-Out Solar Arrays augment the aging legacy arrays so the station can support research and other electrical loads.",
+    "milestone": {
+      "date": "2021–2023",
+      "text": "The first pair was installed in June 2021. Six iROSA units were delivered and installed across the 2021–2023 upgrade campaign represented here."
+    },
+    "science": "The new arrays travel rolled up and deploy as long blankets. They cover part of an older wing, while the uncovered legacy cells continue generating electricity; they do not replace the entire old wing.",
+    "connection": "Their output joins the station's existing electrical channels. The original 2021 upgrade plan rated each new array at more than 20 kilowatts in sunlight.",
+    "model": "The six overlays deliberately show the 2021–2023 arrangement, not a live inventory. Their angles, supports and blue cell pattern are illustrative; the Power lab uses a separate simplified model.",
+    "sources": [
+      {
+        "label": "NASA: iROSA upgrade purpose and campaign",
+        "url": "https://www.nasa.gov/missions/station/new-solar-arrays-to-power-nasas-international-space-station-research/"
+      },
+      {
+        "label": "ESA: First iROSA pair installed in 2021",
+        "url": "https://www.esa.int/ESA_Multimedia/Images/2021/06/New_solar_arrays_for_the_International_Space_Station"
+      }
+    ],
+    "focusId": "array"
+  },
+  {
+    "id": "radiators",
+    "name": "Radiators & coolant loops",
+    "group": "Power & structure",
+    "tag": "Moving waste heat into space",
+    "metric": {
+      "value": "6",
+      "label": "main external radiator assemblies"
+    },
+    "purpose": "Radiators remove waste heat from equipment and occupied modules. Pumps move that heat through coolant loops to surfaces that can release it into space.",
+    "milestone": {
+      "date": "2002",
+      "text": "The S1 and P1 truss segments brought major thermal-control hardware to orbit during the station's assembly."
+    },
+    "science": "Internal water loops collect heat. Heat exchangers transfer it to external liquid-ammonia loops, whose radiators emit thermal infrared radiation. There is no surrounding air to provide ordinary convective cooling outside.",
+    "connection": "The main external system has three radiator assemblies on each side of the truss, with eight panels per assembly. Rotating supports help manage how those surfaces face the Sun and space.",
+    "model": "Two simplified radiator groups represent the larger real system; they are not a literal count of its panels. Display colours show a teaching cue, not visible heat glow or measured surface temperatures.",
+    "sources": [
+      {
+        "label": "NASA: Radiator configuration and ammonia system",
+        "url": "https://ntrs.nasa.gov/citations/20260002946"
+      },
+      {
+        "label": "NASA: Station thermal-control reference guide",
+        "url": "https://www.nasa.gov/wp-content/uploads/2022/06/508318main_iss_ref_guide_nov2010.pdf"
+      },
+      {
+        "label": "NASA: Truss assembly history",
+        "url": "https://www.nasa.gov/international-space-station/integrated-truss-structure/"
+      }
+    ],
+    "focusId": "radiator-a"
+  },
+  {
+    "id": "power-storage",
+    "name": "Batteries & power electronics",
+    "group": "Power & structure",
+    "tag": "Energy through eclipse",
+    "metric": {
+      "value": "24",
+      "label": "lithium-ion batteries after the 2021 upgrade"
+    },
+    "purpose": "Battery and switching equipment on the U.S. truss keeps experiments and station systems supplied when sunlight disappears or electrical loads change.",
+    "milestone": {
+      "date": "1 February 2021",
+      "text": "Spacewalkers completed the four-year upgrade that replaced 48 nickel-hydrogen batteries with 24 lithium-ion batteries and adapter plates."
+    },
+    "science": "Charge/discharge units control energy flowing into and out of batteries. Switching units route electricity between channels and users; DC-to-DC converters provide a regulated secondary supply from the primary network.",
+    "connection": "Power is an engineered network: generating enough energy is only one job. Crews and ground teams also need switches, cooling, fault isolation and replaceable equipment to deliver it reliably.",
+    "model": "The truss boxes suggest equipment assemblies, not 24 individually identifiable batteries or a complete wiring diagram. Electrical capacities and timing in the classroom experiments are teaching parameters.",
+    "sources": [
+      {
+        "label": "NASA · battery upgrade completed",
+        "url": "https://www.nasa.gov/blogs/spacestation/2021/02/01/spacewalkers-wrap-up-battery-work-and-camera-installations/"
+      },
+      {
+        "label": "NASA · Operating an Outpost, electrical power chapter",
+        "url": "https://www.nasa.gov/wp-content/uploads/2018/04/iss-operating_an_outpost-tagged.pdf"
+      }
+    ]
+  },
+  {
+    "id": "shields",
+    "name": "Pressure hulls, shields & insulation",
+    "group": "Power & structure",
+    "tag": "Different layers perform different jobs",
+    "metric": {
+      "value": "Layered",
+      "label": "protection around occupied modules"
+    },
+    "purpose": "Pressure shells retain cabin air. External debris shields and thermal insulation help protect those shells and control their exposure to the orbital environment.",
+    "milestone": {
+      "date": "2015 reference",
+      "text": "NASA's station utilization guide documents Whipple and stuffed-Whipple shielding used to protect station hardware from small, fast debris."
+    },
+    "science": "A Whipple shield places a bumper away from the pressure wall. A fast particle strikes the bumper first, breaking up and spreading its energy over a larger area. Some designs add fabric layers; thermal blankets serve a separate heat-control role.",
+    "connection": "Handrails support spacewalk work, while windows require their own layered protection. Shielding reduces risk but does not make the station immune to debris; tracking and avoidance remain important.",
+    "model": "Panel seams, fasteners, blankets, handrails and windows convey construction ideas. They are not an exact engineering inventory or verified window layout. Cutaway mode is a viewing aid, not removal of real protection.",
+    "sources": [
+      {
+        "label": "NASA: Station debris shielding and window protection",
+        "url": "https://www.nasa.gov/wp-content/uploads/2017/09/np-2015-05-022-jsc-iss-guide-2015-update-111015-508c.pdf"
+      },
+      {
+        "label": "NASA: Station systems reference guide",
+        "url": "https://www.nasa.gov/wp-content/uploads/2022/06/508318main_iss_ref_guide_nov2010.pdf"
+      }
+    ]
+  },
+  {
+    "id": "elc",
+    "name": "EXPRESS Logistics Carriers",
+    "group": "Power & structure",
+    "tag": "External payloads & spare parts",
+    "metric": {
+      "value": "4",
+      "label": "external carrier platforms"
+    },
+    "purpose": "The EXPRESS Logistics Carriers are platforms attached to the port and starboard trusses. They hold external experiments and large spare parts that do not need a pressurized cabin.",
+    "milestone": {
+      "date": "2009–2011",
+      "text": "The four carriers arrived on shuttle missions STS-129, STS-133 and STS-134. Canadarm2 installed ELC-3 on 18 May 2011."
+    },
+    "science": "Standard mounting interfaces and electrical/data connections turn the station exterior into usable payload real estate. Robotic handling lets equipment be moved between a carrier and its work site.",
+    "connection": "Keeping replacement equipment in orbit can shorten the wait for a repair. The same platform infrastructure also supports science: EMIT, for example, was installed on ELC-1 to study mineral dust sources on Earth.",
+    "model": "The small equipment-covered pallets on the truss represent carriers. Their boxes are schematic; they do not reproduce a dated inventory of spares or individual experiments.",
+    "sources": [
+      {
+        "label": "NASA · EXPRESS Logistics Carriers 1–4",
+        "url": "https://www.nasa.gov/international-space-station/express-logistics-carriers-1-4/"
+      },
+      {
+        "label": "NASA · station assembly elements",
+        "url": "https://www.nasa.gov/international-space-station/international-space-station-assembly-elements/"
+      }
+    ]
+  },
+  {
+    "id": "canadarm2",
+    "name": "Canadarm2 & robotic work system",
+    "group": "Operations",
+    "tag": "Assembly, cargo capture and maintenance",
+    "metric": {
+      "value": "17 m",
+      "label": "Canadarm2 length"
+    },
+    "purpose": "Canadarm2 moves large equipment, helps astronauts during spacewalks and captures suitable visiting cargo spacecraft for berthing.",
+    "milestone": {
+      "date": "April 2001",
+      "text": "Canadarm2 launched on April 19 and was attached to the station on April 22. The Mobile Base followed in 2002 and Dextre in 2008."
+    },
+    "science": "The real arm has seven motorized joints and a grapple device at each end. It can change which end is anchored, reaching different worksites without behaving like a permanently rooted crane.",
+    "connection": "The Mobile Base rides a transporter along the truss and provides powered grapple points. Dextre is a separate two-armed maintenance robot that can ride the arm or base and handle smaller equipment.",
+    "model": "This drawing uses a fixed-base, two-link planar arm to teach reach. It cannot reproduce the real seven-joint motion. The Mobile Base and Dextre are related hardware, not separately depicted robots here.",
+    "sources": [
+      {
+        "label": "CSA: Canadarm2 technical data and history",
+        "url": "https://www.asc-csa.gc.ca/eng/iss/canadarm2/data-sheet.asp"
+      },
+      {
+        "label": "CSA: Mobile Base",
+        "url": "https://www.asc-csa.gc.ca/eng/iss/mobile-base/"
+      },
+      {
+        "label": "CSA: Dextre's maintenance role",
+        "url": "https://www.asc-csa.gc.ca/eng/iss/dextre/about.asp"
+      }
+    ],
+    "focusId": "arm"
+  },
+  {
+    "id": "cmgs",
+    "name": "Control Moment Gyroscopes — CMGs",
+    "group": "Operations",
+    "tag": "Controlling station orientation",
+    "metric": {
+      "value": "4",
+      "label": "double-gimbal gyroscopes"
+    },
+    "purpose": "The CMGs turn and hold the station's orientation while reducing the need to expend propellant for routine attitude control.",
+    "milestone": {
+      "date": "2000–2001",
+      "text": "The original CMGs launched with the Z1 truss in October 2000 and were activated in February 2001."
+    },
+    "science": "Each rotor spins at about 6,600 revolutions per minute. Moving its gimbals redirects angular momentum, exerting an opposite torque on the station. Thrusters can help unload accumulated momentum when necessary.",
+    "connection": "Attitude control coordinates with solar pointing, thermal conditions and visiting vehicles. CMGs change orientation; they do not provide the translational thrust needed to raise the station's orbit.",
+    "model": "Four schematic CMG enclosures are shown on Z1; internal rotors and gimbals are not modeled. The Attitude lab uses scalar storage and a classroom 80% caution threshold; that is not a real ISS flight rule or a complete gimbal-control simulation.",
+    "sources": [
+      {
+        "label": "NASA: ISS CMG operating experience and specifications",
+        "url": "https://ntrs.nasa.gov/citations/20100021932"
+      },
+      {
+        "label": "NASA: Z1 truss and station assembly",
+        "url": "https://www.nasa.gov/international-space-station/integrated-truss-structure/"
+      }
+    ]
+  },
+  {
+    "id": "docking",
+    "name": "Docking & berthing interfaces",
+    "group": "Operations",
+    "tag": "Two ways to join spacecraft",
+    "metric": {
+      "value": "2",
+      "label": "distinct joining methods"
+    },
+    "purpose": "Compatible interfaces secure an arriving vehicle and, where designed for it, create a sealed passage for people or cargo.",
+    "milestone": {
+      "date": "2013 / 2020",
+      "text": "Cygnus first reached the station by robotic capture and berthing in 2013. The upgraded Cargo Dragon began autonomous docking service in December 2020."
+    },
+    "science": "Docking means an active spacecraft flies into a compatible mating interface under its own control. For berthing, a robotic arm positions the vehicle at an interface such as a Common Berthing Mechanism before it is secured.",
+    "connection": "The pictured Cargo Dragon and Progress use docking. Cygnus is captured by Canadarm2 and then berthed. An open-looking ring alone does not establish that two spacecraft have compatible interfaces.",
+    "model": "The rings and visitor positions are schematic examples. Dragon at Harmony, Progress at Zvezda and Cygnus at Unity are illustrative configurations, not a live port-occupancy or docking-clearance display.",
+    "sources": [
+      {
+        "label": "NASA: Docking, berthing and station interface glossary",
+        "url": "https://www.nasa.gov/wp-content/uploads/2017/09/np-2015-05-022-jsc-iss-guide-2015-update-111015-508c.pdf"
+      },
+      {
+        "label": "NASA: First Cygnus capture and berthing",
+        "url": "https://www.nasa.gov/news-release/nasa-partner-orbital-sciences-completes-first-flight-to-space-station-as-astronauts-capture-cygnus-spacecraft/"
+      },
+      {
+        "label": "NASA: Upgraded Cargo Dragon's first mission",
+        "url": "https://www.nasa.gov/news-release/nasa-science-new-airlock-heads-to-space-station-on-spacex-cargo-spacecraft/"
+      }
+    ]
+  },
+  {
+    "id": "ams02",
+    "name": "Alpha Magnetic Spectrometer (AMS-02)",
+    "group": "Operations",
+    "tag": "Particle physics outside the station",
+    "metric": {
+      "value": "2011",
+      "label": "installed on the S3 truss"
+    },
+    "purpose": "AMS-02 measures cosmic-ray particles before they interact with Earth's atmosphere. Its observations help researchers investigate antimatter, cosmic-ray origins and possible clues to dark matter.",
+    "milestone": {
+      "date": "19 May 2011",
+      "text": "The STS-134 mission installed AMS-02 on the upper S3 truss after Endeavour delivered it to orbit."
+    },
+    "science": "A permanent magnet bends charged particles. Tracking detectors measure the curved paths, while other detectors help identify particle type and energy. The sign and curvature of a track carry information about charge and momentum.",
+    "connection": "Data travel from the station through NASA to the AMS control centre at CERN for analysis. A particle detector in orbit depends on the station's power, cooling, communications and maintenance support.",
+    "model": "The covered instrument housing, support base and pale thermal faces are schematic. Dimensions and details are illustrative; the detector internals are not rendered in 3D. The charge-bending study uses an ideal uniform field, not reconstructed particle data or a live mission feed.",
+    "sources": [
+      {
+        "label": "NASA · about AMS",
+        "url": "https://www.nasa.gov/alpha-magnetic-spectrometer/about-alpha-magnetic-spectrometer/"
+      },
+      {
+        "label": "AMS collaboration · detector design",
+        "url": "https://ams02.space/detector"
+      },
+      {
+        "label": "CERN · AMS experiment",
+        "url": "https://home.cern/science/experiments/ams/"
+      }
+    ],
+    "focusId": "ams02"
+  },
+  {
+    "id": "dragon",
+    "name": "Cargo Dragon — second generation",
+    "group": "Visitors",
+    "tag": "Docking cargo vehicle with a returning capsule",
+    "metric": {
+      "value": "2",
+      "label": "main sections: capsule and trunk"
+    },
+    "purpose": "Cargo Dragon delivers supplies and research equipment and can return selected cargo to Earth inside its capsule.",
+    "milestone": {
+      "date": "December 2020",
+      "text": "CRS-21 began service for the upgraded Cargo Dragon. The earlier Dragon generation first reached the station in May 2012 using robotic capture and berthing."
+    },
+    "science": "The second-generation vehicle docks autonomously. Its unpressurized trunk carries fixed solar cells on one side and radiator surfaces on the other; the trunk is discarded before the capsule re-enters.",
+    "connection": "The depicted vehicle is the cargo version associated with Harmony's docking adapters. It should not be confused with the earlier winged Dragon design or interpreted as a passenger-equipped Crew Dragon.",
+    "model": "The rounded capsule, trunk, solar-cell pattern and forward connection are schematic. Interior equipment, moving nose-cover details and exact thermal geometry are omitted. The parked vehicle is not a live mission position.",
+    "focusId": "dragon",
+    "sources": [
+      {
+        "label": "NASA: Dragon architecture and trunk systems",
+        "url": "https://www.nasa.gov/commercial-crew-program-press-kit/"
+      },
+      {
+        "label": "NASA: First upgraded Cargo Dragon mission",
+        "url": "https://www.nasa.gov/news-release/nasa-science-new-airlock-heads-to-space-station-on-spacex-cargo-spacecraft/"
+      },
+      {
+        "label": "NASA: First Dragon captured in May 2012",
+        "url": "https://www.nasa.gov/image-article/dragon-approaches-station/"
+      }
+    ]
+  },
+  {
+    "id": "progress",
+    "name": "Progress cargo spacecraft",
+    "group": "Visitors",
+    "tag": "Automated resupply and propulsion support",
+    "metric": {
+      "value": "3",
+      "label": "main spacecraft sections"
+    },
+    "purpose": "Progress brings supplies, water, gases and propellant. Its propulsion system can also help reboost the station or support attitude control.",
+    "milestone": {
+      "date": "1978 / 2000",
+      "text": "The Progress family began supplying Salyut 6 in 1978. Progress M1-3 became the first Progress delivery to the International Space Station in August 2000."
+    },
+    "science": "This uncrewed, Soyuz-derived vehicle combines a cargo section, a refuelling section and an instrumentation/propulsion section. Automated rendezvous brings it to a compatible docking port; its solar wings generate electrical power.",
+    "connection": "After unloading, the vehicle can take station waste for destructive atmospheric re-entry. Unlike Dragon's capsule, Progress is not a cargo-return vehicle.",
+    "model": "The body sections, two solar wings and engine bell are simplified. The Zvezda aft placement is an example, not current port occupancy; exact antennae, docking sensors and the full propulsion system are omitted. The painted cell grid is a visual cue, not an engineering count of flight cells.",
+    "focusId": "progress",
+    "sources": [
+      {
+        "label": "NASA: Progress architecture and mission roles",
+        "url": "https://www.nasa.gov/international-partner-rockets-and-spacecraft/"
+      },
+      {
+        "label": "NASA: Progress resupply history",
+        "url": "https://www.nasa.gov/history/45-years-ago-progress-1-begins-the-era-of-space-station-resupply/"
+      }
+    ]
+  },
+  {
+    "id": "cygnus",
+    "name": "Cygnus cargo spacecraft",
+    "group": "Visitors",
+    "tag": "Robotic capture and berthing",
+    "metric": {
+      "value": "2",
+      "label": "round UltraFlex solar arrays represented"
+    },
+    "purpose": "Cygnus delivers pressurized cargo and research supplies. At mission end, it carries discarded equipment and waste away for destructive re-entry.",
+    "milestone": {
+      "date": "2013 / 2015",
+      "text": "The demonstration Cygnus was captured in September 2013. Enhanced Cygnus, with more cargo volume, entered service in late 2015."
+    },
+    "science": "Cygnus approaches and holds position for Canadarm2 capture, then is moved to a berthing interface. Its deployed solar arrays turn sunlight into electricity for spacecraft systems.",
+    "connection": "The Unity Earth-facing connection illustrates a Cygnus berthing location. Capture by the arm and attachment to the port are separate steps; this is not the same process as Dragon's autonomous docking.",
+    "model": "The round arrays evoke the enhanced Cygnus configuration. Their cell bands, raised ribs and cargo barrel are stylized, not exact hardware drawings or a claim to depict every later Cygnus variant or current mission.",
+    "focusId": "cygnus",
+    "sources": [
+      {
+        "label": "NASA: First Cygnus capture and station arrival",
+        "url": "https://www.nasa.gov/news-release/nasa-partner-orbital-sciences-completes-first-flight-to-space-station-as-astronauts-capture-cygnus-spacecraft/"
+      },
+      {
+        "label": "NASA: Cygnus operational and enhanced-vehicle history",
+        "url": "https://www.nasa.gov/history/10-years-ago-the-first-operational-cygnus-cargo-mission-to-the-space-station/"
+      },
+      {
+        "label": "NASA: Station visiting vehicles and UltraFlex arrays",
+        "url": "https://www.nasa.gov/international-space-station/space-station-visiting-vehicles/"
+      }
+    ]
+  },
+  {
+    "id": "comms",
+    "name": "Z1 & relay communications",
+    "group": "Operations",
+    "tag": "Radio signals through space",
+    "metric": {
+      "value": "2000",
+      "label": "Z1 installation year"
+    },
+    "purpose": "Z1 is the framework above Unity. It carried early communications equipment and four control moment gyroscopes, and temporarily supported the P6 solar-power segment.",
+    "milestone": {
+      "date": "11 / 14 October 2000",
+      "text": "Discovery launched Z1 on STS-92 on 11 October; the crew attached it to Unity’s zenith port on 14 October."
+    },
+    "science": "A Ku-band dish directs a radio beam toward a Tracking and Data Relay Satellite. A reflector and feed help concentrate radio energy. S-band separately supports voice, telemetry and commands; Ku-band also supports two-way traffic.",
+    "connection": "Relay satellites link the low-orbiting station to Earth terminals and onward to mission teams and researchers. The antenna needs electrical power and correct pointing as the viewing geometry changes.",
+    "model": "The added framework, four CMG enclosures and one fixed Ku-band dish are schematic. They show neither the full antenna inventory nor live pointing. The long horizontal truss and this early Z1 support are separate structures.",
+    "focusId": "comms",
+    "sources": [
+      {
+        "label": "NASA: STS-92 assembly history",
+        "url": "https://www.nasa.gov/history/space-station-20th-sts-92-resumes-international-space-station-assembly/"
+      },
+      {
+        "label": "NASA: station truss and P6 relocation",
+        "url": "https://www.nasa.gov/international-space-station/integrated-truss-structure/"
+      },
+      {
+        "label": "JAXA: Z1 and early S/Ku equipment",
+        "url": "https://iss.jaxa.jp/iss/3a/mis_z1truss_e.html"
+      },
+      {
+        "label": "NASA: station relay communications",
+        "url": "https://www.nasa.gov/missions/station/the-international-space-station-20-years-of-communications-excellence/"
+      },
+      {
+        "label": "NASA: parabolic reflectors and feeds",
+        "url": "https://science.nasa.gov/learn/basics-of-space-flight/chapter6-5/"
+      },
+      {
+        "label": "NASA: geosynchronous and geostationary orbits",
+        "url": "https://science.nasa.gov/earth/earth-observatory/catalog-of-earth-satellite-orbits/"
+      }
+    ]
+  },
+  {
+    "id": "earth",
+    "name": "Earth, orbit & microgravity",
+    "group": "Environment",
+    "tag": "Continuous free fall around Earth",
+    "metric": {
+      "value": "51.6°",
+      "label": "orbital inclination"
+    },
+    "purpose": "The Earth backdrop gives a reference for the station's orbit, its day–night cycle and the changing ground track below it.",
+    "milestone": {
+      "date": "About 92 minutes",
+      "text": "One station orbit takes roughly an hour and a half; its precise duration changes with altitude. Earth turns beneath the orbital plane between successive passes."
+    },
+    "science": "Gravity remains strong at station altitude. The station, crew and loose objects continuously fall together around Earth, producing microgravity. Thin atmospheric drag gradually removes orbital energy, so periodic reboosts are needed.",
+    "connection": "Sunlit and shadowed intervals affect electricity and thermal control. Inclination describes the tilt of the orbital plane to Earth's equator; it is not the station's moment-to-moment pointing angle.",
+    "model": "Earth size, station altitude and spacing are deliberately compressed for visibility. The backdrop, atmosphere and lighting are illustrative, not live imagery or a common-scale astronomical rendering. Operations uses a fixed 92-minute teaching orbit.",
+    "sources": [
+      {
+        "label": "NASA: Station orbit and ground-track tutorial",
+        "url": "https://esrs.jsc.nasa.gov/Tools/orbitTutorial.htm"
+      },
+      {
+        "label": "NASA: Fundamental physics and free fall aboard the station",
+        "url": "https://www.nasa.gov/wp-content/uploads/2016/05/np-2015-04-021-jsc_fundamental_physics-iss-mini-book-508.pdf"
+      },
+      {
+        "label": "ESA: Station orbit overview",
+        "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/International_Space_Station/Where_is_the_International_Space_Station"
+      }
+    ]
+  }
+];
+
+  // Circular trajectories in a uniform field, in relative display units.
+  // Incoming velocity points down the drawing; B points out of the page.
+  function issAmsTrack(options) {
+    var o = options || {}, requested = Number(o.momentum), charge = Number(o.charge) === -1 ? -1 : 1;
+    var momentum = isFinite(requested) ? Math.max(1, Math.min(5, requested)) : 1;
+    var radius = 190 * momentum, points = [];
+    for (var i = 0; i <= 48; i++) {
+      var depth = 160 * i / 48;
+      var deflection = depth * depth / (radius + Math.sqrt(radius * radius - depth * depth));
+      points.push({ x: 320 - charge * deflection, y: 45 + depth });
+    }
+    return { charge: charge, momentum: momentum, radius: radius, points: points,
+      path: points.map(function (point, index) { return (index ? 'L' : 'M') + point.x.toFixed(3) + ' ' + point.y.toFixed(3); }).join(' '),
+      deflection: Math.abs(points[48].x - 320), bend: charge === 1 ? 'left' : 'right' };
+  }
+
+  var _issAmsStudyId = 0;
+  function IssAmsStudy(props) {
+    var React = props.React, h = React.createElement;
+    var chargeState = React.useState(1), charge = chargeState[0], setCharge = chargeState[1];
+    var momentumState = React.useState(1), momentum = momentumState[0], setMomentum = momentumState[1];
+    var inputId = React.useRef(null); if (!inputId.current) inputId.current = 'iss-ams-momentum-' + (++_issAmsStudyId);
+    var track = issAmsTrack({ charge: charge, momentum: momentum }), opposite = issAmsTrack({ charge: -charge, momentum: momentum });
+    return h('section', { className: 'iss-ams-study', 'data-iss-ams-study': '', 'data-charge': charge, 'data-momentum': momentum, 'aria-label': 'AMS particle physics and repair history' },
+      h('style', null, '.iss-ams-study{margin-top:18px;padding:14px;border:1px solid #557083;border-radius:12px;background:#0b1a29;min-width:0}.iss-ams-study h4{font-size:12px!important;line-height:1.5!important;color:#c5e5f6!important;margin:0 0 9px!important}.iss-ams-controls{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;margin:14px 0}.iss-ams-charge{display:flex;gap:7px;flex-wrap:wrap}.iss-ams-charge button{flex:1;min-width:114px}.iss-ams-charge button[aria-pressed="true"]{border-color:#fbbf24;background:#3a321c;color:#fff0bb}.iss-ams-momentum label{display:block;font-size:12px;font-weight:750;color:#d5e6f2}.iss-ams-momentum input{display:block;width:100%;margin:12px 0;accent-color:#fbbf24;min-height:24px}.iss-ams-momentum span{font-size:11px;color:#cbd5e1}.iss-ams-study svg{display:block;width:100%;height:auto;background:#06101c;border:1px solid #334c63;border-radius:10px}.iss-ams-reading{display:flex;gap:8px 18px;flex-wrap:wrap;margin:10px 0;font:11px ui-monospace,monospace;color:#e6d9aa}.iss-ams-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:16px 0}.iss-ams-steps strong{display:block;font-size:12px;color:#c5e5f6;margin-bottom:5px}.iss-ams-study p{font-size:12px!important}.iss-ams-history{margin:16px 0;padding-top:13px;border-top:1px solid #3e566c}.iss-ams-history dl{display:grid;grid-template-columns:138px 1fr;gap:10px;margin:0;font-size:12px;line-height:1.7}.iss-ams-history dt{color:#fde68a;font-weight:800}.iss-ams-history dd{margin:0;color:#d8e4ed}.iss-ams-assumptions{padding:10px 12px;border-left:3px solid #7f96ab;background:#15273a}.iss-ams-study .iss-ams-links{display:flex;gap:8px 14px;flex-wrap:wrap;margin-top:12px}.iss-ams-links a{color:#bae6fd;font-size:12px;text-underline-offset:3px}@media(max-width:680px){.iss-ams-study{padding:11px}.iss-ams-controls,.iss-ams-steps{grid-template-columns:1fr}.iss-ams-history dl{grid-template-columns:1fr;gap:4px}.iss-ams-history dd{margin-bottom:10px}.iss-ams-charge button{min-width:0}}@media(forced-colors:active){.iss-ams-study,.iss-ams-assumptions{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-ams-study :is(p,h4,strong,span,label,dt,dd,a){color:CanvasText!important}.iss-ams-study svg{forced-color-adjust:none}}'),
+      h('h4', null, 'Read a charged particle’s curved path'),
+      h('p', null, 'A permanent magnet bends charged trajectories. Silicon tracking planes measure positions along those paths. For the same magnetic field and charge magnitude, a particle with greater transverse momentum follows a larger-radius curve.'),
+      h('div', { className: 'iss-ams-controls' },
+        h('div', { className: 'iss-ams-charge', role: 'group', 'aria-label': 'Particle charge sign' }, [1, -1].map(function (value) { return h('button', { key: value, type: 'button', 'data-iss-ams-charge': value, 'aria-pressed': value === charge, onClick: function () { setCharge(value); } }, value === 1 ? 'Positive charge (+e)' : 'Negative charge (−e)'); })),
+        h('div', { className: 'iss-ams-momentum' }, h('label', { htmlFor: inputId.current }, 'Transverse momentum · ' + momentum.toFixed(1) + ' × reference'),
+          h('input', { id: inputId.current, type: 'range', min: 1, max: 5, step: .5, value: momentum, 'data-iss-ams-momentum': '', 'aria-label': 'Relative transverse momentum', 'aria-valuetext': momentum.toFixed(1) + ' times reference momentum', onChange: function (event) { setMomentum(Number(event.target.value)); } }),
+          h('span', null, 'Field strength and |q| = e stay fixed.'))),
+      h('svg', { viewBox: '0 0 640 260', role: 'img', 'aria-label': 'Uniform magnetic field points out of the page. Particles enter downward. The selected ' + (charge === 1 ? 'positive' : 'negative') + ' charge bends ' + track.bend + '; the dashed opposite charge bends the other way at equal momentum. Nine schematic tracking planes are shown.' },
+        h('text', { x: 20, y: 24, fill: '#9fc2d8', fontSize: 11, fontFamily: 'monospace' }, 'CONCEPTUAL FIELD · NOT AMS DATA'),
+        [0,1,2,3,4,5,6,7,8].map(function (layer) { return h('line', { key: layer, x1: 180, x2: 460, y1: 45 + layer * 20, y2: 45 + layer * 20, stroke: '#536e85', strokeWidth: 2, opacity: .65 }); }),
+        [180,460].map(function (x) { return h('g', { key: x }, [75,135,195].map(function (y) { return h('g', { key: y }, h('circle', { cx: x + (x === 180 ? -28 : 28), cy: y, r: 8, fill: 'none', stroke: '#a7bfce', strokeWidth: 1.5 }), h('circle', { cx: x + (x === 180 ? -28 : 28), cy: y, r: 2, fill: '#a7bfce' })); })); }),
+        h('path', { d: opposite.path, fill: 'none', stroke: '#8faac0', strokeWidth: 2, strokeDasharray: '6 5', 'data-iss-ams-track': 'opposite' }),
+        h('path', { d: track.path, fill: 'none', stroke: '#f4ca70', strokeWidth: 3, 'data-iss-ams-track': 'current' }),
+        track.points.filter(function (_, index) { return index % 6 === 0; }).map(function (point, index) { return h('circle', { key: index, cx: point.x, cy: point.y, r: 4, fill: '#f4ca70', stroke: '#06101c', strokeWidth: 1.2 }); }),
+        h('path', { d: 'M320 27V39M315 34L320 39L325 34', fill: 'none', stroke: '#e2e8f0', strokeWidth: 2 }),
+        h('text', { x: 22, y: 238, fill: '#c2d9e9', fontSize: 11 }, 'Dots mark idealized positions · dashed path: opposite charge'),
+        h('text', { x: 620, y: 238, textAnchor: 'end', fill: '#c2d9e9', fontSize: 11 }, '⊙ B out of page')),
+      h('p', { className: 'iss-ams-field-note' }, 'Field direction: out of the page (⊙); particles enter downward. Transverse momentum is momentum perpendicular to that field. Positive charges bend left and negative charges right.'),
+      h('div', { className: 'iss-ams-reading' }, h('span', null, (charge === 1 ? '+e' : '−e') + ' bends ' + track.bend), h('span', null, 'Relative radius: ' + momentum.toFixed(1) + '×'), h('span', null, 'R ∝ p⊥ / |q| at fixed B')),
+      h('div', { className: 'iss-ams-steps' },
+        h('div', null, h('strong', null, 'Magnet → curvature'), h('p', null, 'The magnetic force acts across the particle’s motion. Opposite charges bend in opposite directions; charge sign alone does not identify a particle or prove it is antimatter.')),
+        h('div', null, h('strong', null, 'Tracker → momentum'), h('p', null, 'The tracker configuration flown in 2011 has nine silicon layers. Their measured positions, together with the magnetic field, reveal momentum divided by charge. Real layer spacing and reconstruction are more complex than this sketch.')),
+        h('div', null, h('strong', null, 'Other detectors → identity'), h('p', null, 'Time-of-flight, transition-radiation, ring-imaging Cherenkov and calorimeter measurements add information about speed, charge and energy. Scientists combine these signals to distinguish particle species.'))),
+      h('div', { className: 'iss-ams-history' }, h('h4', null, 'Built for science, repaired in orbit'), h('dl', null,
+        h('dt', null, '19 May 2011'), h('dd', null, 'The STS-134 mission installed AMS-02 on the upper S3 truss after Endeavour launched it on 16 May.'),
+        h('dt', null, '2019–2020'), h('dd', null, 'Luca Parmitano and Andrew Morgan carried out four spacewalks to renew the silicon tracker’s carbon-dioxide cooling system. The final excursion was on 25 January 2020. This repaired tracker cooling, rather than a superconducting magnet.'))),
+      h('p', { className: 'iss-ams-assumptions' }, 'Model limits: the interactive curves use an ideal uniform field, equal charge magnitudes, relative momentum and evenly spaced measurement planes. They omit detector losses, scattering, the real field map and reconstruction error. These tracks are not measurements. The flown AMS uses a permanent magnet; its pale exterior thermal panels reject heat. Its internal Cherenkov “radiator” is a different kind of component.'),
+      h('div', { className: 'iss-ams-links' },
+        h('a', { href: 'https://ams02.space/detector', target: '_blank', rel: 'noopener noreferrer' }, 'AMS collaboration · detector systems ↗'),
+        h('a', { href: 'https://www.nasa.gov/missions/station/alpha-magnetic-spectrometer-ams-how-it-works/', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · how AMS works ↗'),
+        h('a', { href: 'https://www.nasa.gov/history/space-station-20th-sts-134-delivers-alpha-magnetic-spectrometer-to-the-space-station/', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · installation and repair history ↗'),
+        h('a', { href: 'https://ams02.space/discover/upgrades/upgraded-tracker-thermal-pump-system', target: '_blank', rel: 'noopener noreferrer' }, 'AMS collaboration · cooling repair ↗')));
+  }
+
+
+  // Front-view cable paths are conceptual; they are not flight wire routing.
+  function issGrappleCapture(value) {
+    var requested = Number(value), stage = isFinite(requested) ? Math.max(0, Math.min(2, Math.floor(requested))) : 0;
+    var aperture = stage === 0 ? 44 : 12, controlRadius = 2 * aperture - 35, cables = [];
+    for (var cable = 0; cable < 3; cable++) {
+      var angle = cable * Math.PI * 2 / 3;
+      var start = [70 * Math.cos(angle - Math.PI / 3), 70 * Math.sin(angle - Math.PI / 3)];
+      var end = [70 * Math.cos(angle + Math.PI / 3), 70 * Math.sin(angle + Math.PI / 3)];
+      var control = [controlRadius * Math.cos(angle), controlRadius * Math.sin(angle)], points = [];
+      for (var i = 0; i <= 48; i++) {
+        var t = i / 48, u = 1 - t;
+        points.push({ x: 145 + u * u * start[0] + 2 * u * t * control[0] + t * t * end[0], y: 135 + u * u * start[1] + 2 * u * t * control[1] + t * t * end[1] });
+      }
+      cables.push({ points: points, path: points.map(function (p, index) { return (index ? 'L' : 'M') + p.x.toFixed(3) + ' ' + p.y.toFixed(3); }).join(' ') });
+    }
+    var headX = [564, 492, 470][stage];
+    return { stage: stage, id: ['align', 'snare', 'seat'][stage], aperture: aperture, probeRadius: 9, cables: cables,
+      headX: headX, flangeX: headX + 60, carriageX: stage === 2 ? 492 : 514 };
+  }
+
+  // A 2-D slice of an ideal paraboloid; arrows show energy direction, not wave phase.
+  function issCommsRayDiagram(mode) {
+    var transmit = mode === 'transmit', focus = [135, 135], focalLength = 81;
+    function path(a, b) { return 'M' + a[0].toFixed(3) + ' ' + a[1].toFixed(3) + 'L' + b[0].toFixed(3) + ' ' + b[1].toFixed(3); }
+    function arrow(a, b) {
+      var dx = b[0] - a[0], dy = b[1] - a[1], length = Math.hypot(dx, dy), ux = dx / length, uy = dy / length;
+      var tip = [a[0] + dx * .55, a[1] + dy * .55];
+      return path([tip[0] - ux * 8 - uy * 4, tip[1] - uy * 8 + ux * 4], tip) + 'L' + (tip[0] - ux * 8 + uy * 4).toFixed(3) + ' ' + (tip[1] - uy * 8 - ux * 4).toFixed(3);
+    }
+    var rays = [-80, -40, 40, 80].map(function (offset) {
+      var surface = [54 + offset * offset / (4 * focalLength), 135 + offset], outer = [320, surface[1]];
+      var points = transmit ? [focus.slice(), surface, outer] : [outer, surface, focus.slice()];
+      return { offset: offset, surface: surface, points: points, segments: [0, 1].map(function (index) {
+        return { kind: (transmit ? index === 1 : index === 0) ? 'parallel' : 'focus', from: points[index], to: points[index + 1], path: path(points[index], points[index + 1]), arrow: arrow(points[index], points[index + 1]) };
+      }) };
+    });
+    var curve = [];
+    for (var y = -90; y <= 90; y += 3) curve.push([54 + y * y / (4 * focalLength), 135 + y]);
+    return { mode: transmit ? 'transmit' : 'receive', focus: focus, vertex: [54, 135], focalLength: focalLength, rays: rays,
+      curve: curve.map(function (point, index) { return (index ? 'L' : 'M') + point[0].toFixed(3) + ' ' + point[1].toFixed(3); }).join(' ') };
+  }
+
+  function IssCommsReflectorStudy(props) {
+    var React = props.React, h = React.createElement, state = React.useState('receive'), mode = state[0], setMode = state[1], diagram = issCommsRayDiagram(mode);
+    var receive = mode === 'receive', explanation = receive ? 'Receive: an on-axis signal from far away arrives nearly parallel. The reflector redirects it toward the feed at the focus.' : 'Transmit: the feed illuminates the reflector from its focus. The reflected energy leaves approximately parallel to the dish axis, forming a directed beam.';
+    return h('section', { className: 'iss-reflector-study', 'data-iss-reflector-mode': mode, 'aria-label': 'Parabolic antenna receive and transmit' },
+      h('style', null, '.iss-reflector-study{margin:16px 0;padding:13px;border:1px solid #526d80;border-radius:10px;background:#102235;min-width:0}.iss-reflector-modes{display:flex;gap:8px;margin:12px 0}.iss-reflector-modes button{flex:1;min-height:42px}.iss-reflector-modes button[aria-pressed="true"]{border-color:#fbbf24;background:#3a321c;color:#fff0bb}.iss-reflector-study svg{max-width:600px;margin:auto}.iss-reflector-legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:10px 0;font-size:12px;line-height:1.6;color:#e2edf6}.iss-reflector-legend span{display:flex;align-items:center;gap:7px}.iss-reflector-key{display:inline-block;width:20px;height:4px;background:#7dd3fc;flex-shrink:0}.iss-reflector-key.focus{background:#fbbf24}.iss-reflector-key.dish{background:#e2e8f0}.iss-reflector-reading{border-left:3px solid #fbbf24;padding:8px 11px;background:#1a2939}.iss-reflector-limit{color:#c1d1df}@media(max-width:520px){.iss-reflector-study{padding:10px}.iss-reflector-modes{flex-direction:column}}'),
+      h('h4', null, 'Why does the dish curve?'),
+      h('p', null, 'Compare receiving and transmitting through the same ideal reflector. Change direction to reverse the arrows along the same paths.'),
+      h('div', { className: 'iss-reflector-modes', role: 'group', 'aria-label': 'Radio energy direction' }, ['receive', 'transmit'].map(function (value) {
+        return h('button', { key: value, type: 'button', 'data-iss-reflector-direction': value, 'aria-pressed': mode === value, onClick: function () { setMode(value); } }, value === 'receive' ? 'Receive · toward the feed' : 'Transmit · away from the dish');
+      })),
+      h('svg', { viewBox: '0 0 360 270', role: 'img', 'aria-label': explanation + ' Side view: the pale curved line is the reflector, the gold ring is the feed at the focus, and the dashed horizontal line is the dish axis. This is a ray model, not a coverage map.' },
+        h('path', { d: 'M34 135H333', fill: 'none', stroke: '#708a9d', strokeWidth: 1.5, strokeDasharray: '5 6' }),
+        diagram.rays.map(function (ray, index) { return h('g', { key: index, 'data-iss-reflector-ray': index }, ray.segments.map(function (segment) {
+          var color = segment.kind === 'parallel' ? '#7dd3fc' : '#fbbf24';
+          return h('g', { key: segment.kind, 'data-iss-reflector-leg': segment.kind },
+            h('path', { d: segment.path, fill: 'none', stroke: color, strokeWidth: 2, vectorEffect: 'non-scaling-stroke', 'data-iss-reflector-path': '' }),
+            h('path', { d: segment.arrow, fill: 'none', stroke: color, strokeWidth: 2.5, strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', 'data-iss-reflector-arrow': '' }));
+        })); }),
+        h('path', { d: diagram.curve, fill: 'none', stroke: '#e2e8f0', strokeWidth: 6, strokeLinecap: 'round', 'data-iss-reflector-surface': '' }),
+        h('circle', { cx: diagram.focus[0], cy: diagram.focus[1], r: 9, fill: '#102235', stroke: '#fbbf24', strokeWidth: 3 }),
+        h('circle', { cx: diagram.focus[0], cy: diagram.focus[1], r: 3, fill: '#fbbf24' })),
+      h('div', { className: 'iss-reflector-legend' }, h('span', null, h('i', { className: 'iss-reflector-key dish', 'aria-hidden': true }), 'Curved reflector'), h('span', null, h('i', { className: 'iss-reflector-key', 'aria-hidden': true }), 'Parallel part of each path'), h('span', null, h('i', { className: 'iss-reflector-key focus', 'aria-hidden': true }), 'Path to or from the feed')),
+      h('p', { className: 'iss-reflector-reading', 'data-iss-reflector-reading': '', 'aria-live': 'polite' }, explanation),
+      h('p', { className: 'iss-reflector-limit' }, 'The focus is a geometric location; the feed is hardware placed there. This 2-D slice illustrates the same parabolic principle as the 3-D dish. Real radio waves diffract, so a beam has width and weaker sidelobes. These few rays omit feed blockage, losses and off-axis reception; they are not separate wires, a measured beam pattern or a change to the station’s antenna pointing.'),
+      h('a', { href: 'https://science.nasa.gov/learn/basics-of-space-flight/chapter6-5/', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · reflector antennas and focusing ↗'));
+  }
+
+  function IssCommsStudy(props) {
+    var React=props.React,h=React.createElement,state=React.useState('station'),selected=state[0],select=state[1];
+    var hops=[
+      {id:'station',title:'Station',text:'The Ku-band antenna directs radio energy toward a relay satellite and receives signals from it. A curved reflector and feed concentrate the beam; the actual antenna tracks moving lines of sight. S-band provides a separate route for voice, telemetry and commands.'},
+      {id:'relay',title:'Relay satellite',text:'Tracking and Data Relay Satellites orbit much higher than the station in geosynchronous orbits. Relaying through them extends contact beyond the view of a nearby ground terminal. Coverage depends on geometry and operations; the diagram does not predict a live connection.'},
+      {id:'ground',title:'Earth terminal',text:'Earth terminals, including White Sands in New Mexico and Guam, connect the radio link to ground networks and mission teams. Science data can travel onward to investigators. Commands and other traffic can travel back through the relay system.'}
+    ];
+    var active=hops.filter(function(hop){return hop.id===selected;})[0];
+    function inspect(event){var owner=event.currentTarget.closest('[data-iss-map]'),cv=owner&&owner.querySelector('.iss-station-stage canvas');if(!cv||!cv._issFitCamera)return;cv._issFitCamera('comms');cv.focus({preventScroll:true});cv.closest('.iss-station-stage').scrollIntoView({block:'center',behavior:'auto'});}
+    return h('section',{className:'iss-comms-study','data-iss-comms-study':selected,'aria-label':'Station radio relay path and Z1 assembly history'},
+      h('style',null,'.iss-comms-study{margin-top:18px;padding:14px;border:1px solid #557083;border-radius:12px;background:#0b1a29;min-width:0}.iss-comms-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.iss-comms-study h4{font-size:13px!important;line-height:1.5!important;color:#c5e5f6!important;margin:0 0 8px!important}.iss-comms-hops{display:flex;gap:8px;margin:14px 0}.iss-comms-hops button{flex:1;min-width:0}.iss-comms-hops button[aria-pressed="true"]{border-color:#fbbf24;background:#3a321c;color:#fff0bb}.iss-comms-study svg{display:block;width:100%;height:auto;background:#06101c;border:1px solid #334c63;border-radius:10px}.iss-comms-study p{font-size:12px!important}.iss-comms-copy{padding:11px 12px;margin:11px 0!important;border-left:3px solid #fbbf24;background:#1a2939;min-height:100px}.iss-comms-physics{padding:10px 12px;background:#142638;border:1px solid #405b70;border-radius:8px}.iss-comms-history{margin:16px 0;padding-top:13px;border-top:1px solid #3e566c}.iss-comms-history dl{display:grid;grid-template-columns:125px 1fr;gap:10px 14px;margin:0;font-size:12px;line-height:1.7}.iss-comms-history dt{font-weight:750;color:#f8d789}.iss-comms-history dd{margin:0}.iss-comms-limit{color:#c1d1df}.iss-comms-study :is(button,a):focus-visible{outline:3px solid #fbbf24;outline-offset:3px}@media(max-width:520px){.iss-comms-hops{flex-direction:column}.iss-comms-history dl{grid-template-columns:1fr;gap:4px}.iss-comms-history dd{margin-bottom:8px}.iss-comms-study{padding:11px}}@media(forced-colors:active){.iss-comms-study svg{forced-color-adjust:none}}'),
+      h('div',{className:'iss-comms-heading'},h('h4',null,'How does a signal get home?'),h('button',{type:'button','data-iss-comms-inspect':'',onClick:inspect},'Inspect Z1 antenna ↗')),
+      h('p',null,'Follow one example route between the station and Earth. Radio waves cross vacuum without air or a physical cable. Select a node to examine its job; the arrows represent traffic in both directions.'),
+      h('div',{className:'iss-comms-hops',role:'group','aria-label':'Radio relay route'},hops.map(function(hop){return h('button',{key:hop.id,type:'button','data-iss-comms-hop':hop.id,'aria-pressed':selected===hop.id,onClick:function(){select(hop.id);}},hop.title);})),
+      h('svg',{viewBox:'0 0 600 245',role:'img','aria-label':'Schematic two-way radio path: station to a higher relay satellite, then to an Earth terminal. Highlighted: '+active.title+'. Distances, positions and antennas are not to scale.'},
+        h('path',{d:'M25 213Q300 164 575 213',fill:'none',stroke:'#517e9d',strokeWidth:5}),
+        h('path',{d:'M139 130L269 72M331 72L461 130',fill:'none',stroke:'#e5c474',strokeWidth:3,strokeDasharray:'7 5'}),
+        h('path',{d:'M211 93l-12 2 7 8M393 103l8-8-12-2M228 90l12-2-7-8M372 80l-12 8 13 2',fill:'none',stroke:'#e5c474',strokeWidth:3}),
+        hops.map(function(hop,i){var on=selected===hop.id,x=[90,300,510][i],y=i===1?64:143;return h('g',{key:hop.id,'data-iss-comms-zone':hop.id,'data-selected':String(on)},
+          h('rect',{x:x-55,y:y-31,width:110,height:62,rx:12,fill:on?'#24465a':'#15283a',stroke:on?'#f6cf76':'#7796ac',strokeWidth:on?4:2}),
+          i===0?h('g',null,h('path',{d:'M55 143H125M90 126V160',stroke:'#c5dce9',strokeWidth:7}),h('path',{d:'M55 133V154M125 133V154',stroke:'#86b3d4',strokeWidth:12})):i===1?h('g',null,h('rect',{x:290,y:52,width:20,height:24,fill:'#c5dce9'}),h('path',{d:'M256 64H286M314 64H344',stroke:'#86b3d4',strokeWidth:14})):h('g',null,h('path',{d:'M484 127Q510 170 536 127M510 149V164M493 165H527',fill:'none',stroke:'#c5dce9',strokeWidth:4}),h('path',{d:'M510 147L521 127',stroke:'#e5c474',strokeWidth:3})),
+          h('text',{x:x,y:i===1?116:193,textAnchor:'middle',fill:'#c5dce9',fontSize:15},hop.title));}),
+        h('text',{x:300,y:228,textAnchor:'middle',fill:'#a9c8dc',fontSize:13},'One route · both directions · not to scale')),
+      h('p',{className:'iss-comms-copy','data-iss-comms-description':'','aria-live':'polite'},h('strong',null,active.title+': '),active.text),
+      h(IssCommsReflectorStudy, { React: React }),
+      h('p',{className:'iss-comms-physics'},h('strong',null,'Find it in 3-D: '),'The small feed sits in front of the bowl, held by three thin support rods. Those rods are hardware; the diagram’s colored paths represent radio energy.'),
+      h('div',{className:'iss-comms-history'},h('h4',null,'A framework from the first assembly years'),h('dl',null,
+        h('dt',null,'11 October 2000'),h('dd',null,'Discovery launched the Z1 truss on STS-92.'),
+        h('dt',null,'14 October 2000'),h('dd',null,'Z1 was attached to Unity’s zenith port. It carried communications hardware and four control moment gyroscopes.'),
+        h('dt',null,'Temporary power site'),h('dd',null,'P6 later stood above Z1 before moving to the station’s port end in 2007. Z1 is separate from the long horizontal integrated truss.'))),
+      h('p',{className:'iss-comms-limit'},'Model limits: the frame, four CMG enclosures, equipment covers, antenna shape, mounting and fixed pointing are schematic. Internal gyro rotors, the complete antenna inventory, relay satellites and ground terminals are not modeled in 3D. The diagram highlights a communications route; it does not calculate coverage, radio power, bandwidth or network latency. This mixed-era station is not a dated hardware inventory.'));
+  }
+
+  function IssQuestStudy(props) {
+    var React=props.React,h=React.createElement,state=React.useState('equipment'),selected=state[0],select=state[1];
+    var zones=[
+      {id:'equipment',title:'Equipment lock',text:'The larger compartment contains systems for spacesuit maintenance and servicing. It connects to Unity and provides room for preparing equipment. Quest has two independently isolatable volumes; the equipment lock is not permanently fixed at one pressure.'},
+      {id:'bulkhead',title:'Bulkhead',text:'A structural bulkhead and internal hatch separate the two chambers. A closed pressure boundary allows an isolated volume to change pressure while other parts retain their air. The pressure difference also creates a load that the hatch and its structure must carry.'},
+      {id:'crew',title:'Crew lock',text:'The smaller chamber provides the external exit and entry for spacewalkers. Its EVA hatch is on the Earth-facing, or nadir, side. Separating this exit chamber from the larger workspace limits how much of the station must be involved in a pressure change.'}
+    ];
+    var active=zones.filter(function(zone){return zone.id===selected;})[0];
+    function inspect(event){var owner=event.currentTarget.closest('[data-iss-map]'),cv=owner&&owner.querySelector('.iss-station-stage canvas');if(!cv||!cv._issFitCamera)return;cv._issFitCamera('quest-exterior');cv.focus({preventScroll:true});cv.closest('.iss-station-stage').scrollIntoView({block:'center',behavior:'auto'});}
+    return h('section',{className:'iss-quest-study','data-iss-quest-study':selected,'aria-label':'Quest chambers, pressure boundary and assembly history'},
+      h('style',null,'.iss-quest-study{margin-top:18px;padding:14px;border:1px solid #557083;border-radius:12px;background:#0b1a29;min-width:0}.iss-quest-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.iss-quest-study h4{font-size:12px!important;line-height:1.5!important;color:#c5e5f6!important;margin:0 0 8px!important}.iss-quest-zones{display:flex;gap:8px;margin:14px 0}.iss-quest-zones button{flex:1;min-width:0}.iss-quest-zones button[aria-pressed="true"]{border-color:#fbbf24;background:#3a321c;color:#fff0bb}.iss-quest-study svg{display:block;width:100%;height:auto;background:#06101c;border:1px solid #334c63;border-radius:10px}.iss-quest-study p{font-size:12px!important}.iss-quest-copy{padding:11px 12px;margin:11px 0!important;border-left:3px solid #fbbf24;background:#1a2939;min-height:90px}.iss-quest-physics{padding:10px 12px;background:#142638;border:1px solid #405b70;border-radius:8px}.iss-quest-physics code{color:#fde68a}.iss-quest-history{margin:16px 0;padding-top:13px;border-top:1px solid #3e566c}.iss-quest-history dl{display:grid;grid-template-columns:140px 1fr;gap:10px;margin:0;font-size:12px;line-height:1.7}.iss-quest-history dt{color:#fde68a;font-weight:800}.iss-quest-history dd{margin:0;color:#d8e4ed}.iss-quest-limit{padding:10px 12px;border-left:3px solid #7f96ab;background:#15273a}.iss-quest-links{display:flex;gap:8px 14px;flex-wrap:wrap;margin-top:12px}.iss-quest-links a{color:#bae6fd;font-size:12px;text-underline-offset:3px}@media(max-width:680px){.iss-quest-study{padding:11px}.iss-quest-heading>button{width:100%}.iss-quest-history dl{grid-template-columns:1fr;gap:4px}.iss-quest-history dd{margin-bottom:10px}.iss-quest-zones button{padding:8px 5px;font-size:12px}}@media(forced-colors:active){.iss-quest-study,.iss-quest-limit,.iss-quest-copy,.iss-quest-physics{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-quest-study :is(p,h4,strong,dt,dd,a,code){color:CanvasText!important}.iss-quest-study svg{forced-color-adjust:none}}'),
+      h('div',{className:'iss-quest-heading'},h('h4',null,'Why two chambers?'),h('button',{type:'button','data-iss-quest-inspect':'',onClick:inspect},'Inspect Quest exterior ↗')),
+      h('p',null,'Quest combines a larger equipment lock with a smaller crew lock. An internal hatch and bulkhead provide a pressure boundary between them. Select a region to examine its role.'),
+      h('div',{className:'iss-quest-zones',role:'group','aria-label':'Quest airlock region'},zones.map(function(zone){return h('button',{key:zone.id,type:'button','data-iss-quest-chamber':zone.id,'aria-pressed':selected===zone.id,onClick:function(){select(zone.id);}},zone.title);})),
+      h('svg',{viewBox:'0 0 600 245',role:'img','aria-label':'Schematic Quest cross-section: Unity connects to the larger equipment lock; an internal hatch separates the smaller crew lock, with its exterior hatch on the Earth-facing side. Highlighted: '+active.title+'. Chambers and openings are not to scale.'},
+        h('text',{x:26,y:39,fill:'#c5dce9',fontSize:14},'Unity side'),h('text',{x:574,y:39,textAnchor:'end',fill:'#c5dce9',fontSize:14},'Crew exit side'),
+        h('path',{d:'M10 115H35M10 145H35M265 88L340 108M265 172L340 152',stroke:'#7796ac',strokeWidth:5,fill:'none'}),
+        zones.map(function(zone,i){var on=selected===zone.id;return h('g',{key:zone.id,'data-iss-quest-zone':zone.id,'data-selected':String(on)},
+          h('rect',{x:[35,294,340][i],y:[66,84,91][i],width:[230,25,220][i],height:[128,92,78][i],rx:i===1?2:14,fill:on?'#24465a':'#15283a',stroke:on?'#f6cf76':'#7796ac',strokeWidth:on?4:2}),
+          i!==1?h('text',{x:i===0?150:450,y:134,textAnchor:'middle',fill:'#c5dce9',fontSize:15},i===0?'Equipment lock':'Crew lock'):null);}),
+        h('path',{d:'M300 78V182M312 89V171',stroke:'#cedce4',strokeWidth:4,fill:'none'}),
+        h('ellipse',{cx:450,cy:171,rx:31,ry:8,fill:'#d4dfe4',stroke:'#89a7ba',strokeWidth:3}),
+        h('path',{d:'M450 181V207M443 199L450 208L457 199',stroke:'#e4bd6e',strokeWidth:3,fill:'none'}),
+        h('text',{x:303,y:222,textAnchor:'middle',fill:'#c5dce9',fontSize:13},'Internal hatch'),h('text',{x:488,y:229,textAnchor:'middle',fill:'#c5dce9',fontSize:13},'Exterior hatch · nadir')),
+      h('p',{className:'iss-quest-copy','data-iss-quest-description':'','aria-live':'polite'},h('strong',null,active.title+': '),active.text),
+      h('p',{className:'iss-quest-physics'},h('strong',null,'Pressure load: '),'pressure acts on both sides of a closed hatch. For a uniform pressure difference across a flat area, the net force is approximately ',h('code',null,'Δp × A'),'. A broad hatch can carry a large force even from a modest pressure difference. Microgravity does not remove this load.'),
+      h('div',{className:'iss-quest-history'},h('h4',null,'Quest’s 2001 installation'),h('dl',null,
+        h('dt',null,'12 July 2001'),h('dd',null,'Atlantis launched Quest on STS-104, bringing a dedicated joint airlock to the station.'),
+        h('dt',null,'15 July 2001'),h('dd',null,'Quest was attached to Unity. Its equipment and crew chambers added a station-based route for preparing and conducting spacewalks.'),
+        h('dt',null,'Three spacewalks'),h('dd',null,'Michael Gernhardt and James Reilly outfitted the airlock during three STS-104 excursions. The initial installation included two oxygen and two nitrogen high-pressure tanks; the final excursion used Quest.'))),
+      h('p',{className:'iss-quest-limit'},'Model limits: body proportions, hatch hardware and tank locations are schematic. The four containers depict the 2001 delivered gas set. The matching cutaway uses a generic interior texture, with no spacesuit-maintenance layout. The diagram highlights regions; it does not animate hatches, pressure cycles or spacesuit procedures. The existing pressure laboratory remains a separate model.'),
+      h('div',{className:'iss-quest-links'},
+        h('a',{href:'https://www.nasa.gov/international-space-station/quest-airlock/',target:'_blank',rel:'noopener noreferrer'},'NASA · Quest chambers and dates ↗'),
+        h('a',{href:'https://www.nasa.gov/mission/sts-104/',target:'_blank',rel:'noopener noreferrer'},'NASA · STS-104 and gas tanks ↗'),
+        h('a',{href:'https://www.nasa.gov/history/space-station-20th-sts-104-brings-quest-joint-airlock-to-the-space-station/',target:'_blank',rel:'noopener noreferrer'},'NASA · assembly and spacewalk history ↗'),
+        h('a',{href:'https://ntrs.nasa.gov/citations/20080021669',target:'_blank',rel:'noopener noreferrer'},'NASA · airlock technical context ↗'),
+        h('a',{href:'https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/gas-pressure/',target:'_blank',rel:'noopener noreferrer'},'NASA · pressure and force ↗'),
+        h('a',{href:'https://www.nasa.gov/reference/8-0-architecture-vol-2/',target:'_blank',rel:'noopener noreferrer'},'NASA · general hatch design principles ↗')));
+  }
+
+  function IssKiboStudy(props) {
+    var React = props.React, h = React.createElement, state = React.useState('inside'), selected = state[0], select = state[1];
+    var zones = [
+      { id: 'inside', title: 'Inside', text: 'The Pressurized Module provides cabin air so astronauts can handle equipment. Microgravity is present here as well as outside: exposure to vacuum is the important difference in this comparison.' },
+      { id: 'airlock', title: 'Airlock', text: 'Kibo’s equipment airlock connects the cabin workspace with the external workspace. Suitable small equipment can be transferred and handled by Kibo’s own robotic arm, JEMRMS. The platform itself and large external payloads were not passed through this airlock.' },
+      { id: 'outside', title: 'Outside', text: 'The Exposed Facility supports experiments in the low-pressure space environment. Equipment interfaces supply power, data and coolant; an exposed instrument still needs engineered thermal control. There is no cabin air around it for ordinary air cooling.' }
+    ];
+    var active = zones.filter(function (zone) { return zone.id === selected; })[0];
+    function inspect(event) {
+      var owner = event.currentTarget.closest('[data-iss-map]'), cv = owner && owner.querySelector('.iss-station-stage canvas');
+      if (!cv || !cv._issFitCamera) return;
+      cv._issFitCamera('kibo-ef'); cv.focus({ preventScroll: true }); cv.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+    return h('section', { className: 'iss-kibo-study', 'data-iss-kibo-study': selected, 'aria-label': 'Kibo laboratory environments and assembly history' },
+      h('style', null, '.iss-kibo-study{margin-top:18px;padding:14px;border:1px solid #557083;border-radius:12px;background:#0b1a29;min-width:0}.iss-kibo-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.iss-kibo-study h4{font-size:12px!important;line-height:1.5!important;color:#c5e5f6!important;margin:0 0 8px!important}.iss-kibo-zones{display:flex;gap:8px;margin:14px 0}.iss-kibo-zones button{flex:1}.iss-kibo-zones button[aria-pressed="true"]{border-color:#fbbf24;background:#3a321c;color:#fff0bb}.iss-kibo-study svg{display:block;width:100%;height:auto;background:#06101c;border:1px solid #334c63;border-radius:10px}.iss-kibo-study p{font-size:12px!important}.iss-kibo-copy{padding:11px 12px;margin:11px 0!important;border-left:3px solid #fbbf24;background:#1a2939;min-height:90px}.iss-kibo-history{margin:16px 0;padding-top:13px;border-top:1px solid #3e566c}.iss-kibo-history dl{display:grid;grid-template-columns:140px 1fr;gap:10px;margin:0;font-size:12px;line-height:1.7}.iss-kibo-history dt{color:#fde68a;font-weight:800}.iss-kibo-history dd{margin:0;color:#d8e4ed}.iss-kibo-limit{padding:10px 12px;border-left:3px solid #7f96ab;background:#15273a}.iss-kibo-links{display:flex;gap:8px 14px;flex-wrap:wrap;margin-top:12px}.iss-kibo-links a{color:#bae6fd;font-size:12px;text-underline-offset:3px}@media(max-width:680px){.iss-kibo-study{padding:11px}.iss-kibo-heading>button{width:100%}.iss-kibo-history dl{grid-template-columns:1fr;gap:4px}.iss-kibo-history dd{margin-bottom:10px}.iss-kibo-zones button{padding:8px 5px}}@media(forced-colors:active){.iss-kibo-study,.iss-kibo-limit,.iss-kibo-copy{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-kibo-study :is(p,h4,strong,dt,dd,a){color:CanvasText!important}.iss-kibo-study svg{forced-color-adjust:none}}'),
+      h('div', { className: 'iss-kibo-heading' }, h('h4', null, 'One laboratory, two environments'), h('button', { type: 'button', 'data-iss-kibo-inspect': '', onClick: inspect }, 'Inspect Kibo platform ↗')),
+      h('p', null, 'Kibo combines a pressurized laboratory and an external experiment platform. An equipment airlock and a separate robotic system help suitable small payloads cross that boundary. Select a zone to compare the working environments.'),
+      h('div', { className: 'iss-kibo-zones', role: 'group', 'aria-label': 'Kibo working environment' }, zones.map(function (zone) { return h('button', { key: zone.id, type: 'button', 'data-iss-kibo-environment': zone.id, 'aria-pressed': selected === zone.id, onClick: function () { select(zone.id); } }, zone.title); })),
+      h('svg', { viewBox: '0 0 600 245', role: 'img', 'aria-label': 'Schematic equipment route from the pressurized laboratory through its equipment airlock to the exposed platform. Highlighted: ' + active.title + '. Kibo’s robotic arm handles suitable equipment outside. Separate service connections carry power, data and coolant. Not to scale.' },
+        zones.map(function (zone, i) { var x = [24,236,382][i], width = [190,124,194][i], on = zone.id === selected; return h('g', { key: zone.id, 'data-iss-kibo-zone': zone.id, 'data-selected': String(on) },
+          h('rect', { x: x, y: 66, width: width, height: 104, rx: i === 0 ? 18 : 5, fill: on ? '#24465a' : '#15283a', stroke: on ? '#f6cf76' : '#7796ac', strokeWidth: on ? 4 : 2 }),
+          h('text', { x: x + width / 2, y: 47, textAnchor: 'middle', fill: '#c5dce9', fontSize: 14 }, ['Cabin air','Equipment airlock','Exposed platform'][i]),
+          h('rect', { x: x + width / 2 - 15, y: 103, width: 30, height: 30, rx: 2, fill: '#d0dbe2', stroke: '#f6cf76', strokeWidth: 2 })); }),
+        h('path', { d: 'M112 150H488M478 143L490 150L478 157', fill: 'none', stroke: '#e6be6c', strokeWidth: 3, strokeDasharray: '6 4' }),
+        h('path', { d: 'M420 96L452 72L491 84L506 104', stroke: '#c5d8e5', strokeWidth: 7, fill: 'none' }),
+        h('circle', { cx: 452, cy: 72, r: 6, fill: '#93b5cb' }), h('circle', { cx: 491, cy: 84, r: 6, fill: '#93b5cb' }),
+        h('text', { x: 489, y: 193, textAnchor: 'middle', fill: '#c5dce9', fontSize: 13 }, 'Kibo’s own robotic arm'),
+        h('path', { d: 'M114 210H486', stroke: '#7fbbcf', strokeWidth: 3, fill: 'none' }),
+        h('text', { x: 300, y: 232, textAnchor: 'middle', fill: '#c5dce9', fontSize: 13 }, 'Separate services: power · data · coolant')),
+      h('p', { className: 'iss-kibo-copy', 'data-iss-kibo-description': '', 'aria-live': 'polite' }, h('strong', null, active.title + ': '), active.text),
+      h('p', null, 'The dashed route represents equipment transfer; the lower line represents services. The platform-to-laboratory berthing mechanism attaches the whole facility. Equipment Exchange Units attach individual payloads and provide their services. JAXA lists 12 attachment locations, including system and temporary-storage positions; this is not a count of 12 available science bays.'),
+      h('div', { className: 'iss-kibo-history' }, h('h4', null, 'An outpost built in stages'), h('dl', null,
+        h('dt', null, '31 May 2008'), h('dd', null, 'Discovery launched Kibo’s main Pressurized Module and main robotic arm on STS-124. The laboratory was installed in June 2008.'),
+        h('dt', null, '15 July 2009'), h('dd', null, 'Endeavour launched the Exposed Facility on STS-127, bringing the external laboratory to the station.'),
+        h('dt', null, '18–19 July 2009'), h('dd', null, 'Station and shuttle robotic arms handed the platform between them before attaching it to Kibo. Attachment completed at 23:40 UTC on 18 July, or 08:40 Japan Standard Time on 19 July; the dates in the agencies’ reports describe the same event.'))),
+      h('p', { className: 'iss-kibo-limit' }, 'Model limits: the pallet, six interface markers and generic payload boxes use schematic proportions and placement. They do not identify actual instruments or a current manifest. The diagram highlights regions; it does not simulate hatch operations, pressure cycling or robotic motion. Kibo’s JEMRMS is separate from Canadarm2.'),
+      h('div', { className: 'iss-kibo-links' },
+        h('a', { href: 'https://humans-in-space.jaxa.jp/en/kibo/structure/', target: '_blank', rel: 'noopener noreferrer' }, 'JAXA · Kibo components ↗'),
+        h('a', { href: 'https://iss.jaxa.jp/en/about/kibo/jef/', target: '_blank', rel: 'noopener noreferrer' }, 'JAXA · platform interfaces and services ↗'),
+        h('a', { href: 'https://iss.jaxa.jp/iss/kibo/al_e.html', target: '_blank', rel: 'noopener noreferrer' }, 'JAXA · equipment airlock ↗'),
+        h('a', { href: 'https://www.nasa.gov/international-space-station/japanese-experiment-module-kibo/', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · assembly dates ↗'),
+        h('a', { href: 'https://www.nasa.gov/history/15-years-ago-sts-127-delivers-japanese-external-platform-to-space-station/', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · robotic installation ↗'),
+        h('a', { href: 'https://iss.jaxa.jp/kibo/mission/2ja/news/index_4.html', target: '_blank', rel: 'noopener noreferrer' }, 'JAXA · installation time ↗')));
+  }
+
+  function IssCupolaStudy(props) {
+    var React = props.React, h = React.createElement;
+    var state = React.useState('scratch'), selected = state[0], select = state[1];
+    var layers = [
+      { id: 'scratch', label: 'Scratch pane', text: 'The cabin-side pane shields the pressure windows from scratches and accidental contact inside Cupola. It is separate from the pair that contains cabin pressure.' },
+      { id: 'pressure', label: 'Pressure pair', text: 'Two pressure panes provide redundancy. ESA describes each as 25 mm thick: the inner pressure pane carries the pressure difference, with the outer pressure pane as its backup.' },
+      { id: 'debris', label: 'Debris pane', text: 'The outer glass pane adds protection for the pressure panes while the shutter is open. It is one part of the protection system; it does not make the window immune to impacts.' },
+      { id: 'shutter', label: 'Shutter', text: 'A separate exterior cover protects the window when it is not in use and helps control its thermal exposure. Crew operate the shutters from inside; the cover is not the cabin pressure seal.' }
+    ];
+    var active = layers.filter(function (entry) { return entry.id === selected; })[0];
+    var panes = [
+      { id: 'scratch', group: 'scratch', x: 115, width: 13 },
+      { id: 'pressure-inner', group: 'pressure', x: 202, width: 23 },
+      { id: 'pressure-outer', group: 'pressure', x: 261, width: 23 },
+      { id: 'debris', group: 'debris', x: 358, width: 13 }
+    ];
+    function inspect(event) {
+      var owner = event.currentTarget.closest('[data-iss-map]'), canvas = owner && owner.querySelector('.iss-station-stage canvas');
+      if (!canvas || !canvas._issFitCamera) return;
+      canvas._issFitCamera('cupola'); canvas.focus({ preventScroll: true });
+      canvas.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+    return h('section', { className: 'iss-cupola-study', 'data-iss-cupola-study': selected, 'aria-label': 'Cupola window protection and history' },
+      h('style', null, '.iss-cupola-study{margin-top:18px;padding:14px;border:1px solid #557083;border-radius:12px;background:#0b1a29;min-width:0}.iss-cupola-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.iss-cupola-study h4{font-size:12px!important;line-height:1.5!important;color:#c5e5f6!important;margin:0 0 8px!important}.iss-cupola-layers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}.iss-cupola-layers button[aria-pressed="true"]{border-color:#fbbf24;background:#3a321c;color:#fff0bb}.iss-cupola-study svg{display:block;width:100%;height:auto;background:#06101c;border:1px solid #334c63;border-radius:10px}.iss-cupola-study p{font-size:12px!important}.iss-cupola-copy{padding:11px 12px;margin:11px 0!important;border-left:3px solid #fbbf24;background:#1a2939;min-height:86px}.iss-cupola-history{margin:16px 0;padding-top:13px;border-top:1px solid #3e566c}.iss-cupola-history dl{display:grid;grid-template-columns:140px 1fr;gap:10px;margin:0;font-size:12px;line-height:1.7}.iss-cupola-history dt{color:#fde68a;font-weight:800}.iss-cupola-history dd{margin:0;color:#d8e4ed}.iss-cupola-limit{padding:10px 12px;border-left:3px solid #7f96ab;background:#15273a}.iss-cupola-links{display:flex;gap:8px 14px;flex-wrap:wrap;margin-top:12px}.iss-cupola-links a{color:#bae6fd;font-size:12px;text-underline-offset:3px}@media(max-width:680px){.iss-cupola-study{padding:11px}.iss-cupola-heading>button{width:100%}.iss-cupola-layers{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-cupola-history dl{grid-template-columns:1fr;gap:4px}.iss-cupola-history dd{margin-bottom:10px}}@media(forced-colors:active){.iss-cupola-study,.iss-cupola-limit,.iss-cupola-copy{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-cupola-study :is(p,h4,strong,dt,dd,a){color:CanvasText!important}.iss-cupola-study svg{forced-color-adjust:none}}'),
+      h('div', { className: 'iss-cupola-heading' }, h('h4', null, 'Seven views, layered protection'), h('button', { type: 'button', 'data-iss-cupola-inspect': '', onClick: inspect }, 'Inspect Cupola windows ↗')),
+      h('p', null, 'Six trapezoidal side windows surround an 80 cm circular nadir window. Nadir means toward Earth. Each real window has four glass panes with different jobs, plus a separate shutter outside. Select a layer to follow the protection from cabin to space.'),
+      h('div', { className: 'iss-cupola-layers', role: 'group', 'aria-label': 'Window protection layer' }, layers.map(function (entry) { return h('button', { key: entry.id, type: 'button', 'data-iss-cupola-layer': entry.id, 'aria-pressed': selected === entry.id, onClick: function () { select(entry.id); } }, entry.label); })),
+      h('svg', { viewBox: '0 0 520 225', role: 'img', 'aria-label': 'Schematic window cross-section, cabin on the left and space on the right: scratch pane, two pressure panes, debris pane and exterior shutter. Highlighted: ' + active.label + '. Thicknesses and gaps are exaggerated.' },
+        h('text', { x: 20, y: 28, fill: '#c4dce9', fontSize: 14 }, 'CABIN'), h('text', { x: 500, y: 28, fill: '#c4dce9', fontSize: 14, textAnchor: 'end' }, 'SPACE'),
+        h('path', { d: 'M25 55H495', fill: 'none', stroke: '#6f8ea5', strokeWidth: 2 }), h('path', { d: 'M487 50L496 55L487 60', fill: 'none', stroke: '#a6c4d8', strokeWidth: 2 }),
+        h('path', { d: 'M92 78H391M92 186H391', stroke: '#647e92', strokeWidth: 10, fill: 'none' }),
+        panes.map(function (pane) { var highlighted = pane.group === selected; return h('rect', { key: pane.id, x: pane.x, y: 83, width: pane.width, height: 98, rx: 2, 'data-iss-cupola-pane': pane.id, 'data-selected': String(highlighted), fill: highlighted ? '#fad57a' : '#426b84', stroke: highlighted ? '#fff0bc' : '#96bbcf', strokeWidth: highlighted ? 3 : 2 }); }),
+        h('rect', { x: 439, y: 75, width: 15, height: 114, rx: 3, 'data-iss-cupola-shutter': '', 'data-selected': String(selected === 'shutter'), fill: selected === 'shutter' ? '#fad57a' : '#8d9da9', stroke: selected === 'shutter' ? '#fff0bc' : '#c0d0da', strokeWidth: 3 }),
+        h('text', { x: 243, y: 212, textAnchor: 'middle', fill: '#c4dce9', fontSize: 13 }, 'Four panes'), h('text', { x: 447, y: 212, textAnchor: 'middle', fill: '#c4dce9', fontSize: 13 }, 'Cover')),
+      h('p', { className: 'iss-cupola-copy', 'data-iss-cupola-description': '', 'aria-live': 'polite' }, h('strong', null, active.label + ': '), active.text),
+      h('p', null, 'Left to right: scratch pane → inner pressure pane → backup pressure pane → debris pane → exterior shutter. The pair of pressure panes provides redundancy; the cover supplies protection outside the glass. The diagram shows the cover closed so its position is clear.'),
+      h('div', { className: 'iss-cupola-history' }, h('h4', null, 'From launch to the first view'), h('dl', null,
+        h('dt', null, '8 February 2010'), h('dd', null, 'Endeavour launched Cupola and Tranquility on STS-130. The European-built observation module was carried attached to Tranquility for the flight.'),
+        h('dt', null, '15 February 2010'), h('dd', null, 'Cupola was relocated to Tranquility’s Earth-facing port. The attachment latches and sixteen powered bolts secured it in its final observing position.'),
+        h('dt', null, '17 February 2010'), h('dd', null, 'After spacewalkers Bob Behnken and Nicholas Patrick removed blankets and launch restraints, the crew opened the seven shutters for the first time in orbit. The circular Earth-facing window opened first.'))),
+      h('p', { className: 'iss-cupola-limit' }, 'Model limits: the map uses schematic dimensions and one opaque surface per window, with no refraction or moving shutters. The four real panes appear in this diagram with exaggerated thicknesses and gaps. The map’s cutaway uses its generic interior; Cupola’s real robotics workstation is described in the field guide.'),
+      h('div', { className: 'iss-cupola-links' },
+        h('a', { href: 'https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Node-3_Cupola/Cupola', target: '_blank', rel: 'noopener noreferrer' }, 'ESA · structure and window stack ↗'),
+        h('a', { href: 'https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/International_Space_Station/Cupola', target: '_blank', rel: 'noopener noreferrer' }, 'ESA · materials and shutters ↗'),
+        h('a', { href: 'https://www.nasa.gov/international-space-station/cupola/', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · Cupola operations and launch ↗'),
+        h('a', { href: 'https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Node-3_Cupola/Space_Station_s_big_bay_window_installed', target: '_blank', rel: 'noopener noreferrer' }, 'ESA · 15 February installation ↗'),
+        h('a', { href: 'https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Node-3_Cupola/The_Cupola_opens_its_seven_eyelids', target: '_blank', rel: 'noopener noreferrer' }, 'ESA · 17 February first opening ↗')));
+  }
+
+  function IssGrappleStudy(props) {
+    var React = props.React, h = React.createElement;
+    var state = React.useState(0), stage = state[0], setStage = state[1], model = issGrappleCapture(stage);
+    var stages = [
+      ['Align', 'Bring a compatible grapple shaft into the hand’s opening. The three cables remain open while the fixture is positioned.'],
+      ['Snare', 'The three snare cables close around the shaft. Its wider rounded head helps prevent it slipping out. Initial capture still allows motion; it is not the complete rigid connection.'],
+      ['Seat', 'A carriage retracts and draws the fixture firmly against the hand. Latches secure compatible interfaces; powered fixtures can also connect power, data and video.']
+    ];
+    function inspect(event) {
+      var owner = event.currentTarget.closest('[data-iss-map]'), canvas = owner && owner.querySelector('.iss-station-stage canvas');
+      if (!canvas || !canvas._issFitCamera) return;
+      canvas._issFitCamera('grapple'); canvas.focus({ preventScroll: true });
+      canvas.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+    return h('section', { className: 'iss-grapple-study', 'data-iss-grapple-study': model.id, 'aria-label': 'Robotic grapple capture and history' },
+      h('style', null, '.iss-grapple-study{margin-top:18px;padding:14px;border:1px solid #557083;border-radius:12px;background:#0b1a29;min-width:0}.iss-grapple-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.iss-grapple-study h4{font-size:12px!important;line-height:1.5!important;color:#c5e5f6!important;margin:0 0 8px!important}.iss-grapple-stages{display:flex;gap:8px;margin:14px 0}.iss-grapple-stages button{flex:1}.iss-grapple-stages button[aria-pressed="true"]{border-color:#fbbf24;background:#3a321c;color:#fff0bb}.iss-grapple-study svg{display:block;width:100%;height:auto;background:#06101c;border:1px solid #334c63;border-radius:10px}.iss-grapple-study p{font-size:12px!important}.iss-grapple-stage-copy{padding:11px 12px;margin:11px 0!important;border-left:3px solid #fbbf24;background:#1a2939;min-height:84px}.iss-grapple-history{margin:16px 0;padding-top:13px;border-top:1px solid #3e566c}.iss-grapple-history dl{display:grid;grid-template-columns:140px 1fr;gap:10px;margin:0;font-size:12px;line-height:1.7}.iss-grapple-history dt{color:#fde68a;font-weight:800}.iss-grapple-history dd{margin:0;color:#d8e4ed}.iss-grapple-limit{padding:10px 12px;border-left:3px solid #7f96ab;background:#15273a}.iss-grapple-links{display:flex;gap:8px 14px;flex-wrap:wrap;margin-top:12px}.iss-grapple-links a{color:#bae6fd;font-size:12px;text-underline-offset:3px}@media(max-width:680px){.iss-grapple-study{padding:11px}.iss-grapple-heading>button{width:100%}.iss-grapple-history dl{grid-template-columns:1fr;gap:4px}.iss-grapple-history dd{margin-bottom:10px}.iss-grapple-stages button{padding:8px 5px;font-size:12px}}@media(forced-colors:active){.iss-grapple-study,.iss-grapple-limit,.iss-grapple-stage-copy{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-grapple-study :is(p,h4,strong,dt,dd,a){color:CanvasText!important}.iss-grapple-study svg{forced-color-adjust:none}}'),
+      h('div', { className: 'iss-grapple-heading' }, h('h4', null, 'Three cables, then a rigid connection'), h('button', { type: 'button', 'data-iss-grapple-inspect': '', onClick: inspect }, 'Inspect grapple hand ↗')),
+      h('p', null, 'Canadarm2’s Latching End Effector is a mechanical hand. Three internal snare cables capture a purpose-built grapple shaft; seating and latching complete the connection. Select a step to examine the sequence.'),
+      h('div', { className: 'iss-grapple-stages', role: 'group', 'aria-label': 'Conceptual capture step' }, stages.map(function (entry, index) { return h('button', { key: index, type: 'button', 'data-iss-capture-stage': index, 'aria-pressed': index === stage, onClick: function () { setStage(index); } }, (index + 1) + ' · ' + entry[0]); })),
+      h('svg', { viewBox: '0 0 640 250', role: 'img', 'aria-label': stages[stage][0] + ' conceptual capture. Front view shows three cables ' + (stage === 0 ? 'open around the intended shaft position' : 'closed around the shaft with clearance') + '. Side view shows ' + (stage === 2 ? 'the fixture seated against the hand' : stage === 1 ? 'the head inside the hand before seating' : 'the probe approaching the opening') + '. Not to scale.' },
+        h('text', { x: 18, y: 24, fill: '#a8c9dc', fontSize: 11, fontFamily: 'monospace' }, 'CAPTURE CONCEPT · NOT FLIGHT GEOMETRY'),
+        h('circle', { cx: 145, cy: 135, r: 78, fill: '#192b3a', stroke: '#a6b9c8', strokeWidth: 9 }),
+        h('circle', { cx: 145, cy: 135, r: 70, fill: '#07111d', stroke: '#607a90', strokeWidth: 2 }),
+        model.cables.map(function (cable, index) { return h('path', { key: index, d: cable.path, fill: 'none', stroke: ['#f3ca74','#b4d9ed','#d6c3ed'][index], strokeWidth: 4, 'data-iss-capture-wire': index }); }),
+        h('circle', { cx: 145, cy: 135, r: model.probeRadius, fill: stage === 0 ? '#132a3f' : '#d9e2e9', stroke: '#f7d68e', strokeWidth: 2, strokeDasharray: stage === 0 ? '3 3' : undefined }),
+        h('text', { x: 145, y: 232, textAnchor: 'middle', fill: '#c2d9e9', fontSize: 12 }, 'Front: three snares + shaft'),
+        h('path', { d: 'M365 90H530V105M365 180H530V165M365 90V180', fill: 'none', stroke: '#9fb3c4', strokeWidth: 10 }),
+        h('line', { x1: 352, y1: 135, x2: 632, y2: 135, stroke: '#506b82', strokeWidth: 1, strokeDasharray: '4 5' }),
+        h('rect', { x: model.headX, y: 128, width: 60, height: 14, rx: 2, fill: '#b9cad7' }),
+        h('circle', { cx: model.headX, cy: 135, r: 13, fill: '#cbd8e2', stroke: '#f4ce7d', strokeWidth: 2 }),
+        h('rect', { x: model.flangeX - 3, y: 104, width: 6, height: 62, rx: 2, fill: '#a6bfce', stroke: '#dae8f0' }),
+        h('path', { d: 'M' + model.carriageX + ' 94V' + (135 - model.aperture) + 'M' + model.carriageX + ' ' + (135 + model.aperture) + 'V176', stroke: '#f3ca74', strokeWidth: 4, fill: 'none' }),
+        stage === 2 ? h('g', null, h('rect', { x: 520, y: 100, width: 18, height: 8, fill: '#e8be69' }), h('rect', { x: 520, y: 162, width: 18, height: 8, fill: '#e8be69' })) : null,
+        h('text', { x: 492, y: 232, textAnchor: 'middle', fill: '#c2d9e9', fontSize: 12 }, 'Side: approach → capture → seat')),
+      h('p', { className: 'iss-grapple-stage-copy', 'data-iss-capture-description': '' }, h('strong', null, stages[stage][0] + ': '), stages[stage][1]),
+      h('p', null, 'Front view: the cables close around the narrower shaft, leaving its larger head behind them. Side view: the carriage draws the captured fixture into its seat. The close 3D view follows the actual trainer hand; pan or Home leaves follow mode, and Fit arm returns to the full workspace.'),
+      h('div', { className: 'iss-grapple-history' }, h('h4', null, 'A robotic system assembled over time'), h('dl', null,
+        h('dt', null, '22 April 2001'), h('dd', null, 'Canadarm2 was attached to the station after its 19 April launch on STS-100. Its two equivalent end effectors let either end serve as the anchor.'),
+        h('dt', null, '10 June 2002'), h('dd', null, 'The Mobile Base System was installed. It rides the Mobile Transporter along truss rails and provides a platform for robotic work.'),
+        h('dt', null, '18 March 2008'), h('dd', null, 'Dextre was installed, adding two smaller arms for detailed maintenance. It can work with Canadarm2 or the Mobile Base; it is separate from the snare hand.'))),
+      h('p', { className: 'iss-grapple-limit' }, 'Model limits: real Canadarm2 has seven joints and equivalent hands at both ends. This trainer keeps a fixed base, two planar links and one illustrated free hand. The diagram uses schematic cable paths and no force or payload dynamics; its buttons illustrate capture without changing the 3D hand. Powered grapple fixtures provide services; not every grapple fixture supplies power or data.'),
+      h('div', { className: 'iss-grapple-links' },
+        h('a', { href: 'https://www.asc-csa.gc.ca/eng/multimedia/search/video/18210', target: '_blank', rel: 'noopener noreferrer' }, 'CSA · three-snare demonstration ↗'),
+        h('a', { href: 'https://www.asc-csa.gc.ca/eng/iss/canadarm2/about.asp', target: '_blank', rel: 'noopener noreferrer' }, 'CSA · two hands and walking ↗'),
+        h('a', { href: 'https://www.nasa.gov/international-space-station/mobile-servicing-system/', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · assembly dates and robotic roles ↗'),
+        h('a', { href: 'https://www.nasa.gov/wp-content/uploads/2018/04/iss-operating_an_outpost-tagged.pdf', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · capture, rigidization and latching ↗')));
+  }
+
+
+  // The field guide is local reading state. Hardware inspection never changes
+  // the saved experiment, station attitude or module-discovery progress.
+  function IssComponentGuide(props) {
+    var React = props.React, h = React.createElement;
+    var guideRef = React.useRef(null);
+    var state = React.useState(props.moduleId || 'zarya'), topicId = state[0], setTopicId = state[1];
+    React.useEffect(function () { setTopicId(props.moduleId || 'zarya'); }, [props.moduleId, props.readRequest]);
+    var topic = ISS_COMPONENT_GUIDE.filter(function (entry) { return entry.id === topicId; })[0] || ISS_COMPONENT_GUIDE[0];
+    var index = ISS_COMPONENT_GUIDE.indexOf(topic);
+    function choose(id) {
+      var next = ISS_COMPONENT_GUIDE.filter(function (entry) { return entry.id === id; })[0];
+      if (!next) return;
+      setTopicId(next.id);
+      if (next.moduleId) props.onModuleSelect(next.moduleId);
+    }
+    function frame() {
+      var container = guideRef.current && guideRef.current.closest('[data-iss-map]');
+      var cv = container && container.querySelector('.iss-station-stage canvas');
+      if (!cv) return;
+      if (topic.moduleId && typeof cv._issFocusModule === 'function') cv._issFocusModule(topic.moduleId);
+      else if (topic.focusId && typeof cv._issFitCamera === 'function') cv._issFitCamera(topic.focusId);
+      else return;
+      cv.focus({ preventScroll: true });
+      var stage = cv.closest('.iss-station-stage');
+      if (stage) stage.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+    var groups = ['Modules', 'Power & structure', 'Operations', 'Visitors', 'Environment'];
+    var diagram = topic.moduleId ? props.blueprint(topic.moduleId) : issComponentSketch(h, topic);
+    return h('section', { ref: guideRef, className: 'iss-component-guide', 'data-iss-component-guide': topic.id, 'aria-label': 'Station component field guide' },
+      h('style', null,
+        '.iss-component-guide{margin:14px 0;padding:16px;border:1px solid #3f5c76;border-radius:16px;background:linear-gradient(145deg,#0c1e32,#07111f 70%);color:#e2e8f0;min-width:0}.iss-guide-nav{display:flex;align-items:end;gap:10px;flex-wrap:wrap}.iss-guide-select{flex:1;min-width:180px}.iss-guide-select label{display:block;font:800 10px ui-monospace,monospace;letter-spacing:1.2px;color:#7dd3fc;margin-bottom:7px}.iss-guide-select select{width:100%;max-width:100%;padding:10px;border:1px solid #56738e;border-radius:8px;background:#0a1728;color:#f1f5f9;font-size:13px}.iss-guide-pages{display:flex;align-items:center;gap:7px}.iss-guide-pages span{font:11px ui-monospace,monospace;color:#cbd5e1;min-width:42px;text-align:center}.iss-component-guide button{min-height:40px;padding:8px 12px;border:1px solid #56738e;border-radius:8px;color:#e0f2fe;background:#132b43;cursor:pointer;font-weight:750}.iss-component-guide button:disabled{opacity:.4;cursor:default}.iss-component-guide :is(button,select,a):focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-guide-hero{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:20px 0 12px}.iss-guide-hero small{font:800 10px ui-monospace,monospace;color:#7dd3fc;letter-spacing:.8px;text-transform:uppercase}.iss-guide-hero h3{font-size:21px;line-height:1.25;margin:5px 0 10px;color:#f8fafc}.iss-guide-metric{flex:0 0 124px;text-align:right;border-left:1px solid #3b536c;padding-left:14px}.iss-guide-metric strong{display:block;color:#fbbf24;font-size:27px;line-height:1.2}.iss-guide-metric span{display:block;font-size:10px;color:#cbd5e1;margin-top:4px;line-height:1.4}.iss-component-guide p{font-size:13px;line-height:1.7;margin:0}.iss-guide-milestone{display:flex;gap:13px;align-items:baseline;padding:13px 0;margin:12px 0;border-top:1px solid #334b62;border-bottom:1px solid #334b62}.iss-guide-milestone time{flex:0 0 150px;font:800 12px ui-monospace,monospace;color:#fde68a}.iss-guide-columns{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}.iss-component-guide h4{font:800 10px ui-monospace,monospace;letter-spacing:1px;text-transform:uppercase;color:#7dd3fc;margin:0 0 7px}.iss-guide-model{padding:11px 13px;border-left:3px solid #8197b0;background:#142237;border-radius:0 8px 8px 0}.iss-guide-model p{font-size:12px;color:#cbd5e1}.iss-guide-sources{display:flex;gap:8px;flex-wrap:wrap;list-style:none;margin:9px 0 0;padding:0}.iss-guide-sources a{display:block;border:1px solid #3f5c76;border-radius:7px;padding:8px 10px;color:#bae6fd;font-size:11px;line-height:1.45;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}.iss-guide-source-block{margin-top:16px}.iss-guide-sketch{margin:10px 0;border:1px solid #334b62;border-radius:10px;background:#06101e;overflow:hidden}.iss-guide-sketch svg{display:block;width:100%;height:auto}.iss-guide-sketch figcaption{padding:6px 12px;color:#a7bbcf;font:10px ui-monospace,monospace;border-top:1px solid #23394f}.iss-component-guide .iss-blueprint{margin:8px 0}.iss-guide-scope{margin-top:12px!important;font-size:11px!important;color:#a7bbcf}.iss-guide-frame{white-space:nowrap}@media(max-width:600px){.iss-component-guide{padding:12px}.iss-guide-columns{grid-template-columns:1fr;gap:15px}.iss-guide-hero{gap:10px}.iss-guide-hero h3{font-size:18px}.iss-guide-metric{flex-basis:94px;padding-left:10px}.iss-guide-metric strong{font-size:23px}.iss-guide-milestone{display:block}.iss-guide-milestone time{display:block;margin-bottom:6px}.iss-guide-select{flex-basis:100%}.iss-guide-pages{margin-left:auto}.iss-guide-sources li{width:100%}}@media(forced-colors:active){.iss-component-guide,.iss-guide-model,.iss-guide-sketch{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-component-guide :is(p,h3,h4,small,strong,span,time,a){color:CanvasText}.iss-guide-sketch svg{forced-color-adjust:none}}'),
+      h('div', { className: 'iss-guide-nav' },
+        h('div', { className: 'iss-guide-select' }, h('label', { htmlFor: 'iss-component-topic' }, 'COMPONENT FIELD GUIDE'),
+          h('select', { id: 'iss-component-topic', value: topic.id, onChange: function (event) { choose(event.target.value); } },
+            groups.map(function (group) { return h('optgroup', { key: group, label: group }, ISS_COMPONENT_GUIDE.filter(function (entry) { return entry.group === group; }).map(function (entry) { return h('option', { key: entry.id, value: entry.id }, entry.name); })); }))),
+        h('div', { className: 'iss-guide-pages' },
+          h('button', { type: 'button', disabled: index === 0, 'aria-label': 'Previous component', onClick: function () { choose(ISS_COMPONENT_GUIDE[index - 1].id); } }, '←'),
+          h('span', null, (index + 1) + ' / ' + ISS_COMPONENT_GUIDE.length),
+          h('button', { type: 'button', disabled: index === ISS_COMPONENT_GUIDE.length - 1, 'aria-label': 'Next component', onClick: function () { choose(ISS_COMPONENT_GUIDE[index + 1].id); } }, '→'))),
+      h('div', { className: 'iss-guide-hero' }, h('div', null, h('small', null, topic.tag), h('h3', { 'data-iss-guide-title': '' }, topic.name),
+        topic.moduleId || topic.focusId ? h('button', { type: 'button', className: 'iss-guide-frame', onClick: frame }, 'Frame in 3D ↗') : null),
+        h('div', { className: 'iss-guide-metric' }, h('strong', null, topic.metric.value), h('span', null, topic.metric.label))),
+      diagram,
+      h('p', { 'data-iss-guide-purpose': '' }, topic.purpose),
+      h('div', { className: 'iss-guide-milestone' }, h('time', null, topic.milestone.date), h('p', null, topic.milestone.text)),
+      h('div', { className: 'iss-guide-columns' }, h('div', null, h('h4', null, 'How it works'), h('p', null, topic.science)), h('div', null, h('h4', null, 'People & engineering'), h('p', null, topic.connection))),
+      h('div', { className: 'iss-guide-model' }, h('h4', null, 'Reading this model'), h('p', null, topic.model)),
+      h('div', { className: 'iss-guide-source-block' }, h('h4', null, 'Primary sources'), h('ul', { className: 'iss-guide-sources' }, topic.sources.map(function (source) { return h('li', { key: source.url }, h('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' }, source.label + ' ↗')); }))),
+      topic.id === 'ams02' ? h(IssAmsStudy, { React: React }) : null,
+      topic.id === 'canadarm2' ? h(IssGrappleStudy, { React: React }) : null,
+      topic.id === 'cupola' ? h(IssCupolaStudy, { React: React }) : null,
+      topic.id === 'kibo' ? h(IssKiboStudy, { React: React }) : null,
+      topic.id === 'quest' ? h(IssQuestStudy, { React: React }) : null,
+      topic.id === 'comms' ? h(IssCommsStudy, { React: React }) : null,
+      h('p', { className: 'iss-guide-scope' }, 'Historical component guide · illustrative station arrangement, not a live vehicle manifest. Measurements describe real hardware; sketches and 3D geometry are simplified.'));
+  }
+
+  function issComponentSketch(h, topic) {
+    var power = ['arrays', 'irosa', 'radiators'].indexOf(topic.id) >= 0;
+    var visitor = topic.group === 'Visitors', earth = topic.id === 'earth';
+    var ink = '#9cb7cf', blue = '#5aa6d3', gold = '#e7bc64';
+    var art;
+    if (power) art = h('g', null,
+      h('path', { d: 'M120 94H520', stroke: ink, strokeWidth: 7 }),
+      [0, 1].map(function (side) { var x = side ? 348 : 137; return h('g', { key: side },
+        h('rect', { x: x, y: 43, width: 155, height: 100, rx: 3, fill: topic.id === 'radiators' ? '#c9d7df' : '#203c5d', stroke: ink, strokeWidth: 2 }),
+        [1, 2, 3, 4, 5, 6].map(function (line) { return h('line', { key: line, x1: x + line * 22, y1: 45, x2: x + line * 22, y2: 141, stroke: topic.id === 'radiators' ? '#8096aa' : blue, opacity: .6 }); }),
+        [1, 2, 3].map(function (line) { return h('line', { key: 'h' + line, x1: x + 2, y1: 43 + line * 25, x2: x + 153, y2: 43 + line * 25, stroke: '#6c8ba7', opacity: .45 }); }),
+        topic.id === 'irosa' ? h('path', { d: 'M' + (x + 23) + ' 138L' + (x + 42) + ' 56H' + (x + 130) + 'L' + (x + 111) + ' 138Z', fill: '#385f89', stroke: '#b8cce2', strokeWidth: 2 }) : null); }),
+      h('text', { x: 320, y: 175, textAnchor: 'middle', fill: gold, fontSize: 11 }, topic.id === 'radiators' ? 'THERMAL RADIATION → SPACE' : 'SUNLIGHT → ELECTRICAL POWER'));
+    else if (topic.id === 'comms') art = h('g', null,
+      h('path', { d: 'M137 135L295 56M345 56L503 135', fill: 'none', stroke: gold, strokeWidth: 3, strokeDasharray: '7 5' }),
+      h('path', { d: 'M99 126H173M136 105V150', stroke: ink, strokeWidth: 9 }),
+      h('path', { d: 'M280 55H360', stroke: blue, strokeWidth: 14 }),h('rect', { x: 309, y: 41, width: 22, height: 28, fill: '#c5dce9' }),
+      h('path', { d: 'M479 115Q503 157 527 115M503 138V155M485 157H521', fill: 'none', stroke: ink, strokeWidth: 4 }),
+      h('text', { x: 320, y: 185, textAnchor: 'middle', fill: gold, fontSize: 12 }, 'STATION ↔ RELAY ↔ EARTH TERMINAL'));
+    else if (earth) art = h('g', null, h('circle', { cx: 320, cy: 100, r: 64, fill: '#163e66', stroke: '#65b9df', strokeWidth: 3 }),
+      h('path', { d: 'M286 50L312 63L299 84L320 100L306 127L277 119L264 94M341 53L365 76L353 104L365 137L339 151L326 130L334 102L324 81Z', fill: '#41877e', opacity: .8 }),
+      h('ellipse', { cx: 320, cy: 100, rx: 155, ry: 63, transform: 'rotate(-17 320 100)', fill: 'none', stroke: ink, strokeDasharray: '5 5' }),
+      h('path', { d: 'M438 47H464M451 35V59', stroke: gold, strokeWidth: 5 }));
+    else if (topic.id === 'ams02') art = h('g', null,
+      h('path', { d: 'M257 46H383L401 143H239Z', fill: '#859bb1', stroke: ink, strokeWidth: 2 }),
+      h('ellipse', { cx: 320, cy: 70, rx: 55, ry: 25, fill: '#12263c', stroke: '#c5d8e8', strokeWidth: 5 }),
+      [97,115,133].map(function (y) { return h('path', { key: y, d: 'M250 ' + y + 'H390', stroke: '#435e79', strokeWidth: 5 }); }),
+      h('g', { transform: 'translate(64 6) scale(.8)' },
+        h('path', { d: issAmsTrack({ charge: 1, momentum: 1.5 }).path, fill: 'none', stroke: gold, strokeWidth: 2.5 }),
+        h('path', { d: issAmsTrack({ charge: -1, momentum: 1.5 }).path, fill: 'none', stroke: blue, strokeWidth: 2, strokeDasharray: '5 4' })),
+      h('text', { x: 320, y: 187, textAnchor: 'middle', fill: '#c5d8e8', fontSize: 9 }, 'Conceptual opposite-charge paths'));
+    else if (topic.id === 'elc' || topic.id === 'power-storage') art = h('g', null,
+      h('path', { d: 'M176 135H471L438 162H151Z', fill: '#364f69', stroke: ink, strokeWidth: 2 }),
+      [0,1,2].map(function (box) { return h('g', { key: box }, h('rect', { x: 185 + box * 92, y: 69 - (box % 2) * 22, width: 70, height: 64 + (box % 2) * 22, rx: 3, fill: box % 2 ? '#c8c0a1' : '#a5b8c8', stroke: '#d2e3ed', strokeWidth: 2 }),
+        topic.id === 'power-storage' ? h('path', { d: 'M' + (207 + box * 92) + ' 87H' + (233 + box * 92) + 'M' + (220 + box * 92) + ' 79V95', stroke: '#20394f', strokeWidth: 3 }) : null); }),
+      h('text', { x: 320, y: 182, textAnchor: 'middle', fill: gold, fontSize: 10 }, topic.id === 'elc' ? 'PAYLOADS + SPARES OUTSIDE THE CABIN' : 'STORE • SWITCH • REGULATE'));
+    else if (topic.id === 'prichal') art = h('g', null,
+      h('path', { d: 'M270 99H370M320 49V149', stroke: '#b9cddd', strokeWidth: 38 }),
+      h('circle', { cx: 320, cy: 99, r: 43, fill: '#9eb1bf', stroke: '#e1ebf3', strokeWidth: 3 }),
+      [[270,99],[370,99],[320,49],[320,149],[320,99]].map(function (p, i) { return h('circle', { key: i, cx: p[0], cy: p[1], r: 14, fill: '#173047', stroke: gold, strokeWidth: 3 }); }));
+    else if (visitor) art = h('g', null,
+      h('path', { d: 'M130 94H510', stroke: ink, strokeWidth: 4 }),
+      topic.id === 'progress' ? h('g', null, h('rect', { x: 160, y: 48, width: 105, height: 91, fill: '#203c5d', stroke: blue }), h('rect', { x: 375, y: 48, width: 105, height: 91, fill: '#203c5d', stroke: blue })) : null,
+      topic.id === 'cygnus' ? h('g', null, [213, 427].map(function (x) { return h('circle', { key: x, cx: x, cy: 94, r: 48, fill: '#203c5d', stroke: blue, strokeWidth: 2 }); })) : null,
+      h('rect', { x: 280, y: 47, width: 80, height: 94, rx: 16, fill: '#bdcedd', stroke: '#e1ebf3', strokeWidth: 2 }),
+      topic.id === 'dragon' ? h('path', { d: 'M280 94Q286 45 320 33Q354 45 360 94Z', fill: '#edf2f6', stroke: ink, strokeWidth: 2 }) : null,
+      h('path', { d: 'M301 141L294 161H346L339 141', fill: '#586c83', stroke: ink }),
+      h('text', { x: 320, y: 180, textAnchor: 'middle', fill: gold, fontSize: 10 }, topic.id === 'cygnus' ? 'ROBOTIC CAPTURE + BERTHING' : 'AUTOMATED DOCKING INTERFACE'));
+    else if (topic.id === 'canadarm2') art = h('g', null, h('path', { d: 'M170 150L273 61L428 106', fill: 'none', stroke: '#d6e3ed', strokeWidth: 17, strokeLinejoin: 'round' }),
+      [[170,150],[273,61],[428,106]].map(function (point, i) { return h('circle', { key: i, cx: point[0], cy: point[1], r: 13, fill: '#263c54', stroke: blue, strokeWidth: 3 }); }), h('path', { d: 'M439 92V122H462', fill: 'none', stroke: gold, strokeWidth: 5 }));
+    else if (topic.id === 'cmgs') art = h('g', null, [230, 410].map(function (x, i) { return h('g', { key: i }, h('ellipse', { cx: x, cy: 99, rx: 61, ry: 48, fill: 'none', stroke: ink, strokeWidth: 4, transform: 'rotate(' + (i ? -28 : 28) + ' ' + x + ' 99)' }), h('circle', { cx: x, cy: 99, r: 32, fill: '#233d5d', stroke: blue, strokeWidth: 3 }), h('path', { d: 'M' + (x - 18) + ' 99H' + (x + 18), stroke: gold, strokeWidth: 3 })); }));
+    else if (topic.id === 'docking') art = h('g', null, [242, 398].map(function (x, i) { return h('g', { key: i }, h('rect', { x: x - 68, y: 60, width: 65, height: 78, rx: 7, fill: '#243c57', stroke: ink, transform: i ? 'translate(72 0)' : '' }), h('ellipse', { cx: x, cy: 99, rx: 17, ry: 46, fill: '#13273e', stroke: '#d6e3ed', strokeWidth: 5 })); }), h('path', { d: 'M274 99H365M353 89L365 99L353 109', fill: 'none', stroke: gold, strokeWidth: 3 }));
+    else art = h('g', null, [0, 1, 2, 3].map(function (layer) { return h('path', { key: layer, d: 'M' + (190 + layer * 28) + ' ' + (50 + layer * 10) + 'L' + (375 + layer * 12) + ' ' + (32 + layer * 10) + 'V' + (130 + layer * 10) + 'L' + (190 + layer * 28) + ' ' + (150 + layer * 10) + 'Z', fill: ['#607c95','#334e68','#a5b6c3','#20364d'][layer], stroke: '#b9cddd', strokeWidth: 1.5 }); }));
+    return h('figure', { className: 'iss-guide-sketch' }, h('svg', { viewBox: '0 0 640 196', role: 'img', 'aria-label': topic.name + ' functional sketch; not to scale' },
+      h('text', { x: 18, y: 22, fill: '#7dd3fc', fontSize: 10, fontFamily: 'monospace', letterSpacing: 1.3 }, 'HARDWARE STUDY // ' + topic.id.toUpperCase()), art),
+      h('figcaption', null, 'Functional sketch · not to scale; details omitted'));
+  }
 
   // ── Inside the station: a playable, room-to-room crew shift ──
   var INTERIOR_ROOMS = [
@@ -2902,7 +4664,7 @@
         { id: 'shutters', label: 'Close the external shutters', correct: true, feedback: 'Cupola secure. The metal shutters protect the windows whenever they are not needed for viewing or robotics.' }
       ],
       lesson: 'Life aboard mixes wonder with procedure. Even the best view in human history ends with a checklist.',
-      discoveries: [['🪟 Center window', 'At about 80 cm across, it is the largest window ever flown in space and a prime robotics workstation.'], ['🌎 Thin blue line', 'Most of the atmosphere lies within about 16 km of Earth’s surface — visually tiny from a 400 km orbit.']] }
+      discoveries: [['🪟 Center window', 'The central window is about 80 cm across. The seven-window Cupola is an observation area and robotics workstation.'], ['🌎 Thin blue line', 'Most of the atmosphere lies within about 16 km of Earth’s surface — visually tiny from a 400 km orbit.']] }
   ];
   // Connected interior training route. Coordinates are schematic metres:
   // Harmony -> Destiny -> Unity, then port into Tranquility and nadir into
@@ -2936,7 +4698,7 @@
   var SYSTEMS = [
     { id: 'water', icon: '💧', name: 'Water loop (ECLSS)', color: '#38bdf8',
       how: 'Humidity from breath and sweat is condensed; urine is distilled in a spinning drum (in microgravity, even boiling needs a centrifuge). The combined water is filtered, checked, and returned as drinking water.',
-      num: 'About 98% of water is now recovered (a 2023 milestone) — each kilogram recycled is a kilogram that never has to launch at thousands of dollars per kg.',
+      num: 'In 2023, NASA reported that the water-recovery system with its brine processor demonstrated 98% total recovery. Recycling water reduces the mass that must be launched.',
       challenge: 'Design question: why is closing the water loop the single most important step before a Mars voyage, where no resupply is possible?' },
     { id: 'air', icon: '🌬️', name: 'Air loop', color: '#34d399',
       how: 'Oxygen is made by electrolysis — splitting recycled water with solar electricity. CO₂ is scrubbed from the air, then a Sabatier reactor combines CO₂ with hydrogen to make MORE water (plus methane, vented overboard).',
@@ -2957,19 +4719,18 @@
       num: 'The cabin is held in an 18–27 °C band while the outside swings between sunlight and shadow sixteen times a day. In vacuum there is no air to carry heat off — radiation is the ONLY exit, which is why the radiators are almost as prominent as the solar arrays.',
       challenge: 'A laptop on Earth is cooled by a fan pulling in room air. List two reasons that fails on the station, and what replaces it.' },
     { id: 'attitude', icon: '🧭', name: 'Attitude control', color: '#a78bfa',
-      how: 'Four spinning 100-kg flywheels (Control Moment Gyroscopes) twist the station without burning any fuel; thrusters take over only when the gyros run out of authority ("saturate").',
-      // Figures reused from the tool's own audited set: four 100-kg rotors (the
-      // description above and the CMG panel) and the < 80% cluster-saturation
-      // flight rule (the ops attitude readout).
-      num: 'Four 100-kg rotors carry the whole job, and flight rules keep cluster saturation below 80% — past that the gyros are out of authority and thrusters must burn propellant to unload them. Meanwhile the station must hold arrays at the Sun, radiators at cold space and antennas at Earth, all at once, forever.',
+      how: 'Four Control Moment Gyroscopes exert torque by redirecting the angular momentum of spinning rotors. Thrusters also support attitude control and can unload accumulated momentum; raising the orbit requires propulsion.',
+      // Hardware references are linked in the CMG field-guide entry. The
+      // simulator's scalar storage and 80% margin are teaching assumptions.
+      num: 'Four control moment gyroscopes steer the station by changing the direction of spinning rotors. Momentum storage is finite, so thrusters can unload accumulated momentum. The 80% caution line in this simulator is a classroom margin, not an ISS flight rule.',
       challenge: 'Why is torque from a spinning wheel "free" compared to a thruster, and what is the catch that eventually forces a fuel-burning desaturation?' },
     { id: 'debris', icon: '🛡️', name: 'Debris & shielding', color: '#f87171',
-      how: 'Whipple shields — a thin outer bumper spaced ahead of the hull — make an incoming particle vaporize itself before it reaches the crew wall. Big tracked debris is dodged with reboost burns.',
+      how: 'Whipple shields place a bumper ahead of the pressure wall. Small, fast impactors break up and spread after striking it, reducing the concentrated impact on the wall. Shielding reduces risk; tracked debris may require an avoidance maneuver.',
       num: 'Orbital debris moves at up to ~15 km/s relative speed; even a paint fleck hits like a rifle round. The station has performed dozens of debris-avoidance maneuvers.',
       challenge: 'Armor thick enough to stop everything would be too heavy to launch. How does the two-wall trick beat one thick wall of the same mass?' },
     { id: 'comms', icon: '📻', name: 'Talking to the ground', color: '#22d3ee',
-      how: 'The station is almost never within sight of Houston — at 420 km it can only see a few hundred kilometres of ground at a time. So it talks UPWARD instead. A fleet of relay satellites parked in geostationary orbit, far above the station, catch its signal and pass it down to a ground terminal in New Mexico and on to mission control. Because those satellites hang over the same spot on Earth, one of them can nearly always see the station wherever it is in its orbit.',
-      num: 'Geostationary orbit is not a choice of altitude so much as a consequence of v = √(GM/r): there is exactly ONE radius whose orbit takes a full day, about ' + ISS_GEO_ALT_KM.toLocaleString() + ' km up, and a satellite there appears to hover. That is roughly ' + ISS_GEO_RATIO + '× higher than the station itself. The signal has to climb all that way and come back down, so a question from the ground takes about ' + ISS_COMM_DELAY_MS + ' ms to make the round trip before anyone hears the answer — brief, but not nothing.',
+      how: 'The station’s ground view is limited by Earth’s curvature. NASA’s Tracking and Data Relay Satellites extend contact by relaying signals between the low-orbiting station and Earth terminals, including White Sands in New Mexico and Guam. The relay satellites use geosynchronous orbits; antenna pointing and network operations are part of maintaining a connection.',
+      num: 'A circular, equatorial orbit moving with Earth’s rotation appears stationary when its period equals one sidereal day. Its altitude is about ' + ISS_GEO_ALT_KM.toLocaleString() + ' km, roughly ' + ISS_GEO_RATIO + '× station altitude. An ideal short station–relay–ground path gives about ' + ISS_COMM_DELAY_MS + ' ms round-trip propagation time at light speed. This is a lower-bound geometry illustration, not measured latency; routing, processing and the actual geometry add delay.',
       challenge: 'Design question: a crew on the way to Mars is minutes to tens of minutes from Earth ONE WAY, so no relay satellite can give them a conversation. What has to change about how a crew is trained, and about who makes decisions, when every question takes the better part of an hour to answer?' },
     { id: 'body', icon: '🦴', name: 'The human system', color: '#e879f9',
       how: 'Bodies are engineering systems too: without gravity, bones shed ~1-1.5% density per month, muscles shrink, fluid shifts puff faces and press on eyes, and radiation dose runs far above ground level.',
@@ -3009,11 +4770,11 @@
 
   var QUIZ = [
     { q: 'How fast does the ISS travel?', o: ['~800 km/h', '~7,000 km/h', '~28,000 km/h', '~300,000 km/h'], a: 2, x: 'About 28,000 km/h (7.66 km/s) — one orbit of Earth every ~92 minutes, 16 sunrises a day.' },
-    { q: 'Roughly how much of the station’s water is recycled?', o: ['10%', '50%', '75%', '~98%'], a: 3, x: 'As of 2023 the ECLSS recovers about 98% — including water distilled from urine and condensed from breath.' },
+    { q: 'Roughly how much of the station’s water is recycled?', o: ['10%', '50%', '75%', '~98%'], a: 3, x: 'In 2023, NASA reported a demonstration of 98% total recovery using ECLSS with its brine processor, including water from urine and cabin humidity.' },
     { q: 'Why must astronauts exercise ~2.5 hours a day?', o: ['To stay warm', 'To generate electricity', 'NASA tradition', 'Bones and muscles waste without gravity’s load'], a: 3, x: 'Without loading, bones lose ~1-1.5% density per month; exercise is medicine.' },
     { q: 'How does the station get its oxygen mainly?', o: ['Splitting water with electricity', 'Tanks from Earth', 'Plants aboard', 'Compressing outside air'], a: 0, x: 'Electrolysis splits recycled water into O₂ and H₂; the H₂ feeds a Sabatier reactor to reclaim even more water.' },
     { q: 'What keeps the station pointed correctly WITHOUT burning fuel?', o: ['Solar wind sails', 'Spinning control moment gyroscopes', 'Magnets in the hull', 'The robotic arm'], a: 1, x: 'Four large spinning flywheels twist the station by exchanging angular momentum — no propellant needed until they saturate.' },
-    { q: 'Why does the station need regular reboosts?', o: ['Thin atmosphere drags it ~50-100 m lower per day', 'The Moon pulls it away', 'The crew requests them', 'Solar pressure pushes it down'], a: 0, x: 'Even at ~400 km, wisps of atmosphere slowly sap orbital energy; engines on Zvezda and cargo ships push it back up.' },
+    { q: 'Why does the station need regular reboosts?', o: ['Thin atmosphere removes orbital energy', 'The Moon pulls it away', 'The crew requests them', 'Solar pressure pushes it down'], a: 0, x: 'Even at ~400 km, wisps of atmosphere slowly sap orbital energy; engines on Zvezda and cargo ships push it back up.' },
     { q: 'The station orbits at an inclination of 51.6°. What does that number tell you?', o: ['How high above Earth it flies', 'How fast it is travelling', 'The highest latitude it ever passes over', 'How often it is resupplied'], a: 2, x: 'Inclination is the tilt of the orbit against the equator, so the station passes over everywhere between 51.6°N and 51.6°S — and never directly over the poles. 51.6° was chosen so that launches from Baikonur, at about 46°N, could reach it: a rocket can always aim for an inclination higher than its launch latitude, never lower.' },
     { q: 'Which is the LARGEST module?', o: ['Zarya', 'Destiny', 'Kibo (Japan)', 'Columbus'], a: 2, x: 'JAXA’s Kibo — a big pressurized lab plus an exposed "back porch" and its own robotic arm.' },
     { q: 'Salt and pepper aboard are used as…', o: ['Powders in shakers', 'Pills', 'They’re banned', 'Liquids in dropper bottles'], a: 3, x: 'Floating grains would drift into eyes, vents, and experiments — so seasonings are dissolved liquids.' },
@@ -3054,7 +4815,7 @@
       },
       {
         id: 'reboost',
-        prompt: 'The station loses roughly 50-100 m of altitude a day to drag. Left alone for a year with no reboost, what happens to its orbital SPEED?',
+        prompt: 'Thin-air drag gradually lowers the station’s orbit; the rate varies with atmospheric conditions. Left alone for a year with no reboost, what happens to its orbital SPEED?',
         options: [
           { id: 'slower', label: 'It slows down, because drag is friction', feedback: 'Drag does take energy out, which is why the orbit decays at all. But energy is not speed here: as the orbit shrinks, r gets smaller and sqrt(GM/r) gets BIGGER. The station ends up moving faster while losing energy.' },
           { id: 'faster', label: 'It speeds up, even though drag is removing energy', correct: true, feedback: 'Correct, and this is the drag paradox. Drag lowers the orbit, and a lower orbit is a faster one. Losing 100 m a day for a year is about 36 km, taking orbital speed from ' + iss.v.toFixed(3) + ' to ' + decayed.v.toFixed(3) + ' km/s. The station goes faster all the way down, until the air gets thick enough to end it.' },
@@ -3505,13 +5266,189 @@
     return canvas;
   }
 
+  var _issDragonSolarCanvas = null;
+  function issDragonSolarCanvas() {
+    if (_issDragonSolarCanvas) return _issDragonSolarCanvas;
+    if (typeof document === 'undefined' || !document.createElement) return null;
+    var width = 512, height = 256, canvas = document.createElement('canvas');
+    canvas.width = width; canvas.height = height; canvas.setAttribute('aria-hidden', 'true');
+    var g;
+    try { g = canvas.getContext && canvas.getContext('2d'); } catch (unavailable) { return null; }
+    if (!g) return null;
+    var cols = 12, rows = 6, cw = width / cols, ch = height / rows;
+    g.fillStyle = '#111d2c'; g.fillRect(0, 0, width, height);
+    for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+      var x = c * cw, y = r * ch, shade = (r * 7 + c * 11) % 5;
+      var cell = g.createLinearGradient(x, y, x + cw, y + ch);
+      cell.addColorStop(0, 'rgb(' + (44 + shade) + ',' + (68 + shade) + ',' + (101 + shade) + ')');
+      cell.addColorStop(.55, 'rgb(' + (34 + shade) + ',' + (54 + shade) + ',' + (84 + shade) + ')');
+      cell.addColorStop(1, 'rgb(' + (25 + shade) + ',' + (39 + shade) + ',' + (62 + shade) + ')');
+      g.fillStyle = cell; g.fillRect(x + 2, y + 2, cw - 4, ch - 4);
+      g.strokeStyle = 'rgba(173,193,208,.28)'; g.lineWidth = .8;
+      [.34, .67].forEach(function (fraction) { g.beginPath(); g.moveTo(x + cw * fraction, y + 4); g.lineTo(x + cw * fraction, y + ch - 4); g.stroke(); });
+      g.strokeStyle = 'rgba(173,193,208,.12)'; g.lineWidth = .5;
+      for (var finger = 1; finger < 4; finger++) {
+        g.beginPath(); g.moveTo(x + 4, y + ch * finger / 4); g.lineTo(x + cw - 4, y + ch * finger / 4); g.stroke();
+      }
+    }
+    g.strokeStyle = '#8192a3'; g.lineWidth = 2; g.strokeRect(1, 1, width - 2, height - 2);
+    _issDragonSolarCanvas = canvas;
+    return canvas;
+  }
+
+  var _issProgressSolarCanvas = null;
+  function issProgressSolarCanvas() {
+    if (_issProgressSolarCanvas) return _issProgressSolarCanvas;
+    if (typeof document === 'undefined' || !document.createElement) return null;
+    var width = 512, height = 256, canvas = document.createElement('canvas');
+    canvas.width = width; canvas.height = height; canvas.setAttribute('aria-hidden', 'true');
+    var g;
+    try { g = canvas.getContext && canvas.getContext('2d'); } catch (unavailable) { return null; }
+    if (!g) return null;
+    // A schematic cell layout, not an engineering count of flight cells.
+    // Four subtly framed bays stay legible at the visitor camera distance.
+    g.fillStyle = '#152438'; g.fillRect(0, 0, width, height);
+    for (var r = 0; r < 8; r++) for (var c = 0; c < 16; c++) {
+      var x = 8 + c * 31, y = 8 + r * 30, shade = (c * 3 + r * 7) % 5;
+      var cell = g.createLinearGradient(x, y, x + 28, y + 26);
+      cell.addColorStop(0, 'rgb(' + (49 + shade) + ',' + (78 + shade) + ',' + (112 + shade) + ')');
+      cell.addColorStop(1, 'rgb(' + (26 + shade) + ',' + (44 + shade) + ',' + (70 + shade) + ')');
+      g.fillStyle = cell; g.fillRect(x, y, 28, 26);
+      g.strokeStyle = 'rgba(174,197,216,.28)'; g.lineWidth = .7;
+      g.beginPath(); g.moveTo(x + 14, y + 2); g.lineTo(x + 14, y + 24); g.stroke();
+    }
+    g.strokeStyle = '#a9b7c2'; g.lineWidth = 3; g.strokeRect(2, 2, width - 4, height - 4);
+    g.strokeStyle = '#778da1'; g.lineWidth = 3;
+    [128, 256, 384].forEach(function (x) { g.beginPath(); g.moveTo(x, 3); g.lineTo(x, height - 3); g.stroke(); });
+    _issProgressSolarCanvas = canvas;
+    return canvas;
+  }
+
+
+  var _issCygnusSolarCanvas = null;
+  function issCygnusSolarCanvas() {
+    if (_issCygnusSolarCanvas) return _issCygnusSolarCanvas;
+    if (typeof document === 'undefined' || !document.createElement) return null;
+    var size = 512, canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size; canvas.setAttribute('aria-hidden', 'true');
+    var g;
+    try { g = canvas.getContext && canvas.getContext('2d'); } catch (unavailable) { return null; }
+    if (!g) return null;
+    var center = size / 2, step = Math.PI * 2 / 10, bands = 7, band = (248 - 20) / bands;
+    g.fillStyle = '#162536'; g.fillRect(0, 0, size, size);
+    for (var sector = 0; sector < 10; sector++) for (var row = 0; row < bands; row++) {
+      var a0 = sector * step + .015, a1 = (sector + 1) * step - .015;
+      var inner = 20 + row * band + 2, outer = 20 + (row + 1) * band - 2, shade = (sector * 11 + row * 7) % 5;
+      var cell = g.createRadialGradient(center, center, inner, center, center, outer);
+      cell.addColorStop(0, 'rgb(' + (44 + shade) + ',' + (68 + shade) + ',' + (101 + shade) + ')');
+      cell.addColorStop(.55, 'rgb(' + (34 + shade) + ',' + (54 + shade) + ',' + (84 + shade) + ')');
+      cell.addColorStop(1, 'rgb(' + (25 + shade) + ',' + (39 + shade) + ',' + (62 + shade) + ')');
+      g.fillStyle = cell; g.beginPath();
+      g.moveTo(center + Math.cos(a0) * inner, center + Math.sin(a0) * inner);
+      g.lineTo(center + Math.cos(a0) * outer, center + Math.sin(a0) * outer);
+      g.arc(center, center, outer, a0, a1);
+      g.lineTo(center + Math.cos(a1) * inner, center + Math.sin(a1) * inner);
+      g.arc(center, center, inner, a1, a0, true); g.closePath(); g.fill();
+      g.strokeStyle = 'rgba(173,193,208,.22)'; g.lineWidth = .7;
+      [.35, .7].forEach(function (fraction) {
+        g.beginPath(); g.arc(center, center, inner + (outer - inner) * fraction, a0 + .02, a1 - .02); g.stroke();
+      });
+    }
+    g.fillStyle = '#26394e'; g.beginPath(); g.arc(center, center, 16, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#5b7188'; g.lineWidth = 1.5; g.stroke();
+    g.strokeStyle = '#74899d'; g.lineWidth = 2; g.beginPath(); g.arc(center, center, 252, 0, Math.PI * 2); g.stroke();
+    _issCygnusSolarCanvas = canvas;
+    return canvas;
+  }
+
   // Equipment that gives the open truss its mass, in truss-local units (the
   // backbone runs along x, 0.4 square). Schematic placements on the real
   // segments: the two Solar Alpha Rotary Joints between S3/S4 and P3/P4, the
   // Integrated Equipment Assembly (batteries and power electronics) inboard
   // of each array pair, the four ExPRESS Logistics Carrier pallets on S3/P3,
-  // AMS-02 on S3's zenith face, and avionics boxes packed into S0/S1/P1.
-  // Merged into one vertex-coloured geometry: one draw call for ~50 parts.
+  // AMS-02 is authored separately for inspection; avionics fill S0/S1/P1.
+  // Other equipment stays merged into one vertex-coloured geometry.
+  // A selective exterior study, not a detector cutaway or flight CAD model.
+  // Local origin is the instrument's attachment plane on the zenith truss.
+  // The trainer's free hand keeps its original +Y axis and .16 axial span.
+  // Component ranges identify the three schematic snares in the merged mesh.
+  function issArmHandGeometry(THREE) {
+    var positions = [], normals = [], colors = [], parts = [];
+    var cover = new THREE.Color(0xdfe5e4), metal = new THREE.Color(0x9eafb9), wire = new THREE.Color(0xc9d4da), dark = new THREE.Color(0x263a48);
+    function append(name, geometry, color) {
+      var flat = geometry.index ? geometry.toNonIndexed() : geometry, start = positions.length / 3;
+      var p = flat.getAttribute('position').array, n = flat.getAttribute('normal').array;
+      for (var i = 0; i < p.length; i += 3) {
+        positions.push(p[i], p[i + 1], p[i + 2]); normals.push(n[i], n[i + 1], n[i + 2]); colors.push(color.r, color.g, color.b);
+      }
+      parts.push({ name: name, start: start, count: positions.length / 3 - start });
+      if (flat !== geometry) flat.dispose(); geometry.dispose();
+    }
+    function lathe(profile) { return new THREE.LatheGeometry(profile.map(function (p) { return new THREE.Vector2(p[0], p[1]); }), 32); }
+    append('housing', lathe([[.049, -.08], [.055, -.08], [.07, .025], [.074, .064], [.057, .064], [.052, .025], [.049, -.08]]), cover);
+    append('mouth-rim', lathe([[.057, .0639], [.074, .0639], [.075, .08], [.059, .08], [.057, .0639]]), metal);
+    var back = new THREE.CircleGeometry(.052, 32); back.rotateX(-Math.PI / 2); back.translate(0, .004, 0); append('recessed-carriage', back, dark);
+    for (var cable = 0; cable < 3; cable++) {
+      var angle = cable * Math.PI * 2 / 3;
+      var start = new THREE.Vector3(.054 * Math.cos(angle - Math.PI / 3), .048, .054 * Math.sin(angle - Math.PI / 3));
+      var end = new THREE.Vector3(.054 * Math.cos(angle + Math.PI / 3), .048, .054 * Math.sin(angle + Math.PI / 3));
+      var control = new THREE.Vector3(.041 * Math.cos(angle), .048, .041 * Math.sin(angle));
+      append('snare-' + (cable + 1), new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(start, control, end), 16, .0022, 6, false), wire);
+    }
+    for (var latch = 0; latch < 4; latch++) {
+      var a = latch * Math.PI / 2, box = new THREE.BoxGeometry(.014, .04, .014);
+      box.translate(.065 * Math.cos(a), .038, .065 * Math.sin(a)); append('latch-housing-' + (latch + 1), box, metal);
+    }
+    var geometry = new THREE.BufferGeometry(); geometry.name = 'iss-arm-hand-geometry';
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.userData.components = parts; geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    return geometry;
+  }
+
+
+  function issAmsGeometry(THREE) {
+    var positions = [], normals = [], colors = [], count = 0;
+    var ivory = new THREE.Color(0xdce2df), silver = new THREE.Color(0x9caab2), dark = new THREE.Color(0x50616e), blanket = new THREE.Color(0xb6a477);
+    function add(geometry, x, y, z, color) {
+      geometry.translate(x, y, z);
+      var flat = geometry.index ? geometry.toNonIndexed() : geometry;
+      var p = flat.getAttribute('position').array, n = flat.getAttribute('normal').array;
+      for (var i = 0; i < p.length; i += 3) {
+        positions.push(p[i], p[i + 1], p[i + 2]); normals.push(n[i], n[i + 1], n[i + 2]);
+        colors.push(color.r, color.g, color.b);
+      }
+      if (flat !== geometry) flat.dispose(); geometry.dispose(); count++;
+    }
+    function box(x, y, z, px, py, pz, color) { add(new THREE.BoxGeometry(x, y, z), px, py, pz, color); }
+    box(.34, .025, .30, 0, .0125, 0, silver);
+    [-1, 1].forEach(function (x) { [-1, 1].forEach(function (z) { box(.024, .055, .024, x * .13, .0525, z * .12, dark); }); });
+    box(.27, .05, .25, 0, .055, 0, silver);
+    // Solid covered housings: the magnet is internal, not an optical aperture.
+    add(new THREE.CylinderGeometry(.12, .12, .14, 24), 0, .15, 0, silver);
+    add(new THREE.CylinderGeometry(.133, .133, .012, 24), 0, .203, 0, dark);
+    add(new THREE.CylinderGeometry(.16, .13, .13, 8), 0, .265, 0, ivory);
+    add(new THREE.CylinderGeometry(.165, .165, .016, 8), 0, .338, 0, silver);
+    // Pale heat-rejection faces, deliberately unlike photovoltaic cell grids.
+    [-1, 1].forEach(function (side) {
+      box(.326, .225, .012, 0, .175, side * .161, ivory);
+      [-.112, -.038, .038, .112].forEach(function (x) { box(.003, .20, .002, x, .175, side * .168, silver); });
+      box(.03, .07, .16, side * .159, .13, 0, blanket);
+    });
+    for (var bolt = 0; bolt < 8; bolt++) {
+      var angle = (bolt + .5) * Math.PI / 4;
+      add(new THREE.CylinderGeometry(.004, .004, .004, 6), Math.cos(angle) * .132, .349, Math.sin(angle) * .132, dark);
+    }
+    var geometry = new THREE.BufferGeometry(); geometry.name = 'iss-ams02-instrument-geometry';
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.userData.partCount = count; geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    return geometry;
+  }
+
+
   function issTrussHardwareGeometry(THREE, trussY) {
     var positions = [], normals = [], colors = [], parts = 0;
     var tone = {
@@ -3560,11 +5497,6 @@
     [-1, 1].forEach(function (sx) { [-1, 1].forEach(function (sz) {
       box(.035, strutTop - strutBottom, .035, sx * .3, (strutTop + strutBottom) / 2, sz * .15, tone.metal);
     }); });
-    // AMS-02, the cosmic-ray detector, on S3's zenith face inboard of ELC-2.
-    var ams = new THREE.CylinderGeometry(.13, .13, .17, 20, 1);
-    add(ams, 2.24, .325, 0, tone.white);
-    box(.32, .05, .26, 2.24, .435, 0, tone.gold);
-    box(.3, .04, .3, 2.24, .22, 0, tone.grey);
     // S0/S1/P1: avionics and pump boxes inside the lattice, leaving gaps so
     // the structure still reads as open. Destiny hides the centre bays.
     [[-2.25, .34, .24, .22, -.02, .03], [-1.75, .3, .2, .26, .03, -.02], [-1.25, .38, .26, .2, 0, .04], [-.85, .26, .22, .24, -.03, 0],
@@ -3584,6 +5516,11 @@
   // A separate, square atlas keeps the cylinder's circular ends from inheriting
   // stretched wall seams. This is schematic surface detail, not an operable hatch.
   var _issModuleEndcapCanvas = null;
+  function issDragonCapsuleGeometry(THREE) {
+    var profile = [[0, -.36], [.30, -.36], [.30, -.30], [.286, -.22], [.26, -.12], [.224, 0],
+      [.184, .12], [.144, .23], [.112, .31], [.09, .36], [0, .36]];
+    return new THREE.LatheGeometry(profile.map(function (point) { return new THREE.Vector2(point[0], point[1]); }), 32);
+  }
   function issModuleEndcapCanvas() {
     if (_issModuleEndcapCanvas) return _issModuleEndcapCanvas;
     if (typeof document === 'undefined' || !document.createElement) return null;
@@ -3643,6 +5580,331 @@
 
   // Author hardware in the hull's local Y-axis frame. Only two meshes are added
   // per module; all grips and their feet are batched together before upload.
+  // Local +Z faces out of the window. The renderer turns this toward nadir.
+  // The pressure shell stays intact: the dark pane is a surface representation.
+  // Fixed illustrative solar wings belonging to Zvezda, separate from the
+  // articulated U.S. arrays and their classroom power model.
+  function issZvezdaSolarAssembly(THREE, texture) {
+    var group = new THREE.Group(); group.name = 'iss-zvezda-solar-pair';
+    group.userData = { illustrative: true, fixedPose: true, hostId: 'zvezda', wingCount: 2 };
+    var cellMap = texture && texture.isTexture ? texture : null;
+    var front = new THREE.MeshStandardMaterial({ color: cellMap ? 0xffffff : 0x263b5c, map: cellMap, roughness: .38, metalness: .3, transparent: true, emissive: 0x000000 });
+    var back = new THREE.MeshStandardMaterial({ color: 0xb8c2c9, roughness: .62, metalness: .2, transparent: true, emissive: 0x000000 });
+    var edge = new THREE.MeshStandardMaterial({ color: 0xaab8c3, roughness: .48, metalness: .4, transparent: true, emissive: 0x000000 });
+    var hardwareMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .5, metalness: .35, transparent: true, emissive: 0x000000 });
+    var panelGeometry = new THREE.BoxGeometry(2.95, .022, 1.10), panelMaterials = [edge, edge, front, back, edge, edge];
+    panelGeometry.name = 'iss-zvezda-solar-cell-geometry'; panelGeometry.computeBoundingBox(); panelGeometry.computeBoundingSphere();
+    var positions = [], normals = [], colors = [], components = [];
+    function add(name, geometry, position, color) {
+      geometry.translate(position[0], position[1], position[2]);
+      var flat = geometry.index ? geometry.toNonIndexed() : geometry, shade = new THREE.Color(color), start = positions.length / 3;
+      var p = flat.getAttribute('position'), n = flat.getAttribute('normal');
+      for (var i = 0; i < p.count; i++) {
+        positions.push(p.getX(i), p.getY(i), p.getZ(i)); normals.push(n.getX(i), n.getY(i), n.getZ(i));
+        colors.push(shade.r, shade.g, shade.b);
+      }
+      components.push({ name: name, start: start, count: positions.length / 3 - start });
+      if (flat !== geometry) flat.dispose(); geometry.dispose();
+    }
+    function box(name, size, position, color) { add(name, new THREE.BoxGeometry(size[0], size[1], size[2]), position, color); }
+    [-1, 1].forEach(function (side, index) {
+      var panel = new THREE.Mesh(panelGeometry, panelMaterials);
+      panel.name = 'iss-zvezda-solar-panel-' + (index + 1); panel.position.set(side * 2.125, 0, 0);
+      panel._issParentId = 'zvezda'; panel.castShadow = true; panel.receiveShadow = true; group.add(panel);
+      // Two cross-ribs divide each wing into three illustrative bays.
+      [-1, 1].forEach(function (edgeSide) {
+        box('outer-rail-' + index + '-' + edgeSide, [2.95, .04, .03], [side * 2.125, .02, edgeSide * .535], 0xd7e0e3);
+      });
+      [.665, 3.585].forEach(function (x, end) {
+        box('end-frame-' + index + '-' + end, [.03, .04, 1.04], [side * x, .02, 0], 0xd7e0e3);
+      });
+      [1, 2].forEach(function (bay) {
+        box('bay-rib-' + index + '-' + bay, [.024, .026, 1.04], [side * (.65 + bay * 2.95 / 3), .017, 0], 0xb6c7d0);
+      });
+      var hub = new THREE.CylinderGeometry(.07, .07, .13, 16); hub.rotateZ(Math.PI / 2);
+      add('mount-hub-' + index, hub, [side * .585, 0, 0], 0x7f95a4);
+      var collar = new THREE.CylinderGeometry(.083, .083, .03, 16); collar.rotateZ(Math.PI / 2);
+      add('mount-collar-' + index, collar, [side * .545, 0, 0], 0xbdcbd2);
+      [-1, 1].forEach(function (lug) {
+        box('mount-lug-' + index + '-' + lug, [.04, .05, .05], [side * .63, 0, lug * .09], 0xa7bbc6);
+      });
+    });
+    var hardwareGeometry = new THREE.BufferGeometry(); hardwareGeometry.name = 'iss-zvezda-solar-hardware-geometry';
+    hardwareGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    hardwareGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    hardwareGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    hardwareGeometry.userData.components = components; hardwareGeometry.computeBoundingBox(); hardwareGeometry.computeBoundingSphere();
+    var hardware = new THREE.Mesh(hardwareGeometry, hardwareMaterial); hardware.name = 'iss-zvezda-solar-hardware';
+    hardware._issParentId = 'zvezda'; hardware.castShadow = true; hardware.receiveShadow = true; group.add(hardware);
+    return group;
+  }
+
+  function issCommsGeometry(THREE) {
+    var positions=[],normals=[],colors=[],components=[];
+    var axis=new THREE.Vector3(.65,.7,.3).normalize(),center=new THREE.Vector3(.68,.88,.24);
+    var dishRotation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis);
+    function add(name,geometry,color,position,quaternion) {
+      if(quaternion) geometry.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(quaternion));
+      if(position) geometry.translate(position[0],position[1],position[2]);
+      var flat=geometry.index?geometry.toNonIndexed():geometry,p=flat.attributes.position,n=flat.attributes.normal,shade=new THREE.Color(color),start=positions.length/3;
+      for(var t=0;t<p.count;t+=3) {
+        var a=new THREE.Vector3().fromBufferAttribute(p,t),b=new THREE.Vector3().fromBufferAttribute(p,t+1),c=new THREE.Vector3().fromBufferAttribute(p,t+2);
+        var cross=b.clone().sub(a).cross(c.clone().sub(a));if(cross.lengthSq()<1e-20)continue;
+        for(var j=0;j<3;j++){var i=t+j,normal=new THREE.Vector3().fromBufferAttribute(n,i);if(normal.lengthSq()<1e-12)normal.copy(cross);normal.normalize();positions.push(p.getX(i),p.getY(i),p.getZ(i));normals.push(normal.x,normal.y,normal.z);colors.push(shade.r,shade.g,shade.b);}
+      }
+      components.push({name:name,start:start,count:positions.length/3-start});
+      if(flat!==geometry)flat.dispose();geometry.dispose();
+    }
+    function box(name,size,color,position){add(name,new THREE.BoxGeometry(size[0],size[1],size[2]),color,position);}
+    function beam(name,a,b,r,color){var start=new THREE.Vector3().fromArray(a),end=new THREE.Vector3().fromArray(b),delta=end.clone().sub(start);add(name,new THREE.CylinderGeometry(r,r,delta.length(),8),color,start.add(end).multiplyScalar(.5).toArray(),new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize()));}
+    function dishPoint(point){return new THREE.Vector3().fromArray(point).applyQuaternion(dishRotation).add(center).toArray();}
+    add('unity-attachment',new THREE.CylinderGeometry(.30,.30,.18,32),0xa8b9c4,[0,-.01,0]);
+    [-1,1].forEach(function(x){[-1,1].forEach(function(z){
+      beam('frame-upright-'+x+'-'+z,[x*.42,.08,z*.46],[x*.42,.84,z*.46],.026,0xc7d3d7);
+      beam('attachment-spoke-'+x+'-'+z,[x*.18,.06,z*.18],[x*.42,.08,z*.46],.022,0xa8b9c4);
+    });});
+    [-1,1].forEach(function(side){
+      [.08,.84].forEach(function(y){beam('frame-x-'+side+'-'+y,[-.42,y,side*.46],[.42,y,side*.46],.022,0xc7d3d7);beam('frame-z-'+side+'-'+y,[side*.42,y,-.46],[side*.42,y,.46],.022,0xc7d3d7);});
+      beam('frame-diagonal-x-'+side,[-.42,.08,side*.46],[.42,.84,side*.46],.014,0x91a7b4);
+      beam('frame-diagonal-z-'+side,[side*.42,.08,-.46],[side*.42,.84,.46],.014,0x91a7b4);
+    });
+    var units=[];
+    [-1,1].forEach(function(x){[-1,1].forEach(function(z){var id='cmg-enclosure-'+(units.length+1),position=[x*.215,.43,z*.235];box(id,[.32,.34,.34],0xaebdc6,position);box(id+'-cover',[.275,.015,.29],0xd5dfe0,[position[0],.6075,position[2]]);units.push({name:id,center:position});});});
+    box('equipment-panel',[.60,.25,.025],0xc5b492,[0,.29,-.475]);
+    box('equipment-panel-inset',[.38,.14,.008],0x314e60,[0,.29,-.492]);
+    beam('dish-boom',[.42,.62,.24],[.62,.77,.24],.05,0xc1cdd2);
+    add('dish-gimbal',new THREE.CylinderGeometry(.09,.09,.15,20),0x849eac,[.62,.77,.24],new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(0,0,1)));
+    beam('dish-neck',[.62,.77,.24],center.toArray(),.043,0xc7d3d7);
+    var front=[],back=[];
+    for(var i=12;i>=0;i--){var r=.36*i/12;front.push(new THREE.Vector2(r,.10*(r/.36)*(r/.36)));}
+    for(var k=0;k<=12;k++){var radius=.36*k/12;back.push(new THREE.Vector2(radius,.10*(radius/.36)*(radius/.36)-.009));}
+    add('reflector-front',new THREE.LatheGeometry(front,48),0xe8eeea,center.toArray(),dishRotation);
+    add('reflector-back',new THREE.LatheGeometry(back,48),0x9cadb6,center.toArray(),dishRotation);
+    var rim=new THREE.TorusGeometry(.36,.009,6,48);rim.rotateX(Math.PI/2);rim.translate(0,.10,0);add('reflector-rim',rim,0xc3d1d6,center.toArray(),dishRotation);
+    for(var arm=0;arm<3;arm++){var angle=arm*2*Math.PI/3;beam('feed-strut-'+arm,dishPoint([.34*Math.cos(angle),.10,.34*Math.sin(angle)]),dishPoint([0,.324,0]),.007,0xa0b4bf);}
+    add('feed',new THREE.BoxGeometry(.048,.055,.048),0x425f72,dishPoint([0,.324,0]),dishRotation);
+    var geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.computeBoundingBox();geo.computeBoundingSphere();
+    geo.userData={kind:'z1-comms',illustrative:true,components:components,frame:{min:[-.42,.04,-.46],max:[.42,.84,.46]},cmgCount:4,cmgEnclosures:units,reflector:{radius:.36,depth:.10,focalLength:.324,center:center.toArray(),normal:axis.toArray()},configuration:'Schematic Z1 support and one Ku-band antenna; fixed pointing, not a live hardware inventory'};
+    return geo;
+  }
+
+  function issQuestGeometry(THREE, radius, length) {
+    var radial = typeof radius === 'number' && isFinite(radius) && radius > 0 ? radius / .45 : 1;
+    var axial = typeof length === 'number' && isFinite(length) && length > 0 ? length / 1.2 : 1;
+    var profile = [[0,-.6],[.18,-.6],[.207,-.575],[.207,-.245],[.225,-.20],[.30,-.115],[.315,-.065],[.315,.48],[.295,.56],[.27,.6],[0,.6]];
+    var stores = { hull: { p: [], n: [], uv: [] }, hardware: { p: [], n: [], c: [] } }, components = [], tanks = [];
+    function add(kind, name, geometry, color, position, rotation) {
+      if (rotation) { if (rotation[0]) geometry.rotateX(rotation[0]); if (rotation[1]) geometry.rotateY(rotation[1]); if (rotation[2]) geometry.rotateZ(rotation[2]); }
+      if (position) geometry.translate(position[0], position[1], position[2]);
+      geometry.scale(radial, axial, radial);
+      var flat = geometry.index ? geometry.toNonIndexed() : geometry, p = flat.attributes.position, n = flat.attributes.normal, uv = flat.attributes.uv, out = stores[kind], start = out.p.length / 3;
+      var shade = kind === 'hardware' ? new THREE.Color(color) : null;
+      for (var t = 0; t < p.count; t += 3) {
+        var a = new THREE.Vector3().fromBufferAttribute(p,t), b = new THREE.Vector3().fromBufferAttribute(p,t+1), c = new THREE.Vector3().fromBufferAttribute(p,t+2);
+        var cross = b.clone().sub(a).cross(c.clone().sub(a)); if (cross.lengthSq() < 1e-20) continue;
+        for (var j = 0; j < 3; j++) {
+          var i = t+j, normal = new THREE.Vector3().fromBufferAttribute(n,i); if (normal.lengthSq() < 1e-12) normal.copy(cross); normal.normalize();
+          out.p.push(p.getX(i),p.getY(i),p.getZ(i)); out.n.push(normal.x,normal.y,normal.z);
+          if (shade) out.c.push(shade.r,shade.g,shade.b); else out.uv.push(uv ? uv.getX(i) : 0,p.getY(i) / (1.2 * axial) + .5);
+        }
+      }
+      if (kind === 'hardware') components.push({ name:name,start:start,count:out.p.length/3-start });
+      if (flat !== geometry) flat.dispose(); geometry.dispose();
+    }
+    function box(name, dimensions, color, position) { add('hardware',name,new THREE.BoxGeometry(dimensions[0],dimensions[1],dimensions[2]),color,position); }
+    function ring(name, r, tube, color, position, rotation) { add('hardware',name,new THREE.TorusGeometry(r,tube,6,32),color,position,rotation || [Math.PI/2,0,0]); }
+    add('hull','shell',new THREE.LatheGeometry(profile.map(function(p){return new THREE.Vector2(p[0],p[1]);}),32));
+    [[.296,.555],[.317,.455],[.317,-.04],[.211,-.27],[.209,-.55]].forEach(function(p,i){ring('shell-seam-'+i,p[0],.005,0x91a3af,[0,p[1],0]);});
+    var tankProfile = [];
+    for (var cap=0;cap<=5;cap++) { var angle=-Math.PI/2+cap*Math.PI/10; tankProfile.push(new THREE.Vector2(.06*Math.cos(angle),-.11+.06*Math.sin(angle))); }
+    tankProfile.push(new THREE.Vector2(.06,.11));
+    for (var top=1;top<=5;top++) { var theta=top*Math.PI/10; tankProfile.push(new THREE.Vector2(.06*Math.cos(theta),.11+.06*Math.sin(theta))); }
+    for (var tank=0;tank<4;tank++) {
+      var angle=tank*Math.PI/2+Math.PI/4, x=.376*Math.cos(angle), z=.376*Math.sin(angle), id='tank-'+(tank+1);
+      add('hardware',id,new THREE.LatheGeometry(tankProfile,20),tank<2?0xe0e5e3:0xc9d3d6,[x,.18,z]);
+      [-.075,.075].forEach(function(y,i){ring(id+'-band-'+i,.061,.003,0x899eaa,[x,.18+y,z]);});
+      add('hardware',id+'-valve',new THREE.CylinderGeometry(.014,.018,.023,10),0x8298a5,[x,.3615,z]);
+      tanks.push({id:id,gas:tank<2?'oxygen':'nitrogen',center:[x*radial,.18*axial,z*radial],radius:.06*radial,length:.34*axial});
+    }
+    [0,Math.PI/2,Math.PI,Math.PI*1.5].forEach(function(angle,index){
+      var cx=Math.cos(angle),cz=Math.sin(angle);
+      var points=[[.316,-.005],[.338,.018],[.338,.405],[.316,.428]].map(function(p){return new THREE.Vector3(cx*p[0],p[1],cz*p[0]);});
+      add('hardware','equipment-handrail-'+index,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),16,.006,6,false),0xcab474);
+    });
+    [-1,1].forEach(function(side){
+      var points=[new THREE.Vector3(0,-.52,side*.209),new THREE.Vector3(0,-.50,side*.231),new THREE.Vector3(0,-.30,side*.231),new THREE.Vector3(0,-.28,side*.209)];
+      add('hardware','crew-handrail-'+side,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),12,.006,6,false),0xcab474);
+    });
+    ring('eva-hatch-rim',.119,.011,0x91a7b5,[-.214,-.40,0],[0,-Math.PI/2,0]);
+    ring('eva-hatch-gasket',.106,.004,0x243d4d,[-.223,-.40,0],[0,-Math.PI/2,0]);
+    add('hardware','eva-hatch-door',new THREE.CircleGeometry(.103,48),0xcbd6db,[-.224,-.40,0],[0,-Math.PI/2,0]);
+    box('eva-hatch-handle',[.013,.025,.10],0x8499a8,[-.235,-.40,0]);
+    function finish(kind) {
+      var data=stores[kind], geo=new THREE.BufferGeometry();
+      geo.setAttribute('position',new THREE.Float32BufferAttribute(data.p,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(data.n,3));
+      if (kind==='hull') geo.setAttribute('uv',new THREE.Float32BufferAttribute(data.uv,2)); else geo.setAttribute('color',new THREE.Float32BufferAttribute(data.c,3));
+      geo.computeBoundingBox(); geo.computeBoundingSphere();
+      geo.userData={kind:'quest-'+kind,illustrative:true};
+      if (kind==='hull') { geo.userData.profile=profile.map(function(p){return[p[0]*radial,p[1]*axial];}); geo.userData.chambers={equipment:{range:[-.115*axial,.6*axial],radius:.315*radial},crew:{range:[-.6*axial,-.245*axial],radius:.207*radial},bulkheadY:-.165*axial}; }
+      else { geo.userData.components=components; geo.userData.tanks=tanks; geo.userData.tankCount=4; geo.userData.configuration='STS-104 2001 schematic'; geo.userData.hatch={center:[-.214*radial,-.40*axial,0],normal:[-1,0,0]}; }
+      return geo;
+    }
+    return {hull:finish('hull'),hardware:finish('hardware')};
+  }
+
+  function issKiboFacilityGeometry(THREE) {
+    var positions = [], normals = [], colors = [], components = [], interfaces = [];
+    function add(name, geometry, color, x, y, z, rotation) {
+      if (rotation) geometry.rotateZ(rotation);
+      geometry.translate(x || 0, y || 0, z || 0);
+      var flat = geometry.index ? geometry.toNonIndexed() : geometry, p = flat.attributes.position, n = flat.attributes.normal, shade = new THREE.Color(color), start = positions.length / 3;
+      for (var i = 0; i < p.count; i++) { positions.push(p.getX(i), p.getY(i), p.getZ(i)); normals.push(n.getX(i), n.getY(i), n.getZ(i)); colors.push(shade.r, shade.g, shade.b); }
+      components.push({ name: name, start: start, count: p.count });
+      if (flat !== geometry) flat.dispose(); geometry.dispose();
+    }
+    function box(name, size, color, x, y, z) { add(name, new THREE.BoxGeometry(size[0], size[1], size[2]), color, x, y, z); }
+    box('deck', [.45,.10,1.10], 0xa3b1bb, 0,0,0);
+    [-1,1].forEach(function (side) {
+      box('underside-beam-' + side, [.04,.06,1.10], 0x596e7c, side * .19,-.08,0);
+      box('edge-frame-' + side, [.025,.055,1.10], 0xc6d1d7, side * .2125,.0275,0);
+    });
+    [-.35,0,.35].forEach(function (z, index) {
+      box('deck-panel-' + (index + 1), [.39,.018,.31], 0xdde3e4, 0,.059,z);
+      box('cross-support-' + (index + 1), [.36,.05,.035], 0x8196a3, 0,-.075,z);
+    });
+    box('attachment-support', [.10,.20,.24], 0xaabac4, .215,.10,0);
+    add('attachment-coupling', new THREE.CylinderGeometry(.13,.13,.09,24), 0xcbd5da, .25,.20,0, Math.PI / 2);
+    add('attachment-recess', new THREE.CylinderGeometry(.095,.095,.005,24), 0x344e60, .2925,.20,0, Math.PI / 2);
+    box('payload-1', [.23,.24,.24], 0xdde3e4, -.025,.19,-.35);
+    box('payload-2', [.25,.16,.24], 0xb6a782, .015,.15,0);
+    box('payload-3', [.23,.20,.24], 0xd5dde2, -.025,.17,.35);
+    [-.405,-.35,-.295].forEach(function (z, i) { box('payload-1-face-' + i, [.175,.006,.022], 0x385b70, -.025,.313,z); });
+    box('payload-2-cover', [.20,.008,.18], 0xc8ba99, .015,.234,0);
+    add('payload-3-observation-head', new THREE.CylinderGeometry(.058,.058,.06,20), 0xa4b5c2, -.155,.22,.35, Math.PI / 2);
+    add('payload-3-dark-face', new THREE.CylinderGeometry(.044,.044,.004,20), 0x173b51, -.187,.22,.35, Math.PI / 2);
+    var index = 0;
+    [-1,1].forEach(function (side) {
+      [-.15,0,.15].forEach(function (x) {
+        var id = 'interface-' + (++index), z = side * .53;
+        box(id, [.105,.075,.034], 0xbac8d0, x,.0275,z);
+        box(id + '-recess', [.077,.042,.002], 0x223e50, x,.03,side * .548);
+        [0xf0c36b,0x8fbfd7,0x83b6ab].forEach(function (color, contact) { box(id + '-service-' + contact, [.012,.013,.002], color, x + (contact - 1) * .022,.03,side * .549); });
+        interfaces.push({ id: id, position: [x,.0275,z] });
+      });
+    });
+    [-1,1].forEach(function (x) { [-1,1].forEach(function (z) { add('deck-fastener-' + x + '-' + z, new THREE.CylinderGeometry(.009,.009,.008,8), 0x5b7180, x * .18,.072,z * .49); }); });
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geo.computeBoundingBox(); geo.computeBoundingSphere();
+    geo.userData = { kind: 'kibo-ef', illustrative: true, components: components, interfaces: interfaces, attachmentPoint: [.295,.20,0] };
+    return geo;
+  }
+
+  function issCupolaGeometry(THREE, radius) {
+    var scale = typeof radius === 'number' && isFinite(radius) && radius > 0 ? radius / .42 : 1;
+    var positions = { frame: [], glazing: [] }, colors = [], components = [], panes = [];
+    function point(r, y, a) { return [r * Math.cos(a) * scale, y * scale, r * Math.sin(a) * scale]; }
+    function triangle(kind, a, b, c, outward, color) {
+      var normal = new THREE.Vector3().subVectors(new THREE.Vector3().fromArray(b), new THREE.Vector3().fromArray(a)).cross(new THREE.Vector3().subVectors(new THREE.Vector3().fromArray(c), new THREE.Vector3().fromArray(a)));
+      if (normal.dot(new THREE.Vector3().fromArray(outward)) < 0) { var swap = b; b = c; c = swap; }
+      positions[kind].push.apply(positions[kind], a.concat(b, c));
+      if (kind === 'frame') { var shade = new THREE.Color(color); for (var i = 0; i < 3; i++) colors.push(shade.r, shade.g, shade.b); }
+    }
+    function quad(kind, a, b, c, d, outward, color) { triangle(kind, a, b, c, outward, color); triangle(kind, a, c, d, outward, color); }
+    function component(name, draw) { var start = positions.frame.length / 3; draw(); components.push({ name: name, start: start, count: positions.frame.length / 3 - start }); }
+    function addSolid(name, geometry, color, y) {
+      geometry.rotateX(Math.PI / 2); geometry.translate(0, y * scale, 0);
+      var flat = geometry.index ? geometry.toNonIndexed() : geometry, attr = flat.attributes.position;
+      component(name, function () {
+        var shade = new THREE.Color(color);
+        for (var i = 0; i < attr.count; i++) { positions.frame.push(attr.getX(i), attr.getY(i), attr.getZ(i)); colors.push(shade.r, shade.g, shade.b); }
+      });
+      if (flat !== geometry) flat.dispose(); geometry.dispose();
+    }
+    for (var side = 0; side < 6; side++) {
+      var angle = side * Math.PI / 3, next = angle + Math.PI / 3, middle = angle + Math.PI / 6;
+      var a = point(.417, .035, angle), b = point(.417, .035, next), c = point(.246, .339, next), d = point(.246, .339, angle);
+      var normal = new THREE.Vector3().subVectors(new THREE.Vector3().fromArray(d), new THREE.Vector3().fromArray(a)).cross(new THREE.Vector3().subVectors(new THREE.Vector3().fromArray(b), new THREE.Vector3().fromArray(a))).normalize().toArray();
+      function surface(s, t, offset) { return a.map(function (v, i) { return (v + (b[i] - v) * s) * (1 - t) + (d[i] + (c[i] - d[i]) * s) * t + normal[i] * (offset || 0) * scale; }); }
+      function patch(s0, s1, t0, t1, offset, color) { quad('frame', surface(s0, t0, offset), surface(s1, t0, offset), surface(s1, t1, offset), surface(s0, t1, offset), normal, color); }
+      component('side-' + (side + 1) + '-structure', function () {
+        patch(0, 1, 0, .12, 0, 0xcbd5da); patch(0, 1, .88, 1, 0, 0xdce3e5);
+        patch(0, .12, .12, .88, 0, 0xb8c6ce); patch(.88, 1, .12, .88, 0, 0xb8c6ce);
+      });
+      component('side-' + (side + 1) + '-gasket', function () {
+        patch(.12, .88, .12, .145, .001, 0x182530); patch(.12, .88, .855, .88, .001, 0x182530);
+        patch(.12, .142, .145, .855, .001, 0x182530); patch(.858, .88, .145, .855, .001, 0x182530);
+      });
+      component('side-' + (side + 1) + '-reveal', function () {
+        var edges = [[.12,.12,.88,.12], [.88,.12,.88,.88], [.88,.88,.12,.88], [.12,.88,.12,.12]];
+        edges.forEach(function (edge) {
+          var p = surface(edge[0], edge[1], 0), q = surface(edge[2], edge[3], 0), r = surface(edge[2], edge[3], -.008), s = surface(edge[0], edge[1], -.008);
+          var center = surface(.5, .5, -.004), toward = center.map(function (v, i) { return v - (p[i] + q[i] + r[i] + s[i]) / 4; });
+          quad('frame', p, q, r, s, toward, 0x738895);
+        });
+      });
+      component('skirt-' + (side + 1), function () { quad('frame', point(.417, 0, angle), point(.417, 0, next), b, a, [Math.cos(middle), 0, Math.sin(middle)], 0x9daeb9); });
+      var corners = [surface(.14,.14,-.003), surface(.86,.14,-.003), surface(.86,.86,-.003), surface(.14,.86,-.003)];
+      var start = positions.glazing.length / 3;
+      quad('glazing', corners[0], corners[1], corners[2], corners[3], normal);
+      panes.push({ id: 'side-' + (side + 1), kind: 'trapezoid', start: start, count: 6, vertices: corners, center: [0,1,2].map(function (i) { return corners.reduce(function (sum, p) { return sum + p[i] / 4; }, 0); }), normal: normal });
+    }
+    component('nadir-roof', function () {
+      for (var segment = 0; segment < 96; segment++) {
+        var t0 = segment * Math.PI / 48, t1 = (segment + 1) * Math.PI / 48;
+        function roofEdge(t) { var facet = (Math.floor((t + 1e-10) / (Math.PI / 3)) + .5) * Math.PI / 3; return point(.246 * Math.cos(Math.PI / 6) / Math.cos(t - facet), .339, t); }
+        quad('frame', point(.158,.339,t0), roofEdge(t0), roofEdge(t1), point(.158,.339,t1), [0,1,0], 0xcbd7dd);
+      }
+    });
+    addSolid('base-flange', new THREE.TorusGeometry(.404 * scale, .013 * scale, 6, 64), 0xaabac4, .014);
+    addSolid('nadir-rim', new THREE.TorusGeometry(.170 * scale, .007 * scale, 6, 64), 0x9fb1be, .341);
+    addSolid('nadir-gasket', new THREE.TorusGeometry(.158 * scale, .004 * scale, 6, 64), 0x172733, .342);
+    var circleStart = positions.glazing.length / 3;
+    for (var circle = 0; circle < 64; circle++) triangle('glazing', [0,.342 * scale,0], point(.157,.342,circle * Math.PI / 32), point(.157,.342,(circle + 1) * Math.PI / 32), [0,1,0]);
+    panes.push({ id: 'nadir', kind: 'circle', start: circleStart, count: 192, center: [0,.342 * scale,0], normal: [0,1,0], radius: .157 * scale });
+    function geometry(kind) {
+      var geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(positions[kind], 3));
+      if (kind === 'frame') geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      geo.computeVertexNormals(); geo.computeBoundingBox(); geo.computeBoundingSphere();
+      geo.userData = { kind: 'cupola-' + kind, windowCount: 7, sideWindowCount: 6 };
+      if (kind === 'frame') geo.userData.components = components; else geo.userData.panes = panes;
+      return geo;
+    }
+    return { frame: geometry('frame'), glazing: geometry('glazing') };
+  }
+
+  function issDestinyWindowGeometry(THREE) {
+    var positions = [], normals = [], uvs = [];
+    function append(geometry) {
+      var flat = geometry.index ? geometry.toNonIndexed() : geometry;
+      ['position', 'normal', 'uv'].forEach(function (name) {
+        var values = flat.getAttribute(name).array;
+        var target = name === 'position' ? positions : name === 'normal' ? normals : uvs;
+        for (var i = 0; i < values.length; i++) target.push(values[i]);
+      });
+      if (flat !== geometry) flat.dispose();
+      geometry.dispose();
+    }
+    var frame = new THREE.LatheGeometry([[.082, 0], [.118, 0], [.118, .025], [.082, .025], [.082, 0]].map(function (p) { return new THREE.Vector2(p[0], p[1]); }), 32);
+    frame.rotateX(Math.PI / 2); append(frame);
+    for (var bolt = 0; bolt < 8; bolt++) {
+      var angle = (bolt + .5) * Math.PI / 4;
+      var head = new THREE.CylinderGeometry(.004, .004, .004, 6, 1);
+      head.rotateX(Math.PI / 2);
+      head.translate(Math.cos(angle) * .101, Math.sin(angle) * .101, .027);
+      append(head);
+    }
+    var rim = new THREE.BufferGeometry();
+    rim.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    rim.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    rim.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    rim.computeBoundingBox(); rim.computeBoundingSphere();
+    var gasket = new THREE.RingGeometry(.073, .083, 32); gasket.translate(0, 0, .008);
+    var pane = new THREE.CircleGeometry(.073, 40); pane.translate(0, 0, .010);
+    return { rim: rim, gasket: gasket, pane: pane };
+  }
+
+
   function issModuleHardwareGeometry(THREE, radius, length) {
     var up = new THREE.Vector3(0, 1, 0);
     function batch() { return { position: [], normal: [], uv: [] }; }
@@ -3851,44 +6113,38 @@
         g.fillStyle = '#334155'; g.fillRect(c * rw - 6, 12, 12, 5); g.fillRect(c * rw - 6, H - 17, 12, 5);
       }
     } else {
-      // Rigid shield panels: 8 around the hull, 3 along it. Slight per-panel
-      // tone, a diagonal sheen, dark seams, rivet rows, and handrails.
+      // Shield faces and flush access covers; raised handrails are geometry.
       var pc = 8, pr = 2, pw2 = W / pc, ph2 = H / pr, k;
+      function panelFastener(x, y) {
+        g.fillStyle = 'rgba(57,72,86,.24)'; g.beginPath(); g.arc(x + .5, y + .7, 1.9, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#d8dfe3'; g.beginPath(); g.arc(x, y, 1.45, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = 'rgba(68,83,96,.65)'; g.lineWidth = .65;
+        g.beginPath(); g.moveTo(x - .65, y + .65); g.lineTo(x + .65, y - .65); g.stroke();
+      }
       for (r = 0; r < pr; r++) for (c = 0; c < pc; c++) {
-        var tone = 224 + Math.floor(rnd() * 30);
-        g.fillStyle = 'rgb(' + tone + ',' + tone + ',' + (tone - 3) + ')';
-        g.fillRect(c * pw2, r * ph2, pw2, ph2);
-        var sheen = g.createLinearGradient(c * pw2, r * ph2, c * pw2 + pw2, r * ph2 + ph2);
-        sheen.addColorStop(0, 'rgba(255,255,255,.3)'); sheen.addColorStop(0.5, 'rgba(255,255,255,0)'); sheen.addColorStop(1, 'rgba(90,100,115,.18)');
-        g.fillStyle = sheen; g.fillRect(c * pw2, r * ph2, pw2, ph2);
+        var px = c * pw2, py = r * ph2, tone = 232 + Math.floor(rnd() * 15);
+        g.fillStyle = 'rgb(' + tone + ',' + tone + ',' + (tone - 2) + ')'; g.fillRect(px, py, pw2, ph2);
+        var sheen = g.createLinearGradient(px, py, px + pw2, py + ph2);
+        sheen.addColorStop(0, 'rgba(255,255,255,.23)'); sheen.addColorStop(.45, 'rgba(255,255,255,0)'); sheen.addColorStop(1, 'rgba(74,94,112,.09)');
+        g.fillStyle = sheen; g.fillRect(px + 2, py + 2, pw2 - 4, ph2 - 4);
+        g.fillStyle = 'rgba(67,85,100,.25)'; g.fillRect(px, py, 1.4, ph2);
+        g.fillStyle = 'rgba(77,95,108,.14)'; g.fillRect(px, py, pw2, 1);
+        g.strokeStyle = 'rgba(255,255,255,.65)'; g.lineWidth = 1;
+        g.beginPath(); g.moveTo(px + 3, py + ph2 - 4); g.lineTo(px + 3, py + 3); g.lineTo(px + pw2 - 4, py + 3); g.stroke();
+        g.strokeStyle = 'rgba(67,85,100,.16)';
+        g.beginPath(); g.moveTo(px + pw2 - 3, py + 4); g.lineTo(px + pw2 - 3, py + ph2 - 3); g.lineTo(px + 4, py + ph2 - 3); g.stroke();
+        [6, pw2 - 6].forEach(function (fx) { [8, ph2 - 8].forEach(function (fy) { panelFastener(px + fx, py + fy); }); });
       }
-      g.strokeStyle = 'rgba(74,86,102,.30)'; g.lineWidth = 1.6;
-      for (c = 0; c <= pc; c++) { g.beginPath(); g.moveTo(c * pw2, 0); g.lineTo(c * pw2, H); g.stroke(); }
-      // Ring seams repeat along the module, so they carry far less ink than the
-      // eight seams that only wrap the hull once.
-      g.strokeStyle = 'rgba(92,104,120,.18)'; g.lineWidth = 1.1;
-      for (r = 0; r <= pr; r++) { g.beginPath(); g.moveTo(0, r * ph2); g.lineTo(W, r * ph2); g.stroke(); }
-      g.fillStyle = 'rgba(86,96,112,.32)';
-      for (c = 0; c < pc; c++) for (k = 0; k < 6; k++) {
-        g.beginPath(); g.arc(c * pw2 + 4, k * (H / 6) + 10, 1.15, 0, Math.PI * 2); g.fill();
-        g.beginPath(); g.arc(c * pw2 + pw2 - 4, k * (H / 6) + 10, 1.15, 0, Math.PI * 2); g.fill();
-      }
-      // Two pieces of bolted-on hardware per tile. Their only job is to break
-      // the repeat: without something irregular the grid reads as a net however
-      // faint the seams are.
-      g.fillStyle = 'rgba(96,106,120,.34)';
-      g.fillRect(pw2 * 1.18, ph2 * 0.28, pw2 * 0.64, ph2 * 0.34);
-      g.fillRect(pw2 * 5.22, ph2 * 1.34, pw2 * 0.5, ph2 * 0.3);
-      g.fillStyle = 'rgba(255,255,255,.5)';
-      g.fillRect(pw2 * 1.18, ph2 * 0.28, pw2 * 0.64, 2);
-      g.fillRect(pw2 * 5.22, ph2 * 1.34, pw2 * 0.5, 2);
-      for (c = 0; c < pc; c += 2) {
-        var hx = c * pw2 + pw2 * 0.55, hy = ph2 * 1.5 - 3;
-        g.fillStyle = 'rgba(40,48,60,.8)'; g.fillRect(hx, hy, pw2 * 0.9, 6);
-        g.fillStyle = 'rgba(255,255,255,.85)'; g.fillRect(hx, hy, pw2 * 0.9, 1.5);
-      }
-      g.fillStyle = 'rgba(30,40,60,.5)'; g.font = '700 10px ui-monospace, monospace';
-      for (c = 1; c < pc; c += 3) g.fillText('P' + c, c * pw2 + 6, ph2 * 0.5 + 4);
+      [[1.18, .28, .64, .34], [5.22, 1.34, .5, .3]].forEach(function (cover) {
+        var ax = cover[0] * pw2, ay = cover[1] * ph2, aw = cover[2] * pw2, ah = cover[3] * ph2;
+        g.fillStyle = 'rgba(60,77,92,.18)'; g.fillRect(ax + 1.5, ay + 2, aw, ah);
+        var finish = g.createLinearGradient(ax, ay, ax + aw, ay + ah);
+        finish.addColorStop(0, '#f5f6f5'); finish.addColorStop(1, '#c6d0d6');
+        g.fillStyle = finish; g.fillRect(ax, ay, aw, ah);
+        g.strokeStyle = 'rgba(73,91,105,.45)'; g.lineWidth = 1; g.strokeRect(ax + .5, ay + .5, aw - 1, ah - 1);
+        g.strokeStyle = 'rgba(255,255,255,.85)'; g.strokeRect(ax + 2, ay + 2, aw - 4, ah - 4);
+        [5, aw - 5].forEach(function (fx) { [5, ah - 5].forEach(function (fy) { panelFastener(ax + fx, ay + fy); }); });
+      });
     }
     _issHullCanvases[kind] = cvs;
     return cvs;
@@ -4564,6 +6820,7 @@
     render: function (ctx) {
       var React = ctx.React;
       var h = React.createElement;
+      var guideRequestState = React.useState(0), guideReadRequest = guideRequestState[0], setGuideReadRequest = guideRequestState[1];
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // Fills {value1}-style placeholders, so a translation can reorder them.
       var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
@@ -4929,10 +7186,14 @@
           station.rotation.set(0, 0, 0);
           scene.add(station);
           var clickable = [];
-          var moduleDetails = [], moduleCapPickers = [];
+          var moduleDetails = [], moduleCapPickers = [], amsInstrument = null, amsEnvelope = new THREE.Sphere();
+          var cupolaExterior = [], cupolaEnvelope = new THREE.Sphere(), cupolaModule = null;
+          var kiboFacility = null, kiboEnvelope = new THREE.Sphere();
+          var questModule = null, questExterior = [], questEnvelope = new THREE.Sphere();
+          var commsInstrument = null, commsEnvelope = new THREE.Sphere();
+          var zvezdaSolarGroup = null, zvezdaSolarEnvelope = new THREE.Sphere();
           var endcapSkin = issModuleEndcapCanvas(), endcapMap = endcapSkin ? issTexture(endcapSkin, true) : null;
           if (endcapMap) { endcapMap.name = 'iss-module-endcap-atlas'; endcapMap.wrapS = endcapMap.wrapT = THREE.ClampToEdgeWrapping; }
-          var viewportMats = [];    // lit windows — brightened during orbital night
           // Interior shells for the cutaway control; hidden in normal view.
           var moduleCores = [];
           var _issCoreTex = null;
@@ -4963,14 +7224,13 @@
               mat.roughness = .48; mat.metalness = .5;
               mesh = new THREE.Mesh(geo, mat); mesh.name = 'iss-open-truss';
             } else if (m.id === 'cupola') {
-              geo = new THREE.SphereGeometry(rad, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2);
-              var cupolaMat = new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.3, metalness: 0.56, transparent: true, emissive: 0x000000 });
-              try {
-                var cupolaSkin = issHullCanvas('cupola');
-                if (cupolaSkin && THREE.CanvasTexture) { cupolaMat.map = issTexture(cupolaSkin, true); cupolaMat.roughness = 0.4; cupolaMat.metalness = 0.3; cupolaMat.needsUpdate = true; }
-              } catch (eCupola) {}
-              mesh = new THREE.Mesh(geo, cupolaMat);
-              mesh.rotation.x = Math.PI; // dome faces Earth (nadir)
+              var cupolaGeometry = issCupolaGeometry(THREE, rad); geo = cupolaGeometry.frame;
+              var cupolaMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .38, metalness: .48, transparent: true, emissive: 0x000000 });
+              mesh = new THREE.Mesh(geo, cupolaMat); mesh.name = 'iss-cupola-frame';
+              mesh.rotation.x = Math.PI; // local +Y faces Earth (nadir)
+            } else if (m.id === 'quest') {
+              var questParts = issQuestGeometry(THREE, rad, len); geo = questParts.hull;
+              mesh = new THREE.Mesh(geo, mat); mesh.name = 'iss-quest-hull'; mesh.rotation.z = Math.PI / 2;
             } else {
               geo = new THREE.CylinderGeometry(rad, rad, len, 32, 1, true);
               mesh = new THREE.Mesh(geo, mat); mesh.name = 'iss-module-hull-' + m.id;
@@ -4982,14 +7242,40 @@
             mesh._issId = m.id;
             station.add(mesh);
             clickable.push(mesh);
+            if (m.id === 'quest') {
+              questModule = mesh;
+              var questHardware = new THREE.Mesh(questParts.hardware, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .5, metalness: .3, transparent: true, emissive: 0x000000 }));
+              questHardware.name = 'iss-quest-hardware'; questHardware._issParentId = 'quest'; questHardware._issQuestHardware = true;
+              questHardware.position.copy(mesh.position); questHardware.quaternion.copy(mesh.quaternion); questHardware.castShadow = true; questHardware.receiveShadow = true;
+              station.add(questHardware); moduleDetails.push(questHardware); moduleCapPickers.push(questHardware); questExterior.push(mesh, questHardware);
+            }
+            if (m.id === 'kibo') {
+              kiboFacility = new THREE.Mesh(issKiboFacilityGeometry(THREE), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .5, metalness: .3, transparent: true, emissive: 0x000000 }));
+              kiboFacility.name = 'iss-kibo-exposed-facility'; kiboFacility.position.set(-2.775, -.20, -3.4);
+              kiboFacility._issParentId = 'kibo'; kiboFacility._issScienceId = 'kibo-ef'; kiboFacility.castShadow = true; kiboFacility.receiveShadow = true;
+              station.add(kiboFacility); moduleDetails.push(kiboFacility); moduleCapPickers.push(kiboFacility);
+            }
+            if (m.id === 'cupola') {
+              cupolaModule = mesh;
+              var cupolaGlazing = new THREE.Mesh(cupolaGeometry.glazing, new THREE.MeshStandardMaterial({ color: 0x234a60, roughness: .13, metalness: .28, side: THREE.DoubleSide, transparent: true, emissive: 0x000000 }));
+              cupolaGlazing.name = 'iss-cupola-glazing'; cupolaGlazing._issParentId = 'cupola'; cupolaGlazing._issCupolaPane = true;
+              cupolaGlazing.position.copy(mesh.position); cupolaGlazing.quaternion.copy(mesh.quaternion); cupolaGlazing.receiveShadow = true;
+              station.add(cupolaGlazing); moduleDetails.push(cupolaGlazing); moduleCapPickers.push(cupolaGlazing);
+              cupolaExterior.push(mesh, cupolaGlazing);
+            }
             if (m.id === 'truss') {
               var trussHardware = new THREE.Mesh(issTrussHardwareGeometry(THREE, ISS_TRUSS_Y), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, metalness: .35, transparent: true, emissive: 0x000000 }));
               trussHardware.name = 'iss-truss-hardware'; trussHardware.position.copy(mesh.position);
               trussHardware.castShadow = true; trussHardware.receiveShadow = true; trussHardware._issParentId = m.id;
               // Solid equipment is easier to click than thin lattice members.
               station.add(trussHardware); moduleDetails.push(trussHardware); moduleCapPickers.push(trussHardware);
+              amsInstrument = new THREE.Mesh(issAmsGeometry(THREE), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, metalness: .35, transparent: true, emissive: 0x000000 }));
+              amsInstrument.name = 'iss-ams02-instrument'; amsInstrument.position.set(2.24, ISS_TRUSS_Y + .20, m.pos[2]);
+              amsInstrument._issParentId = 'truss'; amsInstrument._issScienceId = 'ams02';
+              amsInstrument.castShadow = true; amsInstrument.receiveShadow = true;
+              station.add(amsInstrument); moduleDetails.push(amsInstrument); moduleCapPickers.push(amsInstrument);
             }
-            if (m.id !== 'truss' && m.id !== 'cupola') {
+            if (m.id !== 'truss' && m.id !== 'cupola' && m.id !== 'quest') {
               var hardwareGeometry = issModuleHardwareGeometry(THREE, rad, len);
               var endcaps = new THREE.Mesh(hardwareGeometry.caps, new THREE.MeshStandardMaterial({ color: m.color, map: endcapMap, roughness: .56, metalness: .3, transparent: true, emissive: 0x000000 }));
               endcaps.name = 'iss-module-endcaps-' + m.id; endcaps._issHullCap = true;
@@ -5017,7 +7303,7 @@
                 }
                 var coreTex = _issCoreTex;
                 if (coreTex) {
-                  var coreGeo = m.id === 'cupola'
+                  var coreGeo = m.id === 'quest' ? questParts.hull.clone().scale(.8, .94, .8) : m.id === 'cupola'
                     ? new THREE.SphereGeometry(rad * 0.8, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2)
                     : new THREE.CylinderGeometry(rad * 0.8, rad * 0.8, len * 0.94, 18, 1, true);
                   // Lit from inside, because modules are. Without the emissive
@@ -5037,9 +7323,8 @@
                 }
               } catch (eCore) {}
             }
-            // Docking collars and a small illuminated viewport give each
-            // pressurized module readable scale and silhouette.
-            if (m.id !== 'truss' && m.id !== 'cupola') {
+            // Schematic collars and seams give the pressurized hulls scale.
+            if (m.id !== 'truss' && m.id !== 'cupola' && m.id !== 'quest') {
               var collarMat = new THREE.MeshStandardMaterial({ color: 0xaab7c6, roughness: 0.32, metalness: 0.68 });
               [-1, 1].forEach(function (capSide) {
                 var ring = new THREE.Mesh(new THREE.TorusGeometry(rad * 1.01, 0.035, 8, 28), collarMat);
@@ -5057,11 +7342,27 @@
                 else { seam.position.y += seamOffset * len; seam.rotation.x = Math.PI / 2; }
                 seam._issParentId = m.id; station.add(seam); moduleDetails.push(seam);
               });
-              var viewport = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 8), new THREE.MeshBasicMaterial({ color: 0x8ee7ff }));
-              viewport.position.set(m.pos[0], m.pos[1] + rad * 0.78, m.pos[2]);
-              viewport._issParentId = m.id; station.add(viewport); moduleDetails.push(viewport);
-              viewportMats.push(viewport.material);
             }
+          });
+          commsInstrument = new THREE.Mesh(issCommsGeometry(THREE), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .48, metalness: .35, transparent: true, emissive: 0x000000 }));
+          commsInstrument.name = 'iss-z1-comms'; commsInstrument.position.set(0,.6,.2);
+          commsInstrument._issParentId = 'unity'; commsInstrument._issScienceId = 'comms'; commsInstrument.castShadow = true; commsInstrument.receiveShadow = true;
+          station.add(commsInstrument); moduleDetails.push(commsInstrument); moduleCapPickers.push(commsInstrument);
+          // One identified nadir window replaces the generic, buried light beads.
+          // Its axial placement and frame are schematic; the hull is not cut open.
+          var destinyWindowParts = [], destinyWindowGeo = issDestinyWindowGeometry(THREE);
+          var destinyInfo = MODULES.filter(function (module) { return module.id === 'destiny'; })[0];
+          var destinyWindowMats = {
+            rim: new THREE.MeshStandardMaterial({ color: 0xa9b6bf, roughness: .34, metalness: .65, transparent: true, emissive: 0x000000 }),
+            gasket: new THREE.MeshStandardMaterial({ color: 0x101923, roughness: .7, metalness: .1, transparent: true, emissive: 0x000000 }),
+            pane: new THREE.MeshStandardMaterial({ color: 0x21485b, roughness: .12, metalness: .25, transparent: true, emissive: 0x000000 })
+          };
+          ['rim', 'gasket', 'pane'].forEach(function (kind) {
+            var part = new THREE.Mesh(destinyWindowGeo[kind], destinyWindowMats[kind]);
+            part.name = 'iss-destiny-window-' + kind; part.rotation.x = Math.PI / 2;
+            part.position.set(destinyInfo.pos[0], destinyInfo.pos[1] - destinyInfo.size[0] - .003, destinyInfo.pos[2] + destinyInfo.size[1] * .13);
+            part._issParentId = 'destiny'; part._issWindowPart = true; part.castShadow = kind === 'rim'; part.receiveShadow = true;
+            station.add(part); moduleDetails.push(part); moduleCapPickers.push(part); destinyWindowParts.push(part);
           });
           // Shared cell and insulation atlases keep the eight rotating blankets
           // detailed without adding individual cell meshes or extra draw calls.
@@ -5165,7 +7466,7 @@
           // two disconnected sticks. A cylinder's axis for rotation.z = a is
           // (-sin a, cos a), so each segment's centre sits half a length along
           // that axis from the joint it grows out of.
-          var armMat = new THREE.MeshStandardMaterial({ color: 0xd9d2c0, roughness: 0.5 });
+          var armMat = new THREE.MeshStandardMaterial({ color: 0xe2e5e3, roughness: 0.6 });
           var armJointMat = new THREE.MeshStandardMaterial({ color: 0xb9b3a2, roughness: 0.35, metalness: 0.6 });
           var armBase = new THREE.Vector3(1.251, ISS_TRUSS_Y - .035, -1.6);   // latched to the truss
           var armAngle1 = 0.7, armLen1 = 1.4, armAngle2 = -1.2, armLen2 = 1.2;
@@ -5173,9 +7474,9 @@
           var armAxis2 = new THREE.Vector3(-Math.sin(armAngle2), Math.cos(armAngle2), 0);
           var armElbow = armBase.clone().add(armAxis1.clone().multiplyScalar(armLen1));
           var armTip = armElbow.clone().add(armAxis2.clone().multiplyScalar(armLen2));
-          var arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, armLen1, 8), armMat);
+          var arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, armLen1, 24), armMat);
           arm1.position.copy(armBase.clone().add(armAxis1.clone().multiplyScalar(armLen1 / 2))); arm1.rotation.z = armAngle1;
-          var arm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, armLen2, 8), armMat);
+          var arm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, armLen2, 24), armMat);
           arm2.position.copy(armElbow.clone().add(armAxis2.clone().multiplyScalar(armLen2 / 2))); arm2.rotation.z = armAngle2;
           arm1.castShadow = true; arm2.castShadow = true;
           station.add(arm1); station.add(arm2);
@@ -5184,7 +7485,9 @@
             knuckle.position.copy(joint[0]); knuckle.castShadow = true; station.add(knuckle);
           });
           // Latching end effector — the business end that grapples visiting cargo.
-          var armHand = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.055, 0.16, 10), armJointMat);
+          var armHand = new THREE.Mesh(issArmHandGeometry(THREE), new THREE.MeshStandardMaterial({ vertexColors: true, color: 0xffffff, roughness: .45, metalness: .4, emissive: 0x000000 }));
+          var grappleEnvelope = new THREE.Sphere(), grappleFrameQuaternion = null;
+          armHand._issScienceId = 'grapple'; moduleCapPickers.push(armHand);
           armHand.position.copy(armTip); armHand.rotation.z = armAngle2; armHand.castShadow = true;
           station.add(armHand);
 
@@ -5238,9 +7541,10 @@
               armReachable.position.fromArray(armTarget.attainable); armRequested.position.fromArray(armTarget.requested); armActualTip.position.copy(tip);
               armRequested.material.color.setHex(armTarget.reachable ? 0x67e8f9 : 0xfbbf24);
               armErrorLine.geometry.attributes.position.array.set(armTarget.requested.concat(armTarget.attainable)); armErrorLine.geometry.attributes.position.needsUpdate = true; armErrorLine.computeLineDistances();
-              armOverlay.visible = armEnabled; armOuter.visible = armInner.visible = armGuides; armErrorLine.visible = !armTarget.reachable;
+              armOverlay.visible = armEnabled && cameraFocusId !== 'grapple'; armOuter.visible = armInner.visible = armGuides; armErrorLine.visible = !armTarget.reachable;
               _lastFrameSig = '';
             }
+            syncGrappleCamera();
             syncArmPreview();
             var root = cv.closest('.iss-root'), panel = root && root.querySelector('[data-iss-arm-panel]'); if (!panel) return;
             var tipError = Math.hypot(armPose.tip[0] - armTarget.attainable[0], armPose.tip[1] - armTarget.attainable[1]);
@@ -5278,7 +7582,7 @@
           function updateArmHandle() {
             var button = cv.parentElement && cv.parentElement.querySelector('[data-iss-arm-handle]'); if (!button) return;
             armHandle.visible = armHandle.interactive = false;
-            if (armEnabled) {
+            if (armEnabled && cameraFocusId !== 'grapple') {
               station.updateMatrixWorld(true); camera.updateMatrixWorld(true);
               var world = station.localToWorld(armBase.clone().add(new THREE.Vector3().fromArray(armTarget.requested))), projected = world.project(camera);
               armHandle.x = (projected.x * .5 + .5) * Wc; armHandle.y = (-projected.y * .5 + .5) * Hc;
@@ -5378,8 +7682,9 @@
             syncArmStage();
             updateArmReference();
             var visible = !!armPreview && armEnabled;
-            if (armPreviewGroup.visible !== visible || armGhost.visible !== !armPreview) _lastFrameSig = '';
-            armPreviewGroup.visible = visible; armGhost.visible = !armPreview;
+            var renderVisible = visible && cameraFocusId !== 'grapple';
+            if (armPreviewGroup.visible !== renderVisible || armGhost.visible !== !armPreview) _lastFrameSig = '';
+            armPreviewGroup.visible = renderVisible; armGhost.visible = !armPreview;
             var root = cv.closest('.iss-root'); if (!root) return;
             var signature = [!!armPreview, visible, armPreviewSeconds, armPreviewPlaying].join('|');
             if (signature === armPreviewHUDSignature) return; armPreviewHUDSignature = signature; _lastFrameSig = '';
@@ -5460,7 +7765,7 @@
             var signature = [selected.shoulder, selected.elbow, selected.shoulderRate, selected.elbowRate, armVelocity.enabled, armVelocity.components, armVelocity.scale, armEnabled, source, armPreviewSeconds, lighting.playing].join('|');
             if (signature === armVelocitySignature) return; armVelocitySignature = signature;
             armVelocityModel = issMapArmMotion(selected); var model = armVelocityModel;
-            armVelocityGroup.visible = armVelocity.enabled && armEnabled;
+            armVelocityGroup.visible = armVelocity.enabled && armEnabled && cameraFocusId !== 'grapple';
             function arrowPose(arrow, vector, visible) {
               armVelocityVector.fromArray(vector); var length = armVelocityVector.length() * armVelocity.scale;
               arrow.position.fromArray(model.tip); arrow.visible = visible && length > 1e-8;
@@ -5557,7 +7862,7 @@
               armBrakeGhost.geometry.attributes.position.array.set([0, 0, 0].concat(armBrakePlan.joint, armBrakePlan.tip)); armBrakeGhost.geometry.attributes.position.needsUpdate = true; armBrakeGhost.computeLineDistances();
               armBrakeStop.position.fromArray(armBrakePlan.tip); _lastFrameSig = '';
             }
-            var visible = armBrakeShowPath && armEnabled && !armPreview;
+            var visible = armBrakeShowPath && armEnabled && !armPreview && cameraFocusId !== 'grapple';
             if (armBrakeGroup.visible !== visible) { armBrakeGroup.visible = visible; _lastFrameSig = ''; }
             var hud = [signature, armActual.braking, armBrakeShowPath, armEnabled, !!armPreview, lighting.playing].join('|');
             if (hud === armBrakeHUDSignature) return;
@@ -5653,7 +7958,7 @@
                 armReferenceTip.position.fromArray(saved.tip); armReferenceCurrent.position.fromArray(current.tip); armReferenceCurrent.material.color.setHex(source === 'preview' ? 0xe9d5ff : 0xffffff); _lastFrameSig = '';
               }
             }
-            var visible = !!armReference && armReferenceShow && armEnabled;
+            var visible = !!armReference && armReferenceShow && armEnabled && cameraFocusId !== 'grapple';
             if (armReferenceGroup.visible !== visible) { armReferenceGroup.visible = visible; _lastFrameSig = ''; }
             var root = cv.closest('.iss-root'), panel = root && root.querySelector('[data-iss-arm-reference-panel]'); if (!panel) return;
             panel.hidden = !armEnabled;
@@ -5691,35 +7996,57 @@
           };
 
           // ── Visiting vehicles ────────────────────────────────────────────
-          // The real station is almost never alone: a crew or cargo Dragon sits
-          // on Harmony's forward port and a Progress freighter on Zvezda's aft
-          // port for most of any given month (a Cygnus often hangs under Unity
-          // too), and the aft freighter is what
-          // performs the reboosts the Systems tab talks about. They are
-          // attached as details of the module they are docked to, so the
-          // cutaway control dims them with their host.
+          // Illustrative visiting craft follow their host in cutaway view.
+          // Their camera targets are separate from module discovery records.
+          var visitorTargets = Object.create(null), visitorHosts = Object.create(null), visitorPickers = [], visitorMaterials = new Map();
+          ISS_VISITING_CRAFT.forEach(function (info) {
+            var group = new THREE.Group();
+            group.name = 'iss-visitor-' + info.id;
+            group.userData = { hostId: info.hostId, label: info.name, port: info.port };
+            station.add(group);
+            visitorTargets[info.id] = { info: info, group: group, envelope: new THREE.Sphere() };
+            visitorHosts[info.hostId] = info.id;
+          });
           function addVisitor(mesh, hostId) {
+            var id = visitorHosts[hostId], visitor = visitorTargets[id];
+            var byHost = visitorMaterials.get(mesh.material);
+            if (!byHost) { byHost = new Map(); visitorMaterials.set(mesh.material, byHost); }
+            if (!byHost.has(hostId)) byHost.set(hostId, byHost.size ? mesh.material.clone() : mesh.material);
+            mesh.material = byHost.get(hostId);
             mesh.castShadow = true;
             mesh._issParentId = hostId;
-            station.add(mesh); moduleDetails.push(mesh);
+            mesh._issVisitorId = id;
+            visitor.group.add(mesh); moduleDetails.push(mesh); visitorPickers.push(mesh);
             return mesh;
           }
           var hullMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.42, metalness: 0.35, transparent: true });
           var trunkMat = new THREE.MeshStandardMaterial({ color: 0xd7dde5, roughness: 0.5, metalness: 0.3, transparent: true });
           var arrayMat = new THREE.MeshStandardMaterial({ color: 0x1e2f57, roughness: 0.3, metalness: 0.7, emissive: 0x0a1836, transparent: true, side: THREE.DoubleSide });
-          // Dragon: cone-shaped capsule nose-in to Harmony (z = -4.2), trunk
+          // Dragon: rounded capsule nose-in to Harmony (z = -4.2), trunk
           // behind it with the body-mounted solar cells that replaced the old
           // deployable wings.
           var dragonNose = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 10), trunkMat);
           dragonNose.rotation.x = Math.PI / 2; dragonNose.position.set(0, 0, -4.26);
           addVisitor(dragonNose, 'harmony');
-          var dragonCap = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.72, 16), hullMat);
-          dragonCap.rotation.x = -Math.PI / 2; dragonCap.position.set(0, 0, -4.68);
+          var dragonCap = new THREE.Mesh(issDragonCapsuleGeometry(THREE), hullMat);
+          dragonCap.name = 'iss-dragon-capsule';
+          dragonCap.rotation.x = Math.PI / 2; dragonCap.position.set(0, 0, -4.68);
           addVisitor(dragonCap, 'harmony');
-          var dragonTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.82, 16), trunkMat);
+          var dragonTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.82, 32), trunkMat);
+          dragonTrunk.name = 'iss-dragon-trunk';
           dragonTrunk.rotation.x = Math.PI / 2; dragonTrunk.position.set(0, 0, -5.45);
           addVisitor(dragonTrunk, 'harmony');
-          var dragonCells = new THREE.Mesh(new THREE.CylinderGeometry(0.308, 0.308, 0.7, 16, 1, true, -Math.PI * 0.62, Math.PI * 1.24), arrayMat);
+          var dragonArrayMat = arrayMat.clone(), dragonCellSkin = null;
+          try { dragonCellSkin = issDragonSolarCanvas(); } catch (unavailableDragonSkin) { dragonCellSkin = null; }
+          if (dragonCellSkin && THREE.CanvasTexture) {
+            dragonArrayMat.map = issTexture(dragonCellSkin, true);
+            dragonArrayMat.map.name = 'iss-dragon-solar-cells';
+            dragonArrayMat.map.wrapS = dragonArrayMat.map.wrapT = THREE.ClampToEdgeWrapping;
+            dragonArrayMat.color.setHex(0xffffff); dragonArrayMat.emissive.setHex(0x000000);
+            dragonArrayMat.roughness = .38; dragonArrayMat.metalness = .3; dragonArrayMat.needsUpdate = true;
+          }
+          var dragonCells = new THREE.Mesh(new THREE.CylinderGeometry(0.308, 0.308, 0.7, 32, 1, true, -Math.PI * 0.62, Math.PI * 1.24), dragonArrayMat);
+          dragonCells.name = 'iss-dragon-solar-sleeve';
           dragonCells.rotation.x = Math.PI / 2; dragonCells.position.set(0, 0, -5.45);
           addVisitor(dragonCells, 'harmony');
           // Progress: freighter on Zvezda's aft port (z = +6.2), the end of the
@@ -5730,13 +8057,24 @@
           var progressBus = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.52, 14), trunkMat);
           progressBus.rotation.x = Math.PI / 2; progressBus.position.set(0, 0, 7.16);
           addVisitor(progressBus, 'zvezda');
+          var progressArrayMat = arrayMat.clone(), progressCellSkin = null;
+          try { progressCellSkin = issProgressSolarCanvas(); } catch (unavailableProgressSkin) { progressCellSkin = null; }
+          if (progressCellSkin && THREE.CanvasTexture) {
+            progressArrayMat.map = issTexture(progressCellSkin, true);
+            progressArrayMat.map.name = 'iss-progress-solar-cells';
+            progressArrayMat.map.wrapS = progressArrayMat.map.wrapT = THREE.ClampToEdgeWrapping;
+            progressArrayMat.color.setHex(0xffffff); progressArrayMat.emissive.setHex(0x000000);
+            progressArrayMat.roughness = .38; progressArrayMat.metalness = .3; progressArrayMat.needsUpdate = true;
+          }
           [-1, 1].forEach(function (side) {
-            var wingPanel = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.02, 0.52), arrayMat);
+            var wingPanel = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.02, 0.52), progressArrayMat);
+            wingPanel.name = 'iss-progress-solar-wing';
             wingPanel.position.set(side * 0.74, 0, 7.16);
             addVisitor(wingPanel, 'zvezda');
           });
           var progressBell = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.1, 0.14, 10), new THREE.MeshStandardMaterial({ color: 0x3f4a5a, roughness: 0.55, metalness: 0.5, transparent: true }));
-          progressBell.rotation.x = Math.PI / 2; progressBell.position.set(0, 0, 7.49);
+          progressBell.name = 'iss-progress-engine';
+          progressBell.rotation.x = -Math.PI / 2; progressBell.position.set(0, 0, 7.49);
           addVisitor(progressBell, 'zvezda');
           // Cygnus: berthed, not docked. Canadarm2 catches it and bolts it to
           // Unity's Earth-facing port, free since Leonardo moved in 2015. A
@@ -5749,8 +8087,17 @@
           var cygnusBus = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.42, 8), new THREE.MeshStandardMaterial({ color: 0xc8b37a, roughness: 0.45, metalness: 0.5, transparent: true }));
           cygnusBus.position.set(0, cygnusTop - 0.08 - 1.5 - 0.21, 0.2); addVisitor(cygnusBus, 'unity');
           var cygnusArrayY = cygnusTop - 0.08 - 1.5 - 0.21;
+          var cygnusArrayMat = arrayMat.clone(), cygnusCellSkin = null;
+          try { cygnusCellSkin = issCygnusSolarCanvas(); } catch (unavailableCygnusSkin) { cygnusCellSkin = null; }
+          if (cygnusCellSkin && THREE.CanvasTexture) {
+            cygnusArrayMat.map = issTexture(cygnusCellSkin, true);
+            cygnusArrayMat.map.name = 'iss-cygnus-solar-cells';
+            cygnusArrayMat.map.wrapS = cygnusArrayMat.map.wrapT = THREE.ClampToEdgeWrapping;
+            cygnusArrayMat.color.setHex(0xffffff); cygnusArrayMat.emissive.setHex(0x000000);
+            cygnusArrayMat.roughness = .38; cygnusArrayMat.metalness = .3; cygnusArrayMat.needsUpdate = true;
+          }
           [-1, 1].forEach(function (side) {
-            var boomLen = 0.18, fan = new THREE.Mesh(new THREE.CircleGeometry(0.5, 10), arrayMat);
+            var boomLen = 0.18, fan = new THREE.Mesh(new THREE.CircleGeometry(0.5, 60), cygnusArrayMat);
             fan.name = 'iss-cygnus-ultraflex'; fan.position.set(side * (0.38 + boomLen + 0.5), cygnusArrayY, 0.2);
             addVisitor(fan, 'unity');
             var boom = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, boomLen + 0.06, 6), trunkMat);
@@ -5766,6 +8113,15 @@
           // Capture only hardware, before selection and experiment overlays exist.
           // Wing envelopes contain their complete two-axis sweep, not just this pose.
           station.updateMatrixWorld(true);
+          Object.keys(visitorTargets).forEach(function (id) {
+            var visitor = visitorTargets[id], bounds = new THREE.Box3().setFromObject(visitor.group);
+            bounds.expandByPoint(new THREE.Vector3().fromArray(visitor.info.port));
+            bounds.getBoundingSphere(visitor.envelope);
+          });
+          var zvezdaModel = MODULES.filter(function (module) { return module.id === 'zvezda'; })[0];
+          zvezdaSolarGroup = issZvezdaSolarAssembly(THREE, progressArrayMat.map || null);
+          zvezdaSolarGroup.position.fromArray(zvezdaModel.pos); station.add(zvezdaSolarGroup);
+          zvezdaSolarGroup.children.forEach(function (part) { part._issScienceId = 'zvezda-arrays'; moduleDetails.push(part); moduleCapPickers.push(part); });
           var stationBounds = new THREE.Box3(), partBounds = new THREE.Box3(), sweepExtent = new THREE.Vector3(.48, 3.9, 3.9);
           station.children.forEach(function (part) { if (wings.indexOf(part) < 0 && part !== armOverlay && part !== armPreviewGroup && part !== armVelocityGroup && part !== armBrakeGroup && part !== armReferenceGroup) { partBounds.setFromObject(part); stationBounds.union(partBounds); } });
           wings.forEach(function (wing) { stationBounds.expandByPoint(wing.position.clone().sub(sweepExtent)); stationBounds.expandByPoint(wing.position.clone().add(sweepExtent)); });
@@ -5878,13 +8234,8 @@
             mapThermalPhysical = issMapThermalInitial(); lighting.playing = false; lastFrameTime = null;
             updateMapThermal(); syncLightingHUD(); _lastFrameSig = '';
           };
-          // Selection highlight
-          // Brightened past the bloom threshold so the ring reads as a glowing
-          // halo. Kept on normal blending, not additive: additive would wash the
-          // ring out against the white radiators and lose the selection cue.
-          var selRing = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.035, 8, 40), new THREE.MeshBasicMaterial({ color: 0x9beeff }));
-          selRing.visible = false;
-          scene.add(selRing);
+          // Selection is a screen-space annotation, separate from station hardware.
+          var selectionHull = null, selectionCorners = [], selectionCenter = new THREE.Vector3(), selectionPoint = new THREE.Vector3();
 
           var raycaster = new THREE.Raycaster();
           var mouseV = new THREE.Vector2();
@@ -5894,12 +8245,16 @@
             mouseV.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
             mouseV.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
             raycaster.setFromCamera(mouseV, camera);
-            var hits = raycaster.intersectObjects(clickable.concat(moduleCapPickers), false);
+            var hits = raycaster.intersectObjects(clickable.concat(moduleCapPickers, visitorPickers), false);
             if (hits.length) {
+              var scienceId = hits[0].object._issScienceId;
+              if (scienceId) { onLeave(); cv._issFitCamera(scienceId); return; }
+              var visitorId = hits[0].object._issVisitorId;
+              if (visitorId) { onLeave(); cv._issFitCamera(visitorId); return; }
               var id = hits[0].object._issId || hits[0].object._issParentId;
               var mm = null;
               for (var mi2 = 0; mi2 < MODULES.length; mi2++) { if (MODULES[mi2].id === id) { mm = MODULES[mi2]; break; } }
-              upd({ selModule: id });
+              onLeave(); upd({ selModule: id });
               markSeen('seenModules', id);
               if (mm) announceToSR(__alloFill(__alloT('stem.spacestation.sr_module_selected', '{value1} selected. Details shown below the map.'), { value1: mm.name }));
               if (typeof awardXP === 'function') { try { awardXP(1); } catch (e) {} }
@@ -5912,35 +8267,38 @@
           // the same information from the module buttons below the map.
           cv.style.cursor = 'grab';
           cv._issHoverId = null;
+          var hoverPoint = null;
+          function labelViewport() {
+            return { width: Wc, height: Hc, top: visitorTargets[cameraFocusId] || radiatorTargets[cameraFocusId] || cameraFocusId === 'window' || cameraFocusId === 'ams02' || cameraFocusId === 'grapple' || cameraFocusId === 'kibo-ef' || cameraFocusId === 'quest-exterior' || cameraFocusId === 'comms' || cameraFocusId === 'zvezda-arrays' || cameraFocusId === 'cupola' && cameraMinDistance < 1 ? 108 : 52,
+              bottom: window.matchMedia('(max-width:680px)').matches ? 12 : 154 };
+          }
+          function syncHoverLabel() {
+            var hoverMarker = cv.parentElement && cv.parentElement.querySelector('[data-iss-hover-name]');
+            if (!hoverMarker) return;
+            var id = cv._issHoverId, info = id === 'zvezda-arrays' ? { name: 'Zvezda solar wings' } : id === 'comms' ? { name: 'Z1 communications' } : id === 'kibo-ef' ? { name: 'Kibo Exposed Facility' } : id === 'grapple' ? { name: 'Robotic grapple hand' } : id === 'ams02' ? { name: 'AMS-02' } : visitorTargets[id] && visitorTargets[id].info;
+            for (var hi = 0; hi < MODULES.length && !info && id; hi++) if (MODULES[hi].id === id) info = MODULES[hi];
+            var visible = !!info && !!hoverPoint && id !== cv._issWantSel && id !== cameraFocusId;
+            hoverMarker.style.opacity = visible ? '1' : '0';
+            if (!visible) return;
+            hoverMarker.textContent = info.name.split(' (')[0];
+            var layout = issMapLabelLayout(hoverPoint, labelViewport(), { width: hoverMarker.offsetWidth, height: hoverMarker.offsetHeight });
+            hoverMarker.style.left = layout.left.toFixed(2) + 'px';
+            hoverMarker.style.top = layout.top.toFixed(2) + 'px';
+          }
           function hoverAt(ev) {
             var rect = cv.getBoundingClientRect();
             if (!rect.width || !rect.height) return;
             mouseV.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
             mouseV.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
             raycaster.setFromCamera(mouseV, camera);
-            var hits = raycaster.intersectObjects(clickable.concat(moduleCapPickers), false);
-            var id = hits.length ? (hits[0].object._issId || hits[0].object._issParentId) : null;
-            if (id !== cv._issHoverId) {
-              cv._issHoverId = id;
-              cv.style.cursor = id ? 'pointer' : 'grab';
-              var hoverMarker = cv.parentElement && cv.parentElement.querySelector('[data-iss-hover-name]');
-              if (hoverMarker) {
-                var hm = null;
-                for (var hi = 0; hi < MODULES.length && id; hi++) { if (MODULES[hi].id === id) { hm = MODULES[hi]; break; } }
-                // The selection marker already names the selected module, so
-                // the chip only appears over a DIFFERENT one.
-                var chipVisible = !!hm && id !== cv._issWantSel;
-                hoverMarker.textContent = hm ? hm.name.split(' (')[0] : '';
-                hoverMarker.style.opacity = chipVisible ? '1' : '0';
-                hoverMarker.style.left = (ev.clientX - rect.left + 14) + 'px';
-                hoverMarker.style.top = (ev.clientY - rect.top - 10) + 'px';
-              }
-            } else if (id) {
-              var hoverMarker2 = cv.parentElement && cv.parentElement.querySelector('[data-iss-hover-name]');
-              if (hoverMarker2) { hoverMarker2.style.left = (ev.clientX - rect.left + 14) + 'px'; hoverMarker2.style.top = (ev.clientY - rect.top - 10) + 'px'; }
-            }
+            var hits = raycaster.intersectObjects(clickable.concat(moduleCapPickers, visitorPickers), false);
+            var id = hits.length ? (hits[0].object._issScienceId || hits[0].object._issVisitorId || hits[0].object._issId || hits[0].object._issParentId) : null;
+            cv._issHoverId = id;
+            cv.style.cursor = id ? 'pointer' : 'grab';
+            hoverPoint = { x: ev.clientX - rect.left, y: ev.clientY - rect.top, z: 0 };
+            syncHoverLabel();
           }
-          function onLeave() { cv._issHoverId = null; cv.style.cursor = 'grab'; var hoverMarker = cv.parentElement && cv.parentElement.querySelector('[data-iss-hover-name]'); if (hoverMarker) hoverMarker.style.opacity = '0'; }
+          function onLeave() { cv._issHoverId = null; hoverPoint = null; cv.style.cursor = dragging ? 'grabbing' : 'grab'; syncHoverLabel(); }
           cv.addEventListener('pointerleave', onLeave);
           // Without this, a touch drag on the canvas is claimed by the browser
           // for page scrolling: the pointer stream is cancelled and the camera
@@ -5954,17 +8312,54 @@
           // Orbit a camera around a persistent target. Viewing never turns the station.
           var cameraTarget = new THREE.Vector3(0, 0, 1), cameraMinDistance = 3.2, cameraMaxDistance = 30;
           var cameraTween = null, cameraFocusId = null, cameraView = 'overview', cameraHUD = null, lastCameraHUD = '';
+          var cameraDragMode = 'orbit', cameraPanned = false;
           var cameraFitMode = null, cameraFitResult = null;
           var pointers = new Map(), dragging = false, dragTravel = 0, gestureMultiple = false, lightGuides = false;
+          function syncArmInspectionVisibility() {
+            var outside = cameraFocusId !== 'grapple';
+            if (armOverlay) armOverlay.visible = armEnabled && outside;
+            if (armPreviewGroup) armPreviewGroup.visible = !!armPreview && armEnabled && outside;
+            if (armVelocityGroup) armVelocityGroup.visible = armVelocity.enabled && armEnabled && outside;
+            if (armBrakeGroup) armBrakeGroup.visible = armBrakeShowPath && armEnabled && !armPreview && outside;
+            if (armReferenceGroup) armReferenceGroup.visible = !!armReference && armReferenceShow && armEnabled && outside;
+          }
           function syncCameraHUD() {
+            syncArmInspectionVisibility();
             var inspectedRadiator = radiatorTargets[cameraFocusId];
             if (radiatorFocus.visible !== !!inspectedRadiator) { radiatorFocus.visible = !!inspectedRadiator; _lastFrameSig = ''; }
             if (inspectedRadiator) radiatorFocus.position.copy(inspectedRadiator.position);
             if (!cameraHUD) { var root = cv.closest('.iss-root'); cameraHUD = root && root.querySelector('[data-iss-camera-tools]'); }
-            var signature = [cameraView, cameraFocusId, camera.position.distanceTo(cameraTarget).toFixed(5), lightGuides, cv._issWantSel, cameraFitMode, cameraFitResult && cameraFitResult.fits].join('|');
+            var signature = [cameraView, cameraFocusId, camera.position.distanceTo(cameraTarget).toFixed(5), lightGuides, cv._issWantSel, cameraFitMode, cameraFocusId === 'cupola' && cameraMinDistance < 1, cameraFitResult && cameraFitResult.fits, cameraDragMode, cameraPanned].join('|');
             if (!cameraHUD || signature === lastCameraHUD) return;
             lastCameraHUD = signature;
             var root = cv.closest('.iss-root'), distance = camera.position.distanceTo(cameraTarget);
+            cameraHUD.querySelectorAll('[data-iss-camera-drag]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-iss-camera-drag') === cameraDragMode)); });
+            var stageHelp = root && root.querySelector('[data-iss-camera-drag-help]');
+            if (stageHelp) stageHelp.textContent = cameraDragMode === 'pan' ? __alloT('stem.spacestation.camera_pan_stage_help', 'Drag to move the view · pinch / + − to zoom · F to center') : __alloT('stem.spacestation.camera_stage_help', 'Drag to look around · pinch / + − to zoom · F to center');
+            var visitorCaption = root && root.querySelector('[data-iss-visitor-caption]'), inspectedVisitor = visitorTargets[cameraFocusId];
+            if (visitorCaption) {
+              visitorCaption.hidden = !inspectedVisitor;
+              if (inspectedVisitor) {
+                visitorCaption.querySelector('strong').textContent = inspectedVisitor.info.name;
+                visitorCaption.querySelector('span').textContent = __alloT('stem.spacestation.visitor_' + cameraFocusId + '_port', inspectedVisitor.info.portLabel);
+              }
+            }
+            var grappleCaption = root && root.querySelector('[data-iss-grapple-caption]');
+            if (grappleCaption) grappleCaption.hidden = cameraFocusId !== 'grapple';
+            var scienceCaption = root && root.querySelector('[data-iss-science-caption]');
+            if (scienceCaption) scienceCaption.hidden = cameraFocusId !== 'ams02';
+            var commsCaption = root && root.querySelector('[data-iss-comms-caption]');
+            if (commsCaption) commsCaption.hidden = cameraFocusId !== 'comms';
+            var zvezdaCaption = root && root.querySelector('[data-iss-zvezda-caption]');
+            if (zvezdaCaption) zvezdaCaption.hidden = cameraFocusId !== 'zvezda-arrays';
+            var questCaption = root && root.querySelector('[data-iss-quest-caption]');
+            if (questCaption) questCaption.hidden = cameraFocusId !== 'quest-exterior';
+            var kiboCaption = root && root.querySelector('[data-iss-kibo-caption]');
+            if (kiboCaption) kiboCaption.hidden = cameraFocusId !== 'kibo-ef';
+            var cupolaCaption = root && root.querySelector('[data-iss-cupola-caption]');
+            if (cupolaCaption) cupolaCaption.hidden = !(cameraFocusId === 'cupola' && cameraMinDistance < 1);
+            var windowCaption = root && root.querySelector('[data-iss-window-caption]');
+            if (windowCaption) windowCaption.hidden = cameraFocusId !== 'window';
             var radiatorCaption = root && root.querySelector('[data-iss-radiator-caption]');
             if (radiatorCaption) {
               radiatorCaption.hidden = !inspectedRadiator;
@@ -5986,13 +8381,14 @@
             var fitNote = cameraHUD.querySelector('[data-iss-camera-fit-note]');
             if (fitNote) {
               fitNote.hidden = !cameraFitMode;
-              var fitLabel = cameraFitResult && !cameraFitResult.fits ? __alloT('stem.spacestation.camera_fit_limit', 'Zoom limit reached. Widen the view to fit the complete subject.') : radiatorTargets[cameraFitMode] ? __alloT('stem.spacestation.camera_fit_radiator_note', 'Corners mark the radiator surface. Drag to inspect its channels, edge pipes and mounts. View changes preserve orbital physics.') : cameraFitMode === 'arm' ? __alloT('stem.spacestation.camera_fit_arm_note', 'Framed around the arm’s full reachable workspace. The target sliders remain available when the plane is edge-on.') : cameraFitMode === 'motion' ? __alloT('stem.spacestation.camera_fit_motion_note', 'Framed around the actual array and its motion vectors. Orbit to inspect their directions; zoom adjusts the view manually.') : cameraFitMode === 'array' ? __alloT('stem.spacestation.camera_fit_array_note', 'White corners mark the actual array pair. Framing includes its full range of motion; zoom adjusts the view manually.') : __alloT('stem.spacestation.camera_fit_station_note', 'The whole station and moving arrays fit the view. Framing adapts when the viewport changes; zoom adjusts it manually.');
+              var fitLabel = cameraFitResult && !cameraFitResult.fits ? __alloT('stem.spacestation.camera_fit_limit', 'Zoom limit reached. Widen the view to fit the complete subject.') : visitorTargets[cameraFitMode] ? __alloT('stem.spacestation.visitor_' + cameraFitMode + '_note', visitorTargets[cameraFitMode].info.note) : radiatorTargets[cameraFitMode] ? __alloT('stem.spacestation.camera_fit_radiator_note', 'Corners mark the radiator surface. Drag to inspect its channels, edge pipes and mounts. View changes preserve orbital physics.') : cameraFitMode === 'zvezda-arrays' ? 'Zvezda’s deployed solar wings in a fixed schematic pose. The guide explains their early role; this hardware adds no generation to the U.S. array model.' : cameraFitMode === 'comms' ? 'Z1’s open frame and one schematic Ku-band reflector. The fixed dish is a display pose; the field guide follows a radio route through a relay satellite to Earth.' : cameraFitMode === 'quest-exterior' ? __alloT('stem.spacestation.camera_fit_quest_note', 'Quest’s two-chamber exterior with a schematic 2001 gas-tank set. The smaller crew lock has a closed Earth-facing hatch. The field guide explains the separating pressure boundary.') : cameraFitMode === 'kibo-ef' ? __alloT('stem.spacestation.camera_fit_kibo_note', 'Kibo’s exposed experiment platform. The pallet, service interfaces and payload boxes are illustrative. The field guide explains the airlock, separate robotic system and July 2009 assembly.') : cameraFitMode === 'cupola' ? __alloT('stem.spacestation.camera_fit_cupola_note', 'Cupola’s six side windows surround its circular nadir window. The raised frames and dark glass are schematic; explore the real layered protection in the field guide. Drag to orbit, or Fit station to return.') : cameraFitMode === 'grapple' ? __alloT('stem.spacestation.camera_fit_grapple_note', 'Following the trainer’s grapple hand. Its recessed mouth and three snares are schematic. Pan or Home leaves follow mode; Fit arm restores the full workspace.') : cameraFitMode === 'ams02' ? __alloT('stem.spacestation.camera_fit_ams_note', 'AMS-02 on S3’s zenith face. The covered detector housing and pale thermal panels are schematic. The particle diagram in the component guide explains the internal measurements.') : cameraFitMode === 'window' ? __alloT('stem.spacestation.camera_fit_window_note', 'Destiny’s Earth-facing science window. The rim stands proud of the dark pane; frame dimensions and axial placement are schematic. Drag to inspect, or use Fit station to return.') : cameraFitMode === 'arm' ? __alloT('stem.spacestation.camera_fit_arm_note', 'Framed around the arm’s full reachable workspace. The target sliders remain available when the plane is edge-on.') : cameraFitMode === 'motion' ? __alloT('stem.spacestation.camera_fit_motion_note', 'Framed around the actual array and its motion vectors. Orbit to inspect their directions; zoom adjusts the view manually.') : cameraFitMode === 'array' ? __alloT('stem.spacestation.camera_fit_array_note', 'White corners mark the actual array pair. Framing includes its full range of motion; zoom adjusts the view manually.') : __alloT('stem.spacestation.camera_fit_station_note', 'The whole station and moving arrays fit the view. Framing adapts when the viewport changes; zoom adjusts it manually.');
               if (fitNote.textContent !== fitLabel) fitNote.textContent = fitLabel;
             }
-            var focusName = cameraFocusId === 'radiator-a' ? __alloT('stem.spacestation.camera_radiator_a', 'Radiator A') : cameraFocusId === 'radiator-b' ? __alloT('stem.spacestation.camera_radiator_b', 'Radiator B') : cameraFocusId === 'arm' ? __alloT('stem.spacestation.camera_arm', 'robotic arm') : cameraFocusId === 'arrays' ? __alloT('stem.spacestation.camera_array_pair', 'active array pair') : null;
+            var focusName = cameraFocusId === 'zvezda-arrays' ? 'Zvezda solar wings' : cameraFocusId === 'comms' ? 'Z1 communications' : cameraFocusId === 'quest-exterior' ? 'Quest airlock' : cameraFocusId === 'kibo-ef' ? 'Kibo Exposed Facility' : cameraFocusId === 'grapple' ? 'robotic grapple hand' : cameraFocusId === 'ams02' ? 'AMS-02' : cameraFocusId === 'window' ? __alloT('stem.spacestation.camera_window', 'Destiny science window') : cameraFocusId === 'radiator-a' ? __alloT('stem.spacestation.camera_radiator_a', 'Radiator A') : cameraFocusId === 'radiator-b' ? __alloT('stem.spacestation.camera_radiator_b', 'Radiator B') : cameraFocusId === 'arm' ? __alloT('stem.spacestation.camera_arm', 'robotic arm') : cameraFocusId === 'arrays' ? __alloT('stem.spacestation.camera_array_pair', 'active array pair') : null;
             for (var fi = 0; fi < MODULES.length; fi++) if (MODULES[fi].id === cameraFocusId) focusName = MODULES[fi].name.split(' (')[0];
+            if (visitorTargets[cameraFocusId]) focusName = visitorTargets[cameraFocusId].info.name;
             var targetReading = cameraHUD.querySelector('[data-iss-camera-target]');
-            var targetLabel = focusName ? __alloFill(__alloT('stem.spacestation.camera_orbit_module', 'Orbiting {value1}'), { value1: focusName }) : __alloT('stem.spacestation.camera_orbit_station', 'Orbiting the station');
+            var targetLabel = cameraFocusId === 'grapple' ? __alloT('stem.spacestation.camera_follow_hand', 'Following the robotic grapple hand') : cameraPanned ? __alloT('stem.spacestation.camera_orbit_custom', 'Orbiting a custom target') : focusName ? __alloFill(__alloT('stem.spacestation.camera_orbit_module', 'Orbiting {value1}'), { value1: focusName }) : __alloT('stem.spacestation.camera_orbit_station', 'Orbiting the station');
             if (targetReading && targetReading.textContent !== targetLabel) targetReading.textContent = targetLabel;
             var mapStatus = root && root.querySelector('#iss-map-status'), selectedName = cv._issWantSel;
             for (var si = 0; si < MODULES.length; si++) if (MODULES[si].id === cv._issWantSel) selectedName = MODULES[si].name;
@@ -6002,18 +8398,47 @@
           }
           function applyCameraPose(position, target, options) {
             finishJointDrag(); finishArmDrag();
-            var opts = Object.assign({ minDistance: cameraMinDistance, maxDistance: cameraMaxDistance }, options || {});
+            var opts = Object.assign({ minDistance: cameraMinDistance, maxDistance: cameraMaxDistance, closeInspection: cameraMinDistance < 1 || cameraFocusId === 'kibo-ef' || cameraFocusId === 'quest-exterior' || cameraFocusId === 'comms',
+              outwardNormal: cameraFocusId === 'comms' ? new THREE.Vector3(0, 1, 0).applyQuaternion(commsInstrument.getWorldQuaternion(new THREE.Quaternion())).toArray() : cameraFocusId === 'quest-exterior' ? new THREE.Vector3(0, -1, 0).applyQuaternion(questModule.getWorldQuaternion(new THREE.Quaternion())).toArray() : cameraFocusId === 'kibo-ef' ? new THREE.Vector3(-1, 0, 0).applyQuaternion(kiboFacility.getWorldQuaternion(new THREE.Quaternion())).toArray() : cameraFocusId === 'cupola' && cameraMinDistance < 1 ? new THREE.Vector3(0, 1, 0).applyQuaternion(cupolaModule.getWorldQuaternion(new THREE.Quaternion())).toArray() : cameraFocusId === 'grapple' ? new THREE.Vector3(0, 1, 0).applyQuaternion(armHand.getWorldQuaternion(new THREE.Quaternion())).toArray() : cameraFocusId === 'window' ? new THREE.Vector3(0, -1, 0).applyQuaternion(station.getWorldQuaternion(new THREE.Quaternion())).toArray() : null }, options || {});
             var pose = issMapCameraPose(position.toArray(), target.toArray(), opts);
             cameraTarget.fromArray(pose.target); camera.position.fromArray(pose.position);
             camera.lookAt(cameraTarget); camera.updateMatrixWorld(true); syncCameraHUD();
           }
+          function updateGrappleEnvelope() {
+            station.updateMatrixWorld(true);
+            grappleEnvelope.copy(armHand.geometry.boundingSphere).applyMatrix4(armHand.matrixWorld);
+          }
+          function syncGrappleCamera() {
+            if (cameraFocusId !== 'grapple' || !grappleFrameQuaternion) return;
+            var previousCenter = grappleEnvelope.center.clone(); updateGrappleEnvelope();
+            var frame = armHand.getWorldQuaternion(new THREE.Quaternion());
+            if (previousCenter.distanceToSquared(grappleEnvelope.center) < 1e-20 && 1 - Math.abs(frame.dot(grappleFrameQuaternion)) < 1e-14) return;
+            var offset = camera.position.clone().sub(cameraTarget).applyQuaternion(grappleFrameQuaternion.clone().invert()).applyQuaternion(frame);
+            cameraTarget.copy(grappleEnvelope.center); camera.position.copy(cameraTarget).add(offset);
+            camera.lookAt(cameraTarget); camera.updateMatrixWorld(true); grappleFrameQuaternion.copy(frame);
+            syncCameraHUD(); _lastFrameSig = '';
+          }
           function settleCameraFit() { if (cameraFitMode && cameraTween) cv._issFitCamera(cameraFitMode, true); }
           function cancelCameraTween() { cameraTween = null; cameraView = 'custom'; }
           cv._issCameraOrbit = function (yaw, pitch) {
-            finishMotionDrag(); settleCameraFit(); cancelCameraTween(); applyCameraPose(camera.position, cameraTarget, { yaw: yaw, pitch: pitch });
+            onLeave(); finishMotionDrag(); settleCameraFit(); cancelCameraTween(); applyCameraPose(camera.position, cameraTarget, { yaw: yaw, pitch: pitch });
           };
           cv._issCameraZoom = function (factor) {
-            finishMotionDrag(); settleCameraFit(); cameraFitMode = null; cameraFitResult = null; cancelCameraTween(); applyCameraPose(camera.position, cameraTarget, { zoom: factor });
+            onLeave(); finishMotionDrag(); settleCameraFit(); cameraFitMode = null; cameraFitResult = null; cancelCameraTween(); applyCameraPose(camera.position, cameraTarget, { zoom: factor });
+          };
+          cv._issSetCameraDrag = function (mode) {
+            if (cleaned || ['orbit', 'pan'].indexOf(mode) < 0) return;
+            onUp(); onLeave(); cameraDragMode = mode; syncCameraHUD();
+          };
+          cv._issCameraPan = function (dx, dy) {
+            if (cleaned || !isFinite(dx) || !isFinite(dy) || (!dx && !dy)) return;
+            onLeave(); finishMotionDrag(); finishJointDrag(); finishArmDrag(); settleCameraFit();
+            var pose = issMapCameraPan(camera.position.toArray(), cameraTarget.toArray(), { dx: dx, dy: dy, fov: camera.fov, height: Hc });
+            if (Math.hypot(pose.shift[0], pose.shift[1], pose.shift[2]) < 1e-9) return;
+            cancelCameraTween();
+            cameraFitMode = null; cameraFitResult = null; cameraFocusId = null; cameraPanned = true; arrayFocus.visible = false;
+            camera.position.fromArray(pose.position); cameraTarget.fromArray(pose.target);
+            camera.lookAt(cameraTarget); camera.updateMatrixWorld(true); syncCameraHUD(); _lastFrameSig = '';
           };
           cv._issSetGuides = function (visible) {
             if (typeof visible !== 'boolean') return;
@@ -6025,17 +8450,17 @@
             return { position: camera.position.toArray(), target: cameraTarget.toArray(), distance: camera.position.distanceTo(cameraTarget),
               minDistance: cameraMinDistance, maxDistance: cameraMaxDistance, focusId: cameraFocusId, view: cameraView, tweening: !!cameraTween,
               fit: cameraFitMode, fitRadius: cameraFitResult ? cameraFitResult.radius : null, fitDistance: cameraFitResult ? cameraFitResult.distance : null,
-              fitCenter: cameraFitMode ? (radiatorTargets[cameraFitMode] ? radiatorTargets[cameraFitMode].position.toArray() : cameraFitMode === 'arm' ? armBase.toArray() : cameraFitMode !== 'station' ? wings[2].position.toArray() : stationEnvelope.center.toArray()) : null,
+              fitCenter: cameraFitMode ? (cameraFitMode === 'zvezda-arrays' ? zvezdaSolarEnvelope.center.toArray() : cameraFitMode === 'comms' ? commsEnvelope.center.toArray() : cameraFitMode === 'quest-exterior' ? questEnvelope.center.toArray() : cameraFitMode === 'kibo-ef' ? kiboEnvelope.center.toArray() : cameraFitMode === 'cupola' ? cupolaEnvelope.center.toArray() : cameraFitMode === 'grapple' ? grappleEnvelope.center.toArray() : cameraFitMode === 'ams02' ? amsEnvelope.center.toArray() : cameraFitMode === 'window' ? (cameraTween ? cameraTween.toTarget : cameraTarget).toArray() : visitorTargets[cameraFitMode] ? visitorTargets[cameraFitMode].envelope.center.toArray() : radiatorTargets[cameraFitMode] ? radiatorTargets[cameraFitMode].position.toArray() : cameraFitMode === 'arm' ? armBase.toArray() : cameraFitMode !== 'station' ? wings[2].position.toArray() : stationEnvelope.center.toArray()) : null,
               stationQuaternion: station.quaternion.toArray(), guides: lightGuides, guideSun: _sunDir.toArray(), guideNormal: _wingNormal.toArray(),
-              projectedTarget: projected.toArray(), activePointers: pointers.size, renderCount: renderCount };
+              projectedTarget: projected.toArray(), activePointers: pointers.size, dragMode: cameraDragMode, panned: cameraPanned, renderCount: renderCount };
           };
           function onDown(e) {
             var touch = e.pointerType === 'touch';
             if ((!touch && (e.button !== 0 || e.isPrimary === false || pointers.size)) || pointers.size >= 2) return;
             if (!pointers.size) { settleCameraFit(); dragTravel = 0; gestureMultiple = false; }
-            pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: touch });
+            pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: touch, pan: e.shiftKey || cameraDragMode === 'pan' });
             if (pointers.size > 1) { gestureMultiple = true; dragTravel = 100; }
-            dragging = true; cameraTween = null; cv.style.cursor = 'grabbing';
+            onLeave(); dragging = true; cameraTween = null; cv.style.cursor = 'grabbing';
             try { cv.focus({ preventScroll: true }); cv.setPointerCapture(e.pointerId); } catch (captureError) {}
           }
           function pointerSpan() {
@@ -6047,11 +8472,11 @@
             if (!old) { if (!dragging && e.target === cv && e.pointerType !== 'touch') hoverAt(e); return; }
             var dx = e.clientX - old.x, dy = e.clientY - old.y, priorSpan = pointerSpan();
             dragTravel += Math.abs(dx) + Math.abs(dy);
-            pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: old.touch });
+            pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: old.touch, pan: old.pan });
             if (pointers.size === 2) {
               var span = pointerSpan();
               if (priorSpan > 4 && span > 4) cv._issCameraZoom(priorSpan / span);
-            } else if (dx || dy) cv._issCameraOrbit(-dx * 0.005, -dy * 0.004);
+            } else if (dx || dy) { if (old.pan) cv._issCameraPan(dx, dy); else cv._issCameraOrbit(-dx * 0.005, -dy * 0.004); }
           }
           function onUp(e) {
             finishJointDrag(e); finishMotionDrag(e); finishArmDrag(e); finishArmSpeedDrag(e);
@@ -6069,7 +8494,8 @@
           function onKey(e) {
             if (e.altKey || e.ctrlKey || e.metaKey) return;
             var handled = true;
-            if (e.key === 'ArrowLeft') cv._issCameraOrbit(-.12, 0);
+            if (e.shiftKey && /^Arrow(Left|Right|Up|Down)$/.test(e.key)) cv._issCameraPan(e.key === 'ArrowLeft' ? -32 : e.key === 'ArrowRight' ? 32 : 0, e.key === 'ArrowUp' ? -32 : e.key === 'ArrowDown' ? 32 : 0);
+            else if (e.key === 'ArrowLeft') cv._issCameraOrbit(-.12, 0);
             else if (e.key === 'ArrowRight') cv._issCameraOrbit(.12, 0);
             else if (e.key === 'ArrowUp') cv._issCameraOrbit(0, -.09);
             else if (e.key === 'ArrowDown') cv._issCameraOrbit(0, .09);
@@ -6108,32 +8534,83 @@
               nadir: { camera: [0, -3.8, 5.6], target: [0, 0, .5] }
             };
             var view = views[name] || views.overview;
-            onUp(); cameraFitMode = null; cameraFitResult = null; cameraMaxDistance = 30; cameraFocusId = null; cameraMinDistance = 3.2; cameraView = views[name] ? name : 'overview';
+            onUp(); onLeave(); cameraPanned = false; cameraFitMode = null; cameraFitResult = null; cameraMaxDistance = 30; cameraFocusId = null; cameraMinDistance = 3.2; cameraView = views[name] ? name : 'overview';
             moveCamera(new THREE.Vector3().fromArray(view.camera), new THREE.Vector3().fromArray(view.target), immediate);
             if (!immediate) announceToSR(__alloFill(__alloT('stem.spacestation.sr_camera_view_selected', '{value1} camera view selected.'), { value1: cameraView }));
           };
           if (d && d.mapView && d.mapView !== 'overview') cv._issSetView(d.mapView, true);
           cv._issFitCamera = function (kind, immediate) {
-            if (cleaned || ['station', 'array', 'motion', 'arm', 'radiator-a', 'radiator-b'].indexOf(kind) < 0) return;
+            if (cleaned || !visitorTargets[kind] && ['station', 'array', 'motion', 'arm', 'window', 'ams02', 'grapple', 'cupola', 'kibo-ef', 'quest-exterior', 'comms', 'zvezda-arrays', 'radiator-a', 'radiator-b'].indexOf(kind) < 0) return;
+            var visitor = visitorTargets[kind], sameVisitor = cameraFocusId === kind;
             var radiator = radiatorTargets[kind], sameRadiator = cameraFocusId === kind;
-            onUp(); cameraFitMode = kind; cameraView = 'custom'; cameraFocusId = radiator ? kind : kind === 'arm' ? 'arm' : kind !== 'station' ? 'arrays' : null;
-            cameraMinDistance = radiator ? 1.8 : kind !== 'station' ? 4.05 : 3.2; cameraMaxDistance = 40;
-            var target = radiator ? radiator.position.clone() : kind === 'arm' ? armBase.clone() : kind !== 'station' ? wings[2].position.clone() : stationEnvelope.center.clone();
+            var zvezdaFit = kind === 'zvezda-arrays', sameZvezda = cameraFocusId === 'zvezda-arrays';
+            if (zvezdaFit) {
+              station.updateMatrixWorld(true); var zvezdaBounds = new THREE.Box3().setFromObject(zvezdaSolarGroup);
+              clickable.forEach(function (part) { if (part._issId === 'zvezda') zvezdaBounds.union(new THREE.Box3().setFromObject(part)); });
+              zvezdaBounds.getBoundingSphere(zvezdaSolarEnvelope);
+            }
+            var commsFit = kind === 'comms', sameComms = cameraFocusId === 'comms';
+            if (commsFit) { station.updateMatrixWorld(true); new THREE.Box3().setFromObject(commsInstrument).getBoundingSphere(commsEnvelope); }
+            var questFit = kind === 'quest-exterior', sameQuest = cameraFocusId === 'quest-exterior';
+            if (questFit) {
+              station.updateMatrixWorld(true); var questBounds = new THREE.Box3();
+              questExterior.forEach(function(part) { questBounds.union(new THREE.Box3().setFromObject(part)); });
+              questBounds.getBoundingSphere(questEnvelope);
+            }
+            var kiboFit = kind === 'kibo-ef', sameKibo = cameraFocusId === 'kibo-ef';
+            if (kiboFit) { station.updateMatrixWorld(true); new THREE.Box3().setFromObject(kiboFacility).getBoundingSphere(kiboEnvelope); }
+            var cupolaFit = kind === 'cupola', sameCupola = cameraFocusId === 'cupola' && cameraMinDistance < 1;
+            if (cupolaFit) {
+              station.updateMatrixWorld(true); var cupolaBounds = new THREE.Box3();
+              cupolaExterior.forEach(function (part) { cupolaBounds.union(new THREE.Box3().setFromObject(part)); });
+              cupolaBounds.getBoundingSphere(cupolaEnvelope);
+            }
+            var grappleFit = kind === 'grapple', sameGrapple = cameraFocusId === 'grapple';
+            if (grappleFit) { updateGrappleEnvelope(); grappleFrameQuaternion = armHand.getWorldQuaternion(new THREE.Quaternion()); }
+            var scienceFit = kind === 'ams02', sameScience = cameraFocusId === 'ams02';
+            if (scienceFit) { station.updateMatrixWorld(true); new THREE.Box3().setFromObject(amsInstrument).getBoundingSphere(amsEnvelope); }
+            var windowFit = kind === 'window', sameWindow = cameraFocusId === 'window', windowBounds = null;
+            if (windowFit) {
+              station.updateMatrixWorld(true); windowBounds = new THREE.Box3();
+              destinyWindowParts.forEach(function (part) { windowBounds.union(new THREE.Box3().setFromObject(part)); });
+            }
+            onUp(); onLeave(); cameraPanned = false; cameraFitMode = kind; cameraView = 'custom'; cameraFocusId = visitor || radiator || windowFit || scienceFit || grappleFit || cupolaFit || kiboFit || questFit || commsFit || zvezdaFit ? kind : kind === 'arm' ? 'arm' : kind !== 'station' ? 'arrays' : null;
+            cameraMinDistance = zvezdaFit ? 4.8 : commsFit ? 1.6 : questFit ? 1.5 : kiboFit ? 1 : cupolaFit ? .72 : grappleFit ? .5 : scienceFit ? 1 : windowFit ? .55 : visitor ? 1.2 : radiator ? 1.8 : kind !== 'station' ? 4.05 : 3.2; cameraMaxDistance = commsFit ? 5 : questFit ? 3.6 : kiboFit ? 3.6 : cupolaFit ? 2.6 : grappleFit ? 1.8 : 40;
+            var target = zvezdaFit ? zvezdaSolarEnvelope.center.clone() : commsFit ? commsEnvelope.center.clone() : questFit ? questEnvelope.center.clone() : kiboFit ? kiboEnvelope.center.clone() : cupolaFit ? cupolaEnvelope.center.clone() : grappleFit ? grappleEnvelope.center.clone() : scienceFit ? amsEnvelope.center.clone() : windowFit ? windowBounds.getCenter(new THREE.Vector3()) : visitor ? visitor.envelope.center.clone() : radiator ? radiator.position.clone() : kind === 'arm' ? armBase.clone() : kind !== 'station' ? wings[2].position.clone() : stationEnvelope.center.clone();
             var direction = camera.position.clone().sub(cameraTarget);
             // Open from the outward broad face; later resize preserves the
             // user's orbit direction instead of snapping back to this angle.
             if (radiator && !(immediate && sameRadiator)) direction.set(kind === 'radiator-a' ? -1 : 1, -.45, .35);
+            if (visitor && !(immediate && sameVisitor)) direction.fromArray(visitor.info.direction);
+            if (scienceFit && !(immediate && sameScience)) direction.set(1, .8, 1).applyQuaternion(station.getWorldQuaternion(new THREE.Quaternion()));
+            if (grappleFit && !(immediate && sameGrapple)) direction.set(.18, 1, .3).applyQuaternion(grappleFrameQuaternion);
+            if (zvezdaFit && !(immediate && sameZvezda)) direction.set(.65,1.15,1.05).applyQuaternion(station.getWorldQuaternion(new THREE.Quaternion()));
+            if (commsFit && !(immediate && sameComms)) direction.set(1,.65,.8).applyQuaternion(commsInstrument.getWorldQuaternion(new THREE.Quaternion()));
+            if (questFit && !(immediate && sameQuest)) direction.set(-.6, -1, .8).applyQuaternion(questModule.getWorldQuaternion(new THREE.Quaternion()));
+            if (kiboFit && !(immediate && sameKibo)) direction.set(-.12, .65, -1).applyQuaternion(kiboFacility.getWorldQuaternion(new THREE.Quaternion()));
+            if (cupolaFit && !(immediate && sameCupola)) direction.set(.12, 1, .22).applyQuaternion(cupolaModule.getWorldQuaternion(new THREE.Quaternion()));
+            if (windowFit && !(immediate && sameWindow)) direction.set(.12, -1, .22).applyQuaternion(station.getWorldQuaternion(new THREE.Quaternion()));
             if (direction.lengthSq() < .01) direction.set(1, .5, 1);
-            cameraFitResult = issMapCameraFit({ radius: radiator ? 1.55 : kind === 'arm' ? (armVelocity.enabled ? 4.15 : 3.05) : kind === 'motion' ? 4.8 : kind === 'array' ? 3.9 : stationEnvelope.radius, fov: camera.fov, aspect: camera.aspect, minDistance: cameraMinDistance, maxDistance: cameraMaxDistance });
-            moveCamera(target.clone().add(direction.normalize().multiplyScalar(cameraFitResult.distance)), target, immediate);
+            cameraFitResult = issMapCameraFit({ radius: zvezdaFit ? zvezdaSolarEnvelope.radius : commsFit ? commsEnvelope.radius : questFit ? questEnvelope.radius : kiboFit ? kiboEnvelope.radius : cupolaFit ? cupolaEnvelope.radius : grappleFit ? grappleEnvelope.radius : scienceFit ? amsEnvelope.radius : windowFit ? windowBounds.getBoundingSphere(new THREE.Sphere()).radius : visitor ? visitor.envelope.radius : radiator ? 1.55 : kind === 'arm' ? (armVelocity.enabled ? 4.15 : 3.05) : kind === 'motion' ? 4.8 : kind === 'array' ? 3.9 : stationEnvelope.radius, fov: camera.fov, aspect: camera.aspect, minDistance: cameraMinDistance, maxDistance: cameraMaxDistance, closeInspection: windowFit || grappleFit || cupolaFit || kiboFit || questFit || commsFit });
+            moveCamera(target.clone().add(direction.normalize().multiplyScalar(cameraFitResult.distance)), target, immediate || grappleFit || cupolaFit || kiboFit || questFit || commsFit || zvezdaFit);
             arrayFocus.visible = kind === 'array' || kind === 'motion'; _lastFrameSig = '';
+            if (visitor && !immediate) announceToSR(__alloFill(__alloT('stem.spacestation.visitor_inspecting', 'Inspecting {name}. Craft and attachment port fit the view.'), { name: visitor.info.name }));
+            if (zvezdaFit && !immediate) announceToSR('Inspecting Zvezda and its two schematic solar wings. The fixed display pose does not change the power or tracking model.');
+            if (commsFit && !immediate) announceToSR('Inspecting Z1 communications: an open framework and one fixed schematic Ku-band dish.');
+            if (questFit && !immediate) announceToSR(__alloT('stem.spacestation.quest_inspecting', 'Inspecting Quest’s equipment lock, crew lock and historical 2001 gas-tank set.'));
+            if (kiboFit && !immediate) announceToSR(__alloT('stem.spacestation.kibo_inspecting', 'Inspecting Kibo’s Exposed Facility. Payload shapes and attachment positions are illustrative.'));
+            if (cupolaFit && !immediate) announceToSR(__alloT('stem.spacestation.cupola_inspecting', 'Inspecting Cupola’s seven windows from outside. Use the component guide to examine their protection layers.'));
+            if (grappleFit && !immediate) announceToSR(__alloT('stem.spacestation.grapple_inspecting', 'Following the trainer’s robotic grapple hand. Pan or Home leaves follow mode.'));
+            if (scienceFit && !immediate) announceToSR(__alloT('stem.spacestation.ams_inspecting', 'Inspecting AMS-02, the cosmic-ray detector on the S3 truss. Camera movement preserves the station simulation.'));
+            if (windowFit && !immediate) announceToSR(__alloT('stem.spacestation.window_inspecting', 'Inspecting Destiny’s Earth-facing science window. Use arrow keys to orbit or Fit station to return.'));
             if (radiator && !immediate) announceToSR(kind === 'radiator-a' ? __alloT('stem.spacestation.camera_inspect_radiator_a', 'Inspect radiator A') : __alloT('stem.spacestation.camera_inspect_radiator_b', 'Inspect radiator B'));
           };
           cv._issFocusModule = function (id) {
+            if (id === 'zvezda' && zvezdaSolarGroup) { cv._issFitCamera('zvezda-arrays'); return; }
             var focused = null;
             for (var focusIndex = 0; focusIndex < clickable.length; focusIndex++) if (clickable[focusIndex]._issId === id) { focused = clickable[focusIndex]; break; }
             if (!focused) return;
-            cameraFitMode = null; cameraFitResult = null; cameraMaxDistance = 30;
+            onLeave(); cameraPanned = false; cameraFitMode = null; cameraFitResult = null; cameraMaxDistance = 30;
             station.updateMatrixWorld(true);
             var focusTarget = new THREE.Vector3(); focused.getWorldPosition(focusTarget);
             var focusDirection = camera.position.clone().sub(focusTarget);
@@ -6145,7 +8622,9 @@
             var focusDistance = Math.min(24, Math.max(cameraMinDistance * 1.5, radius / Math.sin(limitingFov / 2) * 1.2));
             cameraFocusId = id; cameraView = 'custom'; onUp();
             moveCamera(focusTarget.clone().add(focusDirection.normalize().multiplyScalar(focusDistance)), focusTarget, false);
-            announceToSR(__alloFill(__alloT('stem.spacestation.sr_camera_centered_on', 'Camera centered on {value1}.'), { value1: id }));
+            var moduleName = id;
+            for (var mi = 0; mi < MODULES.length; mi++) if (MODULES[mi].id === id) moduleName = MODULES[mi].name;
+            announceToSR(__alloFill(__alloT('stem.spacestation.sr_camera_centered_on', 'Camera centered on {value1}.'), { value1: moduleName }));
           };
           var resizeObserver = null;
           function resizeScene() {
@@ -6164,7 +8643,7 @@
 
           // ── Post-FX bloom (guarded; same graceful pattern as solarsystem/moonmission) ──
           // Orbit is the darkest scene in the Lab, so the sunlit arrays, the lit
-          // viewports, the atmospheric limb and the selection ring all want a real
+          // viewports and the atmospheric limb all want a real
           // glow. Plain render until the r128 addons load; every step try/caught so
           // a CDN miss can never blank the station. Kill-switch + low-power tier.
           var composer = null, bloomRes = 1;
@@ -7288,7 +9767,7 @@
           document.addEventListener('visibilitychange', onMapVisibility);
           // Reusable temporaries for the per-frame lighting pass (no per-frame allocation).
           var _sunDir = new THREE.Vector3(), _wingQ = new THREE.Quaternion(), _wingNormal = new THREE.Vector3();
-          var _axisOrigin = new THREE.Vector3(), _axisEnd = new THREE.Vector3();
+          var _axisEnd = new THREE.Vector3();
           var _lastFrameSig = '';
           var _lastLimbSun = new THREE.Vector3(), _limbPainted = false;
 
@@ -7395,69 +9874,116 @@
             milkyWay.userData.starMaterial.opacity = 0.62 * (0.3 + 0.7 * lampOn);
             if (milkyWay.userData.glowMaterial) milkyWay.userData.glowMaterial.opacity = 0.12 + 0.88 * lampOn;
             if (earthExposureMat) earthExposureMat.color.setScalar(4 + 0.3 * lampOn);
-            for (var vi = 0; vi < viewportMats.length; vi++) {
-              viewportMats[vi].color.setRGB(0.42 + 0.32 * lampOn, 0.62 + 0.33 * lampOn, 0.72 + 0.28 * lampOn);
-            }
             // keep the highlight on the selected module
             var curSel = null;
             var wantId = (setLabToolData && cv._issWantSel) || null;
-            var cutaway = !!cv._issCutaway;
+            var cutaway = !!cv._issCutaway, cupolaInspect = cameraFocusId === 'cupola' && cameraMinDistance < 1, questInspect = cameraFocusId === 'quest-exterior';
             for (var ci = 0; ci < clickable.length; ci++) {
-              var candidate = clickable[ci], isSelected = candidate._issId === wantId;
+              var candidate = clickable[ci], isSelected = candidate._issId === wantId, cupolaFocused = cupolaInspect && candidate === cupolaModule, questFocused = questInspect && candidate === questModule;
               if (isSelected) curSel = candidate;
               if (candidate.material) {
                 // In cutaway the SELECTED hull turns to glass so its core shows
                 // through; everything else ghosts back as before.
-                candidate.material.opacity = cutaway ? (isSelected ? .26 : .1) : 1;
-                candidate.material.depthWrite = !cutaway;
-                if (candidate.material.emissive && candidate.material.emissive.setHex) candidate.material.emissive.setHex(isSelected ? 0x073b55 : candidate._issId === cv._issHoverId ? 0x14364d : 0x000000);
+                candidate.material.opacity = cupolaFocused || questFocused ? 1 : cutaway ? (isSelected ? .26 : .1) : 1;
+                candidate.material.depthWrite = cupolaFocused || questFocused || !cutaway;
+                if (candidate.material.emissive && candidate.material.emissive.setHex) candidate.material.emissive.setHex(cupolaFocused || questFocused ? 0x000000 : isSelected ? 0x073b55 : candidate._issId === cv._issHoverId ? 0x14364d : 0x000000);
               }
             }
             for (var mc = 0; mc < moduleCores.length; mc++) {
               var core2 = moduleCores[mc];
-              var coreOn = cutaway && core2._issParentId === wantId;
+              var coreOn = cutaway && core2._issParentId === wantId && !(cupolaInspect && core2._issParentId === 'cupola') && !(questInspect && core2._issParentId === 'quest');
               if (core2.visible !== coreOn) core2.visible = coreOn;
             }
             for (var di = 0; di < moduleDetails.length; di++) {
-              var detail = moduleDetails[di], detailSelected = detail._issParentId === wantId || detail._issRadiatorId === cameraFocusId;
-              if (detail.material) {
-                detail.material.transparent = true;
-                detail.material.opacity = cutaway ? (detail._issHullCap ? (detailSelected ? .26 : .1) : detailSelected ? 1 : .05) : 1;
-                detail.material.depthWrite = !cutaway || (!detail._issHullCap && detailSelected);
+              var detail = moduleDetails[di], detailSelected = detail._issParentId === wantId || detail._issRadiatorId === cameraFocusId || detail._issVisitorId === cameraFocusId || (detail._issWindowPart && cameraFocusId === 'window') || (detail._issScienceId && detail._issScienceId === cameraFocusId);
+              var detailArray = Array.isArray(detail.material), detailCount = detailArray ? detail.material.length : 1;
+              for (var dm = 0; detail.material && dm < detailCount; dm++) {
+                var detailMat = detailArray ? detail.material[dm] : detail.material;
+                if (!detailMat) continue;
+                detailMat.transparent = true;
+                detailMat.opacity = cupolaInspect && detail._issCupolaPane || questInspect && detail._issQuestHardware ? 1 : cutaway ? (detail._issHullCap || detail._issCupolaPane ? (detailSelected ? .26 : .1) : detailSelected ? 1 : .05) : 1;
+                detailMat.depthWrite = cupolaInspect && detail._issCupolaPane || questInspect && detail._issQuestHardware || !cutaway || (!detail._issHullCap && !detail._issCupolaPane && detailSelected);
                 // The end surface participates in the same selection/hover cue
                 // as the cylindrical wall, without changing its base coating.
-                if (detail._issHullCap && detail.material.emissive) detail.material.emissive.setHex(detailSelected ? 0x073b55 : detail._issParentId === cv._issHoverId ? 0x14364d : 0x000000);
+                if (detail._issHullCap && detailMat.emissive) detailMat.emissive.setHex(detailSelected ? 0x073b55 : detail._issParentId === cv._issHoverId ? 0x14364d : 0x000000);
               }
             }
             if (curSel) {
-              selRing.visible = true;
-              curSel.getWorldPosition(selRing.position);
-              selRing.lookAt(camera.position);
-              var sc = 0.55 + (curSel.geometry.boundingSphere ? curSel.geometry.boundingSphere.radius * 0.45 : 0.5);
-              selRing.scale.setScalar(sc);
+              curSel.getWorldPosition(selectionCenter);
+              if (selectionHull !== curSel) {
+                selectionHull = curSel; selectionCorners = [];
+                if (!curSel.geometry.boundingBox) curSel.geometry.computeBoundingBox();
+                var box = curSel.geometry.boundingBox;
+                [box.min.x, box.max.x].forEach(function (x) { [box.min.y, box.max.y].forEach(function (y) { [box.min.z, box.max.z].forEach(function (z) { selectionCorners.push(new THREE.Vector3(x, y, z)); }); }); });
+              }
               // Selection can change while the inspection target remains pinned.
               var marker = cv.parentElement && cv.parentElement.querySelector('[data-iss-module-marker]');
               if (marker) {
-                var projected = selRing.position.clone().project(camera);
-                marker.style.left = ((projected.x * .5 + .5) * Wc).toFixed(2) + 'px';
-                marker.style.top = ((-.5 * projected.y + .5) * Hc).toFixed(2) + 'px';
-                marker.style.opacity = projected.z > -1 && projected.z < 1 ? '1' : '0';
+                var projected = selectionPoint.copy(selectionCenter).project(camera);
+                var anchor = { x: (projected.x * .5 + .5) * Wc, y: (-.5 * projected.y + .5) * Hc, z: projected.z };
+                marker.style.width = Wc + 'px'; marker.style.height = Hc + 'px';
+                var caption = marker.querySelector('span');
+                var layout = issMapLabelLayout(anchor, labelViewport(), { width: caption.offsetWidth, height: caption.offsetHeight });
+                marker.style.opacity = cameraFocusId !== 'comms' && layout.visible ? '1' : '0';
+                caption.style.left = layout.left.toFixed(2) + 'px'; caption.style.top = layout.top.toFixed(2) + 'px';
+                if (layout.visible) {
+                  marker.querySelector('path').setAttribute('d', 'M' + anchor.x.toFixed(2) + ' ' + anchor.y.toFixed(2) + ' L' + layout.endX.toFixed(2) + ' ' + layout.endY.toFixed(2));
+                  marker.querySelector('circle').setAttribute('cx', anchor.x.toFixed(2));
+                  marker.querySelector('circle').setAttribute('cy', anchor.y.toFixed(2));
+                }
+                var corners = selectionCorners.map(function (corner) {
+                  selectionPoint.copy(corner).applyMatrix4(curSel.matrixWorld).project(camera);
+                  return { x: (selectionPoint.x * .5 + .5) * Wc, y: (-.5 * selectionPoint.y + .5) * Hc, z: selectionPoint.z };
+                });
+                var brackets = issMapSelectionBrackets(corners, { width: Wc, height: Hc });
+                ['data-iss-selection-backing', 'data-iss-selection-brackets'].forEach(function (attribute) {
+                  var outline = marker.querySelector('[' + attribute + ']');
+                  var visibility = layout.visible && brackets.visible ? 'visible' : 'hidden';
+                  if (outline.getAttribute('d') !== brackets.path) outline.setAttribute('d', brackets.path);
+                  if (outline.getAttribute('visibility') !== visibility) outline.setAttribute('visibility', visibility);
+                });
+                var returnButton = cv.closest('.iss-root').querySelector('[data-iss-selection-offscreen]');
+                if (returnButton) {
+                  returnButton.hidden = layout.visible;
+                  returnButton.textContent = __alloFill(__alloT('stem.spacestation.camera_selection_outside', '{name} is outside the view · Center selected'), { name: caption.textContent });
+                }
               }
-            } else { selRing.visible = false; }
-            // A projected axis triad stays truthful as the camera and station
-            // move. It gives the engineering directions a spatial referent
-            // without covering the model with permanent labels.
+            } else {
+              var emptyMarker = cv.parentElement && cv.parentElement.querySelector('[data-iss-module-marker]');
+              if (emptyMarker) emptyMarker.style.opacity = '0';
+            }
+            // The selected module can change without another pointer move.
+            syncHoverLabel();
+            // Rotation-only directions retain foreshortening without depending
+            // on camera range, viewport aspect or the current inspection target.
             if (tick % 3 === 0) {
               var orientationWidget = cv.parentElement && cv.parentElement.querySelector('[data-iss-orientation-widget]');
               if (orientationWidget) {
-                _axisOrigin.set(0, 0, 0); station.localToWorld(_axisOrigin); _axisOrigin.project(camera);
+                var orientationDescriptions = [];
                 [['x',1,0,0],['y',0,1,0],['z',0,0,1]].forEach(function (axisInfo) {
-                  _axisEnd.set(axisInfo[1], axisInfo[2], axisInfo[3]); station.localToWorld(_axisEnd); _axisEnd.project(camera);
-                  var axisDx = _axisEnd.x - _axisOrigin.x, axisDy = -(_axisEnd.y - _axisOrigin.y);
-                  var axisLength = Math.sqrt(axisDx * axisDx + axisDy * axisDy) || 1;
+                  _axisEnd.set(axisInfo[1], axisInfo[2], axisInfo[3]).transformDirection(station.matrixWorld).transformDirection(camera.matrixWorldInverse);
+                  var axis = issMapAxisProjection(_axisEnd.toArray());
                   var axisLine = orientationWidget.querySelector('[data-iss-axis="' + axisInfo[0] + '"]');
-                  if (axisLine) { axisLine.setAttribute('x2', String(42 + axisDx / axisLength * 25)); axisLine.setAttribute('y2', String(42 + axisDy / axisLength * 25)); }
+                  axisLine.setAttribute('x2', String(axis.x)); axisLine.setAttribute('y2', String(axis.y));
+                  axisLine.setAttribute('data-mode', axis.mode); axisLine.setAttribute('data-depth', String(axis.depth));
+                  axisLine.setAttribute('visibility', axis.mode === 'across' ? 'visible' : 'hidden');
+                  axisLine.setAttribute('stroke-dasharray', axis.depth < 0 ? '3 2' : '');
+                  var tip = orientationWidget.querySelector('[data-iss-axis-tip="' + axisInfo[0] + '"]');
+                  tip.setAttribute('transform', 'translate(' + axis.x + ' ' + axis.y + ')');
+                  tip.querySelector('circle[data-iss-axis-ring]').setAttribute('visibility', axis.mode === 'across' ? 'hidden' : 'visible');
+                  tip.querySelector('[data-iss-axis-dot]').setAttribute('visibility', axis.mode === 'toward' ? 'visible' : 'hidden');
+                  tip.querySelector('[data-iss-axis-cross]').setAttribute('visibility', axis.mode === 'away' ? 'visible' : 'hidden');
+                  var head = tip.querySelector('[data-iss-axis-head]');
+                  head.setAttribute('visibility', axis.mode === 'across' ? 'visible' : 'hidden');
+                  head.setAttribute('transform', 'rotate(' + (Math.atan2(axis.y - 56, axis.x - 56) * 180 / Math.PI) + ')');
+                  var label = orientationWidget.querySelector('[data-iss-axis-label="' + axisInfo[0] + '"]');
+                  label.setAttribute('x', String(axis.labelX)); label.setAttribute('y', String(axis.labelY));
+                  var directionText = __alloT('stem.spacestation.compass_' + axis.mode, axis.mode === 'toward' ? 'toward you' : axis.mode === 'away' ? 'away from you' : 'across the view');
+                  orientationDescriptions.push('+' + axisInfo[0].toUpperCase() + ' ' + directionText);
                 });
+                var orientationReading = cv.closest('.iss-root').querySelector('[data-iss-orientation-reading]');
+                var orientationText = orientationDescriptions.join('. ') + '.';
+                if (orientationReading && orientationReading.textContent !== orientationText) orientationReading.textContent = orientationText;
               }
             }
             // Under reduced motion nothing in this scene moves on its own, so a
@@ -7565,8 +10091,8 @@
                 c.addPass(new T.RenderPass(planetScene, camera));
                 var stationPass = new T.RenderPass(scene, camera); stationPass.clear = false;
                 c.addPass(stationPass);
-                // Bloom adds a restrained halo to windows, the atmospheric limb
-                // and the selection ring without washing out the hull.
+                // Bloom adds a restrained halo to windows and the atmospheric
+                // limb without washing out the hull.
                 c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(Wc * bloomRes)), Math.max(1, Math.round(Hc * bloomRes))), lowPower ? 0.62 : 0.85, 0.4, 0.82));
                 composer = c;
                 renderer._alloComposer = c;
@@ -11482,7 +14008,7 @@
       var orbitT = _orbit.minutes;                               // minutes
       var orbitsPerDay = (24 * 60) / orbitT;
       var dragNote = orbitAlt < 300 ? 'Severe drag — reboosts would be needed constantly; deorbit in weeks-to-months without them.'
-        : orbitAlt <= 500 ? 'ISS territory: thin-air drag steals ~50-100 m of altitude per day; regular reboost burns required.'
+        : orbitAlt <= 500 ? 'ISS territory: thin-air drag gradually lowers the orbit; regular reboost burns are needed, with decay varying with atmospheric conditions.'
         : orbitAlt <= 1000 ? 'Drag is tiny here, but you are entering the inner Van Allen radiation zone territory — crew dose climbs.'
         : 'Very little drag — but radiation is far worse, and cargo rockets can carry less mass this high.';
 
@@ -14912,9 +17438,6 @@
         // Integrated forecasts, power instruments and the cursor share the same
         // finite-capacity energy model, including conversion losses and curtailment.
         //
-        // Illustrative aggregate peak output during sunlight, not an orbit
-        // average or a claim about current station hardware specifications.
-        var ARRAY_PEAK_KW = 160;
         // Assumed usable battery capacity, so a kWh surplus becomes a percentage
         // of reserve. Previously a bare "/ 2.1" divisor, which is this same
         // assumption (210 kWh) left unstated.
@@ -14923,8 +17446,8 @@
         // prediction of crew health. The rule uses the highest modeled zone.
         var CO2_ACTION_PPM = 4000;
 
-        var load = 68 + crew * 1.6 + research * .22;
-        var generation = ARRAY_PEAK_KW * Math.sin(arrayAngle * Math.PI / 180);
+        var load = issStationDemand(crew, research);
+        var generation = issArrayGeneration(arrayAngle);
         var powerSettings = { generation: generation, load: load, eclipse: eclipse, battery: battery, capacity: BATTERY_KWH };
         var powerEnd = issPowerState(powerSettings, 92);
         var projectedBattery = powerEnd.percent;
@@ -14963,8 +17486,8 @@
           orbitForecast.push({ minute: minute, battery: batteryAtMinute, thermal: thermalAtMinute, attitude: issAttitudeMargin(attitudeModel, minute) });
         }
         var nominalForecast = [];
-        var nominalLoad = 68 + 7 * 1.6 + 60 * .22;
-        var nominalGeneration = ARRAY_PEAK_KW * Math.sin(86 * Math.PI / 180);
+        var nominalLoad = issStationDemand(7, 60);
+        var nominalGeneration = issArrayGeneration(86);
         var nominalThermalModel = issThermalRun({});
         var nominalAttitudeModel = issAttitudeRun({});
         var nominalPowerSettings = { generation: nominalGeneration, load: nominalLoad, eclipse: 35, battery: 76, capacity: BATTERY_KWH };
@@ -15073,7 +17596,7 @@
           'air-limit': [eventText('air', 'CO₂ at or above 4000 ppm'), eventText('air_note', 'The highest modeled air zone reaches the comparison line. Its peak may occur later.')],
           'air-restore': [eventText('restore', 'Ventilation restoration'), eventText('restore_note', 'The planned airflow change starts here. Inspect later readings to see its effect.')],
           'thermal-limit': [eventText('thermal', 'Cabin comfort boundary'), eventText('thermal_note', 'The cabin starts outside, or reaches the edge of, the 18–27°C band. Both endpoints are inside the allowed band.')],
-          'attitude-caution': [eventText('caution', 'CMG caution · 80%'), eventText('caution_note', 'Momentum storage reaches the caution band. The flight rule requires a peak below 80%.')],
+          'attitude-caution': [eventText('caution', 'CMG caution · 80%'), eventText('caution_note', 'Momentum storage reaches this simulator’s caution band. The classroom target is a peak below 80%; it is not an ISS flight rule.')],
           'attitude-capacity': [eventText('capacity', 'CMG capacity · 100%'), eventText('capacity_note', 'The gyros have reached their storage limit. Additional momentum can change the station’s pointing.')],
           'burn-start': [eventText('burn_start', 'Unloading starts'), eventText('burn_start_note', 'The scheduled thruster burn begins removing stored momentum.')],
           'burn-end': [eventText('burn_end', 'Unloading ends'), eventText('burn_end_note', 'The finite burn ends. Disturbance torque continues afterward.')]
@@ -15202,19 +17725,35 @@
           var failed = trialRuleFailures(results);
           return failed.length ? (5 - failed.length) + '/5 ' + trialText('rules_go_check', 'rules GO · Check: ') + failed.join(', ') : trialText('rules_go', '5/5 rules GO');
         }
-        function recordTrial() {
+        function trialRecordingPatch(recordedPrediction, retainedId) {
           var previousId = trials.reduce(function (highest, trial) { return Math.max(highest, trial.id); }, Math.floor(issFlightNumber(d.opsRuns, 0, 0, 999999999)));
           var nextId = previousId < 1000000000 ? previousId + 1 : 1;
           while (trials.some(function (trial) { return trial.id === nextId; })) nextId++;
-          var trial = issOpsTrial(trialSetup, trialResults, { prediction: prediction, reflection: '' }, nextId);
+          var trial = issOpsTrial(trialSetup, trialResults, { prediction: recordedPrediction, reflection: '' }, nextId);
           if (!trial) return;
           var log = (Array.isArray(d.opsLog) ? d.opsLog.filter(function (entry) { return typeof entry === 'string'; }) : []).concat([
             'TRIAL ' + trial.id + ' // ' + trialOutcome(trial.results)]).slice(-5);
-          var baselineId = selectedTrial ? selectedTrial.id : trial.id;
-          upd({ opsTrials: issOpsAppendTrial(trials, trial, baselineId), opsTrialSelected: baselineId, opsTrialCompare: selectedTrial ? trial.id : 'current',
+          var baselineId = retainedId || trial.id;
+          return { opsTrials: issOpsAppendTrial(trials, trial, baselineId), opsTrialSelected: baselineId, opsTrialCompare: retainedId ? trial.id : 'current',
             opsRuns: trial.id, opsLog: log, opsLoadedTrial: null, opsOrbitMinute: 92, opsIntegratedSeekToken: !d.opsIntegratedSeekToken, opsPowerSeekToken: !d.opsPowerSeekToken,
-            opsAirSeekToken: !d.opsAirSeekToken, opsThermalSeekToken: !d.opsThermalSeekToken, opsAttitudeSeekToken: !d.opsAttitudeSeekToken });
-          if (announceToSR) announceToSR(__alloFill(trialText('recorded_comparison', 'Trial {trial} recorded. Baseline trial {baseline} retained.'), { trial: trial.id, baseline: baselineId }) + ' ' + trialOutcome(trial.results));
+            opsAirSeekToken: !d.opsAirSeekToken, opsThermalSeekToken: !d.opsThermalSeekToken, opsAttitudeSeekToken: !d.opsAttitudeSeekToken };
+        }
+        function recordTrial() {
+          var patch = trialRecordingPatch(prediction, selectedTrial && selectedTrial.id);
+          if (!patch) return;
+          upd(patch);
+          if (announceToSR) announceToSR(__alloFill(trialText('recorded_comparison', 'Trial {trial} recorded. Baseline trial {baseline} retained.'), { trial: patch.opsRuns, baseline: patch.opsTrialSelected }) + ' ' + trialOutcome(trialResults));
+        }
+        function saveReflection(trialId, text, learnerEdit) {
+          var reflection = text.slice(0, 1200);
+          var patch = { opsTrials: trials.map(function (trial) { return trial.id === trialId ? Object.assign({}, trial, { reflection: reflection }) : trial; }) };
+          if (learnerEdit && eclipseGuide && eclipseGuide.step === 'reflect' && eclipseGuide.comparisonId === trialId) {
+            var prior = trials.find(function (trial) { return trial.id === trialId; });
+            if (prior && reflection.trim() !== prior.reflection.trim()) {
+              patch.opsEclipseGuide = Object.assign({}, eclipseGuide, { explanationEdited: Boolean(reflection.trim()) });
+            }
+          }
+          upd(patch);
         }
         function loadTrialSetup(trial, event, keepComparison) {
           if (!trial || !selectedTrial) return;
@@ -15250,10 +17789,173 @@
           var latest = trials.filter(function (trial) { return trial.id === Number(d.opsRuns); })[0];
           return latest && selectedTrial ? __alloFill(trialText('latest_record', 'Latest record: trial {trial}. Selected baseline: trial {baseline}.'), { trial: latest.id, baseline: selectedTrial.id }) : '';
         }
+        function guideSetupMatches(actual, expected, ignoreEclipse) {
+          return actual && ISS_OPS_INPUTS.every(function (field) {
+            if (ignoreEclipse && field.key === 'opsEclipse') return true;
+            return Object.prototype.hasOwnProperty.call(actual, field.key) && actual[field.key] === expected[field.key];
+          });
+        }
+        var eclipseGuide = d.opsEclipseGuide;
+        if (eclipseGuide && (!['baseline', 'change', 'comparison', 'reflect', 'done'].includes(eclipseGuide.step) ||
+            typeof eclipseGuide.prediction !== 'string' || eclipseGuide.prediction.length > 600 ||
+            !eclipseGuide.setup || eclipseGuide.setup.opsEclipse !== 35 || !guideSetupMatches(eclipseGuide.setup, issOpsSetup(eclipseGuide.setup)))) {
+          eclipseGuide = null;
+        }
+        function renderEclipseGuide() {
+          var guide = eclipseGuide;
+          var step = guide ? guide.step : 'intro';
+          var baselineSetup = guide ? issOpsSetup(guide.setup) : Object.assign({}, trialSetup, { opsEclipse: 35 });
+          var revisedSetup = Object.assign({}, baselineSetup, { opsEclipse: 45 });
+          var expected = step === 'comparison' ? revisedSetup : baselineSetup;
+          var matches = guideSetupMatches(trialSetup, expected, step === 'change');
+          function savedTrial(id, setup) {
+            return trials.find(function (trial) { return trial.id === id && trial.prediction === guide.prediction && guideSetupMatches(trial.setup, setup); });
+          }
+          var a = guide && savedTrial(guide.baselineId, baselineSetup);
+          var b = guide && savedTrial(guide.comparisonId, revisedSetup);
+          var showingResults = step === 'reflect' || step === 'done';
+          var missing = guide && step !== 'baseline' && (!a || (showingResults && !b));
+          var needsTwoSlots = step === 'intro' || step === 'baseline';
+          var hasRoom = trials.length <= (needsTwoSlots ? 4 : 5);
+          function move(event, patch, focus) {
+            var panel = event.currentTarget.closest('[data-iss-operations]');
+            upd(patch);
+            focusInspection(panel, focus || '#iss-eclipse-guide-title');
+          }
+          function prepare(event, setup, nextGuide) {
+            move(event, Object.assign({}, setup, {
+              opsEclipseGuide: nextGuide, opsMode: 'power', opsScenario: 'custom', opsOrbitMinute: 0, opsInspection: null, opsLoadedTrial: null,
+              opsIntegratedSeekToken: !d.opsIntegratedSeekToken, opsPowerSeekToken: !d.opsPowerSeekToken,
+              opsAirSeekToken: !d.opsAirSeekToken, opsThermalSeekToken: !d.opsThermalSeekToken, opsAttitudeSeekToken: !d.opsAttitudeSeekToken
+            }));
+          }
+          function record(event) {
+            var first = step === 'baseline';
+            if ((!first && step !== 'comparison') || missing || !matches || !hasRoom || !guide.prediction.trim()) return;
+            var patch = trialRecordingPatch(guide.prediction, first ? null : a.id);
+            if (!patch) return;
+            patch.opsEclipseGuide = Object.assign({}, guide, first ?
+              { step: 'change', baselineId: patch.opsRuns } : { step: 'reflect', comparisonId: patch.opsRuns });
+            patch.opsMode = first ? 'power' : 'integrated';
+            patch.opsInspection = null;
+            if (!first) patch.opsTrialMeasurement = 'batteryMin';
+            move(event, patch);
+          }
+          function inspectGuideTime(event, minute) {
+            move(event, { opsMode: 'integrated', opsTrialSelected: a.id, opsTrialCompare: b.id,
+              opsTrajectoryOpen: true, opsTrajectoryMetric: 'battery', opsTrajectoryMinute: minute }, '#iss-trajectory-readout-title');
+          }
+          function openChart(event) {
+            inspectGuideTime(event, issOpsMeasurementTarget(b.setup, 'batteryMin').minute);
+          }
+          function closeGuide(event) {
+            var focus = mode === 'power' || !selectedTrial ? '#iss-eclipse-guide-title' : '#iss-trials-title';
+            move(event, { opsEclipseGuide: null }, focus);
+          }
+          function minimum(trial, side) {
+            return h('div', null,
+              h('dt', null, __alloFill(trialText('guide_min_label', 'Trial {trial} · {minutes}-minute eclipse'), { trial: trial.id, minutes: trial.setup.opsEclipse })),
+              h('dd', { 'data-eclipse-guide-minimum': side, 'data-value': trial.results.batteryMin }, issOpsResultText(trial.results.batteryMin, 1, [25]) + '%'));
+          }
+          function renderEclipseWindow() {
+            var interval = issOpsEclipseWindow(a.setup, b.setup);
+            if (!interval) return null;
+            var start = interval.startMinute, end = interval.endMinute;
+            function card(trial, side) {
+              var readings = interval[side];
+              var supplies = ['solarToLoadsKWh', 'batteryDeliveredKWh', 'unservedKWh'];
+              function row(key, label, unit, boundaries) {
+                var value = readings[key];
+                return h('div', null, h('dt', null,
+                  supplies.indexOf(key) === -1 ? null : h('i', { className: 'iss-eclipse-window-key', 'data-supply': key, 'aria-hidden': 'true' }), label),
+                  h('dd', { 'data-eclipse-window-value': key, 'data-value': value },
+                  issOpsResultText(value, 1, boundaries) + unit));
+              }
+              return h('section', { className: 'iss-eclipse-window-card', 'data-eclipse-window-side': side, 'data-lit': readings.lit, 'aria-labelledby': 'iss-eclipse-window-' + side },
+                h('h5', { id: 'iss-eclipse-window-' + side }, __alloFill(trialText('guide_min_label', 'Trial {trial} · {minutes}-minute eclipse'), { trial: trial.id, minutes: trial.setup.opsEclipse })),
+                h('p', { className: 'iss-eclipse-window-phase' }, readings.lit ? trialText('window_sunlight', 'Sunlight during this interval') : trialText('window_shadow', 'Shadow during this interval')),
+                h('dl', { className: 'iss-eclipse-window-readings' },
+                  row('startReserve', __alloFill(trialText('window_reserve_at', 'Reserve at T+{minute} min'), { minute: start }), '%', [0, 25, 100]),
+                  row('endReserve', __alloFill(trialText('window_reserve_at', 'Reserve at T+{minute} min'), { minute: end }), '%', [0, 25, 100]),
+                  row('requestedKWh', trialText('window_demand', 'Energy needed by the station'), ' kWh', [0])),
+                h('div', { className: 'iss-eclipse-window-bar', 'aria-hidden': 'true' }, supplies.map(function (key) {
+                  return h('span', { key: key, 'data-supply': key, style: { flexGrow: readings[key] } });
+                })),
+                h('dl', { className: 'iss-eclipse-window-readings' },
+                  row('solarToLoadsKWh', trialText('window_solar', 'Supplied directly by solar arrays'), ' kWh', [0]),
+                  row('batteryDeliveredKWh', trialText('window_battery', 'Supplied by the battery'), ' kWh', [0]),
+                  row('unservedKWh', trialText('window_unmet', 'Unmet demand'), ' kWh', [0])));
+            }
+            return h('details', { className: 'iss-eclipse-window', 'data-eclipse-window': true, 'data-window-start': start, 'data-window-end': end },
+              h('summary', null, trialText('window_title', 'What powered the station during the extra ten minutes?')),
+              h('p', null, __alloFill(trialText('window_interval', 'The 45-minute trial enters shadow at T+{start} min. The 35-minute trial has sunlight until T+{end} min. These readings model that same interval using each saved setup.'), { start: start, end: end })),
+              h('div', { className: 'iss-eclipse-window-cards' }, card(a, 'baseline'), card(b, 'comparison')),
+              h('p', null, trialText('window_help', 'Supplied energy is what reached the station loads. The battery also uses stored energy for conversion losses. The minimum reserve above covers the full orbit.')),
+              h('button', { type: 'button', 'data-eclipse-window-inspect': true, onClick: function (event) { inspectGuideTime(event, interval.midMinute); } },
+                __alloFill(trialText('window_inspect', 'Inspect both batteries at T+{minute} min'), { minute: interval.midMinute.toFixed(2) })));
+          }
+          var content;
+          if (!guide) {
+            content = h(React.Fragment, null,
+              h('p', null, trialText('guide_intro', 'Predict the effect of ten more minutes in shadow. Record your current setup at 35 minutes of eclipse, then test it at 45 minutes. The investigation uses two notebook slots.')),
+              h('button', { id: 'iss-eclipse-guide-start', type: 'button', 'data-eclipse-guide-start': true, disabled: !hasRoom, onClick: function (event) {
+                prepare(event, baselineSetup, { step: 'baseline', setup: baselineSetup, prediction: '', baselineId: null, comparisonId: null });
+              } }, trialText('guide_start', 'Start the eclipse investigation')));
+          } else if (missing) {
+            content = h('p', { 'data-eclipse-guide-unavailable': true }, trialText('guide_missing', 'A trial needed for this investigation is unavailable. Close the guide to return to your notebook.'));
+          } else if (showingResults) {
+            content = h(React.Fragment, null,
+              h('p', { className: 'iss-guide-progress' }, step === 'done' ? trialText('guide_done', 'Investigation complete') : trialText('guide_step4', 'Step 4 of 4 · Compare the minimum reserves')),
+              h('dl', { className: 'iss-guide-minima' }, minimum(a, 'baseline'), minimum(b, 'comparison')),
+              h('p', null, __alloFill(trialText('guide_difference', 'With ten more minutes of eclipse, the minimum reserve changes by {delta} percentage points.'), { delta: issOpsDeltaText(a.results.batteryMin, b.results.batteryMin, 1) })),
+              renderEclipseWindow(),
+              h('p', { className: 'iss-trial-note' }, trialText('guide_your_prediction', 'Your prediction') + ' · ' + guide.prediction),
+              step === 'done' ? h('p', { className: 'iss-trial-note' }, __alloFill(trialText('guide_conclusion', 'Your explanation for trial {trial}'), { trial: b.id }) + ' · ' + b.reflection) :
+                h(React.Fragment, null,
+                  h('button', { type: 'button', 'data-eclipse-guide-chart': true, onClick: openChart }, trialText('guide_chart', 'Compare both batteries at the longer eclipse’s minimum')),
+                  h('label', { htmlFor: 'iss-eclipse-guide-reflection' }, trialText('guide_explain', 'Which measurement supports or challenges your prediction?')),
+                  h('p', { id: 'iss-eclipse-guide-note-help' }, __alloFill(trialText('guide_note_help', 'Add your own explanation to finish. Your words are saved in the reflection for trial {trial}.'), { trial: b.id })),
+                  h('textarea', { id: 'iss-eclipse-guide-reflection', 'data-eclipse-guide-reflection': true, 'data-ops-reflection-id': b.id, 'aria-describedby': 'iss-eclipse-guide-note-help',
+                    rows: 3, maxLength: 1200, value: b.reflection, onChange: function (event) { saveReflection(b.id, event.target.value, true); } }),
+                  h('button', { type: 'button', 'data-eclipse-guide-finish': true, disabled: !b.reflection.trim() || eclipseGuide.explanationEdited !== true, onClick: function (event) {
+                    move(event, { opsEclipseGuide: Object.assign({}, guide, { step: 'done' }) });
+                  } }, trialText('guide_finish', 'Finish investigation'))));
+          } else {
+            var instructions = {
+              baseline: trialText('guide_step1', 'Step 1 of 4 · Predict and record the 35-minute baseline'),
+              change: trialText('guide_step2', 'Step 2 of 4 · Add ten minutes of eclipse'),
+              comparison: trialText('guide_step3', 'Step 3 of 4 · Record the 45-minute trial')
+            };
+            content = h(React.Fragment, null,
+              h('p', { className: 'iss-guide-progress' }, instructions[step]),
+              step === 'baseline' ? h(React.Fragment, null,
+                h('label', { htmlFor: 'iss-eclipse-guide-prediction' }, trialText('guide_predict', 'What do you predict will happen to the lowest battery reserve, and why?')),
+                h('textarea', { id: 'iss-eclipse-guide-prediction', 'data-eclipse-guide-prediction': true, value: guide.prediction, rows: 2, maxLength: 600,
+                  onChange: function (event) { upd({ opsEclipseGuide: Object.assign({}, guide, { prediction: event.target.value.slice(0, 600) }) }); } })) :
+                h('p', null, __alloFill(trialText('guide_baseline_saved', 'Trial {trial} holds your 35-minute baseline. Use the same crew, battery and other settings for the longer eclipse.'), { trial: a.id })),
+              !matches ? h('div', null,
+                h('p', null, trialText('guide_drift', 'The working controls differ from the investigation setup. Restore the setup to continue this comparison.')),
+                h('button', { type: 'button', 'data-eclipse-guide-restore': true, onClick: function (event) { prepare(event, expected, guide); } },
+                  __alloFill(trialText('guide_restore', 'Restore the {minutes}-minute setup'), { minutes: expected.opsEclipse }))) : null,
+              step === 'change' ? h('button', { type: 'button', 'data-eclipse-guide-change': true, disabled: !matches || !hasRoom, onClick: function (event) {
+                prepare(event, revisedSetup, Object.assign({}, guide, { step: 'comparison' }));
+              } }, trialText('guide_change', 'Set eclipse to 45 minutes')) :
+                h('button', { type: 'button', 'data-eclipse-guide-record-a': step === 'baseline' || undefined, 'data-eclipse-guide-record-b': step === 'comparison' || undefined,
+                  disabled: !matches || !hasRoom || !guide.prediction.trim(), onClick: record }, step === 'baseline' ?
+                    trialText('guide_record_a', 'Record 35-minute baseline') : trialText('guide_record_b', 'Record 45-minute trial and compare')));
+          }
+          return h('section', { className: 'iss-eclipse-guide', 'data-eclipse-guide': true, 'data-step': step, 'aria-labelledby': 'iss-eclipse-guide-title' },
+            h('h4', { id: 'iss-eclipse-guide-title', tabIndex: -1 }, trialText('guide_question', 'How does a longer eclipse affect minimum battery reserve?')),
+            content,
+            !showingResults && !missing && !hasRoom ? h('p', null, trialText('guide_capacity', 'The six-trial notebook has too few free slots for this investigation. Start the guide in a new project to record the pair.')) : null,
+            guide ? h('button', { type: 'button', 'data-eclipse-guide-exit': true, onClick: closeGuide }, trialText('guide_close', 'Close guide')) : null);
+        }
         function renderLabNotebook() {
           var sharedLab = mode === 'power' || mode === 'thermal' || mode === 'attitude' || mode === 'eclss' && d.opsEclssLab !== 'water' && d.opsEclssLab !== 'pressure';
           if (!sharedLab) return null;
-          return h('section', { className: 'iss-lab-notebook', 'data-ops-lab-notebook': true, 'aria-labelledby': 'iss-lab-notebook-title' },
+          if (mode === 'power' && eclipseGuide) return renderEclipseGuide();
+          return h(React.Fragment, null, mode === 'power' ? renderEclipseGuide() : null,
+            h('section', { className: 'iss-lab-notebook', 'data-ops-lab-notebook': true, 'aria-labelledby': 'iss-lab-notebook-title' },
             h('div', null, h('h4', { id: 'iss-lab-notebook-title' }, trialText('lab_title', 'Investigation notebook')),
               h('p', null, selectedTrial ? trialText('lab_compare', 'Record this setup to compare it with your saved baseline. Recording pauses the clock at the orbit end; it keeps your starting conditions.') : trialText('lab_start', 'Record a baseline, change one control, then record another trial to compare the evidence.'))),
             h('div', { className: 'iss-trial-actions' },
@@ -15262,7 +17964,7 @@
             h('details', null, h('summary', null, trialText('lab_prediction', 'Add or edit your prediction')),
               h('label', { htmlFor: 'iss-lab-prediction' }, trialText('prediction', 'Prediction for the next trial (optional)')),
               h('textarea', { id: 'iss-lab-prediction', rows: 2, maxLength: 600, value: prediction, onChange: function (event) { upd({ opsPrediction: event.target.value.slice(0, 600) }); } })),
-            trialRecordNotice() ? h('p', { 'data-ops-trial-notice': true }, trialRecordNotice()) : null);
+            trialRecordNotice() ? h('p', { 'data-ops-trial-notice': true }, trialRecordNotice()) : null));
         }
         function renderMeasurementInspector() {
           if (!selectedTrial) return null;
@@ -15304,10 +18006,6 @@
               field.label + ': ' + setting(change.before, field) + ' → ' + setting(change.after, field),
               change.inactiveReason ? h('small', null, change.inactiveReason === 'unloading-disabled' ? trialText('inactive_unloading', 'Unused in both setups: momentum unloading is off.') : trialText('inactive_restoration', 'Unused in both setups: vent restoration is off or airflow is already at least 90 m³/h.')) : null);
           }
-          function saveReflection(trialId, text) {
-            var reflection = text.slice(0, 1200);
-            upd({ opsTrials: trials.map(function (trial) { return trial.id === trialId ? Object.assign({}, trial, { reflection: reflection }) : trial; }) });
-          }
           function renderRuleComparison() {
             if (!ruleChanges) return null;
             var resolved = ruleChanges.filter(function (rule) { return rule.state === 'resolved'; }).length;
@@ -15324,6 +18022,7 @@
           var rows = trialMeasurements;
           return h('section', { className: 'iss-trials', 'data-ops-trial-notebook': true, 'aria-labelledby': 'iss-trials-title' },
             h('h4', { id: 'iss-trials-title', tabIndex: -1 }, trialText('title', 'Orbit investigation notebook')),
+            !selectedTrial || eclipseGuide ? renderEclipseGuide() : null,
             h('p', { id: 'iss-trials-help' }, trialText('intro', 'Predict, change one control, then compare evidence. Each trial starts from its own setup and covers 92 minutes; recording does not advance the starting conditions.')),
             h('label', { htmlFor: 'iss-trial-prediction' }, trialText('prediction', 'Prediction for the next trial (optional)')),
             h('textarea', { id: 'iss-trial-prediction', 'data-ops-prediction': true, rows: 2, maxLength: 600, value: prediction,
@@ -15379,24 +18078,24 @@
                       return h('tr', { key: row.key, 'data-ops-trial-metric': row.key }, h('th', { scope: 'row' }, row.label, row.rule ? h('small', null, row.rule) : null), valueCell(selectedTrial.results, before), valueCell(compared, after), h('td', null, deltaText)); }))))),
               renderMeasurementInspector(),
               h(issOpsTrajectoryCompare, { React: React, t: __alloT, fill: __alloFill, baseline: selectedTrial, comparison: comparisonTrial, currentSetup: trialSetup,
-                open: d.opsTrajectoryOpen, metric: d.opsTrajectoryMetric, minute: d.opsTrajectoryMinute, onChange: upd }),
+                open: d.opsTrajectoryOpen, metric: d.opsTrajectoryMetric, minute: d.opsTrajectoryMinute, onChange: upd, onSaveReflection: saveReflection }),
               comparisonTrial && comparisonTrial.id !== selectedTrial.id ? h('details', { className: 'iss-trial-setup', 'data-ops-compared-details': true },
                 h('summary', null, __alloFill(trialText('comparison_details', 'Comparison trial {trial}: saved setup and notes'), { trial: comparisonTrial.id })),
                 h('h5', null, trialText('saved_prediction', 'Saved prediction')),
                 h('p', { className: 'iss-trial-note', 'data-ops-compared-prediction': true }, comparisonTrial.prediction || trialText('no_prediction', 'No prediction recorded.')),
                 h('label', { htmlFor: 'iss-trial-comparison-reflection' }, __alloFill(trialText('comparison_reflection', 'Evidence and reflection for comparison trial {trial}'), { trial: comparisonTrial.id })),
                 h('p', { id: 'iss-trial-comparison-reflection-help', className: 'iss-trial-scope' }, trialText('comparison_reflection_help', 'Edits are saved to this comparison trial. Its recorded prediction, setup and measurements stay unchanged.')),
-                h('textarea', { id: 'iss-trial-comparison-reflection', 'data-ops-compared-reflection': true, rows: 3, maxLength: 1200, value: comparisonTrial.reflection,
+                h('textarea', { id: 'iss-trial-comparison-reflection', 'data-ops-compared-reflection': true, 'data-ops-reflection-id': comparisonTrial.id, rows: 3, maxLength: 1200, value: comparisonTrial.reflection,
                   'aria-describedby': 'iss-trial-comparison-reflection-help',
-                  placeholder: trialText('reflection_hint', 'What changed? Which measurements support or challenge your prediction?'), onChange: function (event) { saveReflection(comparisonTrial.id, event.target.value); } }),
+                  placeholder: trialText('reflection_hint', 'What changed? Which measurements support or challenge your prediction?'), onChange: function (event) { saveReflection(comparisonTrial.id, event.target.value, true); } }),
                 setupDetails(comparisonTrial.setup)) : null,
               h('details', { className: 'iss-trial-setup' }, h('summary', null, __alloFill(trialText('baseline_details', 'Baseline trial {trial}: saved setup and prediction'), { trial: selectedTrial.id })),
                 h('p', { className: 'iss-trial-note' }, selectedTrial.prediction || trialText('no_prediction', 'No prediction recorded.')),
                 setupDetails(selectedTrial.setup)),
               h('label', { htmlFor: 'iss-trial-reflection' }, __alloFill(trialText('baseline_reflection', 'Evidence and reflection for baseline trial {trial}'), { trial: selectedTrial.id })),
-              h('textarea', { id: 'iss-trial-reflection', 'data-ops-reflection': true, rows: 3, maxLength: 1200, value: selectedTrial.reflection,
+              h('textarea', { id: 'iss-trial-reflection', 'data-ops-reflection': true, 'data-ops-reflection-id': selectedTrial.id, rows: 3, maxLength: 1200, value: selectedTrial.reflection,
                 placeholder: trialText('reflection_hint', 'What changed? Which measurements support or challenge your prediction?'), onChange: function (event) {
-                  saveReflection(selectedTrial.id, event.target.value); } }),
+                  saveReflection(selectedTrial.id, event.target.value, true); } }),
               h('div', { className: 'iss-trial-actions' }, h('button', { type: 'button', 'data-ops-trial-restore': true, onClick: loadTrial }, __alloFill(trialText('load_baseline', 'Load baseline trial {trial} setup'), { trial: selectedTrial.id }))),
               h('p', null, __alloFill(trialMatches ? trialText('replay_matches_baseline', 'Current controls match baseline trial {trial}. Use the events below to inspect its modeled orbit.') : trialText('replay_changed_baseline', 'Current controls differ from baseline trial {trial}. Load that baseline setup to replay it; saved measurements stay unchanged.'), { trial: selectedTrial.id })),
               renderMissionReplay()));
@@ -15454,6 +18153,13 @@
           var stateLabel = current.unservedKW > 0 ? 'Demand exceeds supply' : current.chargeKW > 0 ? 'Charging' : current.dischargeKW > 0 ? 'Discharging' : current.curtailedKW > 0 ? 'Battery full · excess sunlight' : 'Loads supplied directly';
           var batteryColor = current.percent >= 25 ? '#6ee7b7' : '#fda4af';
           function seek(minute) { upd({ opsOrbitMinute: opsClamp(minute, 0, 92), opsPowerSeekToken: !d.opsPowerSeekToken }); }
+          var guideLocksPowerSetup = Boolean(eclipseGuide && ['baseline', 'change', 'comparison'].indexOf(eclipseGuide.step) !== -1);
+          function applyPowerPlan(setting) {
+            if (guideLocksPowerSetup) return;
+            upd(Object.assign({ opsScenario: 'custom', opsOrbitMinute: 0, opsInspection: null, opsLoadedTrial: null,
+              opsIntegratedSeekToken: !d.opsIntegratedSeekToken, opsPowerSeekToken: !d.opsPowerSeekToken,
+              opsAirSeekToken: !d.opsAirSeekToken, opsThermalSeekToken: !d.opsThermalSeekToken, opsAttitudeSeekToken: !d.opsAttitudeSeekToken }, setting));
+          }
           function plotSeek(event) {
             var box = event.currentTarget.getBoundingClientRect();
             if (box.width) seek(Math.round(opsClamp((event.clientX - box.left) / box.width, 0, 1) * 920) / 10);
@@ -15515,15 +18221,35 @@
                     h('circle', { cx: 289, cy: 160, r: 4, fill: '#577b93' }),
                     h('rect', { x: 218, y: 170, width: 40, height: 12, rx: 4, fill: '#34536d', stroke: '#8cb5c7' }))),
                 h('div', { className: 'iss-power-storage-visual' },
-                  h('div', null, h('span', null, 'Battery reserve'), h('strong', { 'data-power-scene-reserve': true, style: { color: batteryColor } }, current.percent.toFixed(1) + '%')),
+                  h('div', null, h('span', null, __alloFill(__alloT('stem.spacestation.power_reserve_now', 'Reserve at T+{minute} min'), { minute: orbitMinute.toFixed(1) })), h('strong', { 'data-power-scene-reserve': true, style: { color: batteryColor } }, current.percent.toFixed(1) + '%')),
                   h('div', { className: 'iss-power-storage-track', role: 'meter', 'aria-label': __alloT('stem.spacestation.power_reserve_meter', 'Battery reserve; 25 percent target'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Number(current.percent.toFixed(3)) },
-                    h('span', { 'data-power-storage-fill': true, style: { width: current.percent + '%', background: batteryColor } }), h('i', { 'aria-hidden': true }))),
+                    h('span', { 'data-power-storage-fill': true, style: { width: current.percent + '%', background: batteryColor } }), h('i', { 'aria-hidden': true })),
+                  h('div', { className: 'iss-power-storage-key' }, h('span', null, __alloT('stem.spacestation.power_live_reading', 'Live reading')), h('span', null, __alloT('stem.spacestation.power_target', 'Dotted line · 25% target')))),
                 h('p', null, 'Array width shows projected collecting area: 0° edge-on, 90° face-on. Station and lighting are schematic.')),
               h('div', { className: 'iss-power-setup' },
-                opsControl('iss-power-angle','Array angle to sunlight',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'),
-                opsControl('iss-power-eclipse','Eclipse duration',eclipse,20,45,1,' min','#c4b5fd','opsEclipse'),
-                opsControl('iss-power-load','Research utilization',research,0,100,5,'%','#c4b5fd','opsResearch'),
-                opsControl('iss-power-battery','Starting battery',battery,0,100,1,'%','#6ee7b7','opsBattery'))),
+                h('div', { className: 'iss-power-setting' },
+                  opsControl('iss-power-angle','Array angle to sunlight',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'),
+                  h('p', null, __alloT('stem.spacestation.power_angle_hint', '0° edge-on · 90° face-on'))),
+                h('div', { className: 'iss-power-setting' },
+                  opsControl('iss-power-eclipse','Eclipse duration',eclipse,20,45,1,' min','#c4b5fd','opsEclipse'),
+                  h('p', null, __alloT('stem.spacestation.power_eclipse_hint', 'Minutes in Earth’s shadow'))),
+                h('div', { className: 'iss-power-setting' },
+                  opsControl('iss-power-load','Research utilization',research,0,100,5,'%','#c4b5fd','opsResearch'),
+                  h('p', null, __alloT('stem.spacestation.power_research_hint', 'Adds to station power demand'))),
+                h('div', { className: 'iss-power-setting' },
+                  opsControl('iss-power-battery','Starting battery',battery,0,100,1,'%','#6ee7b7','opsBattery'),
+                  h('p', null, __alloT('stem.spacestation.power_battery_hint', 'Charge available at orbit start'))))),
+            h('section', { className: 'iss-power-planning', 'aria-labelledby': 'iss-power-planning-title' },
+              h('div', { className: 'iss-power-planning-heading' },
+                h('h4', { id: 'iss-power-planning-title' }, __alloT('stem.spacestation.power_planning_title', 'Plan for a 25% reserve')),
+                h('p', null, __alloT('stem.spacestation.power_planning_hint', 'Choose one control. Compare the whole orbit before trying a setting.'))),
+              h('div', { className: 'iss-power-planners' },
+                h(issPowerReservePlanner, { React: React, t: __alloT, fill: __alloFill, settings: powerSettings, kind: 'reserve', value: battery,
+                  guideLocked: guideLocksPowerSetup, onApply: applyPowerPlan }),
+                h(issPowerReservePlanner, { React: React, t: __alloT, fill: __alloFill, settings: powerSettings, kind: 'alignment', value: arrayAngle,
+                  guideLocked: guideLocksPowerSetup, onApply: applyPowerPlan }),
+                h(issPowerReservePlanner, { React: React, t: __alloT, fill: __alloFill, settings: powerSettings, kind: 'research', value: research, crew: crew, arrayAngle: arrayAngle,
+                  guideLocked: guideLocksPowerSetup, onApply: applyPowerPlan }))),
             h('div', { className: 'iss-power-flows' },
               reading('solar', 'Solar generation', current.solarKW.toFixed(1) + ' kW', current.lit ? 'Available at the electrical bus' : 'Earth blocks direct sunlight', '#fcd34d'),
               reading('battery-flow', current.chargeKW > 0 ? 'Into the battery' : current.dischargeKW > 0 ? 'Out of the battery' : 'Battery power', (current.chargeKW || current.dischargeKW).toFixed(1) + ' kW', current.chargeKW > 0 ? 'Bus input; 95% enters storage' : current.dischargeKW > 0 ? 'Delivered to the bus after losses' : 'No charging or discharging', '#6ee7b7'),
@@ -17105,6 +19831,49 @@
         }
         var content=mode==='power'?renderPower():mode==='eclss'?renderEclss():mode==='thermal'?renderThermal():mode==='attitude'?renderAttitude():mode==='debris'?renderDebris():mode==='human'?renderHuman():mode==='emergency'?renderEmergency():mode==='rendezvous'?renderRendezvous():renderIntegrated();
         return h('div',{'data-iss-operations':mode},
+          h('style', null,
+            '.iss-power-planning{margin:24px 0}.iss-power-planning-heading{margin-bottom:12px}.iss-power-planning-heading h4{margin:0 0 5px;font:750 17px/1.4 system-ui;color:#e5f3ff}.iss-power-planning-heading p{margin:0;color:#b8cddd;font:400 13px/1.6 system-ui}.iss-power-planners{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}' +
+            '.iss-reserve-plan{--plan-color:#86efac;min-width:0;overflow-wrap:anywhere;border:1px solid #466174;border-radius:14px;background:#0c2030;color:#e2e8f0;overflow:clip}.iss-reserve-plan[data-power-alignment-plan]{--plan-color:#fcd878}.iss-reserve-plan[data-power-research-plan]{--plan-color:#d1bcff}.iss-reserve-plan[open]{grid-column:1/-1;border-color:#6b8ca2}' +
+            '.iss-reserve-plan summary{position:relative;display:flex;align-items:center;gap:12px;min-height:92px;padding:16px 40px 16px 16px;list-style:none;cursor:pointer}.iss-reserve-plan summary::-webkit-details-marker{display:none}.iss-reserve-plan summary::after{content:\'\';position:absolute;right:19px;top:calc(50% - 5px);width:8px;height:8px;border-right:2px solid #bed7e5;border-bottom:2px solid #bed7e5;transform:rotate(45deg)}.iss-reserve-plan[open] summary{min-height:72px;border-bottom:1px solid #3e5a6c;background:#122b3d}.iss-reserve-plan[open] summary::after{transform:rotate(225deg);top:calc(50% - 1px)}' +
+            '.iss-plan-icon{width:40px;height:40px;flex:0 0 40px;padding:8px;border:1px solid #547083;border-radius:11px;color:var(--plan-color);background:#0a1b28}.iss-reserve-plan summary strong{display:block;color:#edf7ff;font:750 14px/1.4 system-ui}.iss-reserve-plan summary small{display:block;margin-top:4px;color:#b9cddd;font:400 12px/1.4 system-ui}' +
+            '.iss-reserve-results{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:0 28px;padding:22px}.iss-reserve-results>:not(table){grid-column:1}.iss-reserve-results h4{margin:0 0 10px;font:750 21px/1.35 system-ui;color:#e5f3ff}.iss-reserve-results p{margin:0 0 14px;font:400 13px/1.7 system-ui;color:#c7d8e6}.iss-reserve-results p[role=status]{margin:14px 0 0;color:#b0f5d0}' +
+            '.iss-reserve-table{grid-column:2;grid-row:1/span 5;align-self:start;width:100%;border-collapse:separate;border-spacing:0;font:400 13px/1.5 system-ui;font-variant-numeric:tabular-nums}.iss-reserve-table th,.iss-reserve-table td{padding:12px;text-align:left;border-bottom:1px solid #385468}.iss-reserve-table thead th{color:#bdd4e4;font-size:12px;font-weight:600;vertical-align:bottom}.iss-reserve-table thead th:first-child{width:34%}.iss-reserve-table tbody th{font-weight:650;color:#dcebf5}.iss-reserve-table td:nth-child(2){text-align:right;white-space:nowrap}.iss-reserve-table th:nth-child(2){text-align:right}.iss-reserve-table strong{font:750 18px/1.3 ui-monospace,monospace;white-space:nowrap;color:#f1f8ff}.iss-reserve-horizon{display:block;font-size:11px;color:#a9c3d5;margin-top:2px}' +
+            '.iss-reserve-table tr[data-plan-recommended=true]{background:#16372f}.iss-reserve-table tr[data-plan-recommended=true]>:first-child{box-shadow:inset 3px 0 #86efac}.iss-reserve-table tr[data-plan-recommended=true] strong{color:#adf5cb}.iss-reserve-table small{display:inline-block;margin-top:6px;border:1px solid #91615f;border-radius:5px;padding:2px 6px;color:#ffc4bb;font:650 11px/1.4 system-ui}.iss-reserve-table small[data-rule-met=true]{border-color:#497e68;color:#b2f5cf}' +
+            '.iss-reserve-gauge{display:block;position:relative;height:5px;max-width:180px;margin:7px 0 2px;border:1px solid #658195;border-radius:2px;background:#091923}.iss-reserve-gauge>span{display:block;height:100%;background:#e2a39b}.iss-reserve-gauge[data-rule-met=true]>span{background:#8eeab5}.iss-reserve-gauge i{position:absolute;top:-2px;bottom:-2px;border-left:2px solid #f7e0a0}' +
+            '.iss-reserve-results button{min-height:46px;padding:11px 16px;border:1px solid #7597ad;border-radius:9px;background:#20475b;color:#effaff;font:700 13px/1.5 system-ui;cursor:pointer;justify-self:start}.iss-reserve-results button:hover:enabled{background:#2c5a70;border-color:#b4d7eb}.iss-reserve-results button:disabled{opacity:.65;cursor:default}.iss-reserve-plan :is(summary,button,h4):focus-visible{outline:3px solid #fbbf24;outline-offset:-4px}.iss-reserve-results :is(h4,button):focus-visible{outline-offset:3px}' +
+            '.iss-power-lab .iss-power-setup{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.iss-power-lab .iss-power-setting{min-width:0;border:1px solid #3b5e73;border-radius:12px;background:#102638;padding:16px;display:flex;flex-direction:column;justify-content:center}.iss-power-lab .iss-power-setting .iss-ops-control{border:0;padding:0;background:transparent}.iss-power-setting>p{margin:8px 0 0;color:#b8cfdf;font:400 12px/1.6 system-ui}.iss-power-lab .iss-power-setting input[type=range]{min-height:36px}.iss-power-storage-key{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#b6d0e1;font-size:11px;margin-top:8px}.iss-power-lab .iss-power-storage-visual{padding:13px}.iss-power-lab .iss-power-storage-visual>div:first-child{font-size:12px}.iss-power-lab .iss-power-storage-visual strong{font-size:22px}' +
+            '.iss-reserve-caption{caption-side:bottom;text-align:left;padding:10px 12px 0;color:#b8cfdf;font-size:11px}.iss-reserve-horizon{overflow-wrap:normal}' +
+            '@media(min-width:961px){.iss-power-planners:has(>details[open]){grid-template-columns:repeat(2,minmax(0,1fr))}}' +
+            '@media(max-width:960px){.iss-power-planners{grid-template-columns:1fr}.iss-reserve-plan summary{min-height:76px}.iss-reserve-results{grid-template-columns:1fr;padding:18px}.iss-reserve-results>table{grid-column:1;grid-row:auto;margin:4px 0 18px}.iss-reserve-results h4{font-size:19px}}' +
+            '@media(forced-colors:active){.iss-reserve-plan caption{color:CanvasText!important;background:Canvas!important}}' +
+            '@media(max-width:520px){.iss-reserve-plan summary{padding:14px 38px 14px 14px;gap:10px}.iss-reserve-results{padding:15px}.iss-reserve-table th,.iss-reserve-table td{padding:10px 6px}.iss-reserve-table strong{font-size:16px}.iss-reserve-table small{padding:2px 4px;font-size:11px}.iss-reserve-results button{width:100%}.iss-power-lab .iss-power-setup{gap:10px}.iss-power-lab .iss-power-setting{padding:13px}.iss-plan-icon{width:36px;height:36px;flex-basis:36px;padding:7px}}' +
+            '@media(max-width:360px){.iss-power-lab .iss-power-setup{grid-template-columns:1fr}.iss-reserve-table{font-size:12px}.iss-reserve-table strong{font-size:14px}.iss-reserve-results{padding:12px}.iss-reserve-table th:first-child{width:33%}}' +
+            '@media(forced-colors:active){.iss-reserve-plan,.iss-plan-icon,.iss-reserve-plan[open] summary,.iss-reserve-results button,.iss-power-lab .iss-power-setting{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-reserve-plan :is(summary,h4,p,th,td,strong,small,svg,span){color:CanvasText!important;border-color:CanvasText!important}.iss-reserve-plan summary::after{border-color:CanvasText}.iss-reserve-table tr[data-plan-recommended=true]{background:Canvas;outline:2px solid Highlight;outline-offset:-2px}.iss-reserve-table tr[data-plan-recommended=true]>:first-child{box-shadow:none}.iss-reserve-gauge>span{background:Highlight!important}.iss-reserve-gauge i{border-color:CanvasText}.iss-reserve-results button:disabled{color:GrayText!important;opacity:1}.iss-reserve-plan :is(summary,button,h4):focus-visible{outline-color:Highlight}}'),
+          h('style', null,
+            '.iss-eclipse-window{margin:12px 0;padding:10px;border:1px solid #607d94;border-radius:8px;background:#0c1c2b}' +
+            '.iss-eclipse-window summary{min-height:32px;font-weight:750;line-height:1.6;cursor:pointer;color:#bae6fd}' +
+            '.iss-eclipse-window-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}' +
+            '.iss-eclipse-window-card{min-width:0;border:1px solid #607d94;border-radius:8px;padding:10px}' +
+            '.iss-eclipse-window-card h5{margin:0;font-size:13px;color:#e0f2fe}' +
+            '.iss-eclipse-window-card .iss-eclipse-window-phase{margin:4px 0 8px;font-weight:700;color:#fde68a}' +
+            '.iss-eclipse-window-card[data-lit=false] .iss-eclipse-window-phase{color:#c4b5fd}' +
+            '.iss-eclipse-window-readings{margin:0;font-size:12px;line-height:1.55}' +
+            '.iss-eclipse-window-readings>div{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:3px 0}' +
+            '.iss-eclipse-window-readings dd{margin:0;font-variant-numeric:tabular-nums;white-space:nowrap;color:#e0f2fe}' +
+            '.iss-eclipse-window-bar{display:flex;height:8px;overflow:hidden;margin:9px 0;border:1px solid #7892a3;border-radius:4px}' +
+            '.iss-eclipse-window-bar span{flex-basis:0}' +
+            '.iss-eclipse-window-key{display:inline-block;width:9px;height:9px;margin-right:5px;border:1px solid #7892a3;border-radius:2px}' +
+            '.iss-eclipse-window [data-supply=solarToLoadsKWh]{background:#fde68a}' +
+            '.iss-eclipse-window [data-supply=batteryDeliveredKWh]{background:#67e8f9}' +
+            '.iss-eclipse-window [data-supply=unservedKWh]{background:repeating-linear-gradient(45deg,#fda4af,#fda4af 3px,#502739 3px,#502739 6px)}' +
+            '.iss-eclipse-window summary:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}' +
+            '@media(max-width:680px){.iss-eclipse-window-cards{grid-template-columns:1fr}' +
+            '}' +
+            '@media(forced-colors:active){.iss-eclipse-window,.iss-eclipse-window-card{background:Canvas!important;border-color:CanvasText!important}' +
+            '.iss-eclipse-window :is(summary,h5,.iss-eclipse-window-phase){color:CanvasText!important}' +
+            '.iss-eclipse-window-bar,.iss-eclipse-window-key{display:none}' +
+            '}'),
+          h('style', null, '.iss-eclipse-guide{margin:14px 0;padding:14px;border:1px solid #607d94;border-radius:10px;background:#102338;color:#e2e8f0;min-width:0;overflow-wrap:anywhere}.iss-eclipse-guide h4{margin:0 0 8px;font-size:16px;color:#bae6fd}.iss-eclipse-guide p,.iss-eclipse-guide label{font-size:12px;line-height:1.6;margin:8px 0}.iss-eclipse-guide label{display:block;font-weight:750}.iss-eclipse-guide textarea{box-sizing:border-box;width:100%;min-height:68px;padding:10px;border:1px solid #7ba1b9;border-radius:8px;background:#0b1c2d;color:#f1f5f9;font:400 13px/1.5 system-ui;resize:vertical}.iss-eclipse-guide button{min-height:44px;margin:7px 8px 0 0;padding:9px 13px;border:1px solid #7ba1b9;border-radius:8px;background:#14354c;color:#e0f2fe;font-weight:750;line-height:1.5;cursor:pointer}.iss-eclipse-guide button:disabled{opacity:.6;cursor:default}.iss-eclipse-guide [data-eclipse-guide-exit]{background:transparent}.iss-eclipse-guide .iss-guide-progress{font-weight:750;color:#a5f3fc}.iss-guide-minima{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}.iss-guide-minima>div{padding:10px;border:1px solid #56748b;border-radius:8px}.iss-guide-minima dt{font-size:12px}.iss-guide-minima dd{margin:4px 0 0;font:750 18px/1.5 ui-monospace,monospace}.iss-eclipse-guide :is(button,textarea,h4):focus-visible{outline:3px solid #fbbf24;outline-offset:3px}@media(max-width:520px){.iss-eclipse-guide button{width:100%;margin-right:0}.iss-guide-minima{grid-template-columns:1fr}}@media(forced-colors:active){.iss-eclipse-guide,.iss-eclipse-guide textarea,.iss-eclipse-guide button,.iss-guide-minima>div{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-eclipse-guide :is(h4,p,label,dt,dd){color:CanvasText!important}.iss-eclipse-guide button:disabled{color:GrayText!important;opacity:1}}'),
           h('style', null, '.iss-trajectory-export{margin-top:14px;padding-top:12px;border-top:1px solid #607d94}.iss-trajectory-export button{min-height:44px;padding:10px 14px;border:1px solid #7ba1b9;border-radius:8px;background:#14354c;color:#e0f2fe;font-size:12px;font-weight:750;line-height:1.5;cursor:pointer}.iss-trials .iss-trajectory-export p{font-size:11px;line-height:1.6}.iss-trials .iss-trajectory-export [role=status]{font-size:12px;color:#e0f2fe;font-weight:650}@media(max-width:520px){.iss-trajectory-export button{width:100%}}@media(forced-colors:active){.iss-trajectory-export,.iss-trajectory-export button{border-color:CanvasText!important}.iss-trajectory-export button{background:Canvas!important;color:CanvasText!important}}'),
           h('style', null, '.iss-trajectory-readout-title{margin:14px 0 0;font-size:13px;line-height:1.5;color:#e0f2fe}.iss-trajectory [tabindex]:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-trajectory-events{margin-top:14px;border:1px solid #607d94;border-radius:9px;padding:10px;background:#10283b}.iss-trajectory-events summary{min-height:32px;font-size:13px;font-weight:800;line-height:1.5;color:#bae6fd;cursor:pointer}.iss-trajectory-event-nav{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.iss-trajectory-event-nav button{min-height:44px;padding:9px 14px;border:1px solid #7ba1b9;border-radius:8px;background:#14354c;color:#e0f2fe;font-size:12px;font-weight:750;cursor:pointer}.iss-trajectory-event-nav button:disabled{opacity:.55;cursor:default}.iss-trajectory-event-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}.iss-trajectory-event-group{min-width:0}.iss-trajectory-event-group h6{margin:0 0 9px;font-size:13px;line-height:1.5;color:#e0f2fe}.iss-trajectory-event-group ol{margin:0;padding:0;list-style:none;display:grid;gap:7px}.iss-trajectory-event-group button{display:grid;width:100%;min-width:0;min-height:54px;gap:4px;padding:10px;text-align:left;background:#0b1c2d;color:#e2e8f0;border:1px solid #607d94;border-radius:8px;line-height:1.5;font-size:12px;cursor:pointer}.iss-trajectory-event-group button strong{font:750 12px/1.5 ui-monospace,monospace;color:#e0f2fe}.iss-trajectory-event-group button small{font-size:11px;color:#b8cada}.iss-trajectory-event-group button[aria-pressed=true]{outline:2px solid #fbbf24;outline-offset:-3px}.iss-trajectory-event-group[data-ops-trajectory-event-group=baseline] h6{border-bottom:2px dashed #fde68a;padding-bottom:7px}.iss-trajectory-event-group[data-ops-trajectory-event-group=comparison] h6{border-bottom:2px solid #67e8f9;padding-bottom:7px}.iss-trials .iss-trajectory-event-scope{font-size:11px}@media(max-width:600px){.iss-trajectory-event-groups{grid-template-columns:1fr}.iss-trajectory-event-nav button{flex:1 1 100%}}@media(forced-colors:active){.iss-trajectory-events,.iss-trajectory-event-nav button,.iss-trajectory-event-group button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-trajectory-readout-title,.iss-trajectory-events :is(summary,h6){color:CanvasText!important;border-color:CanvasText!important}.iss-trajectory-event-group button[aria-pressed=true]{outline-color:Highlight}.iss-trajectory-event-nav button:disabled{color:GrayText!important;opacity:1}}'),
           h('style', null, '.iss-trajectory{margin:14px 0;border:1px solid #607d94;border-radius:10px;background:#0d2032;min-width:0;overflow-wrap:anywhere}.iss-trajectory h5{margin:0}.iss-trajectory-toggle{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;border:0;border-radius:9px;padding:12px;background:transparent;color:#bae6fd;text-align:left;font-size:14px;font-weight:800;cursor:pointer}.iss-trajectory [data-ops-trajectory-panel]{padding:0 12px 12px;min-width:0}.iss-trajectory-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.iss-trajectory-reading{padding:12px;border:1px solid #607d94;border-radius:9px;min-width:0}.iss-trajectory-reading>span,.iss-trajectory-reading>small{display:block;font-size:12px;line-height:1.5;color:#cbd5e1}.iss-trajectory-reading>strong{display:block;margin:7px 0;font:800 21px/1.5 ui-monospace,monospace;color:#e0f2fe}.iss-trajectory-reading[data-ops-trajectory-reading=baseline]{border-top:3px dashed #fde68a}.iss-trajectory-reading[data-ops-trajectory-reading=comparison]{border-top:3px solid #67e8f9}.iss-trials .iss-trajectory-delta{font-weight:750;color:#e0f2fe}.iss-trajectory-plot{display:grid;grid-template-columns:52px minmax(0,1fr);gap:6px;min-width:0}.iss-trajectory-y{height:220px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:4px 0;font:10px/1.5 ui-monospace,monospace;color:#cbd5e1}.iss-trajectory-graph{min-width:0}.iss-root .iss-trajectory-graph svg{display:block;width:100%;height:220px;min-width:0!important;touch-action:none;background:#081524;border:1px solid #607d94;border-radius:7px;cursor:crosshair}.iss-trajectory-grid{stroke:#334b61;stroke-width:1}.iss-trajectory-limit{stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:2 5}.iss-trajectory-line{fill:none;stroke-width:2.5;stroke-linejoin:round}.iss-trajectory-baseline{stroke:#fde68a;stroke-dasharray:8 5}.iss-trajectory-comparison{stroke:#67e8f9}.iss-trajectory-cursor{stroke:#e2e8f0;stroke-width:1;stroke-dasharray:3 3}.iss-trajectory-marker-a{stroke:#fde68a;fill:#081524;stroke-width:2}.iss-trajectory-marker-b{stroke:#67e8f9;fill:#67e8f9;stroke-width:1.5}.iss-trajectory-x{display:flex;justify-content:space-between;gap:4px;margin-top:5px;font:10px/1.5 ui-monospace,monospace;color:#cbd5e1}.iss-trials .iss-trajectory-axis-title{text-align:center;font-size:11px}.iss-trajectory-legend{display:flex;flex-wrap:wrap;gap:9px 20px;font-size:12px;color:#e2e8f0}.iss-trajectory-legend span{display:flex;align-items:center;gap:7px}.iss-trajectory-legend i{width:25px;border-top:3px solid #67e8f9;flex-shrink:0}.iss-trajectory-legend .iss-trajectory-key-a{border-color:#fde68a;border-top-style:dashed}.iss-trials .iss-trajectory-scale{font-size:11px;color:#cbd5e1}.iss-trials .iss-trajectory-time-label{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.iss-trajectory input[type=range]{display:block;width:100%;min-width:0;min-height:36px;margin:0;accent-color:#67e8f9}.iss-trajectory :is(button,select,input):focus-visible{outline:3px solid #fbbf24;outline-offset:3px}@media(max-width:520px){.iss-trajectory-readings{grid-template-columns:1fr}.iss-trajectory-reading>strong{font-size:20px}.iss-trajectory-plot{grid-template-columns:44px minmax(0,1fr);gap:4px}}@media(forced-colors:active){.iss-trajectory,.iss-trajectory-toggle,.iss-trajectory-reading,.iss-root .iss-trajectory-graph svg{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-trajectory :is(p,span,strong,small,label){color:CanvasText!important}.iss-trajectory-grid,.iss-trajectory-limit{stroke:GrayText}.iss-trajectory-line,.iss-trajectory-cursor,.iss-trajectory-marker-a,.iss-trajectory-marker-b{stroke:CanvasText}.iss-trajectory-marker-a{fill:Canvas}.iss-trajectory-marker-b{fill:CanvasText}.iss-trajectory-legend i{border-color:CanvasText!important}}'),
@@ -17161,6 +19930,42 @@
       var TAB_IDS = TABS.map(function (t0) { return t0.id; });
       var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'map';
 
+      function renderDestinyWindowStudy() {
+        return h('section', { className: 'iss-window-study', 'data-iss-window-study': '', 'aria-label': 'Destiny Earth-observation window' },
+          h('style', null, '.iss-window-study{margin:14px 0;padding:16px;border:1px solid #41667d;border-radius:14px;background:linear-gradient(125deg,#102435,#07121f);color:#e2e8f0}.iss-window-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.iss-window-heading h3{font-size:18px;line-height:1.4;margin:0}.iss-window-heading small{display:block;color:#7dd3fc;font:800 10px ui-monospace,monospace;letter-spacing:1px;margin-bottom:5px}.iss-window-study button{min-height:42px;padding:9px 12px;border:1px solid #7dd3fc;border-radius:8px;background:#163c55;color:#e0f2fe;font-weight:800;cursor:pointer}.iss-window-study :is(button,a):focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-window-study svg{display:block;width:100%;height:auto;margin:14px 0 9px;border:1px solid #2d4b62;border-radius:10px;background:#06101c}.iss-window-study p{font-size:13px;line-height:1.7;margin:8px 0;color:#d5e1ec}.iss-window-study-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:16px 0}.iss-window-study-grid h4{font-size:12px;color:#bae6fd;margin:0}.iss-window-study-grid p{margin-bottom:0}.iss-window-limit{padding:10px 12px;border-left:3px solid #8197b0;background:#142437;font-size:12px!important}.iss-window-sources{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.iss-window-sources a{color:#bae6fd;font-size:12px;text-underline-offset:3px}.iss-window-diagram-caption{font-size:11px!important;color:#b1c5d6!important}@media(max-width:680px){.iss-window-study{padding:12px}.iss-window-study-grid{grid-template-columns:1fr;gap:12px}.iss-window-study button{width:100%}}@media(forced-colors:active){.iss-window-study,.iss-window-limit{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-window-study :is(p,h3,h4,small,a){color:CanvasText}.iss-window-study svg{forced-color-adjust:none}}'),
+          h('div', { className: 'iss-window-heading' }, h('div', null, h('small', null, 'EARTH OBSERVATION // DESTINY'), h('h3', null, 'A science instrument can look through a window')),
+            h('button', { type: 'button', 'data-iss-window-inspect': '', onClick: function (event) {
+              var owner = event.currentTarget.closest('[data-iss-map]'), canvas = owner && owner.querySelector('.iss-station-stage canvas');
+              if (!canvas || !canvas._issFitCamera) return;
+              canvas._issFitCamera('window'); canvas.focus({ preventScroll: true });
+              canvas.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' });
+            } }, 'Inspect science window ↗')),
+          h('svg', { viewBox: '0 0 640 180', role: 'img', 'aria-label': 'Conceptual light path: light reflected from Earth passes through the Destiny science window to a camera held by the WORF rack. The rack supplies mounting, power, data and cooling. Not to scale.' },
+            h('circle', { cx: 80, cy: 83, r: 38, fill: '#1e5072', stroke: '#69bbd3', strokeWidth: 2 }),
+            h('path', { d: 'M54 57L75 55L84 75L69 92L62 112M92 55L106 76L93 91L104 105', fill: 'none', stroke: '#6eaa8c', strokeWidth: 9 }),
+            [68,84,100].map(function (y, i) { return h('g', { key: i }, h('line', { x1: 125, y1: y, x2: 390, y2: y, stroke: '#e9ca7d', strokeWidth: 1.8, strokeDasharray: '6 5' }), h('path', { d: 'M382 ' + (y - 4) + 'L390 ' + y + 'L382 ' + (y + 4), fill: 'none', stroke: '#e9ca7d', strokeWidth: 1.8 })); }),
+            h('path', { d: 'M279 27V56M279 112V143', stroke: '#abbfce', strokeWidth: 13 }),
+            h('rect', { x: 270, y: 55, width: 18, height: 58, rx: 3, fill: '#28495c', stroke: '#95cad7', strokeWidth: 2 }),
+            h('rect', { x: 405, y: 52, width: 104, height: 65, rx: 9, fill: '#45617a', stroke: '#c7d8e5', strokeWidth: 2 }),
+            h('path', { d: 'M405 67H390V102H405M456 117V133M389 134H535', fill: 'none', stroke: '#b8c9d8', strokeWidth: 5 }),
+            h('rect', { x: 379, y: 36, width: 167, height: 107, rx: 6, fill: 'none', stroke: '#5f829d', strokeWidth: 2, strokeDasharray: '5 4' }),
+            h('text', { x: 80, y: 154, textAnchor: 'middle', fill: '#c5deed', fontSize: 12 }, 'Earth'),
+            h('text', { x: 279, y: 160, textAnchor: 'middle', fill: '#c5deed', fontSize: 12 }, 'Optical window'),
+            h('text', { x: 458, y: 25, textAnchor: 'middle', fill: '#c5deed', fontSize: 12 }, 'WORF rack'),
+            h('text', { x: 458, y: 90, textAnchor: 'middle', fill: '#f1f5f9', fontSize: 12 }, 'Camera / sensor'),
+            h('text', { x: 458, y: 160, textAnchor: 'middle', fill: '#c5deed', fontSize: 12 }, 'Mount • power • data • cooling')),
+          h('p', { className: 'iss-window-diagram-caption' }, 'Conceptual light path · not to scale. Reflected light from Earth reaches an instrument inside the pressurized laboratory.'),
+          h('div', { className: 'iss-window-study-grid' },
+            h('div', null, h('h4', null, '1 · Face the planet'), h('p', null, 'Destiny’s optical-quality window has a clear aperture of about 51 cm. It faces nadir, toward Earth: the −Y direction in this model. A science window needs optical clarity as well as pressure protection.')),
+            h('div', null, h('h4', null, '2 · Support the instrument'), h('p', null, 'The Window Observational Research Facility (WORF) arrived aboard Discovery in April 2010. Its internal rack provides a stable mount and power, command, data and cooling connections for cameras and sensors.')),
+            h('div', null, h('h4', null, '3 · Protect the optics'), h('p', null, 'An external shutter protects the optical surface from contamination associated with visiting vehicles. Installing WORF allowed removal of the old scratch pane, improving image clarity. This differs from Cupola’s window arrangement.'))),
+          h('p', { className: 'iss-window-limit' }, 'Reading the model: the dark pane and raised rim indicate one science-window location. Axial placement and rim dimensions are schematic. The intact hull is not cut open; the shutter, internal instruments and optical behaviour are not simulated. Other cylindrical modules’ windows are omitted rather than represented by generic lights.'),
+          h('div', { className: 'iss-window-sources' },
+            h('a', { href: 'https://science.nasa.gov/earth/earth-observatory/better-iss-window-better-view-of-earth-49561/', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · WORF and clearer Earth views ↗'),
+            h('a', { href: 'https://www.nasa.gov/wp-content/uploads/2016/05/earth-observations-2020-tagged.pdf#page=39', target: '_blank', rel: 'noopener noreferrer' }, 'NASA · Earth observations guide, pp. 39–40 ↗')));
+      }
+
+
       function renderModuleBlueprint(module) {
         var moduleColor = '#' + Number(module.color || 0x38bdf8).toString(16).padStart(6, '0');
         var isTruss = module.id === 'truss';
@@ -17174,7 +19979,6 @@
         var bodyH = Math.max(30, Math.min(66, envDia * 86));
         var bodyX = 320 - bodyW / 2, bodyY = 86 - bodyH / 2;
         var bulkInset = Math.min(29, bodyW * 0.22);
-        var portCount = bodyW > 200 ? 5 : bodyW > 130 ? 4 : 3;
         var dimX1 = isTruss ? 105 : isCupola ? 252 : bodyX;
         var dimX2 = isTruss ? 535 : isCupola ? 388 : bodyX + bodyW;
         return h('div', { className: 'iss-learning-visual iss-blueprint' },
@@ -17215,9 +20019,10 @@
               h('rect', { x: bodyX, y: bodyY, width: bodyW, height: bodyH, rx: Math.min(28, bodyH / 2), fill: 'url(#iss-module-metal)', stroke: '#e2e8f0', strokeWidth: 2 }),
               h('line', { x1: bodyX + bulkInset, y1: bodyY + 1, x2: bodyX + bulkInset, y2: bodyY + bodyH - 1, stroke: '#64748b', strokeWidth: 5 }),
               h('line', { x1: bodyX + bodyW - bulkInset, y1: bodyY + 1, x2: bodyX + bodyW - bulkInset, y2: bodyY + bodyH - 1, stroke: '#64748b', strokeWidth: 5 }),
-              Array.apply(null, { length: portCount }).map(function (_, i) {
-                return h('circle', { key: i, cx: bodyX + bodyW * (0.5 + (i - (portCount - 1) / 2) * 0.13), cy: 86 - bodyH * 0.14, r: 4, fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 1 });
-              }),
+              module.id === 'destiny' ? h('g', { 'data-iss-blueprint-window': '' },
+                h('circle', { cx: bodyX + bodyW * .63, cy: bodyY + bodyH * .75, r: 7, fill: '#17384d', stroke: '#c3d5e2', strokeWidth: 2 }),
+                h('path', { d: 'M' + (bodyX + bodyW * .63 + 9) + ' ' + (bodyY + bodyH * .75) + 'H515V111', fill: 'none', stroke: '#7dd3fc', strokeWidth: 1 }),
+                h('text', { x: 515, y: 121, textAnchor: 'middle', fill: '#bae6fd', fontSize: 9 }, 'NADIR SCIENCE WINDOW')) : null,
               h('circle', { cx: bodyX, cy: 86, r: 16, fill: '#263449', stroke: '#cbd5e1', strokeWidth: 3 }), h('circle', { cx: bodyX + bodyW, cy: 86, r: 16, fill: '#263449', stroke: '#cbd5e1', strokeWidth: 3 })),
             h('line', { x1: dimX1, y1: 132, x2: dimX2, y2: 132, stroke: moduleColor, strokeWidth: 1.3 }), h('line', { x1: dimX1, y1: 127, x2: dimX1, y2: 137, stroke: moduleColor }), h('line', { x1: dimX2, y1: 127, x2: dimX2, y2: 137, stroke: moduleColor }),
             h('text', { x: 320, y: 148, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8.5, fontWeight: 750, letterSpacing: .8 }, 'RELATIVE ENVELOPE ' + module.size[1] + ' × ' + module.size[0] + '  /  AXIS ' + module.axis.toUpperCase()),
@@ -17747,7 +20552,7 @@
         // aria-pressed, so nothing read as current. Same shape as TAB_IDS.
         var MAP_VIEW_IDS = ['overview', 'truss', 'labs', 'russian', 'nadir'];
         var mapView = MAP_VIEW_IDS.indexOf(d.mapView) !== -1 ? d.mapView : 'overview';
-        return h('div', null,
+        return h('div', { 'data-iss-map': '' },
           // The station comes FIRST on this tab — before instructions, before
           // any button. It is the landing view of the whole tool, so the first
           // thing on screen should be the thing itself.
@@ -17757,7 +20562,7 @@
               role: 'application', tabIndex: 0,
               'aria-label': __alloT('stem.spacestation.canvas_aria', 'Interactive 3-D model of the International Space Station, orbiting above a lit Earth with a Dragon spacecraft docked at Harmony and a Progress freighter at Zvezda’s aft port.'),
               'aria-describedby': 'iss-map-instructions iss-map-status iss-map-orientation',
-              'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight + - Home F',
+              'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight + - Home F',
               style: { width: '100%', height: 'clamp(320px, 52vw, 500px)', display: 'block' }
             }),
             h('div', { className: 'iss-stage-hud', 'aria-hidden': 'true' }, h('span', { className: 'iss-hud-chip' }, 'ISS // ORBITAL VIEW'), h('span', { className: 'iss-hud-chip iss-hud-selection' }, 'SELECTED // ' + selModule.name.split(' (')[0].toUpperCase()), h('span', { className: 'iss-hud-chip', 'data-iss-light-phase': 'true', 'data-phase': 'sunlight' }, '☀ SUNLIGHT'), h('span', { className: 'iss-hud-chip' }, 'ALT ' + ISS_REF_ALT + ' KM  /  V ' + issOrbit(ISS_REF_ALT).v.toFixed(2) + ' KM/S')),
@@ -17802,24 +20607,62 @@
               h('strong', { 'data-iss-radiator-name': '' }, ''),
               h('span', null, __alloT('stem.spacestation.camera_radiator_caption', 'THERMAL HARDWARE · SURFACE INSPECTION')),
               h('span', { 'data-iss-map-thermal-caption': '', hidden: true }, '')),
-            h('div', { className: 'iss-module-marker', 'data-iss-module-marker': 'true', 'aria-hidden': 'true' }, h('i', null), h('span', null, selModule.name.split(' (')[0].toUpperCase())),
+            h('div', { className: 'iss-radiator-caption iss-visitor-caption', 'data-iss-visitor-caption': '', hidden: true, 'aria-hidden': 'true' },
+              h('strong', null, ''), h('span', null, '')),
+            h('div', { className: 'iss-radiator-caption iss-visitor-caption', 'data-iss-grapple-caption': '', hidden: true, 'aria-hidden': 'true' },
+              h('strong', null, 'Robotic grapple hand'), h('span', null, 'Following · three snares')),
+            h('div', { className: 'iss-radiator-caption iss-visitor-caption', 'data-iss-science-caption': '', hidden: true, 'aria-hidden': 'true' },
+              h('strong', null, 'AMS-02'), h('span', null, 'S3 truss · zenith')),
+            h('div', { className: 'iss-radiator-caption iss-visitor-caption', 'data-iss-zvezda-caption': '', hidden: true, 'aria-hidden': 'true' }, h('strong', null, 'Zvezda · solar wings'), h('span', null, 'Fixed schematic pose · early station power')),
+            h('div', { className: 'iss-radiator-caption iss-visitor-caption', 'data-iss-comms-caption': '', hidden: true, 'aria-hidden': 'true' }, h('strong', null, 'Z1 · Ku-band antenna'), h('span', null, 'Fixed schematic pose · relay communications')),
+            h('div', { className: 'iss-radiator-caption iss-visitor-caption', 'data-iss-quest-caption': '', hidden: true, 'aria-hidden': 'true' },
+              h('strong', null, 'Quest airlock'), h('span', null, 'Two chambers · 2001 installation')),
+            h('div', { className: 'iss-radiator-caption iss-visitor-caption', 'data-iss-kibo-caption': '', hidden: true, 'aria-hidden': 'true' },
+              h('strong', null, 'Kibo Exposed Facility'), h('span', null, 'External laboratory · illustrative payloads')),
+            h('div', { className: 'iss-radiator-caption iss-visitor-caption', 'data-iss-cupola-caption': '', hidden: true, 'aria-hidden': 'true' },
+              h('strong', null, 'Cupola windows'), h('span', null, 'Six side panes · circular nadir view')),
+            h('div', { className: 'iss-radiator-caption iss-visitor-caption', 'data-iss-window-caption': '', hidden: true, 'aria-hidden': 'true' },
+              h('strong', null, 'Destiny science window'), h('span', null, 'Earth-facing · nadir')),
+            h('div', { className: 'iss-module-marker', 'data-iss-module-marker': 'true', 'aria-hidden': 'true' },
+              h('svg', { 'aria-hidden': 'true', focusable: false },
+                h('path', { fill: 'none', stroke: '#fbbf24', strokeWidth: 1.5 }), h('circle', { r: 3, fill: '#fbbf24' }),
+                h('path', { 'data-iss-selection-backing': '', fill: 'none', stroke: '#06121c', strokeWidth: 5, strokeOpacity: .9, strokeLinejoin: 'round', visibility: 'hidden' }),
+                h('path', { 'data-iss-selection-brackets': '', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinejoin: 'round', visibility: 'hidden' })),
+              h('span', null, selModule.name.split(' (')[0])),
             h('div', { className: 'iss-hover-name', 'data-iss-hover-name': 'true', 'aria-hidden': 'true' }),
-            h('svg', { className: 'iss-orientation-widget', 'data-iss-orientation-widget': 'true', viewBox: '0 0 96 96', 'aria-hidden': 'true' },
-              h('circle', { cx: 42, cy: 42, r: 27, fill: 'rgba(2,6,23,.55)', stroke: 'rgba(148,163,184,.28)' }),
-              h('line', { 'data-iss-axis': 'x', x1: 42, y1: 42, x2: 67, y2: 42, stroke: '#f87171', strokeWidth: 2.2 }),
-              h('line', { 'data-iss-axis': 'y', x1: 42, y1: 42, x2: 42, y2: 17, stroke: '#4ade80', strokeWidth: 2.2 }),
-              h('line', { 'data-iss-axis': 'z', x1: 42, y1: 42, x2: 57, y2: 62, stroke: '#38bdf8', strokeWidth: 2.2 }),
-              h('circle', { cx: 42, cy: 42, r: 3, fill: '#e2e8f0' }),
-              h('text', { x: 4, y: 80, fill: '#fca5a5', fontSize: 7, fontWeight: 850 }, 'X P/S'), h('text', { x: 35, y: 80, fill: '#86efac', fontSize: 7, fontWeight: 850 }, 'Y Z/N'), h('text', { x: 66, y: 80, fill: '#7dd3fc', fontSize: 7, fontWeight: 850 }, 'Z A/F')),
+            h('svg', { className: 'iss-orientation-widget', 'data-iss-orientation-widget': 'true', viewBox: '0 0 112 126', 'aria-hidden': 'true' },
+              h('rect', { x: 1, y: 1, width: 110, height: 124, rx: 12, fill: 'rgba(3,15,26,.94)', stroke: '#50728b' }),
+              h('circle', { cx: 56, cy: 56, r: 33, fill: 'none', stroke: '#344f65' }),
+              h('line', { 'data-iss-axis': 'x', x1: 56, y1: 56, x2: 87, y2: 56, stroke: '#fca5a5', strokeWidth: 2.2 }),
+              h('line', { 'data-iss-axis': 'y', x1: 56, y1: 56, x2: 56, y2: 25, stroke: '#86efac', strokeWidth: 2.2 }),
+              h('line', { 'data-iss-axis': 'z', x1: 56, y1: 56, x2: 56, y2: 56, stroke: '#7dd3fc', strokeWidth: 2.2 }),
+              h('circle', { cx: 56, cy: 56, r: 2.5, fill: '#e2e8f0' }),
+              [['x','#fca5a5'],['y','#86efac'],['z','#7dd3fc']].map(function (axis) {
+                return h(React.Fragment, { key: axis[0] },
+                  h('g', { 'data-iss-axis-tip': axis[0], transform: 'translate(56 56)', stroke: axis[1], fill: axis[1] },
+                    h('circle', { 'data-iss-axis-ring': axis[0], r: 6, fill: '#071727', strokeWidth: 1.5, visibility: 'hidden' }),
+                    h('circle', { 'data-iss-axis-dot': axis[0], r: 2.2, stroke: 'none', visibility: 'hidden' }),
+                    h('path', { 'data-iss-axis-cross': axis[0], d: 'M-2.5 -2.5L2.5 2.5M-2.5 2.5L2.5 -2.5', fill: 'none', strokeWidth: 1.8, visibility: 'hidden' }),
+                    h('path', { 'data-iss-axis-head': axis[0], d: 'M0 0L-6 -3L-6 3Z', stroke: 'none', visibility: 'hidden' })),
+                  h('text', { 'data-iss-axis-label': axis[0], x: 56, y: 56, fill: axis[1], fontSize: 10, fontWeight: 800,
+                    textAnchor: 'middle', dominantBaseline: 'middle', stroke: '#071727', strokeWidth: 3, paintOrder: 'stroke' }, '+' + axis[0].toUpperCase()));
+              }),
+              h('text', { x: 56, y: 112, fill: '#c7deed', fontSize: 9, fontWeight: 750, textAnchor: 'middle' }, __alloT('stem.spacestation.compass_title', 'STATION AXES'))),
             h('div', { className: 'iss-stage-transport', 'data-iss-stage-transport': '', hidden: true },
               h('button', { type: 'button', 'data-iss-stage-play': '', 'aria-pressed': false, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issLightingState) cv._issSetLighting({ playing: !cv._issLightingState().playing }); } }, __alloT('stem.spacestation.map_light_drive_stage_play', 'Play orbit')),
               h('button', { type: 'button', 'data-iss-stage-brake': '', hidden: true, 'aria-pressed': false, 'aria-describedby': 'iss-brake-help', onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issLightingState) cv._issSetLighting({ motorBraking: !cv._issLightingState().motorBraking }); } }, __alloT('stem.spacestation.map_light_brake_apply', 'Apply brakes')),
               h('span', { 'data-iss-stage-drive': '' }, __alloT('stem.spacestation.map_light_drive_stage_initial', 'Joint error 0.0°')),
               h('span', { 'data-iss-stage-brake-time': '', hidden: true }, '')) ,
-            h('div', { className: 'iss-stage-help', 'aria-hidden': 'true' }, __alloT('stem.spacestation.camera_stage_help', 'Drag to look around · pinch / + − to zoom · F to center')),
+            h('div', { className: 'iss-stage-help', 'data-iss-camera-drag-help': '', 'aria-hidden': 'true' }, __alloT('stem.spacestation.camera_stage_help', 'Drag to look around · pinch / + − to zoom · F to center')),
             h('span', { id: 'iss-map-status', className: 'iss-sr-only', role: 'status', 'aria-live': 'polite' }, 'Selected module ' + selModule.name + '. Camera view ' + mapView + '.'),
-            h('span', { id: 'iss-map-orientation', className: 'iss-sr-only' }, 'Orientation triad: X is port to starboard, Y is zenith to nadir, and Z is aft to forward.')
+            h('span', { id: 'iss-map-orientation', className: 'iss-sr-only' },
+              __alloT('stem.spacestation.compass_description', 'Orientation triad: X is port to starboard, with positive X toward starboard. Positive Y is away from Earth and positive Z points aft. Short arrows point along your line of sight. A dot means toward you and a cross means away. '),
+              h('span', { 'data-iss-orientation-reading': '' }, ''))
           ),
+          h('button', { type: 'button', className: 'iss-selection-return', 'data-iss-selection-offscreen': '', hidden: true, onClick: function (event) {
+            var root = event.currentTarget.closest('.iss-root'), cv = root && root.querySelector('.iss-station-stage canvas');
+            if (cv && cv._issFocusModule) { cv._issFocusModule(cv._issWantSel); cv.focus({ preventScroll: true }); }
+          } }, ''),
           renderMapArmStage(),
           renderMapArmReference(),
           h('div', { className: 'iss-motion-clock', 'data-iss-motion-clock': '', role: 'group', 'aria-label': __alloT('stem.spacestation.map_clock_controls', 'Simulation clock controls') },
@@ -17851,7 +20694,7 @@
             h('span', { className: 'iss-motion-key-feather', 'data-iss-motion-component-key': '' }, __alloT('stem.spacestation.motion_feather_key', 'Green · feather'))),
           h('div', { className: 'iss-map-controls', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_3d_station_view_controls', '3D station view controls') },
             [['overview','◉ Overview'],['truss','↔ Truss'],['labs','⚗ Labs'],['russian','★ Russian segment'],['nadir','🌍 Earth-facing']].map(function (view) { var on = mapView === view[0]; return h('button', { key: view[0], type: 'button', 'data-iss-camera-view': view[0], 'aria-pressed': on, onClick: function () { upd({ mapView: view[0] }); var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetView) cv._issSetView(view[0]); } }, view[1]); }),
-            h('button', { type: 'button', 'data-iss-focus-module': d.selModule, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFocusModule) cv._issFocusModule(d.selModule); announceToSR(__alloFill(__alloT('stem.spacestation.sr_camera_centered_on', 'Camera centered on {value1}.'), { value1: selModule.name })); } }, '◎ Center ' + selModule.name.split(' (')[0]),
+            h('button', { type: 'button', 'data-iss-focus-module': d.selModule, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFocusModule) cv._issFocusModule(d.selModule); } }, '◎ Center ' + selModule.name.split(' (')[0]),
             h('button', { type: 'button', 'data-iss-cutaway': 'true', 'aria-pressed': !!d.mapCutaway, onClick: function () { upd({ mapCutaway: !d.mapCutaway }); } }, d.mapCutaway ? '◫ Cutaway ON' : '▣ Isolate selected module')),
           h('div', { className: 'iss-joint-handles-panel', 'data-iss-joint-handles-panel': '', role: 'group', 'aria-label': __alloT('stem.spacestation.map_light_joint_controls', '3D array pointing controls') },
             h('button', { type: 'button', 'data-iss-joint-handles-toggle': '', 'aria-pressed': false, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetJointHandles) cv._issSetJointHandles(); } }, __alloT('stem.spacestation.map_light_joint_toggle', '3D array handles')),
@@ -17860,30 +20703,65 @@
               h('span', { className: 'iss-joint-rotation-key' }, __alloT('stem.spacestation.map_light_joint_r_key', 'R · Rotation around the truss')),
               h('span', { className: 'iss-joint-feather-key' }, __alloT('stem.spacestation.map_light_joint_f_key', 'F · Feather, limited to ±90°')),
               h('p', { id: 'iss-joint-handle-help' }, __alloT('stem.spacestation.map_light_joint_help', 'Drag a handle around its ring, or focus it and use arrow keys: 1° per step, Shift for 0.1°, Home for zero. Grabbing pauses time. Editing sets a held command and closes the forecast. With motor limits enabled, actual panels keep their position and velocity; Play orbit to watch them respond. Rings show schematic joint commands, not physical hardware.')))),
+          h('style', null,
+            '.iss-station-stage .iss-stage-hud,.iss-station-stage .iss-radiator-caption,.iss-station-stage .iss-stage-help,.iss-station-stage .iss-orientation-widget{z-index:4}',
+            '@media(forced-colors:active){.iss-station-stage .iss-module-marker [data-iss-selection-backing]{stroke:Canvas}.iss-station-stage .iss-module-marker [data-iss-selection-brackets]{stroke:Highlight}}',
+            '.iss-camera-drag-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:10px;border:1px solid #43647b;border-radius:10px;background:#091c2b}.iss-camera-drag-tools>span:first-child{font-size:12px;font-weight:700;color:#c5dceb;margin-right:3px}.iss-camera-tools .iss-camera-drag-tools button{min-height:44px;min-width:88px;font-size:13px;padding:9px 16px}.iss-camera-tools .iss-camera-drag-tools button[aria-pressed=true]{box-shadow:inset 0 -3px #67e8f9}.iss-camera-pan-tip{flex:1 1 180px;color:#bed2e1;font-size:12px;line-height:1.5}.iss-camera-drag-tools button:focus-visible{outline:3px solid #fde68a;outline-offset:3px}@media(max-width:520px){.iss-camera-drag-tools>span:first-child{width:100%}.iss-camera-pan-tip{flex-basis:100%}.iss-camera-tools .iss-camera-drag-tools button{flex:1}}@media(forced-colors:active){.iss-camera-drag-tools{background:Canvas;border-color:CanvasText}.iss-camera-tools .iss-camera-drag-tools button[aria-pressed=true]{box-shadow:none;outline:2px solid Highlight}}',
+            '.iss-station-stage svg.iss-orientation-widget{width:128px;height:144px;max-width:none}.iss-station-stage .iss-orientation-widget line{transition:none}.iss-compass-help{margin-top:14px;border-top:1px solid #426176;padding-top:12px;color:#c5dae8;font-size:12px;line-height:1.7}.iss-compass-help summary{cursor:pointer;color:#e2f2fc;font-size:13px;font-weight:700;min-height:32px}.iss-compass-help p{margin:8px 0}.iss-compass-help ul{margin:8px 0;padding-left:20px}.iss-compass-help b{font-family:ui-monospace,monospace}.iss-compass-help summary:focus-visible{outline:3px solid #fde68a;outline-offset:3px}@media(max-width:680px){.iss-root .iss-station-stage{grid-template-columns:minmax(0,1fr) 112px}.iss-station-stage svg.iss-orientation-widget{width:104px;height:117px}}@media(forced-colors:active){.iss-compass-help,.iss-compass-help summary{color:CanvasText;border-color:CanvasText}.iss-orientation-widget{forced-color-adjust:none}}',
+            '.iss-station-stage .iss-module-marker{display:block;left:0;top:0;transform:none;transition:none;pointer-events:none;opacity:0}.iss-station-stage .iss-module-marker>svg{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;overflow:visible;pointer-events:none}.iss-station-stage .iss-module-marker>span{position:absolute;display:block;box-sizing:border-box;max-width:calc(100% - 20px);padding:7px 10px;border:1px solid #d7af42;border-radius:7px;background:rgba(6,18,28,.94);color:#fff0b0;font:750 13px/1.4 system-ui;white-space:normal;overflow-wrap:anywhere;box-shadow:0 3px 12px rgba(0,0,0,.25)}.iss-station-stage .iss-hover-name{box-sizing:border-box;max-width:calc(100% - 20px);padding:7px 10px;transform:none;white-space:normal;overflow-wrap:anywhere;border:1px solid #648ba4;background:rgba(5,19,32,.95);color:#e5f5ff;font:650 12px/1.4 system-ui;transition:none;pointer-events:none}.iss-selection-return{display:block;min-height:44px;max-width:100%;margin:10px 0;padding:10px 14px;border:1px solid #d7af42;border-radius:9px;color:#fff0b0;background:#1d3042;font:700 13px/1.5 system-ui;text-align:left;cursor:pointer}.iss-selection-return[hidden]{display:none!important}.iss-selection-return:focus-visible{outline:3px solid #fde68a;outline-offset:3px}@media(forced-colors:active){.iss-selection-return,.iss-station-stage .iss-module-marker>span,.iss-station-stage .iss-hover-name{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-station-stage .iss-module-marker path{stroke:CanvasText}.iss-station-stage .iss-module-marker circle{fill:CanvasText}.iss-selection-return:focus-visible{outline-color:Highlight}}',
+            '.iss-radiator-caption.iss-visitor-caption span{font:600 11px/1.5 system-ui;letter-spacing:0}.iss-visitor-caption[hidden]{display:none!important}@media(max-width:520px){.iss-radiator-caption.iss-visitor-caption strong{font-size:12px}.iss-radiator-caption.iss-visitor-caption span{font-size:10px}}',
+            '.iss-visitor-tools{margin-top:16px;padding-top:15px;border-top:1px solid #436176}.iss-visitor-tools h4{margin:0;color:#e4f2ff;font-size:14px}.iss-visitor-tools>p{margin:6px 0 12px;color:#b8cfdf;font-size:12px;line-height:1.6}.iss-visitor-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.iss-camera-tools .iss-visitor-actions button{display:block;min-height:62px;text-align:left;padding:12px 14px}.iss-visitor-actions strong{display:block;font-size:14px;line-height:1.4}.iss-visitor-actions span{display:block;margin-top:4px;font-size:11px;line-height:1.5;color:#b5cedd}.iss-visitor-actions button:focus-visible{outline:3px solid #fde68a;outline-offset:3px}.iss-visitor-actions button[aria-pressed=true]{box-shadow:inset 3px 0 #67e8f9}@media(max-width:600px){.iss-visitor-actions{grid-template-columns:1fr}.iss-camera-tools .iss-visitor-actions button{min-height:58px}}@media(forced-colors:active){.iss-visitor-tools{border-color:CanvasText}.iss-visitor-actions button[aria-pressed=true]{outline:2px solid Highlight;box-shadow:none}}'),
           h('div', { id: 'iss-map-camera-tools', className: 'iss-camera-tools', 'data-iss-camera-tools': '', role: 'group', 'aria-label': __alloT('stem.spacestation.camera_inspection_controls', 'Camera inspection controls') },
             h('div', { className: 'iss-camera-tools-heading' },
               h('span', { 'data-iss-camera-target': '', role: 'status' }, __alloT('stem.spacestation.camera_orbit_station', 'Orbiting the station')),
               h('span', null, __alloT('stem.spacestation.camera_physics_fixed', 'View changes preserve orbital physics'))),
+            h('div', { className: 'iss-camera-drag-tools', role: 'group', 'aria-label': __alloT('stem.spacestation.camera_drag_mode', 'Camera drag action') },
+              h('span', null, __alloT('stem.spacestation.camera_drag_label', 'Dragging')),
+              h('button', { type: 'button', 'data-iss-camera-drag': 'orbit', 'aria-pressed': true, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetCameraDrag) cv._issSetCameraDrag('orbit'); } }, __alloT('stem.spacestation.camera_drag_orbit', '↻ Orbit')),
+              h('button', { type: 'button', 'data-iss-camera-drag': 'pan', 'aria-pressed': false, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetCameraDrag) cv._issSetCameraDrag('pan'); } }, __alloT('stem.spacestation.camera_drag_pan', '↔ Pan')),
+              h('span', { className: 'iss-camera-pan-tip' }, __alloT('stem.spacestation.camera_pan_tip', 'Shift + drag or Shift + arrow keys also pans.'))),
             h('div', { className: 'iss-camera-tools-actions' },
               h('button', { type: 'button', 'data-iss-camera-fit': 'station', 'aria-pressed': false, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) cv._issFitCamera('station'); } }, __alloT('stem.spacestation.camera_fit_station', 'Fit station')),
               h('button', { type: 'button', 'data-iss-camera-fit': 'array', 'aria-pressed': false, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) cv._issFitCamera('array'); } }, __alloT('stem.spacestation.camera_fit_array', 'Inspect array pair')),
+              h('button', { type: 'button', 'data-iss-camera-fit': 'ams02', 'aria-pressed': false, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) cv._issFitCamera('ams02'); } }, 'Inspect AMS-02'),
+              h('button', { type: 'button', 'data-iss-camera-fit': 'kibo-ef', 'aria-pressed': false, onClick: function (event) { var owner = event.currentTarget.closest('[data-iss-map]'), cv = owner && owner.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) { cv._issFitCamera('kibo-ef'); cv.focus({ preventScroll: true }); cv.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' }); } } }, 'Inspect Kibo platform'),
+              h('button', { type: 'button', 'data-iss-camera-fit': 'comms', 'aria-pressed': false, onClick: function (event) { var owner = event.currentTarget.closest('[data-iss-map]'), cv = owner && owner.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) { cv._issFitCamera('comms'); cv.focus({ preventScroll: true }); cv.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' }); } } }, 'Inspect Z1 antenna'),
+              h('button', { type: 'button', 'data-iss-camera-fit': 'zvezda-arrays', 'aria-pressed': false, onClick: function (event) { var owner = event.currentTarget.closest('[data-iss-map]'), cv = owner && owner.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) { cv._issFitCamera('zvezda-arrays'); cv.focus({ preventScroll: true }); cv.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' }); } } }, 'Inspect Zvezda wings'),
+              h('button', { type: 'button', 'data-iss-camera-fit': 'quest-exterior', 'aria-pressed': false, onClick: function (event) { var owner = event.currentTarget.closest('[data-iss-map]'), cv = owner && owner.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) { cv._issFitCamera('quest-exterior'); cv.focus({ preventScroll: true }); cv.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' }); } } }, 'Inspect Quest'),
+              h('button', { type: 'button', 'data-iss-camera-fit': 'cupola', 'aria-pressed': false, onClick: function (event) { var owner = event.currentTarget.closest('[data-iss-map]'), cv = owner && owner.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) { cv._issFitCamera('cupola'); cv.focus({ preventScroll: true }); cv.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' }); } } }, 'Inspect Cupola'),
+              h('button', { type: 'button', 'data-iss-camera-fit': 'grapple', 'aria-pressed': false, onClick: function (event) { var owner = event.currentTarget.closest('[data-iss-map]'), cv = owner && owner.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) { cv._issFitCamera('grapple'); cv.focus({ preventScroll: true }); cv.closest('.iss-station-stage').scrollIntoView({ block: 'center', behavior: 'auto' }); } } }, 'Inspect grapple hand'),
               ['a', 'b'].map(function (side) { return h('button', { key: side, type: 'button', 'data-iss-camera-fit': 'radiator-' + side, 'aria-pressed': false, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) cv._issFitCamera('radiator-' + side); } }, side === 'a' ? __alloT('stem.spacestation.camera_inspect_radiator_a', 'Inspect radiator A') : __alloT('stem.spacestation.camera_inspect_radiator_b', 'Inspect radiator B')); }),
               h('button', { type: 'button', 'data-iss-map-thermal-toggle': '', 'aria-pressed': false, 'aria-controls': 'iss-map-thermal-controls', onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issThermalState) cv._issSetThermal({ enabled: !cv._issThermalState().enabled }); } }, __alloT('stem.spacestation.map_heat_toggle', 'Heat flow')),
               h('button', { type: 'button', 'data-iss-camera-zoom': 'in', onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issCameraZoom) cv._issCameraZoom(.88); } }, __alloT('stem.spacestation.camera_zoom_in', '+ Zoom in')),
               h('button', { type: 'button', 'data-iss-camera-zoom': 'out', onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issCameraZoom) cv._issCameraZoom(1 / .88); } }, __alloT('stem.spacestation.camera_zoom_out', '− Zoom out')),
               h('button', { type: 'button', 'data-iss-camera-reset': '', onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); upd({ mapView: 'overview' }); if (cv && cv._issSetView) cv._issSetView('overview'); } }, __alloT('stem.spacestation.camera_reset_view', 'Reset view')),
               h('button', { type: 'button', 'data-iss-light-guides': '', 'aria-pressed': false, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issCameraState) cv._issSetGuides(!cv._issCameraState().guides); } }, __alloT('stem.spacestation.camera_guides', 'Sun & panel guides'))),
+            h('div', { className: 'iss-visitor-tools', role: 'group', 'aria-label': __alloT('stem.spacestation.visitor_controls', 'Inspect visiting spacecraft') },
+              h('h4', null, __alloT('stem.spacestation.visitor_title', 'Inspect a visiting spacecraft')),
+              h('p', null, __alloT('stem.spacestation.visitor_scope', 'Schematic visiting craft. Dragon and Progress are docked; Cygnus is berthed.')),
+              h('div', { className: 'iss-visitor-actions' }, ISS_VISITING_CRAFT.map(function (craft) {
+                return h('button', { key: craft.id, type: 'button', 'data-iss-camera-fit': craft.id, 'aria-pressed': false,
+                  onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFitCamera) cv._issFitCamera(craft.id); } },
+                  h('strong', null, craft.name), h('span', null, __alloT('stem.spacestation.visitor_' + craft.id + '_port', craft.portLabel)));
+              }))),
             h('p', { className: 'iss-camera-fit-note', 'data-iss-camera-fit-note': '', hidden: true }, ''),
             h('div', { className: 'iss-camera-guide-key', 'data-iss-guide-key': '', hidden: true },
               h('span', { className: 'iss-guide-sun' }, __alloT('stem.spacestation.camera_guide_sun', '↗ To Sun')),
               h('span', { className: 'iss-guide-normal' }, __alloT('stem.spacestation.camera_guide_normal', '↗ Array face normal')),
-              h('span', null, __alloT('stem.spacestation.camera_guide_angle', 'White arc: angle between directions')))),
+              h('span', null, __alloT('stem.spacestation.camera_guide_angle', 'White arc: angle between directions'))),
+            h('details', { className: 'iss-compass-help', 'data-iss-compass-help': '' },
+              h('summary', null, __alloT('stem.spacestation.compass_help_title', 'Read the 3D compass')),
+              h('p', null, __alloT('stem.spacestation.compass_help_projection', 'The compass follows the station axes as you orbit the camera. Arrows shorten when they point along your line of sight. A dot means the positive axis points toward you; a cross means it points away. Dashed arrows tilt away from you.')),
+              h('ul', null,
+                h('li', null, h('b', null, '+X'), ' · ', __alloT('stem.spacestation.compass_x', 'Starboard along the truss')),
+                h('li', null, h('b', null, '+Y'), ' · ', __alloT('stem.spacestation.compass_y', 'Zenith, away from Earth')),
+                h('li', null, h('b', null, '+Z'), ' · ', __alloT('stem.spacestation.compass_z', 'Aft along the module stack'))))),
           renderMapThermal(),
           renderMapMotionProbe(),
           renderMapArrays(),
           renderMapLighting(),
           h('p', { id: 'iss-map-instructions', style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '10px 0' } },
-            __alloT('stem.spacestation.map_intro', 'A schematic (not to scale) 3-D map of the real station, with a Dragon docked at Harmony and a Progress freighter on Zvezda’s aft port. Drag or use the arrow keys to orbit the camera, pinch or use plus and minus to zoom, and press F to center the selected module. Focus the canvas to use the scroll wheel for zoom. Home returns to the overview. Camera movement preserves the station’s attitude and lighting. The module buttons provide an equivalent non-canvas inspection path.')),
+            __alloT('stem.spacestation.map_intro', 'A schematic (not to scale) 3-D map of the real station, showing an illustrative Dragon at Harmony, Progress at Zvezda and Cygnus berthed at Unity. This is a historical teaching arrangement, not a live visitor manifest. Drag or use the arrow keys to orbit the camera. Choose Pan to slide the view with one finger or the mouse, or hold Shift while dragging or using arrow keys. Pinch or use plus and minus to zoom, and press F to center the selected module. Focus the canvas to use the scroll wheel for zoom. Home returns to the overview. Camera movement preserves the station’s attitude and lighting. The module buttons provide an equivalent non-canvas inspection path.')),
           h('p', { style: { fontSize: 11.5, color: SOFT, lineHeight: 1.55, margin: '0 0 10px', paddingLeft: 9, borderLeft: '2px solid rgba(148,163,184,.35)' } },
             __alloT('stem.spacestation.earth_note', 'About the planet below: the coastlines are real, drawn from the public-domain Natural Earth dataset, and the city lights sit at the real coordinates of major metropolitan areas. The surface colouring, sea ice and cloud bands are schematic — a picture of where deserts, storm tracks and ice tend to be, not measured data. The station is drawn hanging above the globe rather than at a real point on its path; for where it actually flies, open Orbit Lab and look at the ground track.')),
           h('button', { type: 'button', onClick: function () { upd({ tab: 'interior', interiorRoom: d.interiorRoom || 'harmony' }); }, style: { margin: '0 0 10px', padding: '7px 12px', borderRadius: 9, border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.12)', color: '#7dd3fc', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🚪 Open the hatch — explore inside'),
@@ -17892,21 +20770,20 @@
               var on = m.id === d.selModule;
               return h('button', {
                 key: m.id, type: 'button', 'aria-pressed': on,
-                onClick: function () { upd({ selModule: m.id }); markSeen('seenModules', m.id); announceToSR(__alloFill(__alloT('stem.spacestation.sr_module_selected', '{value1} selected. Details shown below the map.'), { value1: m.name })); },
+                onClick: function () { setGuideReadRequest(function (request) { return request + 1; }); upd({ selModule: m.id }); markSeen('seenModules', m.id); announceToSR(__alloFill(__alloT('stem.spacestation.sr_module_selected', '{value1} selected. Details shown below the map.'), { value1: m.name })); },
                 style: { padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: on ? 'rgba(56,189,248,0.2)' : PANEL, color: on ? '#7dd3fc' : TEXT, border: '1px solid ' + (on ? '#38bdf8' : '#334155') }
               }, m.name.split(' (')[0]);
             })),
-          card(selModule.name,
-            h('div', null,
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 11, color: SOFT, marginBottom: 8 } },
-                h('span', null, selModule.agency), h('span', null, '🚀 ' + selModule.launched)),
-              renderModuleBlueprint(selModule),
-              h('p', { style: { fontSize: 13, color: TEXT, lineHeight: 1.65, margin: '0 0 8px' } }, selModule.role),
-              h('div', { style: { padding: 8, borderRadius: 8, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', fontSize: 12, color: TEXT, lineHeight: 1.55, marginBottom: 6 } },
-                h('strong', { style: { color: '#7dd3fc' } }, __alloT('stem.spacestation.fact', 'Worth knowing: ')), selModule.fact),
-              h('div', { style: { padding: 8, borderRadius: 8, background: 'rgba(251,191,36,0.08)', borderLeft: '3px solid #fbbf24', fontSize: 12, color: TEXT, lineHeight: 1.55 } },
-                h('strong', { style: { color: '#fbbf24' } }, __alloT('stem.spacestation.eng', 'Engineering spotlight: ')), selModule.eng)
-            ), '#38bdf8'),
+          h(IssComponentGuide, {
+            React: React, moduleId: selModule.id, readRequest: guideReadRequest,
+            onModuleSelect: function (id) {
+              upd({ selModule: id }); markSeen('seenModules', id);
+              var selected = MODULES.filter(function (module) { return module.id === id; })[0];
+              announceToSR(__alloFill(__alloT('stem.spacestation.sr_module_selected', '{value1} selected. Details shown below the map.'), { value1: selected.name }));
+            },
+            blueprint: function (id) { return renderModuleBlueprint(MODULES.filter(function (module) { return module.id === id; })[0]); }
+          }),
+          selModule.id === 'destiny' ? renderDestinyWindowStudy() : null,
           selModule.id === 'cupola' ? renderCupolaInterior() : null,
           selModule.id === 'harmony' ? renderSleepInterior() : null,
           card(__alloT('stem.spacestation.fast_facts', '📊 Fast facts'),
@@ -19028,7 +21905,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
           card(__alloT('stem.spacestation.why_400', '🎯 Why ~400 km?'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 12.5, color: TEXT, lineHeight: 1.8 } },
               h('li', null, __alloT('stem.spacestation.why1', 'Low enough for cargo and crew rockets to carry useful mass, and below the worst radiation zones.')),
-              h('li', null, __alloT('stem.spacestation.why2', 'High enough that drag only costs ~50-100 m/day — manageable with periodic reboosts.')),
+              h('li', null, __alloT('stem.spacestation.why2', 'High enough to reduce atmospheric drag; periodic reboosts replace lost orbital energy as conditions change.')),
               h('li', null, __alloT('stem.spacestation.why3', 'The 51.6° orbit tilt was chosen so Russian launches from Baikonur can reach it — the orbit itself encodes the partnership.'))
             ), '#818cf8')
         );

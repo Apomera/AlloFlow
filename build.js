@@ -1450,6 +1450,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_archstudio.js',
     'stem_lab/stem_tool_geometryworld.js',
     'stem_lab/stem_tool_geometryworld_builder.js',
+    'stem_lab/geometry_print_package.js',
     'stem_lab/stem_tool_freeforms.js',
     'stem_lab/stem_tool_geologyexplorer.js',
     'stem_lab/stem_tool_cyberdefense.js',

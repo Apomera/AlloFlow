@@ -190,7 +190,7 @@ describe('Agent Core MCP security boundaries', () => {
 
   it('retains Katie’s complete native pack through large validation/export responses', async () => {
     const api = await launch();
-    const pack = JSON.parse(readFileSync(resolve('allopacks/academic_discourse_reading_space_grade6.allopack.json'), 'utf8'));
+    const pack = JSON.parse(readFileSync(resolve('allopacks/current/academic_discourse_reading_space_grade6.allopack.json'), 'utf8'));
     const validated = (await api.call('resource_pack_validate', { pack, profile: 'native' })).result.structuredContent;
     expect(validated.ok, JSON.stringify(validated.errors)).toBe(true);
     expect(validated.value).toEqual(pack);

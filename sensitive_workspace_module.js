@@ -222,7 +222,7 @@
       discardDeletionReview(); deletedMarker = null;
       state.enabled = true; state.recoveryEnabled = v.recoveryEnabled === true;
       state.idleMinutes = [0, 5, 15, 30].includes(setupMeta.idleMinutes) ? setupMeta.idleMinutes : 0;
-      state.phase = setupMeta.ready && state.recoveryEnabled ? 'ready' : 'setup'; state.error = ''; lastActivity = Number(now()); notify();
+      state.phase = setupMeta.ready && state.recoveryEnabled ? 'ready' : 'setup'; state.error = ''; idleSuspended = false; lastActivity = Number(now()); notify();
     }
     async function init() {
       if (disposed) throw aborted();
@@ -311,7 +311,8 @@
             await write(f, maps.get(f));
             if (dirty.get(f) === version) dirty.delete(f);
           }
-          state.error = ''; notify();
+          if (idleSuspended) lastActivity = Number(now());
+          idleSuspended = false; state.error = ''; notify();
         } catch (error) {
           if (deletedMarker && !keyActive) throw aborted();
           state.error = error && error.code === 'PROTECTED_CONFLICT' ? error.message : 'Protected records could not be saved. Keep this window open and retry; work remains unlocked.';

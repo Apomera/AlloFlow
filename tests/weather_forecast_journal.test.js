@@ -129,6 +129,55 @@ describe('Weather forecast journal snapshots', () => {
     expect(report).not.toMatch(/NaN|undefined|null/);
   });
 
+  it('uses the latest comparable attempts across intervening investigations and names the actual edits', () => {
+    const history = [
+      attempt({ attempt: 1, score: 68, evidenceIds: ['pressure'] }),
+      attempt({ attempt: 2, score: 95, contextKey: 'different storm' }),
+      attempt({ attempt: 3, score: 86, precip: 'snow', evidenceIds: ['radar'], reasoning: 'Colder air at the target hour changes my precipitation claim.' }),
+      attempt({ attempt: 4, score: 100, contextKey: 'another investigation' }),
+    ];
+    const summary = 'Forecast #1 → #3, valid T+10 h. Model-match score 68 → 86 out of 100 (+18 points).';
+    const expected = [summary, 'Precipitation changed from Rain to Snow.', 'Removed Pressure tendency as evidence.', 'Added Radar reflectivity pattern as evidence.', 'The written explanation was revised.'];
+    const report = window.WeatherSystemsKernel.forecastJournalText(history);
+    const view = (tab) => renderTool('weatherSystems', { weatherSystems: { tab, forecastsIssued: 4, forecastHistory: history } }, { gradeLevel: '8th Grade' });
+    for (const surface of [report, view('forecast'), view('teacher')]) {
+      for (const text of expected) expect(surface).toContain(text);
+      expect(surface).not.toContain('(+14 points)');
+    }
+  });
+
+  it('requires matching saved model, issue, target and timing windows, even when scores rise', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const previous = attempt({ attempt: 1, score: 60 });
+    for (const patch of [
+      { contextKey: 'another setup' }, { contextKey: undefined }, { window: undefined },
+      { window: { startHour: 5, targetHour: 10, endHour: 16 } },
+      { window: { startHour: 4, targetHour: 11, endHour: 16 } },
+      { window: { startHour: 4, targetHour: 10, endHour: 15 } }, { attempt: 1 },
+    ]) {
+      const later = attempt({ attempt: 2, score: 90, ...patch });
+      const report = kernel.forecastJournalText([previous, later]);
+      expect(report).toContain('A revision comparison needs two saved forecasts for the same model setup and forecast window.');
+      expect(report).not.toContain('(+30 points)');
+    }
+  });
+
+  it('keeps legacy records readable without awarding a revision or marking the teacher checkpoint complete', () => {
+    const history = [{ attempt: 1, score: 60 }, { attempt: 2, score: 90 }];
+    const teacher = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'teacher', forecastHistory: history, forecastsIssued: 2, badgeBoardOpen: true,
+      observationLog: [{ id: 'station' }], patternCompared: true, experimentsRun: 1,
+    } }, { gradeLevel: '8th Grade' });
+    expect(teacher).toContain('4 of 5 checkpoints ready');
+    expect(teacher).toContain('Investigation checkpoints ready: 4/5');
+    expect(teacher).toContain('Comparable revision available: Not yet');
+    expect(teacher).not.toContain('Revision Scientist earned');
+    expect(teacher).not.toContain('(+30 points)');
+    const forecast = renderTool('weatherSystems', { weatherSystems: { tab: 'forecast', forecastHistory: history } });
+    expect(forecast).toContain('Forecast #2 - latest');
+    expect(forecast).toContain('A revision comparison needs two saved forecasts for the same model setup and forecast window.');
+  });
+
   it('preserves the timing horizon independently from remaining model hours', () => {
     const kernel = window.WeatherSystemsKernel;
     const forecastWindow = kernel.expectedForecast(kernel.resolvedState({ simHour: 4 })).window;

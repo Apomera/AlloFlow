@@ -103,7 +103,10 @@ describe('magnetism unknown-ion case file', () => {
       expect(caseFile.querySelectorAll('.mag-ion-option')).toHaveLength(0);
       expect(caseFile.textContent).toContain('Scan unknown ion');
       expect(caseFile.textContent).toContain('waiting for radius evidence');
-      expect(host.querySelector('svg[aria-label^="Velocity selector and mass analyzer"]')).toBeTruthy();
+      const apparatus = host.querySelector('[role="group"][aria-label^="Velocity selector and mass analyzer"]');
+      expect(apparatus).toBeTruthy();
+      expect(apparatus.querySelector('svg[aria-label^="Velocity selector."]')).toBeTruthy();
+      expect(apparatus.querySelector('svg[aria-label^="Mass analyzer."]')).toBeTruthy();
       expect(host.textContent).not.toContain('? trace');
     });
   });

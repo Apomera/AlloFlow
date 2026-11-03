@@ -1,5 +1,6 @@
 import fs from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 // Machine verification for the Function Grapher's math engine: the challenge
 // generators (root / y-intercept / name-that-graph / myths), the root finder,
@@ -150,6 +151,14 @@ function findRoots(evalF, xR) {
 const R = { xMin: -10, xMax: 10 };
 
 describe('root finder', () => {
+  // The scan delegates to the shared _graphAccess core (stage B, 2026-11-03), which the
+  // tool installs on load. Without it the slice returns [] and every "no root" pin is vacuous.
+  beforeAll(() => { resetStemLab(); loadTool('stem_lab/stem_tool_funcgrapher.js', 'funcGrapher'); });
+  it('the shared root engine is installed for these pins', () => {
+    expect(typeof window.StemLab._graphAccess.zerosOf).toBe('function');
+    expect(findRoots((x) => x - 1, R).length).toBe(1);
+  });
+
   it('does not report a root at a vertical asymptote (regression pin)', () => {
     // 1/x has NO roots, but its sign flip across x = 0 used to produce one.
     expect(findRoots((x) => 1 / x, R)).toEqual([]);

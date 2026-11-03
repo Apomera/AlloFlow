@@ -1600,6 +1600,27 @@ function runProviderBeforeRequest(guard) {
     if (result !== undefined && result !== true) throw managedAIError();
 }
 
+// Local-image credentials stay in this page's memory. They are never inherited
+// from the text provider or stored in the exported application configuration.
+let sanaSessionConnection = null;
+function sanaConnectionError(message) {
+    const error = new Error(message);
+    error.code = 'allo/local-image-connection';
+    return error;
+}
+function normalizeSanaEndpoint(value) {
+    return managedAIEndpoint(typeof value === 'string' ? value.trim() : '');
+}
+function validateSanaConnection(connection) {
+    const baseUrl = normalizeSanaEndpoint(connection && connection.baseUrl);
+    const apiKey = connection && connection.apiKey;
+    if (!baseUrl) throw sanaConnectionError('Enter a local image server URL: HTTP on localhost, or HTTPS for a protected remote server.');
+    if (typeof apiKey !== 'string' || !/^[!-~]{32,1024}$/.test(apiKey)) {
+        throw sanaConnectionError('Enter the local image server token in AI Settings. It must contain at least 32 ASCII characters without spaces.');
+    }
+    return Object.freeze({ baseUrl, apiKey });
+}
+
 class AIProvider {
 
     /**
@@ -1618,6 +1639,11 @@ class AIProvider {
         this.backend = config.backend || 'gemini';
         this._ttsProvider = (config.ttsProvider && config.ttsProvider !== 'auto') ? config.ttsProvider : null;
         this._imageProvider = (config.imageProvider && config.imageProvider !== 'auto') ? config.imageProvider : null;
+        if (config.imageConnection) {
+            this._imageConnection = Object.freeze({ baseUrl: config.imageConnection.baseUrl, apiKey: config.imageConnection.apiKey });
+        } else {
+            Object.defineProperty(this, '_imageConnection', { get: () => sanaSessionConnection });
+        }
         this.apiKey = config.apiKey ?? '';
         this.baseUrl = config.baseUrl || this._defaultBaseUrl();
         this.isCanvasEnv = config.isCanvasEnv || false;
@@ -2406,6 +2432,107 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         try { return localStorage.getItem('alloflow_ai_image_generation_enabled') !== 'false'; } catch (_) { return true; }
     }
 
+    async _desktopImage(prompt, image, width, quality, signal, referenceBase64 = null) {
+        const request = this._desktopImageRequest;
+        const check = () => {
+            const context = managedProviderRequests.get(this);
+            if (context) context.guard();
+            if (window.__alloQrStudentMode || window.__alloStudentAiDisabled === true) throw managedAIError();
+            if ((signal && signal.aborted) || !this._imagesAllowed() || !request.allowed()
+                || window.AlloDesktopImages !== request.bridge || request.bridge.isEnabled() !== true) {
+                const error = new Error('Image generation cancelled.'); error.name = 'AbortError'; throw error;
+            }
+        };
+        check();
+        if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 4000) throw sanaConnectionError('Use an image prompt between 1 and 4,000 characters.');
+        if (!Number.isInteger(width) || width < 64 || width > 1024) throw sanaConnectionError('Choose an image size between 64 and 1024 pixels.');
+        if (referenceBase64) throw sanaConnectionError('Desktop SANA supports one source image per edit; a separate reference image is not supported.');
+        if (image != null && (typeof image !== 'string' || !image || image.length > 8 * 1024 * 1024)) throw sanaConnectionError('Choose a bounded PNG, JPEG or WebP image for editing.');
+        const action = image == null ? 'generate' : 'edit';
+        if (typeof request.bridge[action] !== 'function') throw sanaConnectionError('Update the desktop image connection before trying again.');
+        try {
+            const payload = { prompt, width };
+            if (image != null) payload.image = image;
+            check();
+            const response = await request.bridge[action](payload, { signal });
+            check();
+            const dataUrl = response && response.image;
+            if (typeof dataUrl !== 'string' || dataUrl.length > 8 * 1024 * 1024
+                || !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(dataUrl)) {
+                throw sanaConnectionError('The desktop image connection returned an invalid image.');
+            }
+            const result = await this._optimizeImage(dataUrl, width, quality);
+            check();
+            return result;
+        } catch (error) {
+            check();
+            throw error;
+        }
+    }
+
+    async _sanaImage(prompt, image, width, quality, signal, referenceBase64 = null) {
+        if (window.__alloQrStudentMode || window.__alloStudentAiDisabled === true) throw managedAIError();
+        const connection = validateSanaConnection(this._imageConnection);
+        if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 4000) throw sanaConnectionError('Use an image prompt between 1 and 4,000 characters.');
+        if (!Number.isInteger(width) || width < 64 || width > 1024) throw sanaConnectionError('Choose an image size between 64 and 1024 pixels.');
+        if (referenceBase64) throw sanaConnectionError('This local image connection supports one source image per edit; a separate reference image is not supported.');
+        if (image != null && (typeof image !== 'string' || !image || image.length > 8 * 1024 * 1024)) throw sanaConnectionError('Choose a bounded PNG, JPEG or WebP image for editing.');
+        const check = () => {
+            const context = managedProviderRequests.get(this);
+            if (context) context.guard();
+            if (window.__alloQrStudentMode || window.__alloStudentAiDisabled === true) throw managedAIError();
+            if ((signal && signal.aborted) || !this._imagesAllowed() || this._imageProvider === 'off') {
+                const error = new Error('Image generation cancelled.'); error.name = 'AbortError'; throw error;
+            }
+        };
+        check();
+        const controller = new AbortController();
+        const cancel = () => controller.abort();
+        if (signal) signal.addEventListener('abort', cancel, { once: true });
+        let timedOut = false;
+        const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 180000);
+        try {
+            const size = Math.floor(width / 32) * 32;
+            const body = { model: 'sana-sprint', prompt, size: `${size}x${size}`, n: 1, num_inference_steps: 2, response_format: 'b64_json' };
+            if (image != null) { body.image = image; body.strength = 0.75; }
+            check();
+            const response = await this._requestFetch(`${connection.baseUrl}/v1/images/${image == null ? 'generations' : 'edits'}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${connection.apiKey}` },
+                body: JSON.stringify(body), signal: controller.signal,
+                redirect: 'error', credentials: 'omit', cache: 'no-store', referrerPolicy: 'no-referrer',
+            });
+            check();
+            if (!response.ok) {
+                const messages = {
+                    401: 'The local image server rejected its token. Re-enter the token configured on that server.',
+                    403: 'The local image server rejected this app origin. Check its exact allowed origins.',
+                    413: 'The image request is too large. Choose a smaller source image.',
+                    422: 'The local image request is invalid. Check the image size and source image.',
+                    429: 'The local image server is busy or rate limited. Wait before trying again.',
+                    503: 'The local image server is not ready. Check its token configuration and model startup.',
+                };
+                throw sanaConnectionError(messages[response.status] || 'The local image server could not complete the request. Check its local logs.');
+            }
+            const data = await response.json();
+            check();
+            const encoded = data && data.data && data.data[0] && data.data[0].b64_json;
+            if (typeof encoded !== 'string' || !encoded || encoded.length > 8 * 1024 * 1024 || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) {
+                throw sanaConnectionError('The local image server returned an invalid image.');
+            }
+            const result = await this._optimizeImage(`data:image/png;base64,${encoded}`, width, quality);
+            check();
+            return result;
+        } catch (error) {
+            check();
+            if (timedOut) throw sanaConnectionError('The local image request timed out. The server may still be finishing it; check its logs before retrying.');
+            if (error && (error.name === 'AbortError' || error.code === 'managed-ai-blocked' || error.code === 'allo/local-image-connection')) throw error;
+            throw sanaConnectionError('Could not reach the local image server. Check its address, startup, allowed origins and browser connection rules.');
+        } finally {
+            clearTimeout(timer);
+            if (signal) signal.removeEventListener('abort', cancel);
+        }
+    }
+
     async _trySdTurboImage(prompt, width, quality, signal = null) {
         if (!this._imagesAllowed()) return null;
         const win = (typeof globalThis !== 'undefined' && globalThis.window)
@@ -2483,6 +2610,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         // Check imageProvider override from AI Backend Settings
         const _imgOvr = this._imageProvider || null;
         if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
+        if (this._desktopImageRequest) return this._desktopImage(prompt, null, width, quality, signal);
+        if (_imgOvr === 'sana') return this._sanaImage(prompt, null, width, quality, signal);
 
         if (_imgOvr === 'sd-local') {
             const local = await this._trySdTurboImage(prompt, width, quality, signal);
@@ -2707,6 +2836,16 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         if (typeof window !== 'undefined' && window.AlloImageGeneration) signal = window.AlloImageGeneration.signalFor(signal);
         if (!this._imagesAllowed()) return null;
         this._debugLog('[AIProvider] editImage requested');
+
+        if (this._imageProvider === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
+        if (this._desktopImageRequest) {
+            if (typeof base64Image !== 'string' || !base64Image) throw sanaConnectionError('Choose a source image before editing.');
+            return this._desktopImage(prompt, base64Image, width, quality, signal, referenceBase64);
+        }
+        if (this._imageProvider === 'sana') {
+            if (typeof base64Image !== 'string' || !base64Image) throw sanaConnectionError('Choose a source image before editing.');
+            return this._sanaImage(prompt, base64Image, width, quality, signal, referenceBase64);
+        }
 
         try {
             const result = await (this.backend === 'gemini'
@@ -3724,7 +3863,7 @@ function snapshotProviderRequest(owner) {
     const scoped = Object.create(owner);
     const route = { backend: String(owner.backend || 'gemini'), baseUrl: String(owner.baseUrl || ''), apiKey: String(owner.apiKey || ''), isCanvasEnv: owner.isCanvasEnv === true };
     const models = Object.freeze(Object.fromEntries(Object.entries(owner.models || {}).map(([key, value]) => [key, String(value || '')])));
-    for (const [key, value] of Object.entries({ ...route, models, _ttsProvider: owner._ttsProvider, _imageProvider: owner._imageProvider,
+    for (const [key, value] of Object.entries({ ...route, models, _ttsProvider: owner._ttsProvider, _imageProvider: owner._imageProvider, _imageConnection: owner._imageConnection,
         _optimizeImage: owner._optimizeImage, _debugLog: owner._debugLog, _warnLog: owner._warnLog, _ttsCache: owner._ttsCache, _ttsEndpointCooldown: owner._ttsEndpointCooldown })) {
         Object.defineProperty(scoped, key, { value, enumerable: true });
     }
@@ -3767,6 +3906,13 @@ for (const [name, operation] of Object.entries({ generateText: 'text', listAvail
         if (existing && !requestControl) return invokeProviderRequest(method, this, existing, args);
         if ((name === 'generateImage' || name === 'editImage') && !this._imagesAllowed()) return null;
         const { scoped, context, route } = snapshotProviderRequest(this);
+        if (name === 'generateImage' || name === 'editImage') {
+            const bridge = typeof window !== 'undefined' && window.AlloDesktopImages;
+            const enabled = bridge && typeof bridge.isEnabled === 'function' && bridge.isEnabled() === true;
+            // Capture the explicit session route before authorization yields.
+            Object.defineProperty(scoped, '_desktopImageRequest', { value: enabled
+                ? { bridge, allowed: () => this._imageProvider !== 'off' } : null });
+        }
         const guard = existing ? existing.guard : await assertManagedAIConnection({ backend: route.backend, baseUrl: route.baseUrl, apiKey: route.apiKey,
             canvasHost: route.isCanvasEnv && !route.apiKey, operation, search: name === 'generateText' && args[1] && args[1].search === true });
         if (typeof guard !== 'function') throw managedAIError();
@@ -3774,6 +3920,15 @@ for (const [name, operation] of Object.entries({ generateText: 'text', listAvail
         return invokeProviderRequest(method, scoped, context, args);
     };
 }
+
+AIProvider.configureLocalImageConnection = connection => {
+    sanaSessionConnection = validateSanaConnection(connection);
+};
+AIProvider.clearLocalImageConnection = () => { sanaSessionConnection = null; };
+AIProvider.localImageConnectionStatus = () => Object.freeze({
+    configured: !!sanaSessionConnection, baseUrl: sanaSessionConnection ? sanaSessionConnection.baseUrl : '',
+});
+AIProvider.normalizeLocalImageEndpoint = normalizeSanaEndpoint;
 
 // Make available globally (for inline usage in AlloFlowANTI.txt)
 if (typeof window !== 'undefined') {

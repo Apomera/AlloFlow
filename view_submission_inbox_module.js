@@ -1688,9 +1688,10 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             const declaresSubmission = p && p.kind === "alloflow-student-submission";
             const looksResponseShaped = p && (p.responses && typeof p.responses === "object" || p.answers && typeof p.answers === "object");
             if (p && (declaresSubmission || looksResponseShaped) && !p.ciphertext) {
-              const normalizedPayload = p.responses ? p : {
+              const importedNickname = ["nickname", "studentName", "studentNickname"].map((key) => Object.prototype.hasOwnProperty.call(p, key) && typeof p[key] === "string" ? siStableIdentityValue(p[key]) : "").find(Boolean) || "?";
+              const normalizedPayload = p.responses ? { ...p, nickname: importedNickname } : {
                 ...p,
-                nickname: p.nickname || p.studentName || "?",
+                nickname: importedNickname,
                 timestamp: p.timestamp || p.submissionDate || null,
                 docTitle: p.docTitle || "AlloFlow assignment",
                 responses: p.answers || {}

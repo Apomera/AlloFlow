@@ -6,7 +6,7 @@ import { GlHarness } from './helpers/stem_gl_harness';
 test.describe.configure({ timeout: 240_000, retries: 0 });
 test.use({ video: 'off', trace: 'off' });
 const phase = process.env.DINO_BODY_NEXT_PHASE === 'before' ? 'before' : 'after';
-const report = path.resolve('reports/dinolab-stegosaur-body');
+const report = path.resolve(process.env.DINO_STEGOSAUR_BODY_REPORT_DIR || 'reports/dinolab-stegosaur-body');
 const probes = 'var NextRenderer=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){var r=new NextRenderer(o),f=r.render.bind(r);r.render=function(s,c){window.__nextScene=s;window.__nextCamera=c;window.__nextRenderer=r;return f(s,c)};return r};';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_dinolab.js', toolId: 'dinoLab', width: 1280, height: 960, layout: 'document', appStyles: true, probes });
 

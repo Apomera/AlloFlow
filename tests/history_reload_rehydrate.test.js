@@ -18,7 +18,7 @@ import { resolve } from 'node:path';
 const ANTI = readFileSync(process.env.ANTI_PATH ? resolve(process.env.ANTI_PATH) : resolve('AlloFlowANTI.txt'), 'utf8');
 const APP = readFileSync(resolve('desktop/web-app/src/App.jsx'), 'utf8');
 const SYNC = readFileSync(resolve('firestore_sync_module.js'), 'utf8');
-const pack = JSON.parse(readFileSync(resolve('allopacks/crew_norms_grade6_8.allopack.json'), 'utf8'));
+const pack = JSON.parse(readFileSync(resolve('allopacks/current/crew_norms_grade6_8.allopack.json'), 'utf8'));
 const directions = pack.history.find((r) => r.type === 'directions');
 const glossary = pack.history.find((r) => r.type === 'glossary');
 

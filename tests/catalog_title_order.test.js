@@ -12,9 +12,9 @@ import { createRequire } from 'node:module';
 const req = createRequire(import.meta.url);
 // CATALOG_GEN_PATH points the suite at a copy of the generator for mutation runs.
 const gen = req(process.env.CATALOG_GEN_PATH || '../catalog/generate_index.js');
-const crewTitles = readdirSync(resolve(process.cwd(), 'allopacks'))
+const crewTitles = readdirSync(resolve(process.cwd(), 'allopacks', 'current'))
   .filter((f) => /^crew_.*\.allopack\.json$/.test(f))
-  .map((f) => JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', f), 'utf8')).allopack.title);
+  .map((f) => JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', 'current', f), 'utf8')).allopack.title);
 
 describe('catalog title order', () => {
   it('compares numbers inside titles as numbers', () => {

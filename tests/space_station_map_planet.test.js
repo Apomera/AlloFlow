@@ -450,8 +450,9 @@ describe('space station 3-D map assembly accuracy', () => {
     const visitors = block.match(/addVisitor\([a-zA-Z]+, '([a-z]+)'\)/g);
     expect(visitors.length).toBeGreaterThanOrEqual(6);
     visitors.forEach((call) => expect(call).toMatch(/'unity'\)$/));
-    // Two ten-gore UltraFlex fans, below the Cupola's dome on Tranquility.
-    expect(block.includes('new THREE.CircleGeometry(0.5, 10)')).toBe(true);
+    // A smooth perimeter retains the ten physical gores and ribs.
+    expect(block.includes('new THREE.CircleGeometry(0.5, 60)')).toBe(true);
+    expect(block.includes('rib < 10')).toBe(true);
     const fanCentre = top - 0.08 - 1.5 - 0.21, cupolaBottom = cupola.pos[1] - cupola.radius;
     expect(fanCentre + 0.5).toBeLessThan(cupolaBottom);
     // Nothing reaches the planet's air (r 30.32 around y = -34.5).
@@ -684,9 +685,9 @@ describe('space station interior Cupola window views', () => {
 });
 
 describe('space station 3-D map truss hardware', () => {
-  it('builds rotary joints, equipment boxes, pallets and AMS-02 as one vertex-coloured mesh', () => {
+  it('builds rotary joints, equipment boxes and pallets as one vertex-coloured mesh', () => {
     const geometry = helpers.truss(THREE, TRUSS_Y);
-    expect(geometry.userData.partCount).toBe(49);
+    expect(geometry.userData.partCount).toBe(46);
     expect(geometry.attributes.color.count).toBe(geometry.attributes.position.count);
     const box = geometry.boundingBox;
     // Inside the 11-unit backbone, close around its 0.4 square section.

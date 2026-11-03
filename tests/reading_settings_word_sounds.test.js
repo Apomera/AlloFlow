@@ -269,8 +269,8 @@ describe('Use my reading settings on the printouts', () => {
   };
   const plain = (word, phonemes) => ({ id: 'w-' + word, term: word, word, targetWord: word, displayWord: word, phonemes, phonemeCount: phonemes.length });
   const printWords = () => [makePackItem(), plain('fish', ['f', 'i', 'sh']), plain('stamp', ['s', 't', 'a', 'm', 'p']), plain('photosynthesis', ['f', 'o', 't', 'o', 's', 'i', 'n', 'th', 'e', 's', 'i', 's'])];
-  async function chooser() {
-    const m = await teacher({ words: printWords() });
+  async function chooser(extra = {}) {
+    const m = await teacher({ words: printWords(), ...extra });
     await click(m.host.querySelector('[data-ws-print-open]'));
     await settle(10);
     return { ...m, dialog: m.host.querySelector('[data-ws-print-dialog]') };
@@ -350,6 +350,38 @@ describe('Use my reading settings on the printouts', () => {
       expect(Number.parseFloat(cue.style.fontSize) * [...cue.textContent].length * (0.5 * 1.05 + 0.1), cue.textContent + ' fits the 1.5in cue').toBeLessThanOrEqual(144);
     }
     expect(doc().querySelector('style').textContent).toContain('.ws-print-card .ws-print-word,.ws-print-cue .ws-print-cue-word{line-height:1.1 !important}');
+  });
+
+  it.each([
+    { variant: 'regular', fontClass: 'font-andika', metrics: 'ink bounds', cardPx: 73, cuePx: 32 },
+    { variant: 'italic', fontClass: 'font-andika-italic', metrics: 'ink bounds', cardPx: 37, cuePx: 16 },
+    { variant: 'bold italic', fontClass: 'font-andika-bold-italic', metrics: 'ink bounds', cardPx: 37, cuePx: 16 },
+    { variant: 'italic', fontClass: 'font-andika-italic', metrics: 'width only', cardPx: 59, cuePx: 26 },
+    { variant: 'italic', fontClass: 'font-andika-italic', metrics: 'nonfinite ink bounds', cardPx: 59, cuePx: 26 },
+  ])('fits $variant card and cue text using $metrics in the selected face', async ({ variant, fontClass, metrics, cardPx, cuePx }) => {
+    installBridge({ fontFamily: "'Andika', sans-serif", fontClass, baseFontSize: 32, letterSpacing: 0.05 });
+    const { dialog, host } = await chooser({ words: [plain('fish', ['f', 'i', 'sh'])] });
+    const measuredFonts = [];
+    const context = { font: '', measureText: vi.fn((word) => {
+      measuredFonts.push(context.font);
+      const italic = context.font.startsWith('italic ');
+      const width = word.length * (italic ? 125 : 100);
+      if (metrics === 'width only') return { width };
+      return { width, actualBoundingBoxLeft: metrics === 'nonfinite ink bounds' ? NaN : italic ? 40 : 0,
+        actualBoundingBoxRight: italic ? 760 : width };
+    }) };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    await click(dialog.querySelector('[data-ws-print-reader]'));
+    await click(host.querySelector('[data-ws-print="cards"]'));
+    expect(sizes(doc(), '.ws-print-word')).toEqual({ fish: cardPx });
+    const italic = variant !== 'regular';
+    expect(doc().querySelector('style').textContent.includes('font-style:italic')).toBe(italic);
+    await click(host.querySelector('[data-ws-print="boxes"]'));
+    expect(sizes(doc(), '.ws-print-cue-word')).toEqual({ fish: cuePx });
+    // The synthetic italic ink spans 800px at 100px, beyond its 500px advance.
+    // Width-only and nonfinite bounds must still use the valid advance width.
+    expect(context.measureText).toHaveBeenCalledTimes(2);
+    expect(measuredFonts).toEqual(Array(2).fill((italic ? 'italic ' : '') + "700 100px 'Andika', sans-serif"));
   });
 
   it('waits for the font before printing, and prints at once without it', async () => {

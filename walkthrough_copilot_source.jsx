@@ -400,6 +400,11 @@ function WcopSetup(props) {
           className: 'px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold',
           onClick: () => props.onCopyScript(source.source)
         }, 'Copy script code'),
+        React.createElement('button', {
+          type: 'button',
+          className: 'px-3 py-2 rounded border border-slate-300 text-sm',
+          onClick: () => props.onCopyScript(source.manifest, 'Manifest')
+        }, 'Copy manifest'),
         React.createElement('span', { className: 'text-xs text-slate-500' },
           source.source.length + ' characters. The script ships inside this tool, so this works offline.'))),
 
@@ -415,6 +420,14 @@ function WcopSetup(props) {
         value: props.execUrl,
         onChange: (e) => props.onExecUrl(e.target.value)
       }),
+      React.createElement('label', { className: 'block text-xs font-semibold mt-2 mb-1', htmlFor: 'wcop-owner-token' }, 'Owner token'),
+      React.createElement('input', {
+        id: 'wcop-owner-token', type: 'password', autoComplete: 'off', spellCheck: false,
+        className: 'w-full rounded border border-slate-300 p-2 text-sm',
+        value: props.token || '', onChange: (e) => props.onToken(e.target.value)
+      }),
+      React.createElement('p', { className: 'text-xs text-slate-500 mt-1' },
+        'Run setupWalkthroughOwner in the Apps Script editor as the deploying owner, then copy wr_admin_token from Project Settings > Script properties. Existing tokens still work.'),
       React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2' },
         React.createElement('button', {
           type: 'button',
@@ -568,7 +581,7 @@ function WalkthroughCopilotPanel(props) {
     wcopAnnounce('Could not copy. Select the text and copy manually.');
   }
 
-  const connected = !!connection.execUrl && !!connection.token;
+  const connected = !!connection.execUrl && !!connection.token && connection.verified !== false;
 
   function deliveryClient(nextToken) {
     return core.createDelivery({
@@ -596,25 +609,27 @@ function WalkthroughCopilotPanel(props) {
       setSetupState({ busy: false, message: check.errors[0].message, tone: 'stop', selfTest: null });
       return;
     }
-    const cleaned = Object.assign({}, connection, { execUrl: check.value, token: '' });
-    setConnection(cleaned);
+    const token = String(connection.token || '').trim();
+    if (!token) {
+      setSetupState({ busy: false, message: 'Paste the owner token from Apps Script Project Settings > Script properties.', tone: 'stop', selfTest: null });
+      return;
+    }
     setSetupState({ busy: true, message: 'Connecting...', tone: 'warn', selfTest: null });
-    const built = core.createDelivery({ execUrl: check.value, post: wcopPost });
+    const built = core.createDelivery({ execUrl: check.value, token, post: wcopPost });
     if (!built.ok) {
       setSetupState({ busy: false, message: built.errors[0].message, tone: 'stop', selfTest: null });
       return;
     }
-    built.value.claim().then((result) => {
+    built.value.selfTest().then((result) => {
       if (!result.ok) {
         setSetupState({ busy: false, message: result.errors[0].message, tone: 'stop', selfTest: null });
         return;
       }
-      const next = { execUrl: check.value, token: result.value.token, owner: result.value.owner || '' };
+      const next = { execUrl: check.value, token, owner: result.value.owner || '' };
       setConnection(next);
       wcopSaveConnection(next);
-      setSetupState({ busy: false, message: 'Connected to ' + (next.owner || 'your Google account') + '.', tone: 'go', selfTest: null });
+      setSetupState({ busy: false, message: 'Connected to ' + (next.owner || 'your Google account') + '.', tone: 'go', selfTest: result.value });
       wcopAnnounce('Connected.');
-      runSelfTest(next.token);
     }, (err) => {
       setSetupState({
         busy: false,
@@ -774,14 +789,16 @@ function WalkthroughCopilotPanel(props) {
     bodyNode = React.createElement(WcopSetup, {
       execUrl: connection.execUrl,
       connected: connected,
+      token: connection.token,
       busy: setupState.busy,
       message: setupState.message,
       tone: setupState.tone,
       selfTest: setupState.selfTest,
-      onExecUrl: (value) => setConnection((current) => Object.assign({}, current, { execUrl: value })),
+      onExecUrl: (value) => setConnection((current) => Object.assign({}, current, { execUrl: value, verified: false })),
+      onToken: (value) => setConnection((current) => Object.assign({}, current, { token: value, verified: false })),
       onConnect: connect,
       onForget: forget,
-      onCopyScript: (text) => copyText(text, 'Script code'),
+      onCopyScript: (text, label) => copyText(text, label || 'Script code'),
       onBack: () => setStage('capture')
     });
   } else if (stage === 'affirm') {

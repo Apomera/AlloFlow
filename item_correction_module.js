@@ -17,12 +17,9 @@
  * suggested change) so an accepted correction flows back through
  * dev-tools/i18n/ingest_item_corrections.cjs almost like a bug fix.
  *
- * Submit path (mirrors translation feedback): POST to the SAME Cloudflare
- * Worker (catalog/cloudflare-worker) on a new /submitItemCorrection route,
- * which commits one record to item_corrections/pending/ in the repo. If the
- * worker is unreachable OR the route isn't deployed yet, we fall back to the
- * pre-filled Google Form so the reviewer's input is NEVER lost. That fallback
- * is why this works today, before the Cloudflare route is set up.
+ * Submit path: the versioned private review route on the catalog Worker.
+ * Failed or unconfirmed submissions remain in the modal for retry; they are
+ * never automatically sent to a different service.
  *
  * Discovery: the host (Test Prep Hub) renders a small "Suggest a correction"
  * button on each open question and calls
@@ -41,33 +38,17 @@
   }
   window.AlloModules = window.AlloModules || {};
 
-  // ── Google Form config — SAME form as error_reporter / translation_feedback ──
-  var FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform?usp=pp_url';
-  var ENTRY_TYPE    = '640908447';   // Type of Issue (add "Practice Item Correction" option to the form)
-  var ENTRY_WHAT    = '234547532';   // What happened? — machine-parseable correction block
-  var ENTRY_STEPS   = '1969020676';  // Steps / notes — reviewer's free-text reason + URL
-  var ENTRY_BROWSER = '937961519';   // Browser & Device
-
-  // Primary submit path: the SAME Cloudflare Worker that accepts community lesson + translation
-  // submissions, new /submitItemCorrection route → commits to item_corrections/pending/ in the
-  // repo. If unreachable (e.g. route not yet deployed), fall back to the pre-filled Google Form.
-  var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitItemCorrection';
+  // Versioned private intake: an older public-staging Worker cannot accept this route.
+  var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/v2/submitItemCorrection';
 
   // Managed support configuration does not authorize independent community
-  // contributions. Any configured policy blocks both POST and form fallback;
+  // contributions. Any configured policy blocks this POST;
   // a custom bug-report endpoint never receives this different payload.
   function communityFeedbackBlocked() {
     try { return Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY'); }
     catch (_) { return true; }
   }
   var COMMUNITY_BLOCK_MESSAGE = 'Community feedback is disabled in this managed deployment. Your draft stays in this window. Contact your school\'s support team.';
-  function metadataPageUrl() {
-    try {
-      var parsed = new URL(location.href || '');
-      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '[embedded app]';
-      return parsed.origin;
-    } catch (_) { return '[embedded app]'; }
-  }
 
   // What kind of problem is being reported. Kept short + stable so the ingest tool can bucket them.
   var KINDS = [
@@ -92,28 +73,6 @@
     if (reviewTier === 'guided-review') return 'Guided-review activity (assistant-authored, expert validation pending)';
     if (reviewTier === 'source-reviewed') return 'Source-reviewed question (independent expert validation pending)';
     return 'Practice item';
-  }
-
-  // ── Build the pre-filled Google Form URL (fallback; mirrors translation feedback technique) ──
-  function buildFormUrl(payload) {
-    if (communityFeedbackBlocked()) return '';
-    var what =
-      '[AlloFlow Practice Item Correction]\n' +
-      'pack: ' + payload.packTitle + ' (' + payload.packId + ')\n' +
-      'itemId: ' + (payload.itemId || '(unknown)') + '\n' +
-      'domain: ' + (payload.domain || '(n/a)') + '\n' +
-      'reviewTier: ' + payload.reviewTier + '\n' +
-      'problem: ' + payload.kind + '\n' +
-      'prompt: ' + (payload.prompt || '').slice(0, 1200) + '\n' +
-      'currentAnswer: ' + (payload.currentAnswer || '(n/a)') + '\n' +
-      'suggested: ' + payload.suggested;
-    var steps = (payload.note ? payload.note + '\n\n' : '') + 'URL: ' + metadataPageUrl();
-    var browser = navigator.userAgent + ' · viewport ' + (window.innerWidth || '?') + 'x' + (window.innerHeight || '?');
-    return FORM_BASE +
-      '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent('Practice Item Correction') +
-      '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(what.slice(0, 8000)) +
-      '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(steps.slice(0, 3000)) +
-      '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(browser.slice(0, 500));
   }
 
   // Public: called from the host's per-item "Suggest a correction" button.
@@ -168,7 +127,7 @@
         '<h2 style="margin:0;font:700 17px system-ui;color:#0f172a">✎ Suggest a correction</h2>' +
         '<button id="allo-ic-x" type="button" aria-label="Close" style="border:none;background:none;font-size:22px;line-height:1;cursor:pointer;color:#64748b">×</button>' +
       '</div>' +
-      '<p style="margin:0 0 14px;font:13px/1.5 system-ui;color:#475569">These practice packs are being validated by experts right now, and educator review is exactly how items get better. Flag anything that looks wrong. It opens a short form for you to review before sending — the same way bug reports and translation fixes are sent.</p>' +
+      '<p style="margin:0 0 14px;font:13px/1.5 system-ui;color:#475569">Flag a practice item that looks wrong. Your correction is stored privately for up to 30 days for maintainer review. Only reviewed corrections may be published. Do not include personal student details.</p>' +
       '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Pack</div>' +
       '<div style="font:13px system-ui;color:#334155;background:#f8fafc;border-radius:6px;padding:8px;margin-bottom:10px">' + esc(ctx.packTitle) + '</div>' +
       tierRow + promptRow +
@@ -198,15 +157,13 @@
       if (button) { button.disabled = true; button.textContent = 'Sending disabled'; }
     }
 
-    function showThanks(viaForm) {
+    function showThanks() {
       panel.innerHTML =
         '<div style="text-align:center;padding:12px">' +
           '<div style="font-size:34px" aria-hidden="true">🙏</div>' +
           '<h2 style="margin:8px 0;font:700 17px system-ui;color:#0f172a">Thank you!</h2>' +
           '<p style="margin:0 0 16px;font:13px/1.5 system-ui;color:#475569">' +
-            (viaForm
-              ? 'Your correction opened in a form in a new tab — submit it there to send it for review.'
-              : 'Your correction was sent for review. Accepted fixes are applied to the pack; expert validation stays a separate, documented step.') +
+            'Your correction was sent for review. Accepted fixes are applied to the pack; expert validation stays a separate, documented step.' +
           '</p>' +
           '<button id="allo-ic-done" type="button" style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Done</button>' +
         '</div>';
@@ -235,29 +192,19 @@
       };
       var sendBtn = $('allo-ic-send');
       sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; errEl.style.display = 'none';
-      var fellBack = false;
-      var fallbackToForm = function () {
+      var showSendFailure = function () {
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
-        if (fellBack) return; fellBack = true;
-        var formUrl = buildFormUrl(payload);
-        if (!formUrl) { showManagedBlock(); return; }
-        try { window.open(formUrl, '_blank', 'noopener,noreferrer'); }
-        catch (_) {
-          if (communityFeedbackBlocked()) { showManagedBlock(); return; }
-          errEl.textContent = 'The report form could not be opened. Your draft stays here. You can try again or contact your support team.';
-          errEl.style.display = 'block';
-          sendBtn.disabled = false; sendBtn.textContent = 'Try sending again';
-          return;
-        }
-        showThanks(true);
+        errEl.textContent = 'Submission was not confirmed. Your draft stays here. You can retry later or contact your support team.';
+        errEl.style.display = 'block';
+        sendBtn.disabled = false; sendBtn.textContent = 'Try sending again';
       };
       try {
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
         fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
-          .then(function (res) { if (res.ok && res.j && res.j.ok) showThanks(false); else fallbackToForm(); })
-          .catch(function () { fallbackToForm(); });
-      } catch (_) { fallbackToForm(); }
+          .then(function (res) { if (res.ok && res.j && res.j.ok && res.j.storage === 'private') showThanks(); else showSendFailure(); })
+          .catch(function () { showSendFailure(); });
+      } catch (_) { showSendFailure(); }
     };
     var first = $('allo-ic-suggest'); if (first) first.focus();
   }

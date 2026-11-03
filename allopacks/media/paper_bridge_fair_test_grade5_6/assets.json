@@ -1,0 +1,263 @@
+{
+  "schemaVersion": "1.0",
+  "rootReviewInput": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tmp\\allopack-paper-bridge-01a19702\\reviewed-assets.json",
+  "operations": "Technical proportional downsize and compression only; original PNGs preserved.",
+  "uniqueAssets": 12,
+  "imagePlacements": 23,
+  "decodedPlacementBytes": 542204,
+  "placementPixels": 4616192,
+  "assets": [
+    {
+      "id": "01-case",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\01-case.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\01-case.png",
+      "originalSha256": "c156cd0561cfd598225679380e84de0f07a8309e1784bea5cbcf4c8c69520ee2",
+      "originalBytes": 3360950,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "accd205f484024e9ce9f41955b22d07eef7a764a1d4ceaf11a1c62cb723a014c",
+      "bytes": 24686,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 3,
+      "alt": "Ivory and orange folded-paper bridge spans two indigo block forms above an open gap.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "02-change",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\02-change.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\02-change.png",
+      "originalSha256": "695ae3838ba1afd314530ddb2d0e46203bbd50c71eeca144ab34f44cb57731f6",
+      "originalBytes": 3240040,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "c3c6290a4aec07bb5ad34f3e8f5ebe900477140ddfed406d5601211b4cd9088f",
+      "bytes": 21068,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 3,
+      "alt": "A smooth paper strip lies beside a zigzag-folded strip on a textured indigo field.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "03-measure",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\03-measure.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\03-measure.png",
+      "originalSha256": "9eb1605d6f935804495dbe9814f02697cdbd4ca2be50953793e3468047902efa",
+      "originalBytes": 3283062,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "3c2a82b398c6814fa216ef7988a1b379c25b7ac48a24e6d33e81fd4eeb69a413",
+      "bytes": 26210,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 1,
+      "alt": "An empty shallow paper tray sits beside plain round counters and an unmarked paper strip.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "04-same",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\04-same.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\04-same.png",
+      "originalSha256": "6713d817c6ec2b7607361afc88e90dfa6622887d434247a335633a4e2b313abb",
+      "originalBytes": 3264578,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "f48aff502111dc343607f781b6d9d7223fb4198edebd733d72fee208d338bb89",
+      "bytes": 18348,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 2,
+      "alt": "A flat paper sheet spans matching indigo blocks, with aligned paper strips and a stack of blank sheets in front.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "05-repeat",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\05-repeat.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\05-repeat.png",
+      "originalSha256": "b390865500c261ae1572a38b8d7069ac316c6fd354ecd81c9fff33656b6d2d45",
+      "originalBytes": 3343803,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "4f3a5a8baa2a7b83670fed3c5f6f4e09c2038349538a89c21ddfa4b8e57f6aa2",
+      "bytes": 30154,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 1,
+      "alt": "Separate blank paper sheets and cards form a ring around a small folded-paper bridge form.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "06-evidence",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\06-evidence.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\06-evidence.png",
+      "originalSha256": "9d3efd3942925a581708d17e091598647fcea5d3ddc6297b0e2b654373ed0126",
+      "originalBytes": 3411993,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "ff9efb6659ae624b747eb9f9a1b62ed7922265402fc9bb233891a547bde76421",
+      "bytes": 30498,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 1,
+      "alt": "Blank record cards sit beside a folded-paper bridge and an open angular frame.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "07-limit",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\07-limit.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\07-limit.png",
+      "originalSha256": "8eb1946b440d62a485611e820086d7df03ad99fdb829aa31939ca4389efe81f6",
+      "originalBytes": 3071554,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "90cff537db2d7151d2a868108593f31f95a4037fc6e6b74cc2e16dbd6ce45d3e",
+      "bytes": 16456,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 1,
+      "alt": "A folded-paper span reaches from dark block forms toward an open orange frame in blank space.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "08-method",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\08-method.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\08-method.png",
+      "originalSha256": "37fb3a3a1125d753261aa71f03ebac7084c210181467de42719f8a48228a4392",
+      "originalBytes": 3559448,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "423b8301d031e917fe4e4b0e87b0f98718ca107895a95a2880164a1782f660bb",
+      "bytes": 30770,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 1,
+      "alt": "An orange-edged paper bridge spans two indigo blocks, with an empty shallow cup and blank paper set beside it.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "09-discuss",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\09-discuss.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\09-discuss.png",
+      "originalSha256": "6ee01b2eb5b183443128a60eb7ec1c49a86f533502cd0bcb1e4dbdb9bd17a4fc",
+      "originalBytes": 3550722,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "a0b6be9fb3460d22edd7ad0dd1c16dbf4b417bd470bd12bd5b20c34d0c8947dc",
+      "bytes": 28458,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 1,
+      "alt": "Two open geometric frames face a blank card and a folded-paper form, joined by orange and teal ribbons.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "10-notebook",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\10-notebook.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\10-notebook.png",
+      "originalSha256": "8a37546c4ae28c92e33fa0ef89c39438a7912b66b0695938bf7875cbf7c860fb",
+      "originalBytes": 3160251,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "6ff8bc03fc4ffb432197a3904c21eec1862f761d8f59ccee8efa8d2466e83f86",
+      "bytes": 18528,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 2,
+      "alt": "An open blank notebook sits beside an empty paper cup, a folded-paper sample and an orange pencil shape.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "11-sort",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\11-sort.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\11-sort.png",
+      "originalSha256": "d1e8da7ce4db886ce42605e7b10d3c2dbf3ee4814a8a19a55ae5139f4fdbf6d9",
+      "originalBytes": 3267469,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "b095887f60b8ee5cb305147e5aa62402aba8f677a42d9d7850630b4873ff8f3e",
+      "bytes": 23840,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 6,
+      "alt": "An abstract paper helicopter floats above blank paper cards and an unmarked strip.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    },
+    {
+      "id": "12-reflect",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\12-reflect.webp",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\paper_bridge_fair_test_grade5_6\\12-reflect.png",
+      "originalSha256": "cfc2a382121ddd530252469dfd78a03b7c29d84c7fda46308b5eb1ff81e2624b",
+      "originalBytes": 3268747,
+      "originalDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeSha256": "728df663a3af471192cf1ebc3e9f1a3b26ffc45df855bf5ed8d08b7ad147546c",
+      "bytes": 25604,
+      "width": 448,
+      "height": 448,
+      "quality": 75,
+      "placements": 1,
+      "alt": "An orange line loops through folded paper shapes and open frames beside a small paper-bridge form.",
+      "altSource": "vision",
+      "reviewed": true,
+      "note": "Original preserved; only proportional resizing and WebP compression applied."
+    }
+  ]
+}

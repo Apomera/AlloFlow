@@ -110,7 +110,7 @@ describe('Tools disclosure', () => {
     click(toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(shown(region(view))).toBe(true);
-    for (const selector of ['#glossary-study-tools-title', '[data-help-key="glossary_standard_flashcards"]', '[data-help-key="glossary_language_flashcards"]', 'button[aria-describedby="glossary-presentation-help"]', '[aria-controls="glossary-games-tools"]', '[data-help-key="glossary_edit"]', '[aria-controls="glossary-teacher-tools"]', '[data-glossary-udl-goal]']) {
+    for (const selector of ['#glossary-study-tools-title', '[data-help-key="glossary_standard_flashcards"]', '[data-help-key="glossary_language_flashcards"]', '[aria-controls="glossary-games-tools"]', '[data-help-key="glossary_edit"]', '[aria-controls="glossary-teacher-tools"]', '[data-glossary-udl-goal]']) {
       const el = region(view).querySelector(selector);
       expect(el && shown(el), selector).toBe(true);
     }
@@ -200,11 +200,16 @@ describe('direct glossary exports', () => {
     const toggle = view.section.querySelector('[data-glossary-export-toggle]');
     const exports = view.section.querySelector('[data-glossary-export-tools]');
     expect(shown(toggle)).toBe(true);
+    expect(toggle.textContent).toContain('Present & Export');
     expect(shown(exports)).toBe(false);
     click(toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(shown(exports)).toBe(true);
     expect(shown(region(view))).toBe(false);
+    const presenter = exports.querySelector('button[aria-describedby="glossary-presentation-help"]');
+    expect(presenter.textContent).toContain('Open presenter');
+    expect(shown(presenter)).toBe(true);
+    expect(region(view).querySelector('button[aria-describedby="glossary-presentation-help"]')).toBeNull();
     const wordList = exports.querySelector('[data-glossary-export-word-list]');
     click(wordList);
     expect(handleExportGlossaryFile).toHaveBeenCalledWith('chooser', { opener: wordList });
@@ -212,5 +217,30 @@ describe('direct glossary exports', () => {
     expect(view.section.querySelectorAll('[data-glossary-export-word-list]')).toHaveLength(1);
     click(toggle);
     expect(shown(exports)).toBe(false);
+  });
+});
+
+describe('optional source sentences', () => {
+  it('starts hidden, can be shown, and remembers the reader choice without editing the resource', () => {
+    const key = 'allo_glossary_show_context_sentences';
+    localStorage.removeItem(key);
+    try {
+      const entry = { entryId: 'leaf', term: 'Leaf', def: 'A plant part.', contextSentence: 'The leaf captures sunlight.' };
+      const resource = { id: 'context', type: 'glossary', data: [entry] };
+      const props = { generatedContent: resource, filteredGlossaryData: [entry] };
+      const view = mount(props), before = JSON.stringify(resource);
+      const toggle = view.container.querySelector('[data-glossary-context-toggle]');
+      const quote = view.container.querySelector('[data-glossary-context-sentence]');
+      expect(toggle.checked).toBe(false);
+      expect(quote.hidden).toBe(true);
+      click(toggle);
+      expect(toggle.checked).toBe(true);
+      expect(quote.hidden).toBe(false);
+      expect(localStorage.getItem(key)).toBe('on');
+      expect(mount(props).container.querySelector('[data-glossary-context-sentence]').hidden).toBe(false);
+      expect(JSON.stringify(resource)).toBe(before);
+      click(toggle);
+      expect(quote.hidden).toBe(true);
+    } finally { localStorage.removeItem(key); }
   });
 });

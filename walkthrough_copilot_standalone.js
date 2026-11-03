@@ -102,7 +102,7 @@
   }
 
   var isConnected = function () {
-    return !!state.delivery.execUrl && !!state.delivery.token;
+    return !!state.delivery.execUrl && !!state.delivery.token && state.delivery.verified !== false;
   };
 
   // A generic "check with your district" line gets skimmed and ignored. This
@@ -396,6 +396,9 @@
     add(copyRow, button('Copy script code', 'primary', function () {
       copyText(scriptSource.source, 'Script code');
     }));
+    add(copyRow, button('Copy manifest', null, function () {
+      copyText(scriptSource.manifest, 'Manifest');
+    }));
     add(copyRow, el('span', 'note',
       scriptSource.source.length.toLocaleString() + ' characters. The script ships inside this page, so this works offline.'));
     add(stepsCard, copyRow);
@@ -411,10 +414,26 @@
     input.type = 'text';
     input.id = 'exec-url';
     input.value = state.delivery.execUrl;
+    input.disabled = state.delivery.busy;
     input.placeholder = 'https://script.google.com/macros/s/.../exec';
-    input.addEventListener('input', function () { state.delivery.execUrl = input.value; });
+    input.addEventListener('input', function () { state.delivery.execUrl = input.value; state.delivery.verified = false; });
     add(field, label, input);
     add(connectCard, field);
+
+    var tokenField = el('div', 'field');
+    var tokenLabel = el('label', null, 'Owner token');
+    tokenLabel.setAttribute('for', 'owner-token');
+    var tokenInput = el('input');
+    tokenInput.type = 'password';
+    tokenInput.id = 'owner-token';
+    tokenInput.autocomplete = 'off';
+    tokenInput.spellcheck = false;
+    tokenInput.value = state.delivery.token;
+    tokenInput.disabled = state.delivery.busy;
+    tokenInput.addEventListener('input', function () { state.delivery.token = tokenInput.value.trim(); state.delivery.verified = false; });
+    add(tokenField, tokenLabel, tokenInput);
+    add(connectCard, tokenField, el('p', 'note',
+      'Run setupWalkthroughOwner in the Apps Script editor, then copy wr_admin_token from Script properties. Existing tokens still work.'));
 
     var actions = el('div', 'row');
     var connect = button(isConnected() ? 'Reconnect' : 'Connect', 'primary', doConnect, { disabled: state.delivery.busy });
@@ -466,8 +485,16 @@
       say(check.errors[0].message);
       return;
     }
+    if (!state.delivery.token) {
+      state.delivery.message = 'Paste your Owner token from Apps Script properties first.';
+      state.delivery.tone = 'stop';
+      render();
+      say(state.delivery.message);
+      return;
+    }
     state.delivery.execUrl = check.value;
-    state.delivery.token = '';
+    var connectingUrl = check.value;
+    var connectingToken = state.delivery.token;
     state.delivery.busy = true;
     state.delivery.message = 'Connecting...';
     state.delivery.tone = 'warn';
@@ -481,8 +508,14 @@
       render();
       return;
     }
-    built.value.claim().then(function (result) {
+    built.value.selfTest().then(function (result) {
       state.delivery.busy = false;
+      if (state.delivery.execUrl !== connectingUrl || state.delivery.token !== connectingToken) {
+        state.delivery.message = 'Connection details changed. Connect again to verify them.';
+        state.delivery.tone = 'stop';
+        render();
+        return;
+      }
       if (!result.ok) {
         state.delivery.message = result.errors[0].message;
         state.delivery.tone = 'stop';
@@ -490,14 +523,14 @@
         say(result.errors[0].message);
         return;
       }
-      state.delivery.token = result.value.token;
+      state.delivery.selfTest = result.value;
       state.delivery.owner = result.value.owner || '';
+      state.delivery.verified = true;
       saveConnection();
-      state.delivery.message = 'Connected to ' + (state.delivery.owner || 'your Google account') + '.';
+      state.delivery.message = 'Self-test passed. Connected to ' + (state.delivery.owner || 'your Google account') + '.';
       state.delivery.tone = 'go';
       render();
       say('Connected.');
-      doSelfTest();
     }, function (err) {
       state.delivery.busy = false;
       state.delivery.message = 'Could not reach the script. Check the URL, and that the deployment is set to "Anyone". (' + (err && err.message ? err.message : 'network error') + ')';

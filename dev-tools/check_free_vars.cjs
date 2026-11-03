@@ -72,6 +72,9 @@ const KNOWN_GLOBALS = new Set([
   // at runtime'. It does not: that code is inside a `typeof DOMParser === 'undefined'`
   // guard, so it only runs where these constructors exist.
   'Document', 'HTMLFormElement', 'DocumentFragment', 'ShadowRoot',
+  // XPathResult is the standard DOM constant holder for document.evaluate(); the
+  // doc_pipeline XPath lookup checks `typeof XPathResult === 'undefined'` first.
+  'XPathResult',
   'KeyboardEvent', 'MouseEvent', 'PointerEvent', 'SpeechSynthesisUtterance', 'speechSynthesis',
   'MutationObserver', 'IntersectionObserver', 'ResizeObserver', 'getComputedStyle', 'matchMedia',
   'MediaRecorder', 'MediaStream', 'MediaSource',

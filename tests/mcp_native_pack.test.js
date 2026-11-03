@@ -174,7 +174,7 @@ describe('MCP native AlloPack authoring', () => {
     const timeline = formats.contracts.find(({ type }) => type === 'timeline').example;
     const pack = await generate([timeline], 'native-timeline-attachment');
     pack.attribution = { author: 'Example author', license: 'Classroom review draft' };
-    const illustrated = JSON.parse(readFileSync(resolve(root, 'allopacks/illustrated/water_cycle_grade6.allopack.json'), 'utf8'));
+    const illustrated = JSON.parse(readFileSync(resolve(root, 'allopacks/current/water_cycle_grade6.allopack.json'), 'utf8'));
     const image = illustrated.history.find(({ type }) => type === 'glossary').data[0].image;
     const attached = await call('resource_pack_attach_image', { pack, profile: 'native', attachment: {
       resourceId: timeline.id, slot: 'timeline', index: 0, dataUrl: image,

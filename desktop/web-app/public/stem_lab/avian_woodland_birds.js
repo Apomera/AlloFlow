@@ -321,10 +321,11 @@
       shader.uniforms.awGrouse = { value: grouse ? 1 : 0 };
       shader.uniforms.awJay = { value: jay ? 1 : 0 };
       shader.uniforms.awCardinal = { value: cardinal ? 1 : 0 };
+      shader.uniforms.awResidentPlumage = { value: robin || chickadee ? 1 : 0 };
       // Dove-only marks are keyed explicitly, so a new species never inherits
       // the covert spots or cheek mark by falling through the other flags.
       shader.uniforms.awDove = { value: dove ? 1 : 0 };
-      shader.fragmentShader = 'uniform float awGrouse;\nuniform float awJay;\nuniform float awCardinal;\nuniform float awDove;\n' + shader.fragmentShader;
+      shader.fragmentShader = 'uniform float awGrouse;\nuniform float awJay;\nuniform float awCardinal;\nuniform float awDove;\nuniform float awResidentPlumage;\n' + shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
         '#include <color_fragment>',
         'float awNeck = step(5.5, awFeatherInfo.x);',
@@ -406,6 +407,14 @@
         'float awSoftFrequency = mix(mix(41.0, 55.0, awRandom), mix(63.0, 81.0, awRandom), awCardinalCovert);',
         'float awSoftPhase = awV * awSoftFrequency - awAcross * (6.0 + awV * 2.5) + sin(awV * 7.0 + awRandom * 6.28) * awAcross * .65;',
         'float awBarbPhase = mix(awV * 97.0 - awAcross * 11.0, awSoftPhase, awCardinalSoftVane) + awRandom * 2.0;',
+        'float awResidentContour = awResidentPlumage * step(.5, awKind) * (1.0 - step(1.5, awKind));',
+        'float awResidentCovert = awResidentPlumage * awCovert * (1.0 - awUnderCovert);',
+        'float awResidentSoftVane = max(awResidentContour, awResidentCovert);',
+        'if (awResidentSoftVane > .5) {',
+        'float awResidentFrequency = mix(mix(27.0, 39.0, awRandom), mix(39.0, 53.0, awRandom), awResidentCovert);',
+        'float awResidentPhase = awV * awResidentFrequency - awAcross * (4.0 + awV * 2.0) + sin(awV * 6.0 + awRandom * 6.28) * awAcross * .45;',
+        'awBarbPhase = awResidentPhase + awRandom * 2.0;',
+        '}',
         'float awBarbAA = 1.0 - smoothstep(.8, 2.8, fwidth(awBarbPhase));',
         'float awBarb = sin(awBarbPhase) * awBarbAA * step(.5, awKind);',
         'float awFiberPhase = awV * 566.0 - awAcross * 29.0 + sin(awV * 5.0) * awAcross * 6.0;',
@@ -414,7 +423,7 @@
         'float awFineAA = 1.0 - smoothstep(.6, 2.5, fwidth(awFiberPhase * 1.91));',
         'float awShaft = (1.0 - smoothstep(.008, .024 + fwidth(awAcross), awAcross)) * .035 * (1.0 - awRemex);',
         'float awRoot = (1.0 - smoothstep(0.0, .22, awV)) * .055 * (1.0 - awCardinalContour * .55);',
-        'diffuseColor.rgb *= 1.0 + awBarb * (.032 + awCardinalContour * .023 + awCardinalCovert * .014) + awFiber * .027 + cos(awFiberPhase * 1.91) * awFineAA * .011 - awShaft - awRoot;',
+        'diffuseColor.rgb *= 1.0 + awBarb * (.032 + awCardinalContour * .023 + awCardinalCovert * .014 + awResidentContour * .018 + awResidentCovert * .011) + awFiber * .027 + cos(awFiberPhase * 1.91) * awFineAA * .011 - awShaft - awRoot;',
         'float awRelief = awFiber * .000006 + awBarb * .000012 + awRachis * .000018;'
       ].join('\n'));
       shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>', [
@@ -429,7 +438,7 @@
         'if (abs(awDet) > 1e-12) normal = normalize(abs(awDet) * normal - sign(awDet) * (dFdx(awRelief) * awR1 + dFdy(awRelief) * awR2));'
       ].join('\n'));
     };
-    plumage.customProgramCacheKey = function () { return 'avian-woodland-plumage-v13'; };
+    plumage.customProgramCacheKey = function () { return 'avian-woodland-plumage-v14'; };
     var details = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: cardinal ? .34 : .48 }));
     if (cardinal) {
       // A closed seed bill needs two readable mandibles without another mesh

@@ -84,7 +84,7 @@ describe('Anchor Charts dialog and target accessibility', () => {
       await Promise.resolve();
     });
 
-    const opener = host.querySelector('button[aria-label="Arm interactive mode"]');
+    const opener = host.querySelector('button[aria-label="Turn on student responses"]');
     opener.focus();
     act(() => opener.dispatchEvent(new MouseEvent('click', { bubbles: true })));
     await act(async () => { await new Promise((resolveTimer) => setTimeout(resolveTimer, 0)); });

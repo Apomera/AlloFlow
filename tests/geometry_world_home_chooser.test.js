@@ -136,6 +136,18 @@ describe('Geometry World home chooser lifecycle', () => {
     expect(initiating.hasAttribute('inert')).toBe(false);expect(initiating.getAttribute('aria-hidden')).toBeNull();m.unmount();
   });
 
+  it('opens a blank build with the building controls available instead of the empty inventory drawer', () => {
+    const m=mountTool(cfg,{hudPanel:'inventory'});
+    React.act(()=>m.container.querySelector('[data-path="build"]').click());
+    const open=[...m.container.querySelectorAll('button')].find(button=>button.textContent==='Open blank sandbox');
+    expect(open).toBeTruthy();React.act(()=>open.click());
+    expect(m.bucket().activeLesson).toBe('builderSandbox');
+    expect(m.bucket().showGeometryHome).toBe(false);
+    expect(m.bucket().hudPanel).toBe('');
+    expect(m.container.querySelector('.gw-inventory-title')).toBeNull();
+    m.unmount();
+  });
+
   it('THE REGRESSION: a returning user with _introShownOnce and a live world still gets the chooser, with Continue', () => {
     const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, activeLesson: 'volumeExplorer' });
     m.rerender();

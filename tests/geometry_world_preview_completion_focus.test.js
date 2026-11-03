@@ -25,8 +25,85 @@ function openEditor(app){const details=app.host.querySelector('.gwe-creation-edi
 function startPreview(app){openEditor(app);const origin=app.button('Preview change');origin.focus();app.click(origin);return origin;}
 function complete(app,label){const button=app.button(label);expect(button).toBeTruthy();button.focus();app.click(button);}
 function sentinel(){const target=document.createElement('button');target.dataset.previewTestTarget='true';document.body.appendChild(target);target.focus();return target;}
+function draft(input,value){
+  React.act(()=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));});
+}
+function escapeFrom(node){
+  const event=new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true});
+  React.act(()=>node.dispatchEvent(event));return event;
+}
+function openDetails(details){React.act(()=>{details.open=true;details.dispatchEvent(new Event('toggle'));});}
+function submit(form){React.act(()=>form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));}
 
 describe('preview completion keeps keyboard users in their workflow',()=>{
+  it.each([
+    ['creation','.gwe-creation-edit-form','#gwe-creation-offset-x','3'],
+    ['stamp','.gwe-stamp-placement','#gwe-stamp-corner-x','8'],
+    ['starter','.gwe-starter-placement','#gwe-starter-corner-x','8']
+  ])('cancels the inline %s preview with Escape and restores its unchanged input draft', (kind,formSelector,inputSelector,value)=>{
+    const app=fixture.mount(),engine=bridge(app);
+    if(kind==='creation')openEditor(app);
+    else if(kind==='stamp'){
+      openDetails(app.host.querySelector('.gwe-stamp-library'));
+      draft(app.host.querySelector('#gwe-stamp-name'),'Arch');submit(app.host.querySelector('.gwe-stamp-save'));
+    }else openDetails(app.host.querySelector('.gwe-starter-library'));
+    const input=app.host.querySelector(inputSelector);draft(input,value);input.focus();
+    const before=fixture.worldState(engine);submit(app.host.querySelector(formSelector));
+    expect(app.button('Apply preview')).toBeTruthy();expect(engine._buildBatchPreview?.owner.kind).toBe('selection-editor');
+    const coreEscape=vi.fn();document.addEventListener('keydown',coreEscape);
+    const event=escapeFrom(input);document.removeEventListener('keydown',coreEscape);settle();
+    expect(event.defaultPrevented).toBe(true);expect(coreEscape).not.toHaveBeenCalled();
+    expect(app.button('Apply preview')).toBeUndefined();expect(engine._buildBatchPreview).toBeNull();
+    expect(input.value).toBe(value);expect(document.activeElement).toBe(input);
+    expect(app.host.querySelector(formSelector).closest('details').open).toBe(true);
+    expect(engine.commitBuildBatch).not.toHaveBeenCalled();expect(fixture.worldState(engine)).toEqual(before);
+  });
+  it('cancels a coordinate-building proposal before a second Escape closes its tools',()=>{
+    const app=fixture.mount(),engine=bridge(app),details=app.host.querySelector('.gwe-coordinate-builder');
+    openDetails(details);settle();
+    const origin=app.host.querySelector('#gwe-build-origin-x');draft(origin,'7');origin.focus();
+    const before=fixture.worldState(engine);submit(app.host.querySelector('.gwe-coordinate-build-form'));settle();
+    expect(app.button('Apply preview')).toBeTruthy();
+    const event=escapeFrom(app.host.querySelector('.gwe-edit-preview'));settle();
+    expect(event.defaultPrevented).toBe(true);expect(details.open).toBe(true);
+    expect(app.button('Apply preview')).toBeUndefined();expect(origin.value).toBe('7');
+    expect(engine.commitBuildBatch).not.toHaveBeenCalled();expect(fixture.worldState(engine)).toEqual(before);
+    escapeFrom(origin);settle();expect(details.open).toBe(false);
+    expect(document.activeElement).toBe(details.querySelector('summary'));
+  });
+  it('cancels a direct one-step nudge with Escape and restores its button without changing the build',()=>{
+    const app=fixture.mount(),engine=bridge(app),controls=app.host.querySelector('.gwe-direct-controls');
+    openDetails(controls);
+    const origin=app.button('+ X'),before=fixture.worldState(engine),selection=structuredClone(engine._builderSelection);
+    origin.focus();app.click(origin);
+    expect(app.button('Apply preview')).toBeTruthy();expect(engine._buildBatchPreview?.owner.kind).toBe('selection-editor');
+    const event=escapeFrom(origin);settle();
+    expect(event.defaultPrevented).toBe(true);expect(app.button('Apply preview')).toBeUndefined();
+    expect(engine._buildBatchPreview).toBeNull();expect(document.activeElement).toBe(origin);
+    expect(controls.open).toBe(true);expect(engine._builderSelection).toEqual(selection);
+    expect(engine.commitBuildBatch).not.toHaveBeenCalled();expect(fixture.worldState(engine)).toEqual(before);
+  });
+  it.each(['engine','lesson','modal','transition','another-preview'])('leaves an unrelated inline proposal alone after %s takes ownership',change=>{
+    const app=fixture.mount(),engine=bridge(app);startPreview(app);
+    const input=app.host.querySelector('#gwe-creation-offset-x');input.focus();
+    if(change==='engine')window.__geoWorldEngine={...engine};
+    if(change==='lesson')engine._currentLesson={sandbox:true};
+    if(change==='modal')engine._modalState={showHelp:true};
+    if(change==='transition')engine._pendingWorldTransition={kind:'saved-project'};
+    if(change==='another-preview')engine._buildBatchPreview={owner:{kind:'another-tool'}};
+    const before=engine._buildBatchPreview,event=escapeFrom(input);
+    expect(event.defaultPrevented).toBe(false);expect(engine._buildBatchPreview).toBe(before);
+    expect(app.button('Apply preview')).toBeTruthy();expect(engine.commitBuildBatch).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(input);
+  });
+  it('lets Escape close the tool finder without canceling an inline proposal',()=>{
+    const app=fixture.mount(),engine=bridge(app);startPreview(app);
+    app.click(app.host.querySelector('.gwe-tool-finder-toggle'));
+    const query=app.host.querySelector('#gwe-tool-query');query.focus();escapeFrom(query);settle();
+    expect(app.host.querySelector('.gwe-tool-finder')).toBeNull();expect(app.button('Apply preview')).toBeTruthy();
+    expect(engine._buildBatchPreview?.owner.kind).toBe('selection-editor');
+    expect(engine.commitBuildBatch).not.toHaveBeenCalled();
+  });
   it.each(['Apply preview','Cancel preview'])('returns from %s to the control that created the proposal',action=>{
     const app=fixture.mount(),engine=bridge(app),origin=startPreview(app),before=fixture.worldState(engine);
     complete(app,action);settle();expect(document.activeElement).toBe(origin);expect(app.button('Apply preview')).toBeUndefined();

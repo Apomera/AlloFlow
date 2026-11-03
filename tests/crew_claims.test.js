@@ -11,12 +11,14 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const DIR = process.env.CREW_PACK_DIR ? resolve(process.env.CREW_PACK_DIR) : resolve(process.cwd(), 'allopacks');
+const DIR = process.env.CREW_PACK_DIR ? resolve(process.env.CREW_PACK_DIR) : resolve(process.cwd(), 'allopacks', 'current');
+// Shot lists stayed at allopacks/<name>.IMAGES.md when the packs moved to allopacks/current/.
+const SHOT_DIR = process.env.CREW_SHOT_DIR ? resolve(process.env.CREW_SHOT_DIR) : process.env.CREW_PACK_DIR ? DIR : resolve(process.cwd(), 'allopacks');
 const GUIDE = process.env.CREW_GUIDE_PATH ? resolve(process.env.CREW_GUIDE_PATH) : resolve(process.cwd(), 'docs/CREW_LAUNCH_TEACHER_GUIDE.md');
 const DEARMAN = process.env.CREW_DEARMAN_PATH ? resolve(process.env.CREW_DEARMAN_PATH) : resolve(process.cwd(), 'sel_hub/sel_tool_dearman.js');
 const SLUGS = readdirSync(DIR).filter((f) => /^crew_.*\.allopack\.json$/.test(f)).map((f) => f.replace(/^crew_|_grade6_8\.allopack\.json$/g, ''));
 const load = (slug) => JSON.parse(readFileSync(resolve(DIR, 'crew_' + slug + '_grade6_8.allopack.json'), 'utf8'));
-const shots = (slug) => readFileSync(resolve(DIR, 'crew_' + slug + '_grade6_8.IMAGES.md'), 'utf8');
+const shots = (slug) => readFileSync(resolve(SHOT_DIR, 'crew_' + slug + '_grade6_8.IMAGES.md'), 'utf8');
 const res = (p, type) => p.history.find((r) => r.type === type);
 const allText = (p) => {
   const out = [];
@@ -30,7 +32,8 @@ export const HEDGED = [
   {
     slug: 'attention', week: 9,
     was: /(face down|silent)[^.\n]{0,40}still costs/i,
-    now: /Some studies suggest that even a silent phone on the desk takes a little attention/,
+    // 2026-11-02 review: the reading now limits the claim to Nadia's fictional case.
+    now: /In Nadia's fictional case, noticing a buzz took attention from the example\. That does not establish how every notification or silent device affects every learner\./,
     why: 'an unanswered notification measurably disrupts attention (Stothart et al., 2015); the cost of a phone that is merely present (Ward et al., 2017) has not replicated consistently',
   },
   {
@@ -164,11 +167,13 @@ describe('Crew claims: what a pack says about a tool or the school matches the t
   it('week 12: the student-led conference is described the way King runs it', () => {
     const p = load('story');
     const reading = res(p, 'simplified').data;
-    expect(reading).toMatch(/\*\*student-led conference\*\* in the fall and in the spring: you, a family member, and your Crew teacher, with a portfolio of your work, and you do the talking\./);
+    // 2026-11-02 review: participants are described inclusively (a learner, an educator, invited
+    // supporters) and the learner leads through accessible means; fall and spring and the portfolio stay.
+    expect(reading).toMatch(/\*\*student-led conference\*\* in the fall and in the spring: a learner, an educator and invited supporters, using a portfolio and accessible ways to lead the exchange\./);
     expect(reading).toMatch(/Your \*\*HOWL\*\* grades are on each \*\*trimester\*\* report card\./);
     const def = res(p, 'glossary').data.find((x) => x.term === 'Student-led conference').def;
-    expect(def).toMatch(/in the fall or spring/);
-    expect(def).toMatch(/your Crew teacher/);
+    expect(def).toMatch(/learner-led/);
+    expect(def).toMatch(/with an educator and invited supporters/);
     expect(allText(p)).not.toMatch(/the end of a \*\*trimester\*\* is when you tell the story/);
   });
 });
@@ -217,8 +222,9 @@ describe('Crew quizzes: nothing but the reading picks the key', () => {
   });
   it('week 12, question 4: no distractor restates half of the key', () => {
     const q = res(load('story'), 'quiz').data.questions[3];
-    expect(q.correctAnswer).toMatch(/not believed, and the gap is where next trimester starts/);
-    expect(q.options.filter((o) => o !== q.correctAnswer && /believ|honest|next trimester/i.test(o))).toEqual([]);
+    // 2026-11-02 review: the item now asks what to do when no gap has been identified.
+    expect(q.correctAnswer).toMatch(/Say so honestly and choose an uncertainty, next check or support/);
+    expect(q.options.filter((o) => o !== q.correctAnswer && /believ|honest|uncertain|next check|next trimester/i.test(o))).toEqual([]);
   });
 });
 
@@ -237,8 +243,9 @@ describe('Crew quizzes: what the independent review found', () => {
   });
   it('week 12, question 3: no distractor credits a count or a date, which is what the key credits', () => {
     const q = res(load('story'), 'quiz').data.questions[2];
-    expect(q.correctAnswer).toMatch(/a count, a date, and a thing that went wrong/);
-    expect(q.options.filter((o) => o !== q.correctAnswer && /\bweek \d|\b\d+\b|\bcount\b|\bdate\b/i.test(o))).toEqual([]);
+    // 2026-11-02 review: the key credits specific recorded examples (a count or date is no longer required).
+    expect(q.correctAnswer).toMatch(/specific recorded examples/);
+    expect(q.options.filter((o) => o !== q.correctAnswer && /\bweek \d|\b\d+\b|\bcount\b|\bdate\b|\brecord|\bspecific\b|\bexamples?\b/i.test(o))).toEqual([]);
   });
   it('week 8: Jae has no pronoun in the reading, so the quiz gives Jae none', () => {
     const p = load('upstander');
@@ -298,15 +305,19 @@ describe('Crew claims: week 12 teaches one story shape', () => {
     expect(allText(p)).not.toMatch(GAP_EACH);
     expect(shots('story')).not.toMatch(GAP_EACH);
     expect(page.replace(/\n/g, ' ')).not.toMatch(GAP_EACH);
-    expect(res(p, 'simplified').data).toMatch(/Three HOWLs, one \*\*level\*\* each, one piece of evidence each, one gap\./);
-    expect(res(p, 'applied-challenge').data.brief.seedDirection).toMatch(/Pick one gap across all three/);
+    // 2026-11-02 review: still one gap in total, now "one gap, uncertainty or next check", so a learner
+    // need not invent a deficit.
+    expect(res(p, 'simplified').data).toMatch(/connect a \*\*level\*\* or criterion with relevant evidence and one gap, uncertainty or next check\./);
+    expect(res(p, 'applied-challenge').data.brief.seedDirection).toMatch(/Identify a gap, uncertainty or next check without inventing a deficit/);
   });
   it('the sentence count the FAQ and the shot list give is the length of the challenge frame', () => {
     const p = load('story');
     const n = res(p, 'applied-challenge').data.supports.frameStarter.split(/(?<=\.)\s+/).filter(Boolean).length;
     expect(n).toBe(5);
     const said = (s) => [...s.matchAll(/\b([a-z]+) sentences\b/gi)].map((m) => NUMBER_WORDS.indexOf(m[1].toLowerCase()));
-    expect(said(res(p, 'faq').data.map((x) => x.answer).join(' '))).toEqual([n]);
+    // 2026-11-02 review: the FAQ no longer states a sentence count (the two-minute guide can be
+    // adjusted); any count it does state must still be the frame's.
+    expect(said(res(p, 'faq').data.map((x) => x.answer).join(' ')).filter((x) => x !== n)).toEqual([]);
     expect(said(shots('story'))).toEqual([n]);
   });
 });

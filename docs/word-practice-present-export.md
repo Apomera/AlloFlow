@@ -20,7 +20,7 @@ The presentation tools are teacher actions. They do not change the original less
 | Spelling | Prompt and reveal | Prompt and answer slides |
 | Finish the Sentence | Prepared choices and answer feedback | Prompt and answer slides |
 
-Finish the Sentence uses an existing valid Word Sounds activity. The exporter does not invent sentences or distractors. Exporting a practice set does not reproduce every Word Sounds activity.
+Finish the Sentence uses a prepared Word Sounds activity. The presenter and exports replace only the verified target in the authored sentence, so quotation marks, line breaks, and spacing follow the original. A card needs a matching answer and at least one distinct alternative.
 
 HTML includes its player and data, so it can reopen without AlloFlow or an internet connection. Audio must be embedded to travel with the file. Preparing audio is a separate, explicit action; downloading never starts speech generation. Missing phoneme recordings are not replaced with ordinary text-to-speech.
 

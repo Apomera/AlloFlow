@@ -13,8 +13,9 @@ let physics;
 let host;
 let originalThemeClass;
 
+// color-contrast re-enabled 2026-11: the light-theme accent override that put
+// dark-on-dark text (2.06-2.92:1) inside the always-dark card was removed.
 const DISABLED = {
-  'color-contrast': { enabled: false },
   region: { enabled: false },
   'page-has-heading-one': { enabled: false },
   'landmark-one-main': { enabled: false },
@@ -47,6 +48,7 @@ function state(overrides = {}) {
       showTrail: true,
       showEnergy: true,
       estimateChallenge: false,
+      _predictDefaultV: 2,
       estimateValue: '',
       hypothesis: '',
       experiments: [],

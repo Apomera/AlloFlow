@@ -912,7 +912,8 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("focusDissectionTarget('diss-learning-checkpoint', 'Learning checkpoint focused. Choose one response; the simulation will not perform the action for you.')");
       expect(source).toContain('function beginGuidedObservation(org)');
       expect(source).toContain('function recordGuidedObservationChoice(choiceId)');
-      expect(source).toContain("verified[specimen + '|' + pendingOrgan.id] = { status: 'verified'");
+      expect(source).toContain("var verificationKey = specimen + '|' + pendingOrgan.id;");
+      expect(source).toContain("if (firstVerification) verified[verificationKey] = { status: 'verified'");
       expect(source).toContain('Locating alone does not advance the step.');
 
       const primaryActionStart = indexOfOrThrow(source, 'function performPrimaryNextAction()', { file: filePath });

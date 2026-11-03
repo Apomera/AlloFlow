@@ -17,7 +17,7 @@
 #    docker compose up -d frontend pocketbase ollama piper searxng
 #
 #  Full (with GPU):
-#    docker compose up -d
+#    docker compose -f docker-compose.yml -f docker-compose.gpu.yml --profile gpu up -d
 # ══════════════════════════════════════════════════════════════════
 
 version: "3.8"
@@ -64,16 +64,9 @@ services:
       - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
     restart: unless-stopped
 
-  # ── Image Generation (Flux.1-schnell — requires GPU) ──────────
+  # ── Image Generation (SANA-Sprint — requires NVIDIA GPU) ─────
   flux:
     build:
       context: ./flux-server
@@ -82,9 +75,15 @@ services:
     ports:
       - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${FLUX_PORT:-7860}:7860"
     environment:
-      - FLUX_MODEL=black-forest-labs/FLUX.1-schnell
+      - IMAGE_BACKEND=${IMAGE_BACKEND:-sana-sprint}
+      - IMAGE_MODEL=${IMAGE_MODEL:-}
+      - IMAGE_MODEL_REVISION=${IMAGE_MODEL_REVISION:-}
+      - ALLOFLOW_IMAGE_OFFLINE=${ALLOFLOW_IMAGE_OFFLINE:-1}
+      - FLUX_MODEL=${FLUX_MODEL:-black-forest-labs/FLUX.1-schnell}
       - PORT=7860
       - MAX_IMAGE_SIZE=1024
+      - ALLOFLOW_FLUX_API_TOKEN=${ALLOFLOW_FLUX_API_TOKEN:-}
+      - ALLOFLOW_FLUX_ALLOWED_ORIGINS=${ALLOFLOW_FLUX_ALLOWED_ORIGINS:-}
       - HF_HOME=/models
     volumes:
       - flux_models:/models
@@ -97,7 +96,7 @@ services:
               capabilities: [gpu]
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:7860/health', timeout=5).close()"]
       interval: 30s
       timeout: 10s
       start_period: 120s

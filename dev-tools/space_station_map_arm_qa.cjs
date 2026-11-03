@@ -98,7 +98,7 @@ function verify(snapshot) {
   assert.equal(snapshot.glLost, false); assert.equal(snapshot.togglePressed, String(arm.enabled));
   assert.equal(snapshot.guidesPressed, String(arm.guides)); assert.equal(snapshot.contentHidden, !arm.enabled);
   const lengths = arm.pose.lengths, actual = fk(arm.actual.shoulder, arm.actual.elbow, lengths), target = fk(arm.target.shoulder, arm.target.elbow, lengths);
-  vectorNear(lengths, [1.4, 1.2]); vectorNear(arm.base, [1.251, .315, -1.6]);
+  vectorNear(lengths, [1.4, 1.2]); vectorNear(arm.base, [1.251, .865, -1.6]);
   vectorNear(arm.pose.base, [0, 0, 0]); vectorNear(arm.pose.joint, actual.joint); vectorNear(arm.pose.tip, actual.tip);
   near(norm(actual.joint), lengths[0]); near(norm(subtract(actual.tip, actual.joint)), lengths[1]);
   vectorNear(target.tip, arm.target.attainable); near(arm.target.minReach, Math.abs(lengths[0] - lengths[1])); near(arm.target.maxReach, lengths[0] + lengths[1]);
@@ -281,7 +281,7 @@ async function runWidth(browser, width) {
     for (const item of layout.controls.filter(item => item.width > 0)) { assert(item.left >= -1 && item.right <= width + 1); assert(item.scrollWidth <= item.clientWidth + 1); }
     await page.addScriptTag({ path: path.join(ROOT, 'desktop/web-app/node_modules/axe-core/axe.min.js') });
     const accessibility = await page.evaluate(async () => {
-      const checked = await axe.run({ include: ['[data-iss-arm-panel]'] }, { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } });
+      const checked = await axe.run({ include: ['[data-iss-arm-panel]'] }, { rules: { region: { enabled: false } } });
       return { passes: checked.passes.length, violations: checked.violations.map(v => ({ id: v.id, targets: v.nodes.map(node => node.target) })) };
     });
     assert.deepEqual(accessibility.violations, []); result.checks.layout = layout; result.checks.accessibility = accessibility;

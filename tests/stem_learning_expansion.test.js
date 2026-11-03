@@ -49,7 +49,7 @@ describe('exact local algebra',()=>{
   });
   it('solves locally with no provider and keeps verification tied to history',async()=>{
     const state=await mount('algebraCAS','stem_lab/stem_tool_algebracas.js',{tab:'solve',expression:'3x + 0.1 = 1.1',mode:'solve'});
-    const solve=[...document.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')==='TRY:');
+    const solve=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='▶ Solve');
     await React.act(()=>solve.click());
     expect(state().result).toContain('ANSWER: 1/3');
     expect(document.querySelector('[data-cas-verification]').dataset.casVerification).toBe('exact');

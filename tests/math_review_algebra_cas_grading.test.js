@@ -61,7 +61,9 @@ describe('Solve tab modes and grade band', () => {
     const html = renderTool('algebraCAS', { algebraCAS: {} }, { gradeLevel: '5th Grade' });
     expect(html).toContain('Solve linear equations step-by-step.');
     expect(html).not.toContain('Full CAS: polynomials');
-    expect(renderTool('algebraCAS', { algebraCAS: {} }, { gradeLevel: '11th Grade' })).toContain('Full CAS: polynomials');
+    const g11 = renderTool('algebraCAS', { algebraCAS: {} }, { gradeLevel: '11th Grade' });
+    expect(g11).toContain('Exact linear solving with checked steps.');
+    expect(g11).not.toContain('Full CAS: polynomials');
   });
 
   it('names each example chip by its visible example, not one shared label', () => {

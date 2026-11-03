@@ -44,6 +44,28 @@ function complete(app,text){const button=app.button(text);expect(button).toBeTru
 function snapshot(engine){return {blocks:Object.entries(engine.blocks).map(([key,mesh])=>({key,mesh,data:structuredClone(mesh.userData)})),undo:structuredClone(engine._undoStack),redo:structuredClone(engine._redoStack),selection:structuredClone(engine._builderSelection),placed:engine.blocksPlaced};}
 
 describe('accessible coordinate building starts in an empty world',()=>{
+  it.each([
+    ['.gwe-coordinate-builder','#gwe-build-origin-x'],
+    ['.gwe-coordinate-selection','#gwe-select-from-x']
+  ])('keeps focus in %s when its native toggle arrives after Tab', (selector,fieldSelector)=>{
+    const app=mount(),details=app.host.querySelector(selector),field=details.querySelector(fieldSelector);
+    const parent=details.parentElement.closest('details');
+    if(parent)parent.open=true;
+    details.querySelector('summary').focus();
+    // A native toggle event is queued. The user can already have tabbed
+    // into the form by the time the application receives that event.
+    React.act(()=>{details.open=true;field.focus();details.dispatchEvent(new Event('toggle'));});
+    settle();
+    expect(details.open).toBe(true);
+    expect(document.activeElement).toBe(field);
+    React.act(()=>field.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true})));
+    expect(details.open).toBe(false);
+    // Reopen before the previous close has returned focus to the summary.
+    React.act(()=>{details.open=true;field.focus();details.dispatchEvent(new Event('toggle'));});
+    settle();
+    expect(details.open).toBe(true);
+    expect(document.activeElement).toBe(field);
+  });
   it('offers a working quick action and discoverable keyboard tool without a selected build',()=>{
     const app=mount();expect(Object.keys(app.engine.blocks)).toHaveLength(0);expect(app.host.querySelector('[data-gwe-open-coordinate-build]').disabled).toBe(false);
     const details=open(app);expect(details.open).toBe(true);expect(app.host.querySelector('.gwe-builder-dock').dataset.coordinateBuilding).toBe('true');expect(document.activeElement).toBe(details.querySelector('summary'));
@@ -69,6 +91,29 @@ describe('coordinate review protects drafts and world geometry',()=>{
   });
   it('focuses an occupied-cell error and preserves the existing block',()=>{
     const app=mount(),mesh=app.engine.placeBlock(0,1,0,'stone','cube',0);open(app);const before=snapshot(app.engine);review(app);const error=app.host.querySelector('#gwe-coordinate-build-error');expect(error.textContent).toMatch(/block is in the way/i);expect(document.activeElement).toBe(error);expect(snapshot(app.engine)).toEqual(before);expect(app.engine.blocks['0,1,0']).toBe(mesh);
+    expect(error.textContent).toContain('X 0, Y 1, Z 0 contains one of your blocks');
+  });
+  it('describes material, fractional shape, rotation and inclusive cell ranges in both reviews',()=>{
+    const app=mount();open(app);
+    change(app,'mode','wall');change(app,'axis','z');change(app,'origin-x','3');change(app,'origin-y','2');change(app,'origin-z','-4');
+    change(app,'length','2');change(app,'height','2');change(app,'type','wood');change(app,'shape','halfA');change(app,'rotation','3');
+    const before=snapshot(app.engine);review(app);
+    const notice=app.host.querySelector('.gwe-edit-notice');
+    expect(notice.getAttribute('role')).toBe('status');
+    expect(notice.textContent).toContain('Each block uses wood and the diagonal half shape, rotated 270°');
+    expect(notice.textContent).toContain('Grid cells X 3, Y 2 to 3, Z -4 to -3');
+    expect(notice.textContent).toContain('4 blocks will be selected');
+    const description=notice.textContent;
+    app.click(app.button('Review in world'));settle();
+    expect(app.host.querySelector('.gwe-preview-review [role="status"]').textContent).toBe(description);
+    expect(snapshot(app.engine)).toEqual(before);
+  });
+  it('describes a single cube cell without implying a coordinate range or meaningful cube rotation',()=>{
+    const app=mount();open(app);change(app,'rotation','3');review(app);
+    const description=app.host.querySelector('.gwe-edit-notice').textContent;
+    expect(description).toContain('Each block uses stone and the cube shape');
+    expect(description).toContain('Grid cells X 0, Y 1, Z 0. 1 block will be selected');
+    expect(description).not.toContain('rotated');
   });
   it('edits a live recipe without applying stale geometry or moving input focus',()=>{
     const app=mount();open(app);change(app,'mode','floor');change(app,'length','2');change(app,'width','3');const before=snapshot(app.engine);review(app);expect(app.engine._buildBatchPreview).toBeTruthy();expect(app.button('Apply preview').disabled).toBe(false);expect(document.activeElement).toBe(app.host.querySelector('.gwe-edit-preview'));expect(snapshot(app.engine)).toEqual(before);

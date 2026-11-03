@@ -19,7 +19,10 @@
       topic.hidden = !terms.every(function (term) { return hay.indexOf(term) !== -1; }) || (subject.value && topic.dataset.packSubject !== subject.value) || !matchesGrade(topic.dataset.packGrade, grade.value);
       if (!topic.hidden) { count++; versions += topic.querySelectorAll('[data-pack-id]').length; }
     });
-    document.getElementById('pack-results').textContent = count + ' of ' + topics.length + ' topics · ' + versions + ' pack versions';
+    var results = document.getElementById('pack-results');
+    var countLabel = results.dataset.packCountLabel || 'pack versions';
+    if (versions === 1) countLabel = countLabel === 'packs' ? 'pack' : 'pack version';
+    results.textContent = count + ' of ' + topics.length + ' topics · ' + versions + ' ' + countLabel;
     document.getElementById('pack-empty').hidden = count !== 0;
   }
   form.hidden = false;

@@ -35,8 +35,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function mount(rocks, overrides = {}) {
+function mount(rocks, overrides = {}, { keyByMode = false } = {}) {
   const host = document.createElement('div');
+  if (keyByMode) host.setAttribute('data-stem-lab', '');
   document.body.appendChild(host);
   const root = ReactDOMClient.createRoot(host);
   const store = { rocks: { ...rocks }, rockCycle: {} };
@@ -46,10 +47,13 @@ function mount(rocks, overrides = {}) {
     Object.assign(store, typeof update === 'function' ? update(store) : update);
     redraw();
   };
+  function PluginView() {
+    return window.StemLab._registry.rocks.render(makeCtx({ ...overrides, toolData: store, setToolData, awardXP }));
+  }
   function Harness() {
     const [, setTick] = React.useState(0);
     redraw = () => setTick((tick) => tick + 1);
-    return window.StemLab._registry.rocks.render(makeCtx({ ...overrides, toolData: store, setToolData, awardXP }));
+    return React.createElement(PluginView, { key: keyByMode ? store.rocks.mode : 'rocks' });
   }
   act(() => root.render(React.createElement(Harness)));
   const mounted = { host, root, store, awardXP };
@@ -82,6 +86,194 @@ function next(host) {
   return [...host.querySelectorAll('button')].find((button) =>
     /Next question|See your results/i.test(button.getAttribute('aria-label') || button.textContent));
 }
+
+describe('opening a specimen from the collection cabinet', () => {
+  const settle = () => act(() => vi.advanceTimersByTime(160));
+
+  it('collects a specimen, opens its heading through the cabinet, and returns focus to the collected tile', () => {
+    const catalogue = { rocks: { query: 'intrusive', sort: 'name', savedOnly: true } };
+    const { host, store } = mount({ mode: 'rocks', selectedType: 'igneous', catalogue, quizScore: 7,
+      rkKey: { target: 'conglom', path: [], tests: {} } },
+    { t: (key, fallback) => key === 'stem.rocks.conglomerate' ? 'Conglomerate' : fallback || key });
+    expect(host.querySelector('[data-rk-slot="conglom"]').tagName).toBe('SPAN');
+    for (const decision of ['start:pieces', 'clast:big', 'big:rounded']) {
+      click(host.querySelector('[data-rk-key-opt="' + decision + '"]'));
+    }
+    expect(store.rocks.collection).toEqual({ conglom: 'key' });
+    const cabinet = host.querySelector('[data-rk-cabinet]');
+    click(cabinet.querySelector('summary'));
+    const tile = cabinet.querySelector('button[data-rk-slot="conglom"]');
+    expect(tile.querySelector('.rk-cabinet-label').textContent).toBe('Conglomerate');
+    expect(tile.getAttribute('aria-label')).toContain('Conglomerate');
+    tile.focus();
+    click(tile);
+    settle();
+    const title = host.querySelector('#rk-specimen-title');
+    expect(title.textContent).toContain('Conglomerate');
+    expect(document.activeElement).toBe(title);
+    expect(store.rocks.selectedType).toBe('igneous');
+    expect(store.rocks.catalogue).toEqual(catalogue);
+    expect(store.rocks.quizScore).toBe(7);
+    expect(host.querySelector('#rk-rock-tile-conglom')).toBeNull();
+
+    // Returning still works when the disclosure has since been collapsed.
+    cabinet.open = false;
+    click(host.querySelector('[data-rk-back-to-collection="conglom"]'));
+    settle();
+    expect(cabinet.open).toBe(true);
+    expect(document.activeElement).toBe(tile);
+  });
+
+  it('returns to the gallery after navigating onward from a cabinet card', () => {
+    const { host, store } = mount({ mode: 'rocks', collection: { granite: 'drill' } });
+    const cabinet = host.querySelector('[data-rk-cabinet]');
+    click(cabinet.querySelector('summary'));
+    click(cabinet.querySelector('button[data-rk-slot="granite"]'));
+    settle();
+    expect(host.querySelector('[data-rk-back-to-collection="granite"]')).toBeTruthy();
+    click(host.querySelector('[data-rk-detail-step="next"]'));
+    settle();
+    expect(store.rocks.selectedRock).toBe('basalt');
+    click(host.querySelector('[data-rk-detail-step="previous"]'));
+    settle();
+    expect(host.querySelector('[data-rk-back-to-collection]')).toBeNull();
+    click(host.querySelector('[data-rk-back-to-catalogue="rocks"]'));
+    settle();
+    expect(document.activeElement).toBe(host.querySelector('#rk-rock-tile-granite'));
+  });
+});
+
+describe('compact activity navigation', () => {
+  let previousWidth;
+  beforeEach(() => {
+    // jsdom has no layout. The navigation uses viewport width as its fallback
+    // when its measured container has zero width.
+    previousWidth = window.innerWidth;
+    window.innerWidth = 390;
+  });
+  afterEach(() => { window.innerWidth = previousWidth; });
+
+  const settle = () => act(() => vi.advanceTimersByTime(160));
+  function choose(host, mode) {
+    const trigger = host.querySelector('[data-rk-mode-trigger]');
+    trigger.focus();
+    click(trigger);
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    const choice = host.querySelector('[data-rocks-mode="' + mode + '"]');
+    choice.focus();
+    // jsdom dispatches keydown but does not synthesize a native Enter click.
+    key(choice, 'Enter');
+    click(choice);
+    settle();
+    expect(host.querySelector('[data-rk-mode-trigger]').getAttribute('aria-expanded')).toBe('false');
+  }
+
+  it('names its trigger, exposes a single choice list and cancels without changing learner state', () => {
+    const narrate = vi.fn();
+    const { host, store, awardXP } = mount({
+      mode: 'quiz', quizIdx: 2, quizScore: 1, quizLog: { 0: 1, 1: 0 }
+    }, { canvasNarrate: narrate });
+    settle();
+    const before = structuredClone(store.rocks);
+    const trigger = host.querySelector('[data-rk-mode-trigger]');
+    expect(trigger.tagName).toBe('BUTTON');
+    expect(trigger.getAttribute('aria-label') || trigger.textContent).toMatch(/quiz/i);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    trigger.focus();
+    click(trigger);
+    const choices = host.querySelector('[data-rk-mode-choices]');
+    expect(choices.id).toBeTruthy();
+    expect(trigger.getAttribute('aria-controls')).toBe(choices.id);
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(host.querySelectorAll('[data-rocks-mode]')).toHaveLength(11);
+    expect(choices.querySelectorAll('button[data-rocks-mode]')).toHaveLength(11);
+    expect(choices.querySelector('[aria-pressed="true"]').getAttribute('data-rocks-mode')).toBe('quiz');
+
+    const option = choices.querySelector('[data-rocks-mode="compare"]');
+    option.focus();
+    key(option, '1');
+    key(option, 'n');
+    expect(store.rocks).toEqual(before);
+    key(option, 'Escape');
+    settle();
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(trigger);
+    expect(store.rocks).toEqual(before);
+    expect(awardXP).not.toHaveBeenCalled();
+    expect(narrate.mock.calls.filter(call => call[1] === 'mode_switch')).toHaveLength(0);
+  });
+
+  it('preserves the answered question and gives destination headings focus on compact commits', () => {
+    const narrate = vi.fn();
+    const { host, store } = mount({ mode: 'quiz', quizIdx: 2, quizScore: 1, quizLog: { 0: 1, 1: 0 } }, {canvasNarrate: narrate});
+    quizRegion(host).focus();
+    key(quizRegion(host), '1');
+    expect(store.rocks.quizFeedback).toBeTruthy();
+    const round = structuredClone(store.rocks);
+
+    choose(host, 'compare');
+    expect(store.rocks.mode).toBe('compare');
+    expect(document.activeElement).toBe(host.querySelector('#rk-compare-title'));
+    choose(host, 'quiz');
+    expect(store.rocks.mode).toBe('quiz');
+    // The question region also focuses itself on mount. The intentional
+    // compact navigation commit wins once the destination has rendered.
+    expect(document.activeElement).toBe(host.querySelector('#rk-activity-title'));
+    for (const field of ['quizIdx', 'quizScore', 'quizLog', 'quizFeedback']) {
+      expect(store.rocks[field]).toEqual(round[field]);
+    }
+    expect(narrate.mock.calls.filter(call => call[1] === 'mode_switch')).toHaveLength(2);
+    quizRegion(host).focus();
+    key(quizRegion(host), 'n');
+    expect(store.rocks.quizIdx).toBe(3);
+  });
+
+  it('returns to missed-question practice without consuming a practice shortcut in the picker', () => {
+    const practice = { queue: [0, 1], index: 1, answers: { 0: 1 }, active: true, done: false };
+    const { host, store, awardXP } = mount({
+      mode: 'quiz', quizDone: true, quizIdx: 35, quizScore: 7,
+      quizLog: { 0: 0, 1: 0 }, quizPractice: practice
+    });
+    const saved = structuredClone(store.rocks);
+    choose(host, 'notebook');
+    expect(document.activeElement).toBe(host.querySelector('#rk-notebook-title'));
+    choose(host, 'quiz');
+    expect(document.activeElement).toBe(host.querySelector('#rk-activity-title'));
+    const region = host.querySelector('[data-rk-practice="1"]');
+    expect(region).toBeTruthy();
+    expect(store.rocks.quizPractice).toEqual(saved.quizPractice);
+    const trigger = host.querySelector('[data-rk-mode-trigger]');
+    trigger.focus();
+    click(trigger);
+    const option = host.querySelector('[data-rocks-mode="fieldwork"]');
+    option.focus();
+    key(option, '2');
+    key(option, 'Escape');
+    settle();
+    expect(store.rocks.quizPractice).toEqual(saved.quizPractice);
+    region.focus();
+    key(region, '2');
+    expect(store.rocks.quizPractice.answers[1]).toBe(1);
+    expect(store.rocks.quizScore).toBe(saved.quizScore);
+    expect(store.rocks.quizLog).toEqual(saved.quizLog);
+    expect(awardXP).not.toHaveBeenCalled();
+  });
+
+  it('focuses the chosen activity after the STEAM plugin remounts on a mode change', () => {
+    const {host, store} = mount({mode:'notebook', quizIdx:2, quizScore:1, quizLog:{0:1,1:0}}, {}, {keyByMode:true});
+    const notebookTrigger = host.querySelector('[data-rk-mode-trigger]');
+    choose(host, 'fieldwork');
+    expect(notebookTrigger.isConnected).toBe(false);
+    expect(store.rocks.mode).toBe('fieldwork');
+    expect(document.activeElement).toBe(host.querySelector('#rk-field-title'));
+    const fieldTrigger = host.querySelector('[data-rk-mode-trigger]');
+    choose(host, 'quiz');
+    expect(fieldTrigger.isConnected).toBe(false);
+    expect(store.rocks.mode).toBe('quiz');
+    expect(store.rocks.quizIdx).toBe(2);
+    expect(document.activeElement).toBe(host.querySelector('#rk-activity-title'));
+  });
+});
 
 describe('quiz keyboard and feedback', () => {
   it('lets Enter reach an ordinary child button instead of advancing the round', () => {

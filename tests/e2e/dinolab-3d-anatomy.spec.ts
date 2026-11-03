@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { GlHarness } from './helpers/stem_gl_harness';
 test.describe.configure({timeout:150_000});
-const report='reports/dinolab-3d-anatomy';
+const report=process.env.DINO_ANATOMY_REPORT_DIR||'reports/dinolab-3d-anatomy';
 const harness=new GlHarness({toolFile:'stem_lab/stem_tool_dinolab.js',toolId:'dinoLab',width:1180,height:920,appStyles:true,
   probes:"var R=THREE.WebGLRenderer; THREE.WebGLRenderer=function(o){var r=new R(o),render=r.render.bind(r);r.render=function(s,c){window.__anatomyScene=s;window.__anatomyCamera=c;return render(s,c);};return r;};"});
 test.beforeAll(async()=>{fs.mkdirSync(report,{recursive:true});await harness.start();});

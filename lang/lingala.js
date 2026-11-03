@@ -95586,7 +95586,15 @@
     "param_invalid": "Koma {field} ya solo.",
     "unknown": "Motindo eyebani te",
     "plan_input_too_long": "Nabondeli yo, kokitisa bosenga oyo tii na balɛtrɛ 12 000 to moke. Litambe moko te esalemi.",
-    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material.",
+    "open_lesson_revision": "Revise an existing lesson",
+    "open_lesson_revision_done": "Select the resources and describe your changes. Nothing changes until you review and apply the revision.",
+    "open_lesson_revision_hint": "Select native activities, review proposed changes, then apply or undo them",
+    "open_lesson_revision_unavailable": "Open a teacher lesson with editable resources first.",
+    "open_project_save": "Save project",
+    "open_project_save_done": "Save Project opened. Review the file name and choose Save to download your project.",
+    "open_project_save_hint": "Open Save Project to name and save a file for reopening later",
+    "open_project_save_unavailable": "Save Project is not available for the current work."
   },
   "palette": {
     "aria": "Palette ya mitindo ya AlloFlow",

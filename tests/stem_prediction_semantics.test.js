@@ -162,8 +162,9 @@ describe('STEM prediction semantics', () => {
     const skate = source('stem_tool_skatelab.js');
     expect(skate).toContain("data-skatelab-overhaul': 'physics-first'");
     expect(skate).toContain('estimateChallenge');
-    expect(skate).toContain('Require estimate');
-    expect(skate).toContain('Enter an estimate of zero or greater before running.');
+    // Stage B (2026-11-03): predict-first is on by default; the toggle and the gate say so.
+    expect(skate).toContain('Predict before each run');
+    expect(skate).toContain('Make a prediction first: choose an answer above or enter an estimate of zero or greater.');
     expect(skate).toContain('errorPct');
     expect(skate).toContain('stats.withinTen');
     // The hypothesis prompt widened (08-31) from hang time to ramp depth, load and rotation.

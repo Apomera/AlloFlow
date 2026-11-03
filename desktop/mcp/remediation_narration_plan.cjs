@@ -163,13 +163,16 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     const pageNo=t=>/^[-\u2013\u2014(]?\d{1,4}[-\u2013\u2014)]?$/.test(t);
     const isDash=t=>/^[-\u2013\u2014]$/.test(t||'');
     const minPages=Math.max(3,Math.ceil(pw.length*0.6));
+    // A 2-page document: a run BOTH pages share counts when it has 4+ words, as in the line rule below. Its pages
+    // can each be ONE line (4-H activity, 2026-11-02: a 58-word footer on both pages, 61 "missing" words).
+    const minRun=pw.length===2?2:minPages;
     for(const fromEnd of [true,false]){
       let active=pw.map((_,i)=>i).filter(i=>pw[i].length);
-      const seq=[];
+      const seq=[];let glued=false;
       // 400 words (was 80): print-title rows repeated under a table's header on every page run longer
       // (expenditures: header + 3 rows, ~70 words; the Acton row past word 80 was "missing" x5, 2026-10-27).
       // The run only grows while 60% of the pages (3+) share the SAME words, so a longer limit cannot merge text.
-      for(let k=0;k<400&&active.length>=minPages;k++){
+      for(let k=0;k<400&&active.length>=minRun;k++){
         const at=i=>{const w=pw[i],j=fromEnd?w.length-1-k:k;return j>=0&&j<w.length?w[j]:null;};
         const toks=active.map(at);
         // A page number changes page to page; the same number on every page ("65") is text.
@@ -178,12 +181,25 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
         for(const t of toks)if(t!==null)freq.set(t.toLowerCase(),(freq.get(t.toLowerCase())||0)+1);
         let best=null,bn=0;
         for(const [t,n] of freq)if(n>bn){best=t;bn=n;}
-        if(bn<minPages)break;
+        if(bn<minRun){
+          // A running header glued to each page's first word ("...delayed-release oral11 years", "oralOn 1 October":
+          // FDA letter, 2026-11-02): the shared start of the words, cut where a small letter meets a capital or
+          // digit, ends the header. The run stops there.
+          // Only words the output does not print whole are glued, and the cut-off end must be an output word
+          // ("body1a" on every page, printed as is, is content).
+          if(fromEnd||seq.filter(Boolean).length<2)break;
+          const outW=new Set(String(outputHtml||'').replace(/<[^>]*>/g,' ').normalize('NFKC').toLowerCase().split(/[^\p{L}\p{N}]+/u));
+          const cut=new Map();
+          for(const t of toks){if(t===null)continue;const w=t.toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');if(!w)continue;if(outW.has(w)){cut.set(w,(cut.get(w)||0)+1);continue;}const p=new Set();for(let m=2;m<t.length;m++)if(/\p{Ll}/u.test(t[m-1])&&/[\p{Lu}\p{N}]/u.test(t[m]))p.add(t.slice(0,m).toLowerCase());for(const x of p)if(outW.has(x))cut.set(x,(cut.get(x)||0)+1);}
+          let head=null,hn=0;for(const [x,n] of cut)if(n>hn||(n===hn&&head&&x.length>head.length)){head=x;hn=n;}
+          if(hn<minRun)break;
+          seq.push(head);glued=true;break;
+        }
         active=active.filter(i=>{const t=at(i);return t!==null&&t.toLowerCase()===best;});
         seq.push(best);
       }
       while(seq.length&&seq[seq.length-1]===null)seq.pop();
-      if(seq.filter(Boolean).length<2)continue;
+      if(seq.filter(Boolean).length<(pw.length===2?4:2))continue;
       const ordered=fromEnd?seq.slice().reverse():seq;
       // A page number matches only a number shape, so it can never swallow a word; a lone dash may touch its neighbours.
       const re=new RegExp(ordered.map((t,i)=>(i?(isDash(t)||isDash(ordered[i-1])?'\\s*':'\\s+'):'')+(t===null?'([-\\u2013\\u2014(]?\\d{1,4}[-\\u2013\\u2014)]?)':t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))).join(''),'giu');
@@ -196,16 +212,19 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
       let first=!furniture;
       // The kept copy, as printed, minus its page number(s) (the captured groups, left to right).
       const holes=ordered.filter(t=>t===null).length;
-      sourceText=sourceText.replace(re,(m,...g)=>{if(!first)return ' ';first=false;let at=0,kept='';for(const n of g.slice(0,holes)){const k=m.indexOf(n,at);if(k<0)continue;kept+=m.slice(at,k);at=k+n.length;}return (kept+m.slice(at)).replace(/\s+/g,' ').trim();});
+      // A glued header ends mid-word: a space parts it from the page's own first word.
+      sourceText=sourceText.replace(re,(m,...g)=>{if(!first)return ' ';first=false;let at=0,kept='';for(const n of g.slice(0,holes)){const k=m.indexOf(n,at);if(k<0)continue;kept+=m.slice(at,k);at=k+n.length;}return (kept+m.slice(at)).replace(/\s+/g,' ').trim()+(glued?' ':'');});
     }
     // A BARE page number as a page's last (or first) word on 60% of the pages (3+) is furniture: one copy per
     // page goes (expenditures: "1".."5" were the last "missing" words, 2026-10-27). Coverage counts words, so
     // which copy of "1" goes does not matter; it runs AFTER the repeated-passage rule above, whose patterns an
     // earlier removal would break. The line rule below skips pages handled here.
+    // A page's number glued to its first word, a capitalised heading ("2GROSS INCOME", "3GENERAL": 1913 scan,
+    // 2026-11-02), counts too: only the number goes.
     for(const fromEnd of [true,false]){
-      const hits=pw.map((w,i)=>{const t=fromEnd?w[w.length-1]:w[0];const num=Number(pages[i]&&pages[i].pageNum)||i+1;return t!==undefined&&new RegExp('^[-\\u2013\\u2014(]?'+num+'[-\\u2013\\u2014)]?$').test(t)?t:null;});
+      const hits=pw.map((w,i)=>{const t=fromEnd?w[w.length-1]:w[0];const num=Number(pages[i]&&pages[i].pageNum)||i+1;if(t===undefined)return null;if(new RegExp('^[-\\u2013\\u2014(]?'+num+'[-\\u2013\\u2014)]?$').test(t))return [t,''];return !fromEnd&&new RegExp('^'+num+'\\p{Lu}{2}','u').test(t)?[t,t.slice(String(num).length)]:null;});
       if(hits.filter(Boolean).length<minPages)continue;
-      hits.forEach((t,i)=>{if(!t||pageNumDropped.has(i))return;const re=new RegExp('(^|\\s)'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=\\s|$)');if(re.test(sourceText)){sourceText=sourceText.replace(re,'$1');pageNumDropped.add(i);}});
+      hits.forEach((h,i)=>{if(!h||pageNumDropped.has(i))return;const re=new RegExp('(^|\\s)'+h[0].replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=\\s|$)');if(re.test(sourceText)){sourceText=sourceText.replace(re,(m,s)=>s+h[1]);pageNumDropped.add(i);}});
     }
   }
   // A running header or footer printed on every page is one passage, written once in reading order
@@ -276,6 +295,17 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     // 2026-10-26): within six words before its number, joined only when the output has "40th".
     // An opening bracket may lead the number: "nd Introduction to Human Factors Engineering (2 Edition)" (SIE 515 syllabus).
     sourceText=sourceText.replace(/(^|\s)(st|nd|rd|th)((?:\s+[^\s\d]+){1,6}?)\s+(\(?)(\d+)(?=[\s)]|$)/giu,(m,s,suf,mid,br,num)=>outWords.has((num+suf).toLowerCase())?s+mid.trim()+' '+br+num+suf:m);
+    // A line of raised suffixes reads as a group above its numbers ("th th th th including the 10 , 9 , and 8
+    // editions ... used 8 edition", or 11 words early: BIO 105 syllabus, 2026-11-02). Each suffix, in order, goes to
+    // the next number whose joined form the output prints, while a suffix or join came in the last 12 words.
+    {const parts=sourceText.split(/(\s+)/),queue=[];let last=-1;
+      for(let i=0;i<parts.length;i+=2){
+        if(queue.length&&i-last>24)queue.length=0;
+        if(/^(?:st|nd|rd|th)$/i.test(parts[i])){queue.push(i);last=i;continue;}
+        const m=queue.length&&/^(\(?)(\d{1,4})([,.;:)]*)$/.exec(parts[i]);
+        if(m&&outWords.has((m[2]+parts[queue[0]]).toLowerCase())){parts[i]=m[1]+m[2]+parts[queue[0]]+m[3];parts[queue.shift()]='';last=i;}
+      }
+      sourceText=parts.join('');}
     // A long web address wrapped across a line ("...disputereso" / "lutionqafinalmemo"): rejoin two pieces
     // only when the output has the joined word and neither piece is a word there (OSEP letter, 2026-10-26).
     // Lookahead: the second piece is not consumed, so it can still pair with what follows.
@@ -298,6 +328,8 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     // Read the output as its tokens do: inline tags join ("2019.<sup>20</sup>" is "2019.20"), blocks split.
     const outInline=String(outputHtml||'').replace(/<\/?(?:sup|sub|span|em|strong|b|i|u|small|mark|abbr)\b[^>]*>/gi,'').replace(/<[^>]*>/g,' ');
     sourceText=sourceText.replace(/(?<![\d.,])(\d{4}|\d{1,3}[\u2013-]\d{1,4})\.(\d{1,3})(?=\s+\p{Lu})/gu,(m,a,b)=>new RegExp('(?<![\\d.,])'+a.replace(/^.*[\u2013-]/,'')+'\\.'+b+'(?![\\d])').test(outInline)?m:a+'. '+b);
+    // A letter-spaced masthead number ("# 4 9": notifications brochure, 2026-11-02) rejoins when the output prints it ("#49").
+    sourceText=sourceText.replace(/(^|\s)#\s+(\d(?:\s+\d){1,3})(?=\s|$)/g,(m,s,d)=>new RegExp('#'+d.replace(/\s+/g,'')+'(?!\\d)').test(outInline)?s+'#'+d.replace(/\s+/g,''):m);
   }
   // A page's own number printed at its top or bottom ("1", "Page 2", "2 of 3") is page furniture, not
   // content: drop one copy per page when it sits in that page's first or last two lines.
@@ -372,7 +404,9 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   // numbered-marker credits below, which record token positions (agenda: crediting after shifted them).
   // A Wingdings bullet reaches the text layer as a plain letter ("u" = arrow on PowerPoint slides; RSU 57
   // budget: 45 "missing" u's): credited the same way, only for a letter that is never a word in the output.
-  {let li=doc.querySelectorAll('li').length;if(li){const outLow=' '+String(doc.body.textContent||'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ')+' ';const wing=['u','l','n','q','v','Ø','ü','§'].filter(c=>outLow.indexOf(' '+c.toLowerCase()+' ')===-1).join('');const cls='\\u2022\\u2023\\u2043\\u2219\\u25A0\\u25A1\\u25AA\\u25AB\\u25CB\\u25CF\\u25E6\\uF0A7\\uF0B7'+wing;sourceText=String(sourceText||'').replace(new RegExp('(^|\\s)['+cls+'](?=\\s|$)','g'),(m,s)=>li-->0?s+' ':m);}}
+  // Check marks and stars serve as bullets too ("✅ Buy school supplies", "★ Monday": newsletter, 2026-11-02). Not
+  // arrows: a form's "▶" points at a box (IRS 1040 instructions).
+  {let li=doc.querySelectorAll('li').length;if(li){const outLow=' '+String(doc.body.textContent||'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ')+' ';const wing=['u','l','n','q','v','Ø','ü','§'].filter(c=>outLow.indexOf(' '+c.toLowerCase()+' ')===-1).join('');const cls='\\u2022\\u2023\\u2043\\u2219\\u25A0\\u25A1\\u25AA\\u25AB\\u25CB\\u25CF\\u25E6\\uF0A7\\uF0B7\\u2605\\u2606\\u2705\\u2611\\u2713\\u2714'+wing;sourceText=String(sourceText||'').replace(new RegExp('(^|\\s)['+cls+']\\uFE0F?(?=\\s|$)','g'),(m,s)=>li-->0?s+' ':m);}}
   if(!customListNumbering){
     const normalize=text=>String(text||'').normalize('NFKC').replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').toLowerCase().replace(/\s+/g,' ').trim();
     const sourceNormalized=normalize(sourceText),candidates=[];
@@ -431,12 +465,57 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   // HTML whitespace is not a printed line end: "Nay-</em></p>\n<h2>Election" was joined as "nayelection" by the
   // source's hyphen-wrap rule (agenda, 2026-10-27), so the output's whitespace is collapsed first.
   const source=tokens(sourceText),output=tokens(String(doc.body.textContent||'').replace(/\s+/g,' ')),available=new Map();for(const token of output)available.set(token,(available.get(token)||0)+1);
+  const miss=new Uint8Array(source.length);
+  for(let k=0;k<source.length;k++){if(sourceMarkerCredits.has(k))continue;const token=source[k],count=available.get(token)||0;if(count)available.set(token,count-1);else miss[k]=1;}
+  // Words the text layer glued together ("approvalof", "Oct2019Dragos", "RemovalIn", "DrillDrinkingStraw...": FDA
+  // letter, 1913 scan, notifications, worksheet, 2026-11-02). An unmatched token is credited when the output prints
+  // its pieces as CONSECUTIVE words ("approval of"), right beside the token's own source neighbour, and those words
+  // are still unclaimed. The second reading leaves out figures: picture labels printed as a row in the PDF each
+  // sit above their own figure in the output.
+  const take=list=>{const need=new Map();for(const t of list)need.set(t,(need.get(t)||0)+1);for(const [t,n] of need)if((available.get(t)||0)<n)return false;for(const [t,n] of need)available.set(t,available.get(t)-n);return true;};
+  const flat=t=>String(t||'').replace(/[^\p{L}\p{N}]/gu,'');
+  // Never split a number at its decimal point or thousands comma ("2019.20" is not "2019. 20"; "31,2024" may be
+  // "31, 2024"), and never a word ending in a lone capital ("InformationP"): a label glued on, which the colon rule
+  // above decides ("HarassmentM.S.A.D." starts initials, and may split).
+  const labels=new Set([...String(sourceText||'').normalize('NFKC').matchAll(/([\p{L}\p{N}]*\p{Ll}\p{Lu})(?![\p{L}\p{N}.])/gu)].map(m=>m[1].toLowerCase()));
+  {const body=doc.body.cloneNode(true);body.querySelectorAll('figure').forEach(node=>node.remove());
+    for(const seq of [output,tokens(String(body.textContent||'').replace(/\s+/g,' '))]){
+      const at=new Map();seq.forEach((t,i)=>{const f=flat(t);if(f){if(!at.has(f))at.set(f,[]);at.get(f).push(i);}});
+      for(let k=0;k<source.length;k++){
+        const f=miss[k]&&!labels.has(source[k])?flat(source[k]):'';if(f.length<3||f.length>120)continue;
+        const t=source[k],forbid=new Set();for(let c=0,fi=0;c<t.length;c++){if(/[\p{L}\p{N}]/u.test(t[c])){fi++;continue;}if(/\d/.test(t[c-1]||'')&&/\d/.test(t[c+1]||'')&&(t[c]==='.'||t[c]===','&&/^\d{3}(?!\d)/.test(t.slice(c+1))))forbid.add(fi);}
+        const prev=k?flat(source[k-1]):'',next=k+1<source.length?flat(source[k+1]):'';
+        let done=false;
+        for(let len=1;len<f.length&&!done;len++)for(const p of at.get(f.slice(0,len))||[]){
+          let s=flat(seq[p]),q=p+1;while(s.length<f.length&&q<seq.length&&!forbid.has(s.length)){const n=flat(seq[q]);if(!n||!f.startsWith(s+n))break;s+=n;q++;}
+          if(s!==f||q-p<2)continue;
+          const before=p?flat(seq[p-1]):'',after=q<seq.length?flat(seq[q]):'';
+          if(!((before&&(prev===before||before.length>=3&&prev.endsWith(before)))||(after&&(next===after||after.length>=3&&next.startsWith(after)))))continue;
+          if(take(seq.slice(p,q))){miss[k]=0;done=true;break;}
+        }
+      }
+    }}
+  // A word broken at a line end whose rest the text layer put elsewhere: a column brochure prints "back-" in one
+  // place and "ground" (or "tiveabsences", "Controlcides") far away (notifications, 2026-11-02). An unmatched
+  // fragment printed with a trailing hyphen pairs with the nearest unmatched token whose whole, start or end
+  // completes it into an unclaimed output word; a glued remainder must be an unclaimed output word too.
+  {const heads=new Set();for(const m of String(sourceText||'').normalize('NFKC').matchAll(/(\p{L}{2,})-(?=\s|\p{Ll})/gu))heads.add(m[1].toLowerCase());
+    const open=[];for(let k=0;k<source.length;k++)if(miss[k]&&/^\p{L}+$/u.test(source[k]))open.push(k);
+    for(const k of open){
+      if(!miss[k]||!heads.has(source[k]))continue;
+      const order=open.filter(j=>j!==k&&miss[j]).sort((a,b)=>Math.abs(a-k)-Math.abs(b-k)||b-a);
+      for(const j of order){
+        const z=source[j],opts=[[z,'']];for(let c=2;c<=z.length-2;c++)opts.push([z.slice(0,c),z.slice(c)],[z.slice(c),z.slice(0,c)]);
+        const hit=opts.find(([y,r])=>(available.get(source[k]+y)||0)>0&&take(r?[source[k]+y,r]:[source[k]+y]));
+        if(hit){miss[k]=0;miss[j]=0;break;}
+      }
+    }}
   let missingTokens=0,missingPassageCount=0;const missingPassages=[];let sourceUnit=0;
   // The unmatched words themselves, so a person can search for them: token offsets meant nothing to a
   // teacher (SIE 515 syllabus: 4 "missing" tokens, all a raised "2nd"/"3rd", 2026-10-26). Up to 25 distinct.
   const missingWordCounts=new Map();
   // Bounded chunks give callers source locations even when extraction flattened paragraphs.
-  for(let at=0;at<source.length;at+=40){sourceUnit++;let missing=0;for(let offset=0;offset<Math.min(40,source.length-at);offset++){if(sourceMarkerCredits.has(at+offset))continue;const token=source[at+offset],count=available.get(token)||0;if(count)available.set(token,count-1);else{missing++;if(missingWordCounts.size<25||missingWordCounts.has(token))missingWordCounts.set(token,(missingWordCounts.get(token)||0)+1);}}
+  for(let at=0;at<source.length;at+=40){sourceUnit++;let missing=0;for(let offset=0;offset<Math.min(40,source.length-at);offset++){if(!miss[at+offset])continue;const token=source[at+offset];{missing++;if(missingWordCounts.size<25||missingWordCounts.has(token))missingWordCounts.set(token,(missingWordCounts.get(token)||0)+1);}}
     missingTokens+=missing;if(missing)missingPassageCount++;if(missing&&missingPassages.length<50)missingPassages.push({sourceUnit,startToken:at,expectedTokens:Math.min(40,source.length-at),missingTokens:missing});
   }
   const pageList=Array.isArray(pages)?pages:null;

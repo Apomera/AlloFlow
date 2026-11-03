@@ -3835,11 +3835,13 @@ function _builderSaveStatusLabel(state, at) {
 }
 const _BUILDER_BACKUP_MAX_BYTES = 20 * 1024 * 1024;
 let _builderBackupPurifierPromise = null;
+let _builderBackupPurifier = null;
 function _builderLoadBackupPurifier() {
-  if (window.DOMPurify?.sanitize) return Promise.resolve(window.DOMPurify);
+  if (window.DOMPurify?.version === "3.4.17" && typeof window.DOMPurify.sanitize === "function") _builderBackupPurifier = window.DOMPurify;
+  if (_builderBackupPurifier) return Promise.resolve(_builderBackupPurifier);
   if (_builderBackupPurifierPromise) return _builderBackupPurifierPromise;
   _builderBackupPurifierPromise = (async () => {
-    for (const url of ["/dompurify/3.1.7/purify.min.js", "https://alloflow-cdn.pages.dev/dompurify/3.1.7/purify.min.js"]) {
+    for (const url of ["/dompurify/3.4.17/purify.min.js", "https://alloflow-cdn.pages.dev/dompurify/3.4.17/purify.min.js"]) {
       const loaded = await new Promise((resolve) => {
         const script = document.createElement("script");
         let finished = false;
@@ -3848,15 +3850,21 @@ function _builderLoadBackupPurifier() {
           finished = true;
           window.clearTimeout(timer);
           script.remove();
-          resolve(window.DOMPurify?.sanitize ? window.DOMPurify : null);
+          resolve(window.DOMPurify?.version === "3.4.17" && typeof window.DOMPurify.sanitize === "function" ? window.DOMPurify : null);
         };
         const timer = window.setTimeout(finish, 6e3);
+        script.integrity = "sha384-P0JNneQf81HOl9VwNXK76cQ9VMD6Nfsnepxb0cCOg8+UzEdzgPHAPV4wVQrvYQSx";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
         script.onload = finish;
         script.onerror = finish;
         script.src = url;
         document.head.appendChild(script);
       });
-      if (loaded) return loaded;
+      if (loaded) {
+        _builderBackupPurifier = loaded;
+        return loaded;
+      }
     }
     throw new Error("The backup reader could not load. Check your connection and choose the file again.");
   })().finally(() => {
@@ -4369,6 +4377,29 @@ try {
   }
 } catch (_) {
 }
+function _removeStudentPackageTeacherSections(root) {
+  const teacherOnly = Array.from(root.querySelectorAll(".teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner"));
+  teacherOnly.forEach((node) => {
+    const prior = node.previousElementSibling;
+    if (prior?.classList.contains("page-break")) prior.remove();
+    node.remove();
+  });
+  return teacherOnly.length;
+}
+function _guidedStudentDocumentSnapshot(clean, route, config) {
+  if (!clean?.clone || !clean.doc?.body) return null;
+  const root = clean.clone;
+  const economy = clean.doc.body.dataset.alloflowWordWallPrint === "economical";
+  const hasKey = route === "print" && !config?.assessmentMode && !economy && !!root.querySelector(".answer-key, .page-break + .teacher-view");
+  _removeStudentPackageTeacherSections(root);
+  root.querySelectorAll('script,iframe,object,embed,base,meta[http-equiv="refresh"]').forEach((node) => node.remove());
+  root.querySelectorAll("a[href]").forEach((node) => node.removeAttribute("href"));
+  const policy = clean.doc.createElement("meta");
+  policy.httpEquiv = "Content-Security-Policy";
+  policy.content = "default-src 'none'; img-src data: blob: http: https:; style-src 'unsafe-inline'; font-src data:; form-action 'none'";
+  root.querySelector("head")?.prepend(policy);
+  return { html: "<!DOCTYPE html>\n" + root.outerHTML, hasKey };
+}
 function ExportPreviewView(props) {
   const {
     BUILT_IN_PRESETS,
@@ -4435,6 +4466,10 @@ function ExportPreviewView(props) {
     builderDraftOwner = null,
     onBuilderDraftCapture,
     onExportSuccess,
+    guidedDocumentReview,
+    guidedDocumentKey,
+    confirmGuidedDocumentReview,
+    dismissGuidedDocumentReview,
     builderWorkspaceMode = "author",
     setBuilderWorkspaceMode,
     onAdvancedReviewSessionChange
@@ -8743,16 +8778,11 @@ ${pageCss}
         const built = getCleanBuilderDocument({ forExport: true });
         if (!built) throw new Error("The editable preview is not ready.");
         const studentRoot = built.clone || new DOMParser().parseFromString(built.html, "text/html").documentElement;
-        const teacherOnly = Array.from(studentRoot.querySelectorAll(".teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner"));
-        teacherOnly.forEach((node) => {
-          const prior = node.previousElementSibling;
-          if (prior?.classList?.contains("page-break")) prior.remove();
-          node.remove();
-        });
-        const clean = teacherOnly.length ? { ...built, html: "<!DOCTYPE html>\n" + studentRoot.outerHTML } : built;
+        const teacherSections = _removeStudentPackageTeacherSections(studentRoot);
+        const clean = teacherSections ? { ...built, html: "<!DOCTYPE html>\n" + studentRoot.outerHTML } : built;
         const succeeded = await handler({ liveHtml: clean.html, liveTitle: clean.title });
         if (succeeded !== true) return;
-        if (teacherOnly.length && addToast) {
+        if (teacherSections && addToast) {
           const __t = (key, english) => t && t(key) || english;
           addToast(__t("export_preview.ims_student_copy_only", "The IMS package holds the student copy only. Teacher-only sections, such as an answer key or lesson plan, were left out. Use Download HTML for the private teacher copy."), "info");
         }
@@ -8960,6 +8990,21 @@ ${pageCss}
       }
     },
     /* @__PURE__ */ React.createElement("style", null, _BUILDER_RESPONSIVE_LAYOUT_CSS),
+    guidedDocumentReview && /* @__PURE__ */ React.createElement(
+      GuidedStudentDocumentReview,
+      {
+        key: guidedDocumentReview.route + guidedDocumentReview.key,
+        request: guidedDocumentReview,
+        currentKey: guidedDocumentKey,
+        frameRef: exportPreviewRef,
+        getClean: getCleanBuilderDocument,
+        config: exportConfig,
+        confirm: confirmGuidedDocumentReview,
+        dismiss: dismissGuidedDocumentReview,
+        close: () => setShowExportPreview(false),
+        t
+      }
+    ),
     pendingImageFile && /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -11396,6 +11441,80 @@ ${pageCss}
     ].map(([label, documentValue, selectionValue]) => /* @__PURE__ */ React.createElement("tr", { key: label, className: "border-t border-slate-100" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "px-2 py-1 text-left font-semibold text-slate-600" }, label), /* @__PURE__ */ React.createElement("td", { className: "px-2 py-1 text-right tabular-nums" }, Number(documentValue || 0).toLocaleString()), selectionStatistics.active && /* @__PURE__ */ React.createElement("td", { className: "px-2 py-1 text-right tabular-nums" }, selectionValue == null ? /* @__PURE__ */ React.createElement("span", { role: "img", "aria-label": t("export_preview.accessibility.not_applicable") || "Not applicable" }, "\u2014") : Number(selectionValue || 0).toLocaleString())))))), /* @__PURE__ */ React.createElement("dl", { className: "mt-2 grid grid-cols-2 gap-2 text-[10px]" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg bg-indigo-50 px-2 py-1.5" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold text-indigo-800" }, "Reading time"), /* @__PURE__ */ React.createElement("dd", null, documentStatistics.readingMinutes || 0, " min at 225 wpm")), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg bg-violet-50 px-2 py-1.5" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold text-violet-800" }, "Speaking time"), /* @__PURE__ */ React.createElement("dd", null, documentStatistics.speakingMinutes || 0, " min at 130 wpm"))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "builder-word-count-goal", className: "text-[10px] font-bold text-slate-600" }, "Word goal"), /* @__PURE__ */ React.createElement("input", { id: "builder-word-count-goal", type: "number", min: "0", step: "50", value: wordGoal || "", onChange: (event) => setWordGoal(Math.max(0, parseInt(event.target.value, 10) || 0)), placeholder: "None", className: "h-7 w-24 rounded border border-slate-400 bg-white px-1.5 text-[11px]" }), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] font-semibold text-slate-600" }, wordGoalProgress.goal > 0 ? `${wordGoalProgress.percent}%` : "No goal")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200", role: "progressbar", "aria-label": t("export_preview.accessibility.word_count_goal_progress") || "Word-count goal progress", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": wordGoalProgress.percent, "aria-valuetext": wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words` : "No word-count goal set" }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none", style: { width: `${wordGoalProgress.percent}%` } }))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[9px] leading-snug text-slate-500" }, "Counts exclude headers, footers, page controls, and other editor-only interface text."))), /* @__PURE__ */ React.createElement("span", null, "Page ", pageMetrics.active + 1, " of ", pageMetrics.count), /* @__PURE__ */ React.createElement("details", { className: "builder-status-details relative", onKeyDownCapture: handleBuilderMenuEscape }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer rounded px-2 py-1 font-semibold hover:bg-slate-200" }, "Details & shortcuts"), /* @__PURE__ */ React.createElement("div", { className: "builder-status-popover absolute bottom-full left-0 mb-2 rounded-lg border border-slate-300 bg-white p-3 shadow-xl space-y-2" }, /* @__PURE__ */ React.createElement("p", { "data-builder-document-context": true }, documentSourceLabel, !isRemediationDocument && " \xB7 " + includedResourceCount + " of " + resourceItems.length + " resources"), /* @__PURE__ */ React.createElement("p", null, headingOutline.length, " headings \xB7 Section ", pageMetrics.activeSection + 1, " of ", pageMetrics.documentSections.length, ": ", activeDocumentSection.name), /* @__PURE__ */ React.createElement("p", null, "Focus the preview and edit text directly"), /* @__PURE__ */ React.createElement("p", null, "Ctrl+Enter page break \xB7 Ctrl+Alt+F footnote \xB7 F9 update fields \xB7 Ctrl+Shift+Enter focus mode \xB7 Ctrl+Shift+G word count \xB7 Ctrl+Z undo"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetBuilderViewPreferences, className: "min-h-8 rounded px-2 font-semibold text-indigo-700 hover:bg-indigo-50", "aria-label": t("export_preview.accessibility.reset_builder_view_preferences") || "Reset Builder view preferences" }, "Reset view")))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("select", { "aria-label": t("export_preview.accessibility.preview_zoom_mode") || "Preview zoom mode", value: editorZoomMode, onChange: (event) => event.target.value === "custom" ? setCustomEditorZoom(editorZoom) : useEditorZoomPreset(event.target.value), className: "h-8 rounded border border-slate-300 bg-white px-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("option", { value: "fit-width" }, "Fit width"), /* @__PURE__ */ React.createElement("option", { value: "fit-page" }, "Fit page"), /* @__PURE__ */ React.createElement("option", { value: "custom" }, "Custom zoom")), /* @__PURE__ */ React.createElement("div", { role: "group", className: "flex items-center gap-1", "aria-label": t("export_preview.accessibility.editor_zoom_controls") || "Editor zoom controls" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCustomEditorZoom((value) => value - 5), className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": t("export_preview.accessibility.zoom_out") || "Zoom out", title: t("export_preview.accessibility.zoom_out") || "Zoom out" }, "\u2212"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "50", max: "200", step: "5", value: editorZoom, onChange: (event) => setCustomEditorZoom(Number(event.target.value)), className: "w-24 accent-indigo-600", "aria-label": t("export_preview.accessibility.editor_zoom") || "Editor zoom", "aria-valuetext": `${editorZoomMode === "custom" ? "" : editorZoomMode === "fit-width" ? "Fit width, " : "Fit page, "}${editorZoom} percent` }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCustomEditorZoom((value) => value + 5), className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": t("export_preview.accessibility.zoom_in") || "Zoom in", title: t("export_preview.accessibility.zoom_in") || "Zoom in" }, "+"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCustomEditorZoom(100), className: "min-w-12 rounded px-1.5 py-1 font-semibold text-indigo-700 hover:bg-indigo-100", "aria-label": t("export_preview.accessibility.reset_editor_zoom_to_100_percent") || "Reset editor zoom to 100 percent", title: t("export_preview.accessibility.reset_editor_zoom") || "Reset editor zoom" }, editorZoom, "%"))))))
   );
 }
+function GuidedStudentDocumentReview({ request, currentKey, frameRef, getClean, config, confirm, dismiss, close, t }) {
+  const dialogRef = React.useRef(null);
+  const [snapshot, setSnapshot] = React.useState(null);
+  const [loaded, setLoaded] = React.useState(null);
+  const [failed, setFailed] = React.useState(false);
+  const current = !!currentKey && currentKey === request.key;
+  const isPrint = request.route === "print";
+  const label = (key, fallback) => {
+    const value = t("guided." + key);
+    return value && value !== "guided." + key ? value : fallback;
+  };
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (typeof dialog?.showModal === "function") dialog.showModal();
+    else if (dialog) dialog.open = true;
+    return () => {
+      if (dialog?.open && typeof dialog.close === "function") dialog.close();
+    };
+  }, []);
+  React.useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || !current) return;
+    const refresh = () => {
+      const body = frame.contentDocument?.body;
+      if (!body || body.hasAttribute("data-allo-preview-pending") || !body.textContent.trim()) {
+        setSnapshot(null);
+        return;
+      }
+      try {
+        if (body.hasAttribute("data-allo-preview-error")) throw new Error("Preview failed");
+        const next = _guidedStudentDocumentSnapshot(getClean({ forExport: true }), request.route, config);
+        setFailed(!next);
+        setSnapshot((previous) => !next ? null : previous?.html === next.html && previous?.hasKey === next.hasKey ? previous : { ...next, revision: (previous?.revision || 0) + 1 });
+      } catch (_) {
+        setFailed(true);
+        setSnapshot(null);
+      }
+    };
+    frame.addEventListener("load", refresh);
+    frame.addEventListener("alloflow-builder-document-written", refresh);
+    refresh();
+    return () => {
+      frame.removeEventListener("load", refresh);
+      frame.removeEventListener("alloflow-builder-document-written", refresh);
+    };
+  }, [frameRef, current, getClean, request, config]);
+  const title = isPrint ? label("review_print_open", "Preview student print pages") : label("review_lms_open", "Preview student package");
+  return /* @__PURE__ */ React.createElement(
+    "dialog",
+    {
+      ref: dialogRef,
+      "aria-labelledby": "guided-student-document-title",
+      onCancel: (event) => {
+        event.preventDefault();
+        close();
+      },
+      className: "m-auto w-[94vw] max-w-5xl rounded-xl bg-white p-4 text-slate-900 shadow-2xl"
+    },
+    /* @__PURE__ */ React.createElement("h2", { id: "guided-student-document-title", className: "text-lg font-bold" }, title),
+    current && snapshot && !failed ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "my-2", role: "status" }, isPrint ? snapshot.hasKey ? label("review_print_key_yes", "The full print file includes a teacher answer-key section. Set those pages aside before handing out the student pages.") : label("review_print_key_no", "The print file has no marked teacher answer-key section.") : label("review_lms_note", "These are the student lesson pages used by the IMS content package. After import, use your LMS student view to check activity visibility, scoring and feedback.")), /* @__PURE__ */ React.createElement("iframe", { key: snapshot.revision, sandbox: "", srcDoc: snapshot.html, title, onLoad: () => setLoaded(snapshot), className: "block h-[58vh] w-full rounded border border-slate-400" })) : /* @__PURE__ */ React.createElement("p", { className: "my-3", role: "status" }, !current || failed ? label("review_unavailable", "This preview is unavailable or the lesson changed. Reopen it from Guided Mode.") : label("review_loading", "Preparing the student pages\u2026")),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "min-h-11 rounded bg-indigo-700 px-3 font-bold text-white disabled:opacity-50",
+        disabled: !current || failed || !snapshot || loaded !== snapshot,
+        onClick: () => {
+          if (confirm?.(request, snapshot.hasKey)) close();
+        }
+      },
+      label("review_confirm", "I reviewed these student pages")
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: dismiss, className: "min-h-11 rounded border border-slate-400 px-3" }, label("review_edit", "Edit in Document Builder")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: close, className: "min-h-11 rounded border border-slate-400 px-3" }, label("review_close", "Return to Guided Mode")))
+  );
+}
 async function updateExportPreview(deps) {
   const {
     exportPreviewRef,
@@ -11472,6 +11591,7 @@ async function updateExportPreview(deps) {
   doc.open();
   doc.write(html);
   doc.close();
+  iframe.dispatchEvent?.(new Event("alloflow-builder-document-written"));
   iframe.__alloInitializeBuilderDocument = (doc2) => {
     try {
       doc2.designMode = "on";

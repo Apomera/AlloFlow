@@ -23,7 +23,7 @@ for (const mode of ['mutated-content', 'safe-style']) {
       // The pipeline also injects axe into audit frames and loads DOMPurify on
       // demand. Fulfill those pinned-library URLs locally, with no network.
       if (/\/axe-core(?:\/|@)4\.12\.1\/(?:axe\.min\.js)/.test(url)) return route.fulfill({ contentType: 'text/javascript', body: fs.readFileSync(vendor('axe.min.js')) });
-      if (/\/dompurify(?:\/|@)3\.1\.7\/(?:dist\/)?purify\.min\.js/.test(url)) return route.fulfill({ contentType: 'text/javascript', body: fs.readFileSync(path.join(root, 'dompurify/3.1.7/purify.min.js')) });
+      if (/\/dompurify(?:\/|@)3\.1\.7\/(?:dist\/)?purify\.min\.js/.test(url)) return route.fulfill({ contentType: 'text/javascript', body: fs.readFileSync(path.join(root, 'dompurify/3.4.17/purify.min.js')) });
       if (/^(?:blob:|data:|about:)/.test(url)) return route.continue();
       externalRequests.push(url);
       return route.abort();

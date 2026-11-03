@@ -24,7 +24,7 @@ const ENGINES = [
   { path: 'mammoth/1.6.0/mammoth.browser.min.js', sha256: '596ef52239e52d8ee3cee10b2ee4a72596abf900d0e4f468593f956e9f1809b0', list: "_loadCdnScript('mammoth', [" },
   { path: 'jszip/3.10.1/jszip.min.js', sha256: 'acc7e41455a80765b5fd9c7ee1b8078a6d160bbbca455aeae854de65c947d59e', list: "_loadCdnScript('jszip', [" },
   // Raw-HTML sanitizer: without it Canvas fell back to the regex baseline (fail-closed, but weaker).
-  { path: 'dompurify/3.1.7/purify.min.js', sha256: '6407576993a5aa1303eaf9fefb95e5cfc1c0c80645bd3717db671727e6b55b91', list: '_DOMPURIFY_CDN_URLS = [' },
+  { path: 'dompurify/3.4.17/purify.min.js', sha256: 'cd37898f9782adf54820c413191b5691803f0f137c799d6edcfd38523b4c2c31', list: '_DOMPURIFY_CDN_URLS = [' },
 ];
 
 function between(source, start, end) {

@@ -32,20 +32,30 @@ function text(value, limit = 200) {
 
 /**
  * Keep this implementation in parity with calculateReadability in the host.
- * The parity regression test extracts the host function and checks every corpus
+ * The parity regression test loads the host module and checks every corpus
  * sample, so either implementation changing alone fails visibly.
  */
 function calculateReadability(source) {
   if (!source) return null;
-  const cleanText = String(source)
+  const cleanText = String(source).replace(/\r\n?/g, '\n')
+    .replace(/^[ \t]{0,3}#{1,6}[ \t]+([^\n]+)/gm, '\n\n$1\n\n')
+    .replace(/^[ \t]*(?:[-*+•]|\d+[.)])[ \t]+/gm, '\n\n')
     .replace(/https?:\/\/[^\s]+/g, '')
     .replace(/\[.*?\]\(.*?\)/g, (match) => match.match(/\[(.*?)\]/)?.[1] || '')
     .replace(/\[\d+\]/g, '')
     .replace(/[#*`]/g, '');
   if (cleanText.trim().length === 0) return null;
   const sentenceText = cleanText
-    .replace(/(\r\n|\n|\r)/gm, '|')
-    .replace(/^[-*\u2022]\s+/gm, '')
+    .replace(/\n[ \t]*\n/g, '|')
+    .replace(/\n/g, ' ')
+    .replace(/(\d)\.(?=\d)/g, '$1\u2060')
+    .replace(/\b(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St)\.(?=\s+[A-Za-z0-9])/gi, value => value.replace('.', '\u2060'))
+    .replace(/\b(?:e\.g|i\.e)\.(?=\s*\S)/gi, value => value.replace(/\./g, '\u2060'))
+    .replace(/\b(?:[A-Za-z]\.){2,}/g, value => value.slice(0, -1).replace(/\./g, '\u2060') + '.')
+    .replace(/\b(?:[A-Za-z]\u2060)+[A-Za-z]\.(?=\s+[a-z])/g, value => value.replace(/\./g, '\u2060'))
+    .replace(/\b(?:[A-Z]\.[ \t]+)+[A-Z]\.(?=[ \t]+[A-Z][a-z])/g, value => value.replace(/\./g, '\u2060'))
+        .replace(/\b(?:[Ff]ig|[Nn]o)\.(?=\s+\d)/g, value => value.replace('.', '\u2060'))
+    .replace(/\b(?:[Ee]tc|[Vv]s|[Aa]pprox)\.(?=\s+[a-z0-9])/g, value => value.replace('.', '\u2060'))
     .replace(/([.!?]+)/g, '$1|');
   const sentenceParts = sentenceText.split('|').filter((sentence) => {
     const trimmed = sentence.trim();

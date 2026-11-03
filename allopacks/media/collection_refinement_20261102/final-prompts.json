@@ -1,0 +1,15 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "key": "egypt_context",
+      "prompt": "Use case: historical-scene. Educational symbolic context illustration, sophisticated abstract cut-paper collage and stencil printmaking on ivory papergrain, indigo teal copper. Winding river ribbon, simple cultivated grain plots, stalks of grain, clay storage jar and a broken pottery fragment with geometric decoration but no writing. Strictly NO buildings, pyramids, stepped forms, architecture, people, maps or hieroglyphs. No realistic rendering, cartoons, faces, mascots, text, letters, numbers, logos or watermark. Conceptual river/agriculture/material-evidence context, not a claimed archaeological reconstruction. Square, interesting layered composition.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-b9fcafbd-3464-4221-b1ee-496d271b0060.png"
+    },
+    {
+      "key": "fair_access",
+      "prompt": "Use case: stylized-concept. Educational glossary illustration of fairness as supporting access to a shared activity. Sophisticated abstract cut-paper collage and stencil printmaking on ivory papergrain, indigo teal copper. Two equally prominent work areas with blank writing cards, one arranged at low height and one at high height; adjustable simple platforms and distinct tool grips indicate different ways to reach and use the same materials. No people or body comparisons, hierarchy, winner, identical-cups metaphor, labels or results. Nonrealistic and noncartoon, no faces, mascots, words, letters, digits, grading marks, watermark or logo. Square, clear symbolic composition.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-50d36726-8c17-4f1a-858f-7c1c260912b5.png"
+    }
+  ]
+}

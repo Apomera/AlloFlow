@@ -7,8 +7,8 @@ const sources = Object.fromEntries(['translation_feedback_module.js', 'item_corr
 const windows = [];
 const privateLocation = 'https://metadata-user:metadata-password@school.example/private-canvas-link/path-secret?allo_mb=join-secret&api_key=query-secret#fragment-secret';
 const cases = [
-  { name: 'translation', file: 'translation_feedback_module.js', api: 'TranslationFeedback', prefix: 'allo-tfb', route: '/submitTranslation', context: { key: 'ui.label', current: 'Public source text', language: 'Spanish' } },
-  { name: 'item correction', file: 'item_correction_module.js', api: 'ItemCorrection', prefix: 'allo-ic', route: '/submitItemCorrection', context: { packId: 'public-pack', packTitle: 'Public practice pack', itemId: 'public-item', prompt: 'Public question', currentAnswer: 'B', domain: 'math', reviewTier: 'source-reviewed' } }
+  { name: 'translation', file: 'translation_feedback_module.js', api: 'TranslationFeedback', prefix: 'allo-tfb', route: '/v2/submitTranslation', context: { key: 'ui.label', current: 'Public source text', language: 'Spanish' } },
+  { name: 'item correction', file: 'item_correction_module.js', api: 'ItemCorrection', prefix: 'allo-ic', route: '/v2/submitItemCorrection', context: { packId: 'public-pack', packTitle: 'Public practice pack', itemId: 'public-item', prompt: 'Public question', currentAnswer: 'B', domain: 'math', reviewTier: 'source-reviewed' } }
 ];
 
 function boot(entry, options = {}) {
@@ -16,7 +16,7 @@ function boot(entry, options = {}) {
   const w = dom.window;
   windows.push(w);
   if ('policy' in options) w.ALLOFLOW_SUPPORT_REPORTING_POLICY = options.policy;
-  w.fetch = vi.fn(options.fetch || (() => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true }) })));
+  w.fetch = vi.fn(options.fetch || (() => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true, storage: 'private' }) })));
   w.open = vi.fn(() => null);
   w.eval(sources[entry.file]);
   const api = w.AlloModules[entry.api];
@@ -62,7 +62,7 @@ for (const entry of cases) describe(entry.name + ' community privacy boundary', 
     expect(h.id('err').textContent).toMatch(/disabled in this managed deployment/);
   });
 
-  it('blocks late form fallback after policy is installed during an in-flight default request', async () => {
+  it('retains the managed policy guard after an in-flight default request fails', async () => {
     let reject;
     const h = boot(entry, { fetch: () => new Promise((_resolve, rejectRequest) => { reject = rejectRequest; }) });
     draft(h);
@@ -76,7 +76,7 @@ for (const entry of cases) describe(entry.name + ' community privacy boundary', 
     expect(h.id('suggest').value).toBe('A reviewed public correction.');
   });
 
-  it('preserves the existing default contribution route and payload without attaching location metadata', async () => {
+  it('uses the private review route without attaching location metadata', async () => {
     const h = boot(entry);
     draft(h);
     expect(h.id('send').disabled).toBe(false);
@@ -95,42 +95,41 @@ for (const entry of cases) describe(entry.name + ' community privacy boundary', 
     expect(h.w.document.body.textContent).toMatch(/sent for review/);
   });
 
-  it('uses origin-only metadata in the default form fallback, preserving intentional source content', async () => {
+  it('retains source context and the draft without opening a fallback destination', async () => {
     const h = boot(entry, { fetch: () => Promise.reject(new Error('Synthetic offline')) });
     const context = { ...entry.context, current: 'Reference https://reference.example/topic?term=algebra#definition', prompt: 'Reference https://reference.example/topic?term=algebra#definition' };
     h.open(context);
     h.id('suggest').value = 'Keep the original public source link.';
     h.id('send').click();
     await settle();
-    expect(h.w.open).toHaveBeenCalledTimes(1);
-    expect(h.w.open.mock.calls[0].slice(1)).toEqual(['_blank', 'noopener,noreferrer']);
-    const url = new URL(h.w.open.mock.calls[0][0]);
-    expect(url.origin).toBe('https://docs.google.com');
-    expect(url.searchParams.get('entry.1969020676')).toBe('URL: https://school.example');
-    expect(url.searchParams.get('entry.234547532')).toContain('https://reference.example/topic?term=algebra#definition');
-    const decoded = decodeURIComponent(h.w.open.mock.calls[0][0]);
-    for (const canary of ['metadata-user', 'metadata-password', 'private-canvas-link', 'path-secret', 'join-secret', 'query-secret', 'fragment-secret']) expect(decoded).not.toContain(canary);
+    expect(h.w.open).not.toHaveBeenCalled();
+    expect(h.id('suggest').value).toBe('Keep the original public source link.');
+    expect(h.id('err').textContent).toMatch(/not confirmed/);
+    expect(h.id('send').disabled).toBe(false);
+    const sent = h.w.fetch.mock.calls[0][1].body;
+    expect(sent).toContain('https://reference.example/topic?term=algebra#definition');
+    for (const canary of ['metadata-user', 'metadata-password', 'private-canvas-link', 'path-secret', 'join-secret', 'query-secret', 'fragment-secret']) expect(sent).not.toContain(canary);
   });
 
-  it('uses a generic marker for opaque embedded locations', async () => {
+  it('keeps failed embedded-page submissions local without opening another destination', async () => {
     const h = boot(entry, { url: 'about:srcdoc', fetch: () => Promise.reject(new Error('Synthetic offline')) });
     draft(h);
     h.id('send').click();
     await settle();
-    const url = new URL(h.w.open.mock.calls[0][0]);
-    expect(url.searchParams.get('entry.1969020676')).toBe('Public supporting explanation.\n\nURL: [embedded app]');
+    expect(h.w.open).not.toHaveBeenCalled();
+    expect(h.id('suggest').value).toBe('A reviewed public correction.');
+    expect(h.w.location.href).toBe('about:srcdoc');
   });
 
-  it('retains the draft and current page when opening a fallback form throws', async () => {
-    const h = boot(entry, { fetch: () => Promise.reject(new Error('Synthetic offline')) });
-    h.w.open.mockImplementation(() => { throw new Error('Synthetic popup failure'); });
+  it('retains the draft when a server success does not confirm private storage', async () => {
+    const h = boot(entry, { fetch: () => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true, path: 'legacy/public/pending.json' }) }) });
     draft(h);
     h.id('send').click();
     await settle();
-    expect(h.w.open).toHaveBeenCalledTimes(1);
+    expect(h.w.open).not.toHaveBeenCalled();
     expect(h.w.location.href).toBe(privateLocation);
     expect(h.id('suggest').value).toBe('A reviewed public correction.');
-    expect(h.id('err').textContent).toMatch(/form could not be opened/);
+    expect(h.id('err').textContent).toMatch(/not confirmed/);
     expect(h.id('send').disabled).toBe(false);
   });
 });

@@ -1,9 +1,10 @@
+import {React,ReactDOMClient,resetStemLab} from './helpers/stem_widgets_smoke_harness.js';
 import { beforeAll, afterAll, beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 const require=createRequire(import.meta.url),THREE=require('../vendor/three-r128/three.min.js');
-const core=readFileSync('stem_lab/stem_tool_geometryworld.js','utf8'),builder=readFileSync('stem_lab/stem_tool_geometryworld_builder.js','utf8');
+const core=readFileSync('stem_lab/stem_tool_geometryworld.js','utf8'),builder=readFileSync(process.env.GW_SELECTION_FOCUS_CANDIDATE || 'stem_lab/stem_tool_geometryworld_builder.js','utf8');
 function slice(source,start,end){const a=source.indexOf(start),b=source.indexOf(end,a);if(a<0||b<a)throw new Error('Missing focus source '+start);return source.slice(a,b);}
 const makeShape=new Function(slice(core,'  function createShapeGeometry(','  // Format fractional volume for display')+';return createShapeGeometry;')();
 const releaseSource=slice(core,'engine.releaseInput = function()','engine.refreshTouchActivity = function');
@@ -111,4 +112,70 @@ describe('Focus creation lifecycle through the public builder API',()=>{
     e.restoreCreationView();expect(e.velocity.toArray()).toEqual([0,0,0]);expect(e.moveState.forward).toBe(false);e.updateCreationFocus(.5);flushRaf();expect(document.activeElement).toBe(control);expect(e.isInputActive()).toBe(false);expect(e.flyMode).toBe(true);
   });
 
+});
+
+describe('framing focus yields to a newer Free Build Studio action',()=>{
+ let componentFixture,app;
+ const query=selector=>app.host.querySelector(selector);
+ function frames(rounds=1){for(let i=0;i<rounds;i++)React.act(()=>flushRaf());}
+ function timers(){React.act(()=>vi.advanceTimersByTime(0));}
+ function activate(node){expect(node).toBeTruthy();React.act(()=>{node.focus();node.click();});}
+ function exactState(){const state=componentFixture.worldState(app.engine);delete state.camera;return {...state,selection:JSON.stringify(app.engine._builderSelection),form:JSON.stringify(app.state())};}
+ function frameCreation(){activate(app.button('Focus creation'));expect(app.engine._creationFocus).toBeTruthy();}
+ function expand(){activate(query('[aria-label="Expand Free Build Studio"]'));}
+ function finder(){activate(query('.gwe-tool-finder-toggle'));expect(query('.gwe-builder-dock').dataset.finder).toBe('true');}
+ beforeEach(()=>{
+  reduced=true;
+  const lab=resetStemLab();lab.registerTool('geometryWorld',{aliases:[],render(ctx){return ctx.React.createElement('main',{id:'geoworld-fs-workspace'},ctx.React.createElement('div',{id:'geoworld-fs-wrap',tabIndex:0}));}});
+  new Function(builder)();api=window.StemLab.geometryWorldBuilderPure;
+  const inspector=readFileSync('tests/geometry_world_selected_inspector.test.js','utf8'),helpers=inspector.slice(inspector.indexOf('const key='),inspector.indexOf('function precedes('));
+  componentFixture=new Function('React','ReactDOMClient','THREE','makeShape','api','vi','let mounted;'+helpers+';return {mount,worldState,cleanup(){if(mounted){React.act(()=>mounted.root.unmount());mounted.host.remove();mounted=null;}}};')(React,ReactDOMClient,THREE,makeShape,api,vi);
+  app=componentFixture.mount();React.act(()=>vi.advanceTimersByTime(300));frames(3);timers();rafQueue.clear();
+ });
+ afterEach(()=>{if(app.engine.disposeCreationFocus)app.engine.disposeCreationFocus();componentFixture.cleanup();});
+ it('preserves the ordinary frame-to-world focus and intended camera movement',()=>{
+  const before=exactState(),camera=app.engine.camera.position.toArray();frameCreation();frames(2);timers();
+  expect(document.activeElement).toBe(query('#geoworld-fs-wrap'));expect(app.engine.camera.position.toArray()).not.toEqual(camera);
+  before.form=JSON.stringify(app.state());expect(exactState()).toEqual(before);expect(app.engine._creationFocus.transition).toBeNull();
+ });
+ it('recognizes that a null camera transition does not mean queued framing has started',()=>{
+  frameCreation();expect(app.engine._creationFocus.transition).toBeNull();expect(rafQueue.size).toBeGreaterThan(0);frames(1);expect(app.engine._creationFocus.transition).toBeNull();
+  frames(1);expect(app.engine._creationFocus.frame).toBeTruthy();
+ });
+ it('preserves the finder search focus when framing frames arrive after Expand and Find a tool',()=>{
+  frameCreation();expand();finder();const input=query('#gwe-tool-query');expect(document.activeElement).toBe(input);frames(2);const before=exactState(),camera=app.engine.camera.position.toArray();timers();
+  expect(document.activeElement).toBe(input);expect(query('.gwe-builder-dock').dataset.finder).toBe('true');expect(exactState()).toEqual(before);expect(app.engine.camera.position.toArray()).toEqual(camera);
+ });
+ it('preserves a select result between native focus and Enter activation in the final timer gap',()=>{
+  frameCreation();frames(2);expand();finder();const result=query('[data-tool="select"]');React.act(()=>result.focus());const before=exactState();timers();
+  expect(document.activeElement).toBe(result);React.act(()=>document.activeElement.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,detail:0})));frames(2);timers();
+  expect(query('.gwe-builder-dock').dataset.finder).toBe('false');expect(document.activeElement).toBe(query('.gwe-direct-controls > summary'));expect(query('.gwe-direct-controls').open).toBe(true);
+  before.form=JSON.stringify(app.state());expect(exactState()).toEqual(before);
+ });
+ it.each(['pointerdown','touchstart','keydown','click','input','change'])('remembers newer %s while automatic world focus is pending',type=>{
+  frameCreation();frames(2);const control=query('.gwe-collapse');React.act(()=>control.dispatchEvent(type==='keydown'?new KeyboardEvent(type,{key:'Tab',bubbles:true}):new Event(type,{bubbles:true})));timers();expect(document.activeElement).not.toBe(query('#geoworld-fs-wrap'));
+ });
+ it('remembers genuine newer focus even if it later returns to the originating node',()=>{
+  const origin=query('.gwe-collapse');React.act(()=>{origin.focus();api.focusSelectedBuild(app.ctx());});frames(2);const other=document.createElement('button');app.host.querySelector('main').appendChild(other);React.act(()=>{other.focus();origin.focus();});timers();expect(document.activeElement).toBe(origin);
+ });
+ it('does not focus the world after the framing state is disposed in the final task gap',()=>{
+  frameCreation();frames(2);React.act(()=>app.engine.disposeCreationFocus());timers();expect(document.activeElement).not.toBe(query('#geoworld-fs-wrap'));
+ });
+ it('declines an opened modal without moving focus from the allowed origin',()=>{
+  frameCreation();frames(2);const modal=document.createElement('section');modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');app.host.querySelector('main').appendChild(modal);timers();expect(document.activeElement).not.toBe(query('#geoworld-fs-wrap'));
+ });
+ it.each(['engine','lesson','transition','hidden','detached'])('declines an obsolete %s ownership at the final task',kind=>{
+  frameCreation();frames(2);const engine=app.engine,root=query('#geoworld-fs-workspace');
+  if(kind==='engine')window.__geoWorldEngine={};if(kind==='lesson')engine._currentLesson={sandbox:true};if(kind==='transition')engine._pendingWorldTransition=true;if(kind==='hidden')root.hidden=true;if(kind==='detached')app.host.remove();
+  timers();expect(document.activeElement).not.toBe(root.querySelector('#geoworld-fs-wrap'));window.__geoWorldEngine=engine;
+ });
+ it('retains only the newest camera request and removes focus listeners on disposal',()=>{
+  const add=vi.spyOn(document,'addEventListener'),remove=vi.spyOn(document,'removeEventListener');frameCreation();frames(2);React.act(()=>api.focusSelectedBuild(app.ctx()));frames(2);React.act(()=>app.engine.disposeCreationFocus());timers();
+  const listeners=add.mock.calls.filter(call=>call[0]==='focusin').map(call=>call[1]);expect(listeners.length).toBe(2);for(const listener of listeners)expect(remove.mock.calls.some(call=>call[0]==='focusin'&&call[1]===listener)).toBe(true);expect(document.activeElement).not.toBe(query('#geoworld-fs-wrap'));
+ });
+
+ it.each([['destroyed',0],['destroyed',1],['replaced',0],['replaced',1]])('cleans owned camera focus after %s abort following %s layout frames', (kind,count)=>{
+  const add=vi.spyOn(document,'addEventListener'),remove=vi.spyOn(document,'removeEventListener');frameCreation();const state=app.engine._creationFocus;if(count)frames(1);if(kind==='destroyed')app.engine._destroyed=true;else app.engine._creationFocus={replacement:true};frames(2);timers();
+  const listeners=add.mock.calls.filter(call=>call[0]==='focusin').map(call=>call[1]);expect(listeners.length).toBe(1);for(const listener of listeners)expect(remove.mock.calls.some(call=>call[0]==='focusin'&&call[1]===listener)).toBe(true);expect(state.focusRequest).toBeNull();expect(rafQueue.size).toBe(0);expect(document.activeElement).not.toBe(query('#geoworld-fs-wrap'));app.engine._creationFocus=state;app.engine._destroyed=false;
+ });
 });

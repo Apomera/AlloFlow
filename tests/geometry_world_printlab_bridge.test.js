@@ -102,7 +102,7 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
     });
 
     it(`selects student work and preserves its measurement for Print Lab — ${path}`, () => {
-      expect(source).toContain('function openSelectedBuildInPrintLab(ctx)');
+      expect(source).toContain('function openSelectedBuildInPrintLab(');
       // The ground is refused by its measurement layer. It used to be refused by
       // being grass, which also refused a student's own grass blocks.
       expect(source).toContain('if (!engine || !gp || !isStudentBlock(data)) {');
@@ -926,7 +926,7 @@ describe('Print Lab keeps its plugin key stable across the handoff and its tabs'
   it('persists the tab under a name the host key does not read, and still restores a legacy activeTab', () => {
     for (const path of PRINT_PATHS) {
       const source = readFileSync(path, 'utf8');
-      expect(source).toContain("persist({ printStage: 'Design',");
+      expect(source).toMatch(/persist\(\{[^}]*printStage:[^}]*recipe: pendingHandoff\.recipe \|\| null/);
       expect(source).toContain('persist({ printStage: name });');
       expect(source).not.toMatch(/persist\(\{ activeTab/);
       expect(source).toContain('TABS.indexOf(stored.printStage) >= 0 ? stored.printStage : (TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab');
@@ -983,11 +983,11 @@ describe('every Print Lab handoff survives the trip', () => {
   it('only RECIPE handoffs are persisted, which is why the STL senders needed the stable key', () => {
     const printLab = readFileSync(PRINT_PATHS[0], 'utf8');
     // the intake persists the recipe but never the bytes
-    const persistCall = printLab.slice(printLab.indexOf("persist({ printStage: 'Design',"), printLab.indexOf("persist({ printStage: 'Design',") + 400);
-    expect(persistCall).toContain('recipe: pendingHandoff.recipe || null');
-    expect(persistCall).not.toContain('bytes');
-    // and the bytes are held in component state only
-    expect(printLab).toContain('React.useState(pendingHandoff ? pendingHandoff.bytes : null)');
+    const persistCall = printLab.match(/persist\(\{[^}]*recipe: pendingHandoff\.recipe \|\| null[^}]*\}\)/)?.[0];
+    expect(persistCall).toBeTruthy();
+    expect(persistCall).not.toMatch(/\bbytes\b|\bsourceModel\b/i);
+    // STL bytes live in component or page memory; only small fields are persisted.
+    expect(printLab).toMatch(/_bytes\s*=\s*React\.useState\([^)]*pendingHandoff\.bytes/);
   });
 });
 

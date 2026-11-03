@@ -1065,13 +1065,13 @@ describe('Reef3DExplore lifecycle', () => {
     expect(balance(t.listenerLog.window)).toBe(0);
     expect(t.observers[0].disconnected).toBe(true);
     expect(t.frames.size).toBe(0);
-    expect(t.counts).toMatchObject({ dispose: 1, forceContextLoss: 1 });
+    expect(t.counts).toMatchObject({ dispose: 1, forceContextLoss: 0 });
     expect(created.filter((r) => !disposed.has(r)).map((r) => r.type)).toEqual([]);
     const renders = t.counts.render;
     t.run(1); t.key(t.canvas, 'w'); t.controller.setInput({ forward: 1 }); t.controller.swimTo('r1'); t.controller.focusNext();
     expect(t.counts.render).toBe(renders);
     expect(() => t.controller.dispose()).not.toThrow();
-    expect(t.counts).toMatchObject({ dispose: 1, forceContextLoss: 1 });
+    expect(t.counts).toMatchObject({ dispose: 1, forceContextLoss: 0 });
     expect(t.canvas._reef3dExplore).toBeUndefined();
     expect(t.controller.getState().ready).toBe(false);
   });

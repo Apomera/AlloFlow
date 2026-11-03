@@ -190,3 +190,18 @@ describe('source pins', () => {
     expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/phase_k_helpers_module.js'), 'utf8')).toBe(mod);
   });
 });
+
+
+describe('a selected local voice on direct read-aloud', () => {
+  it('stops with retry guidance when Kokoro has no clip, without changing subsequent cloud narration', async () => {
+    const browserSpeech = vi.spyOn(window.speechSynthesis, 'speak');
+    const deps = makeDeps({ selectedVoice: 'af_bella', callTTS: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce('blob:cloud') });
+    await PhaseK.handleSpeak('First', 'term-one', 0, deps, true);
+    expect(deps.callTTS).toHaveBeenCalledWith('First', 'af_bella', 1, expect.objectContaining({ allowProviderFallback: false }));
+    expect(browserSpeech).not.toHaveBeenCalled();
+    expect(deps.setError).toHaveBeenCalledWith(expect.stringContaining('Kokoro'));
+    deps.selectedVoice = 'Kore';
+    await PhaseK.handleSpeak('Second', 'term-two', 0, deps, true);
+    expect(deps.callTTS).toHaveBeenLastCalledWith('Second', 'Kore', 1, expect.objectContaining({ allowProviderFallback: true }));
+  });
+});

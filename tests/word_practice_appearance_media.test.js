@@ -20,6 +20,73 @@ function load(lane) {
 const luminance = hex => hex.match(/../g).map(value => parseInt(value, 16) / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4).reduce((total, value, i) => total + value * [0.2126, 0.7152, 0.0722][i], 0);
 
 describe.each(Object.keys(sources))('portable card appearance (%s)', lane => {
+  it.each([
+    ['font-andika-italic', 'default', true, false],
+    ['font-andika-bold-italic', 'default', true, true],
+    ['font-andika-bold-italic', 'georgia', false, false],
+    ['unrecognized-variant', 'default', false, false],
+  ])('resolves %s with %s consistently in learning text and editable slides', async (fontClass, cardFont, italic, bold) => {
+    const { core, media } = load(lane);
+    const readerSettings = { fontFamily: "'Andika', sans-serif", fontClass };
+    const appearance = core.cardAppearance({ cardFont }, readerSettings);
+    expect(appearance).toMatchObject({ fontFace: cardFont === 'default' ? 'Andika' : 'Georgia', fontStyle: italic ? 'italic' : 'normal', fontWeight: bold ? 700 : null });
+    const input = { words: [{ word: 'feuille', termLanguage: 'French', definition: 'ورقة نبات.', definitionLanguage: 'Arabic', phonemes: [{ label: 'f' }, { label: 'eu' }], sentenceActivity: { prompt: 'Voici une ____.', choices: ['feuille', 'branche'], answer: 'feuille' } }] };
+    for (const mode of ['vocabulary', 'sentence', 'blend', 'spelling']) {
+      const deck = await media.buildPptx(input, { mode, repetitions: 1, includeAudio: false, cardFont }, undefined, { PptxGenJS: Deck, readerSettings });
+      const text = deck.slides.flatMap(slide => slide.texts);
+      const learning = text.filter(entry => entry.options.y > 0.8 && entry.options.y < 6.8);
+      expect(learning.length).toBeGreaterThan(0);
+      for (const entry of learning) expect(entry.options).toMatchObject({ fontFace: appearance.fontFace, italic });
+      const bodies = learning.filter(entry => !['feuille'].includes(flatten(entry.text)));
+      for (const entry of bodies) expect(entry.options.bold).toBe(bold);
+      const heading = learning.find(entry => flatten(entry.text) === 'feuille');
+      if (heading) expect(heading.options.bold).toBe(true);
+      if (mode === 'vocabulary') expect(learning.find(entry => entry.text === 'ورقة نبات.').options).toMatchObject({ lang: 'ar', rtlMode: true });
+      if (mode === 'spelling') {
+        for (const entry of bodies) expect(entry.options.fit).toBeUndefined();
+        expect(bodies[0].text.replace(/\s+/gu, ' ')).toBe('Ask your teacher to say the word, then spell it.');
+        if (italic) expect(bodies[0].text).toContain('\n');
+      }
+    }
+    expect(core.cardAppearance({}, { fontClass })).toMatchObject({ fontStyle: 'normal', fontWeight: null });
+  });
+
+  it.each([[16, 1, 26], [32, 1, 52], [32, 1.4, 72.8]])('combines the %spx reading size and %s card scale in the exported learning text', async (baseFontSize, cardTextScale, expected) => {
+    const { media } = load(lane);
+    const deck = await media.buildPptx({ words: [{ word: 'leaf', termLanguage: 'English', definition: 'ورقة', definitionLanguage: 'Arabic' }] }, { mode: 'vocabulary', repetitions: 1, includeAudio: false, cardTextScale }, undefined, { PptxGenJS: Deck, readerSettings: { fontFamily: 'Verdana, sans-serif', baseFontSize, readingTheme: 'highContrast' } });
+    const meaning = deck.slides[0].texts.find(entry => entry.text === 'ورقة');
+    expect(meaning.options.fontSize).toBeCloseTo(expected);
+    expect(meaning.options).toMatchObject({ fontFace: 'Verdana', lang: 'ar', rtlMode: true, align: 'right', color: 'FFFF00' });
+    expect(deck.slides[0].background.color).toBe('000000');
+  });
+
+  it('finishes at the largest combined text size without losing characters or empty lines', async () => {
+    const { media } = load(lane);
+    const definition = '植物需要陽光、水和土壤。\n\n觀察葉片。\n'.repeat(4) + '結束。';
+    const deck = await media.buildPptx({ words: [{ word: '植物', termLanguage: 'Japanese', definition, definitionLanguage: 'zh-Hant', translations: { Arabic: 'النبات\nينمو.' } }] }, { mode: 'vocabulary', repetitions: 1, includeAudio: false, cardTextScale: 1.4 }, undefined, { PptxGenJS: Deck, readerSettings: { baseFontSize: 48, fontFamily: 'Verdana, sans-serif' } });
+    const bodies = deck.slides.flatMap(slide => slide.texts.filter(entry => entry.options.y >= 2.15 && entry.options.y < 5.65));
+    expect(bodies.filter(entry => entry.options.lang === 'zh-Hant').map(entry => flatten(entry.text)).join('')).toBe(definition);
+    const translation = bodies.filter(entry => entry.options.lang === 'ar');
+    expect(translation.map(entry => flatten(entry.text)).join('')).toBe('Arabic:\nالنبات\nينمو.');
+    expect(translation.find(entry => Array.isArray(entry.text)).text[1].text.trim()).not.toBe('');
+    expect(deck.slides.length).toBeGreaterThan(5);
+    for (const entry of bodies) {
+      expect(entry.options.fontSize).toBeGreaterThan(26);
+      expect(entry.options.fontSize).toBeLessThanOrEqual(109.2 + 0.001);
+      expect(entry.options.fit).toBeUndefined();
+      expect(entry.options.y + entry.options.h).toBeLessThanOrEqual(5.651);
+    }
+  });
+
+  it('keeps a large sentence and its choices complete in reading order', async () => {
+    const { media } = load(lane), prompt = 'اقرأ الجملة كاملة.\nثم اختر كلمة ____.', choices = ['ورقة', 'شجرة'];
+    const deck = await media.buildPptx({ language: 'Arabic', words: [{ word: choices[0], sentenceActivity: { prompt, choices, answer: choices[0] } }] }, { mode: 'sentence', repetitions: 1, includeAudio: false, cardTextScale: 1.4 }, undefined, { PptxGenJS: Deck, readerSettings: { baseFontSize: 48 } });
+    const bodies = deck.slides.flatMap(slide => slide.texts.filter(entry => entry.options.y === 1));
+    expect(bodies.filter(entry => entry.options.color === '172554').map(entry => entry.text).join('')).toBe(prompt);
+    expect(bodies.filter(entry => entry.options.color === '1E3A8A').map(entry => entry.text).join('\n')).toBe('A. ورقة\nB. شجرة');
+    expect(deck.slides.at(-1).texts.some(entry => entry.text === choices[0])).toBe(true);
+  });
+
   it('uses saved practice settings by default and preserves them when one export option changes', async () => {
     const { core, media } = load(lane);
     const saved = JSON.parse(core.serializePack({ words: [{ word: 'ورقة', termLanguage: 'Arabic', definition: 'A leaf.', definitionLanguage: 'English' }], options: { mode: 'vocabulary', repetitions: 2, includeAudio: false, cardFont: 'georgia', cardTheme: 'mist', cardTextScale: 1.2 } }));

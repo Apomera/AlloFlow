@@ -136,7 +136,8 @@ const WITHHOLD_EXPLANATIONS={
   active_content_scan_unavailable:['The original PDF has parts AlloFlow cannot safely inspect (for example an XFA fillable form, embedded files or an unusually deep structure), so no tagged PDF was made.','Share the accessible HTML, or have a person rebuild the PDF from it in Word or Acrobat.'],
   active_content_requires_review:['The original PDF contains scripts, launch actions or embedded files, so no tagged PDF was made. In a fillable form these are often just date or phone-number formatting.','Share the accessible HTML. If a fillable PDF is needed, ask whoever made the form for a version without scripts, or have someone review them first.'],
   content_coverage_requires_review:['The accessible version may be missing words from the original, so the tagged PDF was held back.','Search the original for the words listed below and check that each one is in the accessible version. Often they are page numbers, chart axis labels, a title printed twice, a raised "nd" or "th", or a word the PDF split in two. Running again gives the same result; share once a person confirms nothing is lost.'],
-  distribution_review_required:['The accessible HTML still has findings a person must check, so the tagged PDF was held back.','Work through the review findings in this report, then run again.'],
+  // (2026-11-02) "then run again" looped: the held findings are deterministic, so a re-run holds the PDF again (trust run).
+  distribution_review_required:['The accessible HTML still has findings a person must check, so the tagged PDF was held back.','Check the findings listed in this report. If they are fine as they are, share the accessible HTML; running again gives the same result.'],
   distribution_verdict_unavailable:['AlloFlow could not reach a final verdict for this document, so the tagged PDF was held back.','Run the document again. If it repeats, keep this report for support.'],
   tagged_pdf_delivery_unverified:['A tagged PDF was built but failed AlloFlow\'s own structure check after saving.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'],
   'createTaggedPdf returned no bytes':['The tagged PDF could not be built.','Use the accessible HTML, or run the document again.'],
@@ -147,7 +148,8 @@ const WITHHOLD_EXPLANATIONS={
   'roundtrip-failed':['Reading the saved tagged PDF back did not match the accessible version.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'],
   'roundtrip-unavailable':['The saved tagged PDF could not be read back to confirm it.','Use the accessible HTML, or run the document again.'],
   'typeset-content-dropped':['Some content did not make it into the tagged PDF.','Use the accessible HTML, which keeps all of the content.'],
-  'ocr-text-layer-incomplete':['Part of this scan\'s hidden text layer could not be written, so a screen reader would read the PDF wrongly. This happens with scripts the offline text recognition or font does not cover, such as Arabic, Urdu, Persian or Hebrew.','Share the accessible HTML, which has the full text. Running again will not change this.'],
+  // (2026-11-02) Not only other scripts: an all-English ballot was held for two "○" voting ovals.
+  'ocr-text-layer-incomplete':['Part of this scan\'s hidden text layer could not be written, so a screen reader would read the PDF wrongly. This happens with characters the built-in font cannot hold: some symbols, or scripts the offline text recognition does not cover (for example Arabic, Urdu, Persian or Hebrew).','Share the accessible HTML, which has the full text. Running again will not change this.'],
   'delivery-verdict-unavailable':['AlloFlow could not reach a final verdict for the tagged PDF.','Run the document again. If it repeats, keep this report for support.'],
 };
 // (2026-10-28) Decision guides arrive from the page (untrusted): keep only the known shape, bounded.
@@ -166,6 +168,29 @@ function normalizeDecisionGuides(value){
     // (2026-10-28, phase 3) where each flagged value, word or phrase sits in the original: page + words around it
     evidence:(Array.isArray(g.evidence)?g.evidence:[]).slice(0,8).filter(e=>e&&typeof e.label==='string'&&e.label.trim()).map(e=>({label:str(e.label,80),
       where:(Array.isArray(e.where)?e.where:[]).slice(0,2).filter(w=>w&&Number.isSafeInteger(w.page)&&w.page>0).map(w=>({page:w.page,before:str(w.before,200),match:str(w.match,100),after:str(w.after,200)}))}))}));
+}
+// (2026-11-02) Places where the document's OWN text uses colour to carry meaning ("Wednesdays are shaded in blue",
+// a printed colour key): the real WCAG 1.4.1 question, which IBM's once-per-stylesheet reminder never points at.
+// Picture and AI chart descriptions (<figcaption>, <details>) put colours into words, which is the fix, so they are
+// skipped. Corpus (~60 delivered outputs): only the newsletter's calendar text and key match. Returns [{match, quote}].
+function colourMeaningCues(html,limit){
+  const text=String(html||'').replace(/<(script|style|head|template|noscript|details|figcaption)\b[\s\S]*?<\/\1\s*>/gi,' ')
+    .replace(/<br\s*\/?>/gi,' ').replace(/<\/(p|li|dt|dd|td|th|h[1-6]|div|caption|summary)>/gi,' \n ').replace(/<[^>]+>/g,' ')
+    .replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/[ \t]+/g,' ');
+  const C='(?:red|green|blue|yellow|orange|purple|pink|gr[ae]y|brown|black|white|gold|teal|maroon|navy|tan)';
+  const NOUN='(?:items?|text|words?|dates?|days?|boxes?|cells?|rows?|columns?|squares?|circles?|dots?|lines?|areas?|sections?|entries|entry|highlights?|font|ink|print|type|marks?|tabs?|bars?|labels?|stars?|checks?|ticks?|names?|numbers?|questions?|answers?|events?|periods?|blocks?)';
+  const pats=[new RegExp('\\b(?:in|marked(?: in)?|shown in|highlighted(?: in)?|printed in|written in|shaded(?: in)?|colou?red(?: in)?|circled in|underlined in|appears? in|are in|is in)\\s+(?:bold\\s+|light\\s+|dark\\s+)?'+C+'\\b','gi'),
+    new RegExp('\\b'+C+'\\s+(?:highlighted\\s+)?'+NOUN+'\\b','gi'),new RegExp('\\(\\s*'+C+'\\s*\\)','gi'),
+    new RegExp('(?:^|\\n)\\s*'+C+'\\s*(?:[:=\u2013\u2014-]|means\\b|indicates\\b|shows\\b|marks\\b)','gi'),/\bcolou?r[- ]?(?:coded|key|legend)\b/gi,
+    new RegExp('\\b'+C+'(?:\\s*\\([a-z ]{1,20}\\))?\\s+(?:shaded|shading|highlight(?:ed|ing)?|background|fill(?:ed)?)\\b','gi')];
+  // Names and fixed phrases where a colour word means no colour.
+  const stop=/\b(?:red cross|blue cross|green bay|orange county|black history|white house|white paper|black and white|blue ribbon|red ribbon|blue ridge|green mountain|red sox|golden|whiteboard|blackboard|greenhouse|redwood|blueprint|brown v\.?|mr\.? |mrs\.? |ms\.? |dr\.? )/i;
+  const out=[];
+  for(const re of pats){let m;while((m=re.exec(text))&&out.length<40){
+    const around=text.slice(Math.max(0,m.index-70),Math.min(text.length,m.index+m[0].length+70)).replace(/\s+/g,' ').trim();
+    if(stop.test(text.slice(Math.max(0,m.index-12),m.index+m[0].length+14)))continue;
+    if(!out.some(o=>o.quote===around))out.push({match:m[0].trim().slice(0,60),quote:around.slice(0,240)});}}
+  return out.slice(0,Number(limit)||5);
 }
 function explainDelivery(summary){
   const s=summary||{},items=[];
@@ -191,7 +216,8 @@ function explainDelivery(summary){
       :['The independent veraPDF check could not run.','Run the document again. If it repeats, check the file yourself with veraPDF or PAC.'];items.push({code:String(code).slice(0,200),meaning:e?e[0]:'The tagged PDF was not delivered.',nextStep:e?e[1]:'Use the accessible HTML, and keep this report for support.',...(detail?{detail:String(detail).length>600?String(detail).slice(0,600).replace(/\s+\S*$/,'')+'…':String(detail)}:{})});};
   // The unmatched words themselves (assessSourceCoverage missingWords), not token offsets nobody can map to a page.
   const missingWords=(s.contentCoverage&&Array.isArray(s.contentCoverage.missingWords))?s.contentCoverage.missingWords.filter(w=>w&&typeof w.word==='string').slice(0,25):[];
-  const wordList=missingWords.length?'Words not found in the accessible version: '+missingWords.map(w=>'"'+w.word.slice(0,60)+'"'+(w.count>1?' (x'+w.count+')':'')).join(', '):'';
+  // A long glued token is marked as cut ("…duckwood" was searched for and not found, worksheet 2026-11-02).
+  const wordList=missingWords.length?'Words not found in the accessible version: '+missingWords.map(w=>'"'+(w.word.length>60?w.word.slice(0,60)+'…':w.word)+'"'+(w.count>1?' (x'+w.count+')':'')).join(', '):'';
   if(s.taggedPdfError)add(s.taggedPdfError,s.taggedPdfError==='content_coverage_requires_review'&&wordList?wordList:undefined);
   else if(s.taggedPdfDelivery&&s.taggedPdfDelivery.ok===false)add(s.taggedPdfDelivery.code,s.pdfUa&&s.pdfUa.error);
   const ready=s.deliveryStatus==='complete-for-tested-scope';
@@ -221,14 +247,26 @@ function explainDelivery(summary){
     media_alt_brief:()=>'Check the image descriptions longer than 150 characters: each should still read well, with long detail in the visible text if needed.',
     download_keyboard_controllable:()=>'Check that the download links can be reached and used with the keyboard alone.',
     // (2026-10-27) complaint2 showed the checker's "Verify this is a list and if so, modify to use proper HTML elements".
-    list_markup_review:(q,n)=>'Check whether '+(n>1?'these items are':'this is')+' really a list; if '+(n>1?'they are':'it is')+', it should be marked as a list.'};
-  const describe=f=>{const q=(f.description.match(/'([^']{1,80})'/)||[])[1];const base=PLAIN[f.id]?PLAIN[f.id](q,Number(f.nodes)):f.description.trim().slice(0,240);return base+(Number(f.nodes)>1?' ('+Number(f.nodes)+' places)':'');};
+    list_markup_review:(q,n)=>'Check whether '+(n>1?'these items are':'this is')+' really a list; if '+(n>1?'they are':'it is')+', it should be marked as a list.',
+    // (2026-11-02) trust run showed the checker's own "Verify that <blockquote> should have a 'cite' attribute…".
+    blockquote_cite_exists:(q,n)=>'Check that '+(n>1?'these indented passages are':'this indented passage is')+' really quoted from somewhere; text that is only indented for layout should not be marked as a quotation.'};
+  // Equal Access repeats nested text in its message ("Xavier Botana, Superintendent Xavier Botana, Superintendent",
+  // 2026-11-02); the quote a person searches for is one copy.
+  const undouble=q=>{const m=q&&/^(.+?)\s+\1$/.exec(q);return m?m[1]:q;};
+  // One quoted example of several flagged places reads as the only one: say "and N more" (syllabus_sie "(3 places)").
+  const QUOTE_ONE={text_block_heading:1,text_quoted_correctly:1};
+  const describe=f=>{const q=undouble((f.description.match(/'([^']{1,80})'/)||[])[1]);const n=Number(f.nodes);const base=PLAIN[f.id]?PLAIN[f.id](q,n):f.description.trim().slice(0,240);
+    return base+(n>1?(q&&QUOTE_ONE[f.id]?' (and '+(n-1)+' more '+(n-1===1?'place':'places')+')':' ('+n+' places)'):'');};
   const withDesc=eaReview.filter(f=>f&&typeof f.description==='string'&&f.description.trim()).slice(0,8);
   const clip=(t,n)=>{t=String(t).trim();return t.length>n?t.slice(0,n).replace(/\s+\S*$/,'')+'…':t;};
   const quickChecks=withDesc.filter(f=>aiSaysFine(f.id)).map(f=>{const d=aiSaysFine(f.id);return describe(f)+(d.reason?' (AI review found no problem: '+clip(d.reason,600)+')':'');});
   // A reminder the AI review settled has left the checker's counts but is still a person's quick check.
   const acked=(s.verification&&s.verification.equalAccess&&Array.isArray(s.verification.equalAccess.acknowledgedByAiReview))?s.verification.equalAccess.acknowledgedByAiReview:[];
   for(const f of acked.slice(0,5))if(f&&typeof f.description==='string'&&f.description.trim())quickChecks.push(describe(f)+(f.reason?' (AI review found no problem: '+clip(f.reason,600)+')':''));
+  // (2026-11-02) The real colour question, quoted from the document (colourMeaningCues); a glance, never a hold.
+  const cues=Array.isArray(s.colourMeaningCues)?s.colourMeaningCues.filter(c=>c&&typeof c.quote==='string'&&c.quote.trim()):[];
+  if(cues.length)quickChecks.unshift('The document uses colour to carry meaning: "'+clip(cues[0].quote,200)+'"'+(cues.length>1?' (and '+(cues.length-1)+' more '+(cues.length-1===1?'place':'places')+')':'')
+    +'. Check that each colour-coded item is also marked another way (a word, symbol or pattern), so a reader who cannot see colour gets the same information.');
   const named=withDesc.filter(f=>!aiSaysFine(f.id)).slice(0,5).map(f=>(PLAIN[f.id]?'':'A checker asks a person to confirm: ')+describe(f));
   let needs=list(reasons.review);
   const generic=needs.findIndex(x=>/^The automated accessibility checkers left items/.test(x));
@@ -243,11 +281,27 @@ function explainDelivery(summary){
     // withhold reason (a page range) has none, so the words go here.
     const listedBelow=!!wordList&&s.taggedPdfError==='content_coverage_requires_review';
     needs.splice(at,0,'Some words or numbers from the original are not in the accessible version'+(listedBelow?' (listed with the tagged-PDF item below)':'')+'. Check them against the original before sharing: they are often chart axis labels, page numbers or a title printed twice, but a changed score, date or percentage must be fixed.'+(wordList&&!listedBelow?' '+wordList+'.':''));}
+  // (2026-11-02) "Separately, 1 finding" counted the coverage hold twice: the needs line restating the
+  // content_coverage_requires_review item below is the same finding (7 of 19 corpus runs).
+  const covWithheld=s.taggedPdfError==='content_coverage_requires_review';
+  // The bare verdict line says nothing the tagged-PDF item does not; the merged coverage line (with guidance) stays.
+  if(covWithheld)needs=needs.filter(x=>!/^Source content coverage requires review$/i.test(x));
+  const separate=needs.filter(x=>!(covWithheld&&(isCov(x)||/^Some words or numbers from the original are not in the accessible version/.test(x))));
+  // A PDF that was made but did not pass every check ships as -tagged-review-required.pdf (Spanish UDHR said "No tagged PDF was made").
+  const pdfShipped=!!(s.files&&typeof s.files.taggedPdf==='string'&&s.files.taggedPdf);
+  const pdfLead=pdfShipped?'A tagged PDF was made but did not pass every check, so it is marked review-required. The reason and what to do are below.'
+    :'No tagged PDF was made for this file. The reason and what to do instead are below.';
   // (2026-10-28) decisions: how to decide each judgment call above (remediation_decision_guides.js via the run)
-  return {needsAPerson:needs.slice(0,12),quickChecks,decisions:normalizeDecisionGuides(s.decisionGuides),worthAGlance:list(reasons.cautions),headline:ready?'Automated checks passed for everything they can test. A person should still read it once before sharing.'
+  // (2026-11-02) Checker reminders AlloFlow's own checks answered: shown so nothing is hidden, never asked of a person.
+  const answeredByCheck=(s.verification&&s.verification.equalAccess&&Array.isArray(s.verification.equalAccess.answeredByCheck))?s.verification.equalAccess.answeredByCheck:[];
+  const checkedAutomatically=answeredByCheck.filter(f=>f&&typeof f.answer==='string'&&f.answer.trim()).slice(0,5).map(f=>clip(f.answer,400));
+  return {needsAPerson:needs.slice(0,12),quickChecks,...(checkedAutomatically.length?{checkedAutomatically}:{}),decisions:normalizeDecisionGuides(s.decisionGuides),worthAGlance:list(reasons.cautions),headline:ready
+      // (2026-11-02) Hebrew UDHR: "ready" while the tagged PDF failed its read-back; the headline must say so.
+      ?(items.length?'Automated checks passed for everything they can test, but no tagged PDF was made (reason below). A person should still read the accessible HTML once before sharing.'
+        :'Automated checks passed for everything they can test. A person should still read it once before sharing.')
       // One instruction, not two: each item's own next step says what to do (Urdu UDHR: "check it" vs "share it").
       // (2026-10-28, NASA slice) the headline named the PDF reason only, while the review came from a finding below
-      :items.length?'No tagged PDF was made for this file. The reason and what to do instead are below.'+(needs.length?' Separately, '+needs.length+(needs.length===1?' finding needs':' findings need')+' a person before sharing.':'')
+      :items.length?pdfLead+(separate.length?' Separately, '+separate.length+(separate.length===1?' finding needs':' findings need')+' a person before sharing.':'')
       :(!needs.length&&quickChecks.length)?'Automated checks finished. Only quick checks are left: a person should glance at them before sharing.'
       :'Automated checks finished, but some findings need a person to look before sharing.',items};
 }
@@ -372,8 +426,11 @@ function compactVerificationEvidence(source) {
     // reported; present only when there are some, so the evidence shape is unchanged otherwise.
     const acked = list(ea.acknowledgedByAiReview, 20).map((f) => Object.assign(rule(f), { reason: str(f.reason, 600) }));
     if (acked.length) out.equalAccess.acknowledgedByAiReview = acked;
+    // (2026-11-02) Reminders a deterministic AlloFlow check answered (pipeline _alloApplyStylesheetReview): disclosed, not asked.
+    const answered = list(ea.answeredByCheck, 20).map((f) => Object.assign(rule(f), { answeredBy: str(f.answeredBy, 60), answer: str(f.answer, 600) }));
+    if (answered.length) out.equalAccess.answeredByCheck = answered;
   }
   if (!out.ai && !out.axe && !out.equalAccess) return null;
   return out;
 }
-module.exports={compactVerificationEvidence,pdfUaEvidence,applyPdfDeliveryEvidence,explainDelivery,normalizeDecisionGuides,auditChecks,parsePdfUaCliReport,normalizePdfUaValidation,pdfDeliveryState,normalizeCandidateRejectionEvidence,CANDIDATE_REJECTION_SCHEMA};
+module.exports={compactVerificationEvidence,pdfUaEvidence,applyPdfDeliveryEvidence,explainDelivery,colourMeaningCues,normalizeDecisionGuides,auditChecks,parsePdfUaCliReport,normalizePdfUaValidation,pdfDeliveryState,normalizeCandidateRejectionEvidence,CANDIDATE_REJECTION_SCHEMA};

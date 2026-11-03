@@ -249,6 +249,12 @@ function _checkTemplateReadyForFeedback(templateType, data) {
 // Send the whole source when it fits. A longer source is cut, and the prompt says so,
 // so a quote from the omitted part reads as "could not check", never as "not in the text".
 const _NOTES_SOURCE_CHAR_BUDGET = 50000;
+function _notesSourceScope(value) {
+  const text=typeof value==='string'?value:''; let hash=2166136261;
+  for(let i=0;i<text.length;i++) hash=Math.imul(hash^text.charCodeAt(i),16777619);
+  const totalCharacters=text.length,includedCharacters=Math.min(totalCharacters,_NOTES_SOURCE_CHAR_BUDGET);
+  return {version:1,status:totalCharacters?(totalCharacters>_NOTES_SOURCE_CHAR_BUDGET?"partial":"full"):'none',totalCharacters,includedCharacters,sourceFingerprint:totalCharacters+':'+(hash>>>0).toString(36)};
+}
 
 // Build the AI prompt. Source text is OPTIONAL — when present, the AI does a
 // soft source-alignment check. When absent, the rubric-only path runs.
@@ -334,7 +340,7 @@ function _normalizeNotesFeedback(value) {
 // Inline panel that displays the feedback after the AI returns. Strengths-
 // first design: green strength block (top), amber growth nudge (middle), soft
 // source-alignment note (bottom, only if non-empty), small XP toast.
-const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t, earlierDraft }) => {
+const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t, earlierDraft, earlierSource }) => {
   if (!feedback) return null;
   return (
     <div className="max-w-3xl mx-auto px-4 pb-6">
@@ -350,6 +356,8 @@ const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t, earlierDraft })
             aria-label={t('notes_feedback.dismiss_aria') || 'Dismiss feedback'}
           >✕</button>
         </div>
+        <p data-notes-source-scope className="mb-3 rounded-md border border-sky-300 bg-sky-50 p-3 text-sm text-sky-950">{(() => { const scope=feedback.sourceScope; const valid=scope?.version===1&&Number.isInteger(scope.totalCharacters)&&Number.isInteger(scope.includedCharacters)&&scope.includedCharacters>=0&&scope.includedCharacters<=scope.totalCharacters; if(!valid)return _noteText(t,'notes_feedback.scope_unknown','Source coverage was not recorded for this earlier feedback.'); if(scope.status==='none')return _noteText(t,'notes_feedback.scope_none','No source text was supplied. This feedback considers your notes only.'); if(scope.status==='full')return _noteText(t,'notes_feedback.scope_full','The full supplied source ({total} characters) was included for this feedback.').replace('{total}',String(scope.totalCharacters)); return _noteText(t,'notes_feedback.scope_partial','Only {included} of {total} source characters were included. The rest could not be checked.').replace('{included}',String(scope.includedCharacters)).replace('{total}',String(scope.totalCharacters)); })()}</p>
+        {earlierSource && <p role="status" data-notes-earlier-source className="mb-3 text-sm font-semibold text-amber-950">{_noteText(t,'notes_feedback.earlier_source','The source text has changed since this feedback. Ask for new feedback to use the current text.')}</p>}
         {earlierDraft ? (
           <p role="status" data-notes-feedback-earlier-draft="true" className="mb-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm font-semibold text-amber-950">
             {_noteText(t, 'notes_feedback.earlier_draft', 'Feedback on an earlier draft of your notes. Keep it in view while you revise, or ask for new feedback.')}
@@ -409,7 +417,7 @@ function _useNotesFeedback(props, templateType) {
   const handleScoreUpdate = !props.previewMode && !props.isTeacherMode ? props.handleScoreUpdate : null;
   const inputText = props.inputText || '';
   const mounted = React.useRef(true), current = React.useRef(null), feedbackRequest = React.useRef(0);
-  current.current = { id:generatedContent?.id, draft:_notesDraftFingerprint(templateType, generatedContent?.data || {}), allowed:!!callGemini };
+  current.current = { id:generatedContent?.id, draft:_notesDraftFingerprint(templateType, generatedContent?.data || {}), allowed:!!callGemini, sourceScope:_notesSourceScope(inputText) };
   React.useEffect(() => { mounted.current=true; return () => { mounted.current=false; feedbackRequest.current++; }; }, []);
   React.useEffect(() => { feedbackRequest.current++; setIsLoading(false); setXpEarned(0); }, [generatedContent?.id, props.activeProfileId, props.previewMode, !!callGemini]);
   const t = props.t || ((k, d) => d || k);
@@ -438,7 +446,7 @@ function _useNotesFeedback(props, templateType) {
     const request = { ...current.current, serial: ++feedbackRequest.current };
     // New feedback replaces the kept one, but asking again about the same draft earns no XP.
     const sameDraft = !!data.feedback && data.feedback.draftFingerprint === request.draft;
-    const requestIsCurrent = () => mounted.current && feedbackRequest.current === request.serial && current.current.id === request.id && current.current.draft === request.draft && current.current.allowed;
+    const requestIsCurrent = () => mounted.current && feedbackRequest.current === request.serial && current.current.id === request.id && current.current.draft === request.draft && current.current.sourceScope.sourceFingerprint === request.sourceScope.sourceFingerprint && current.current.allowed;
     setIsLoading(true);
     addToast(t('notes_feedback.thinking') || 'Reading your notes...', 'info');
     try {
@@ -447,7 +455,7 @@ function _useNotesFeedback(props, templateType) {
       const parsed = _normalizeNotesFeedback(JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw)));
       if (!parsed) throw new Error('Notes feedback did not include usable strengths and next steps');
       if (!requestIsCurrent()) return;
-      props.handleNoteUpdate?.('feedback', { ...parsed, draftFingerprint: request.draft, createdAt:new Date().toISOString() });
+      props.handleNoteUpdate?.('feedback', { ...parsed, sourceScope:request.sourceScope, draftFingerprint: request.draft, createdAt:new Date().toISOString() });
       // XP wiring — first-time bonus uses the resource's prior max via the
       // handleScoreUpdate delta calc, but we also check whether THIS template
       // type has any feedback history yet for the +5 first-time bonus.
@@ -493,7 +501,7 @@ function _useNotesFeedback(props, templateType) {
     setXpEarned(0);
   }, [props.handleNoteUpdate]);
 
-  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === 'function', isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft) };
+  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === 'function', isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource:!!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint!==current.current.sourceScope.sourceFingerprint };
 }
 
 // Optional elaboration scaffold shared across templates that don't already
@@ -673,7 +681,7 @@ const CornellNotesView = React.memo((props) => {
       </_CardSection>
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} t={t} />
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="emerald" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{hasGuidance ? _noteText(t, 'note_taking.cornell_footer_guided', "Cornell Notes: use cues and notes together, then summarize below.") : _noteText(t, 'note_taking.cornell_footer', "Cornell Notes: cues on the left, notes on the right, summary below.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -824,7 +832,7 @@ const LabReportView = React.memo((props) => {
       </_CardSection>
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} hint={_noteText(t, 'note_taking.lab_connections_hint', "Optional — how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too.")} t={t} />
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="sky" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.lab_footer', "Return to this Lab Report to keep adding observations across days.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -944,7 +952,7 @@ const ReadingResponseView = React.memo((props) => {
         />
       </_CardSection>
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="violet" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.reading_response_footer', "Browse your Reading Responses to build a record of your reading life.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -1045,7 +1053,7 @@ const DoubleEntryView = React.memo((props) => {
         >+ {_noteText(t, 'note_taking.add_entry', "Add entry")}</button>
       </div>
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="rose" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.double_entry_footer', "Double-Entry Journal: quotes on the left, your thinking on the right.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -1164,7 +1172,7 @@ const GuidedNotesView = React.memo((props) => {
         />
       </_CardSection>
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="emerald" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.guided_footer', "The blanks are the key terms — revisit them to study.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -1289,7 +1297,7 @@ const QAndAView = React.memo((props) => {
       )}
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} hint={_noteText(t, 'note_taking.qa_connections_hint', "Optional — connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer.")} t={t} />
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="cyan" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.qa_footer', "Switch to Quiz me to self-test with active recall.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );

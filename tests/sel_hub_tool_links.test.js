@@ -341,9 +341,9 @@ describe('SEL Hub · every #sel-hub link shipped in a pack resolves to a real to
     expect(registered.has('zones')).toBe(true);
   });
 
-  const packs = readdirSync(resolve(ROOT, 'allopacks')).filter((f) => f.endsWith('.allopack.json'));
+  const packs = readdirSync(resolve(ROOT, 'allopacks', 'current')).filter((f) => f.endsWith('.allopack.json'));
   it.each(packs)('%s', (file) => {
-    const text = readFileSync(resolve(ROOT, 'allopacks', file), 'utf8');
+    const text = readFileSync(resolve(ROOT, 'allopacks', 'current', file), 'utf8');
     const links = [...text.matchAll(/\]\(#sel-hub\/([^)?]*)(\?[^)]*)?\)/g)];
     for (const m of links) expect(registered.has(m[1]), 'unregistered SEL tool id in ' + file + ': ' + m[1]).toBe(true);
     const pack = JSON.parse(text);
@@ -360,7 +360,7 @@ describe('SEL Hub · every #sel-hub link shipped in a pack resolves to a real to
 
   it('every SEL Station a pack carries names registered tools and well-formed quests', () => {
     for (const f of packs) {
-      const pack = JSON.parse(readFileSync(resolve(ROOT, 'allopacks', f), 'utf8'));
+      const pack = JSON.parse(readFileSync(resolve(ROOT, 'allopacks', 'current', f), 'utf8'));
       if (!pack.selStations) continue;
       expect(Array.isArray(pack.selStations), f).toBe(true);
       for (const st of pack.selStations) {
@@ -382,7 +382,7 @@ describe('SEL Hub · every #sel-hub link shipped in a pack resolves to a real to
     const crew = packs.filter((f) => f.startsWith('crew_'));
     expect(crew.length).toBe(12);
     for (const f of crew) {
-      const text = readFileSync(resolve(ROOT, 'allopacks', f), 'utf8');
+      const text = readFileSync(resolve(ROOT, 'allopacks', 'current', f), 'utf8');
       expect(text, f).toMatch(/\]\(#sel-hub\/[A-Za-z]+\?station=sel_station_crew_launch_[a-z]+\)/);
     }
   });

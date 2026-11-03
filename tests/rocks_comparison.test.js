@@ -44,6 +44,8 @@ describe('Rocks & Minerals comparison investigations', () => {
     s.find('id', 'rk-compare-note').props.onChange({ target: { value: 'Larger crystals suggest slower cooling.' } });
     s.find('data-rk-compare-select', 'left').props.onChange({ target: { value: 'basalt' } });
     expect(s.state.compare).toMatchObject({ left: 'basalt', right: 'granite' });
+    expect(s.find('data-rk-compare-name', 'left').props.children).toBe('Basalt');
+    expect(s.find('data-rk-compare-name', 'right').props.children).toBe('Granite');
     expect(s.find('id', 'rk-compare-note').props.value).toBe('Larger crystals suggest slower cooling.');
     expect(s.state.quizScore).toBe(7);
     expect(s.state.fieldCases).toEqual({ selected: 'roofing-sheets' });

@@ -128,7 +128,7 @@ describe('worker trust boundary (/submitPd)', () => {
     const store = {};
     return { store, async put(k, v, o) { store[k] = { v, o }; }, async get(k) { return store[k] ? store[k].v : null; }, async list() { return { keys: Object.keys(store).map((name) => ({ name })) }; } };
   }
-  function env() { return { PD_SUBMISSIONS: fakeKv() }; }
+  function env() { return { PD_SUBMISSIONS: fakeKv(), SUBMIT_RATE: fakeKv() }; }
   function submission(activity) {
     return {
       pd_module: moduleWith(activity),

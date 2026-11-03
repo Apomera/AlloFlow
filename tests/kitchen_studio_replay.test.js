@@ -28,6 +28,29 @@ describe('Kitchen action replay', () => {
     r.entry.observation='Edited review';r.state.values.washed=true;
     expect(s.log[0].observation).not.toBe('Edited review');expect(s.log[0].values.washed).not.toBe(true);
   });
+  it('replays switching the burner off, reheating and finally plating as separate decisions', () => {
+    const hot = K.start('heat', 'demonstrate', 'hot-pan');
+    const paused = K.act(hot, 'off');
+    expect(paused.values).toEqual({ ...hot.values, heat: null });
+    expect(paused.done).toBe(false);
+    expect(paused.log.at(-1)).toMatchObject({ action: 'off', accepted: true });
+
+    const reheated = K.act(paused, 'medium');
+    const golden = K.act(reheated, 'advance');
+    expect(golden.values).toMatchObject({ brown: 3, seconds: 60 });
+    const inspected = K.act(golden, 'off');
+    expect(inspected.values).toEqual({ ...golden.values, heat: null });
+    expect(inspected.done).toBe(false);
+
+    const saved = JSON.parse(JSON.stringify(record(K.act(inspected, 'plate'))));
+    expect(saved.submitted).toBe(true);
+    for (const [index, state] of [hot, paused, reheated, golden, inspected].entries()) {
+      const step = K.replay(saved, index).state;
+      expect(step.values).toEqual(state.values);
+      expect(step.done).toBe(false);
+    }
+    expect(K.replay(saved, saved.log.length).state.done).toBe(true);
+  });
   it.each([
     ['heat','hot-pan',['medium','advance','plate']],
     ['probe','ready',['thick','read','serve']],

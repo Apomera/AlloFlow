@@ -46,14 +46,14 @@ describe('rocks canvas animation loops', () => {
       expect(source).toContain('function isRockCycleHidden()');
       expect(source).toContain('function cancelRockCycleFrame()');
       expect(source).toContain('function scheduleRockCycleFrame()');
-      expect(source).toContain('if (!rcAlive || rcMotionReduced || canvasEl._rcAnim || isRockCycleHidden()) return;');
+      expect(source).toContain("if (!rcAlive || rcMotionReduced || canvasEl.dataset.rcPaused==='true' || canvasEl._rcAnim || isRockCycleHidden()) return;");
       expect(source).toContain('canvasEl._rcAnim = requestAnimationFrame(draw);');
       expect(source).toContain('function cleanupRockCycleCanvas()');
       expect(source).toContain("canvasEl.removeEventListener('click', onRockCycleClick);");
       expect(source).toContain("document.addEventListener('visibilitychange', onRockCycleVisibilityChange);");
       expect(source).toContain("document.removeEventListener('visibilitychange', onRockCycleVisibilityChange);");
       expect(source).toContain('if (!canvasEl.isConnected) { cleanupRockCycleCanvas(); return; }');
-      expect(source).toContain('if (!rcMotionReduced) tick++;');
+      expect(source).toContain("if (!rcFreezeMotion) tick++;");
       expect(source).toContain('function onRockCycleClick(e)');
       expect(source).toContain("canvasEl.addEventListener('click', onRockCycleClick);");
       expect(source).not.toContain("canvasEl.addEventListener('click', function (e)");

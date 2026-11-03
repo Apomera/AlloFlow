@@ -29,6 +29,15 @@ function createDocBuilderRenderer(deps) {
   ]) {
     if (typeof pair[1] !== 'function') throw new Error('DocBuilderRenderer requires ' + pair[0]);
   }
+  // Items that print their own marker ("A.", "a)", "1.", "(iv)", "•") also got the browser's, so the
+  // list read "1. A." until an AI fix pass added list-style-type:none (keyless 11-02 policy, fda).
+  // Keep the printed marker verbatim (coverage counts it) and hide the automatic one instead.
+  const _listItemsCarryOwnMarkers = (items) => items.length > 0 && items.every((item) => {
+    const plain = String(item == null ? '' : item).replace(/<[^>]*>/g, '').replace(/&nbsp;|&#160;/gi, ' ')
+      .replace(/\*\*|__/g, '').trimStart().replace(/^[*_](?=\S)/, '').replace(/^(\S+?)[*_]+(?=\s|$)/, '$1');
+    return /^(?:\(?(?:\d{1,3}(?:\.\d{1,3})*|[A-Za-z]|[ivxlcdm]{1,6}|[IVXLCDM]{1,6})[.)]|[•●○◦▪■□►▸‣⁃–—*-])(?=\s|$)/.test(plain);
+  });
+  const _listOpenTag = (tag, items) => `<${tag} style="margin:0.6em 0;padding-inline-start:1.5em${_listItemsCarryOwnMarkers(items) ? ';list-style-type:none' : ''}">`;
 const renderJsonToHtml = (blocks) => {
         if (!Array.isArray(blocks)) return '';
         // The banner card already renders the document title as the h1, and models routinely emit an
@@ -179,8 +188,11 @@ const renderJsonToHtml = (blocks) => {
             case 'h5': return `<h5${id} style="color:${docStyle.headingColor};font-size:0.95rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h5>`;
             case 'h6': return `<h6${id} style="color:${docStyle.headingColor};font-size:0.9rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h6>`;
             case 'p': return `<p style="margin:0.6em 0;line-height:1.7">${escapeTextField(block.text)}</p>`;
-            case 'ul': return `<ul style="margin:0.6em 0;padding-inline-start:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ul>`;
-            case 'ol': return `<ol style="margin:0.6em 0;padding-inline-start:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ol>`;
+            case 'ul':
+            case 'ol': {
+              const _items = (Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean);
+              return `${_listOpenTag(block.type, _items)}${_items.map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</${block.type}>`;
+            }
             case 'table': {
               // Reconstructed-from-image tables carry a data-allo-reconstructed attribute so the
               // results-panel review gate can list them for human verify/reject (the original image

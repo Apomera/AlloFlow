@@ -78,6 +78,17 @@ describe.each(Object.keys(lanes))('Word Practice stable portable contract (%s)',
     const pack = core.normalizeInput({ language: 'English', ttsAssets: { pain: englishAudio }, words: words.slice(1) });
     expect(pack.items.map(item => item.wordAudio)).toEqual([englishAudio, '']);
   });
+  it('resolves selected homographs from separate cache holders and saves only the selected clips', () => {
+    const core = load(lane), words = [{ word: 'pain', termLanguage: 'French' }, { word: 'pain', termLanguage: 'English' }, { word: 'pain', termLanguage: 'German' }];
+    const otherAudio = makeWav('unselected');
+    const banks = [{ language: 'French', assets: { pain: frenchAudio, autre: otherAudio } }, { language: 'English', assets: { pain: englishAudio } }, { assets: { pain: otherAudio } }];
+    for (const ttsAssetBanks of [banks, banks.slice().reverse()]) {
+      const pack = core.normalizeInput({ words, ttsAssetBanks });
+      expect(pack.items.map(item => item.wordAudio)).toEqual([frenchAudio, englishAudio, '']);
+      expect(reimport(core, pack).items).toEqual(pack.items);
+      expect(core.serializePack(pack)).not.toContain(otherAudio);
+    }
+  });
   it('honors a shared clip’s actual language when it differs from its container', () => {
     const core = load(lane), pack = core.normalizeInput({ language: 'English', words: [
       { word: 'holder', _ttsAssets: { pain: asset(frenchAudio, 'French') } },

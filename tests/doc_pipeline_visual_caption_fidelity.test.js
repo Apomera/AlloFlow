@@ -8,7 +8,8 @@ const parse = html => new DOMParser().parseFromString(html, 'text/html');
 const image = (caption, extra = {}) => ({ id: 'visual-example', type: 'image', title: 'Compare ideas', data: {
   visualPlan: { title: 'Two possible replies', panels: [{ id: 'panel-one', imageUrl: 'data:image/png;base64,iVBORw0KGgo=', alt: 'A lamp and book.', caption, labels: [] }] }, ...extra,
 } });
-const captionText = caption => [...caption.children].map(node => node.textContent).join(' ').replace(/\s+/g, ' ').trim();
+// Plain captions (e.g. the 2026-11-02 visual-reference companions) render as a bare text node.
+const captionText = caption => (caption.children.length ? [...caption.children].map(node => node.textContent).join(' ') : caption.textContent).replace(/\s+/g, ' ').trim();
 
 beforeAll(() => {
   loadAlloModule('doc_pipeline_module.js');
@@ -42,7 +43,7 @@ describe('visual captions are readable content in printed resources', () => {
   it('keeps every real Katie caption’s meaning without printing source markup', () => {
     let checked = 0;
     for (const filename of ['academic_discourse_reading_space_grade6', 'academic_discourse_more_practice_grade6', 'reading_decisions_grade6']) {
-      const pack = JSON.parse(readFileSync(`allopacks/${filename}.allopack.json`, 'utf8'));
+      const pack = JSON.parse(readFileSync(`allopacks/current/${filename}.allopack.json`, 'utf8'));
       for (const item of pack.history.filter(resource => resource.type === 'image')) {
         const before = JSON.stringify(item), doc = parse(pipeline.generateResourceHTML(item, false, {}, { isWorksheet: true }));
         const captions = [...doc.querySelectorAll('.vp-caption')];
@@ -51,13 +52,15 @@ describe('visual captions are readable content in printed resources', () => {
           const expected = item.data.visualPlan.panels[i].caption.replace(/^\s*<span\s+style="[^"]*">/i, '').replace(/<\/span>\s*$/i, '').replace(/<br\s*\/?>/gi, ' ').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
           expect(captionText(captions[i])).toBe(expected);
           expect(captions[i].textContent).not.toMatch(/<span|<br|\*\*/);
-          expect(captions[i].getAttribute('data-vp-caption-format')).toBe('markdown');
+          // Plain-text captions (visual-reference companions) are rendered as plain text.
+          const authored = item.data.visualPlan.panels[i].caption;
+          expect(captions[i].getAttribute('data-vp-caption-format')).toBe(/\*\*|<span|<br|\]\(/i.test(authored) ? 'markdown' : 'plain');
           checked++;
         }
         expect(JSON.stringify(item)).toBe(before);
       }
     }
-    expect(checked).toBe(14);
+    expect(checked).toBe(15); // 14 original panels + 1 visual-reference companion (2026-11-02)
   });
 
   it.each([

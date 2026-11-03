@@ -129,6 +129,160 @@ test.describe('Weather Systems — resilient live connections', () => {
   test.beforeEach(async ({ page }) => { await page.setViewportSize({ width: 1280, height: 1000 }); });
   test.afterEach(async ({ page }) => { await harness.destroy(page); });
 
+  test('offers distinct location matches before loading the selected place', async ({ page }) => {
+    await mount(page);
+    const before = await preservedData(page);
+    await search(page, 'Springfield');
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(1);
+    const illinois = { id: 101, name: 'Springfield', admin1: 'Illinois', country: 'United States', country_code: 'US', latitude: 39.7817, longitude: -89.6501 };
+    const massachusetts = { id: 102, name: 'Springfield', admin1: 'Massachusetts', country: 'United States', country_code: 'US', latitude: 42.1015, longitude: -72.5898 };
+    await settle(page, 0, { results: [null, { ...illinois, latitude: 95 }, illinois, { ...illinois }, massachusetts] } as any);
+    const choices = connection(page).locator('[data-weather-location-choices]');
+    await expect(choices).toBeVisible();
+    await expect(choices.locator('[data-weather-location-choice]')).toHaveCount(2);
+    await expect.poll(() => loading(page)).toBe(false);
+    expect(await requests(page)).toHaveLength(1);
+    expect(await preservedData(page)).toEqual(before);
+    const saved = await page.evaluate(() => {
+      const w = window as any;
+      return JSON.stringify({
+        state: w.__toolData.weatherSystems,
+        download: w.WeatherSystemsKernel.immersiveSessionDownloadPayload(w.__toolData.weatherSystems),
+        redacted: w.WeatherSystemsKernel.immersiveSessionSharePayload(w.__toolData.weatherSystems, { includeLocation: false }),
+      });
+    });
+    expect(saved).not.toMatch(/Illinois|Massachusetts|39\.7817|42\.1015/);
+    await choices.getByRole('button', { name: /Springfield.*Massachusetts.*United States/ }).focus();
+    await page.keyboard.press('Enter');
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(2);
+    expect((await requests(page))[1].url).toContain('latitude=42.1015');
+    expect((await requests(page))[1].url).toContain('longitude=-72.5898');
+    await expect(choices).toHaveCount(0);
+    await settle(page, 1, provider(16));
+    await expect.poll(() => loading(page)).toBe(false);
+    expect((await preservedData(page)).live).toMatchObject({ latitude: 42.1015, longitude: -72.5898, temperature: 16, label: 'Springfield, Massachusetts, United States' });
+    expect((await preservedData(page)).snapshots).toEqual(before.snapshots);
+  });
+
+  test('clears location choices on editing and dismissal and ignores an older search', async ({ page }) => {
+    await mount(page);
+    const matches = [
+      { name: 'Springfield', admin1: 'Illinois', country: 'United States', latitude: 39.7817, longitude: -89.6501 },
+      { name: 'Springfield', admin1: 'Massachusetts', country: 'United States', latitude: 42.1015, longitude: -72.5898 },
+    ];
+    await search(page, 'Old search');
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(1);
+    await search(page, 'Springfield');
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(2);
+    await settle(page, 0, { results: matches } as any);
+    const choices = connection(page).locator('[data-weather-location-choices]');
+    await expect(choices).toHaveCount(0);
+    expect(await loading(page)).toBe(true);
+    await settle(page, 1, { results: matches } as any);
+    await expect(choices).toBeVisible();
+    const input = connection(page).getByRole('searchbox', { name: 'Quick location search', exact: true });
+    await input.fill('Edited search');
+    await expect(choices).toHaveCount(0);
+    expect(await requests(page)).toHaveLength(2);
+    await connection(page).getByRole('button', { name: 'Search', exact: true }).click();
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(3);
+    await settle(page, 2, { results: matches } as any);
+    await expect(choices).toBeVisible();
+    await choices.getByRole('button', { name: 'Dismiss location choices', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(choices).toHaveCount(0);
+    await expect(input).toBeFocused();
+    expect(await requests(page)).toHaveLength(3);
+
+    await search(page, 'Last submitted search');
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(4);
+    await input.fill('Edited before the result arrived');
+    expect((await requests(page))[3].aborted).toBe(true);
+    await settle(page, 3, { results: matches } as any);
+    await expect(choices).toHaveCount(0);
+    await expect.poll(() => loading(page)).toBe(false);
+    expect(await requests(page)).toHaveLength(4);
+    expect((await requests(page)).every(item => item.url.includes('geocoding-api'))).toBe(true);
+  });
+
+  test('loads a single distinct valid location without an extra selection', async ({ page }) => {
+    await mount(page);
+    await search(page, 'Cambridge, UK');
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(1);
+    const place = { name: 'Cambridge', admin1: 'England', country: 'United Kingdom', country_code: 'GB', latitude: 52.2053, longitude: 0.1218 };
+    await settle(page, 0, { results: [place, { ...place }, { ...place, latitude: null }] } as any);
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(2);
+    await expect(connection(page).locator('[data-weather-location-choices]')).toHaveCount(0);
+    expect((await requests(page))[1].url).toContain('latitude=52.2053');
+    await settle(page, 1, provider(11));
+    await expect.poll(() => loading(page)).toBe(false);
+    expect((await preservedData(page)).live).toMatchObject({ latitude: 52.2053, longitude: 0.1218, temperature: 11 });
+  });
+
+  test('keeps location choices readable and keyboard operable on a dark phone', async ({ page }, info) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mount(page);
+    await page.evaluate(() => {
+      (window as any).__ctx.isDark = true;
+      document.documentElement.classList.add('dark');
+      (window as any).__rerender();
+    });
+    await search(page, 'Springfield');
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(1);
+    await settle(page, 0, { results: [
+      { name: 'Springfield', admin1: 'Illinois', country: 'United States', latitude: 39.7817, longitude: -89.6501 },
+      { name: 'Springfield', admin1: 'Massachusetts', country: 'United States', latitude: 42.1015, longitude: -72.5898 },
+    ] } as any);
+    const choices = connection(page).locator('[data-weather-location-choices]');
+    await expect(choices).toContainText('Illinois');
+    await expect(choices).toContainText('Massachusetts');
+    const size = await page.evaluate(() => ({ viewport: innerWidth, width: document.documentElement.scrollWidth }));
+    expect(size.width).toBeLessThanOrEqual(size.viewport + 1);
+    await connection(page).screenshot({ path: info.outputPath('weather-location-choices-phone-dark.png') });
+    const first = choices.getByRole('button', { name: /Springfield.*Illinois.*United States/ });
+    await first.focus();
+    await page.keyboard.press('Enter');
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(2);
+    expect((await requests(page))[1].url).toContain('latitude=39.7817');
+  });
+
+  test('retains partial provider hours in charts and exports and saves only measured values', async ({ page }) => {
+    await mount(page, false);
+    await search(page, '40, -75');
+    await expect.poll(() => requests(page).then(items => items.length)).toBe(1);
+    const response = provider(18);
+    Object.assign(response.hourly, { temperature_2m: [18, 8, 5], surface_pressure: [1009, 1008, null] });
+    await settle(page, 0, response);
+    await expect.poll(() => loading(page)).toBe(false);
+    const evidence = await preservedData(page);
+    const time = DATE + 'T14:00';
+    expect(evidence.timeline.map((point: any) => point.time)).not.toContain(time);
+    expect(evidence.live.partialHours).toMatchObject([{ time, temperature: 5, pressure: null }]);
+
+    const explorer = page.locator('[data-weather-live-timeline-explorer]');
+    await explorer.locator('summary').filter({ hasText: 'View live timeline data table' }).click();
+    await explorer.getByRole('button', { name: 'Inspect ' + time, exact: true }).click();
+    await expect(explorer.locator('[data-weather-live-timeline-detail]')).toContainText('5.0°C');
+    await explorer.getByRole('button', { name: 'Save inspected forecast snapshot', exact: true }).click();
+    const saved = (await preservedData(page)).snapshots;
+    expect(saved).toHaveLength(1);
+    expect(saved[0].predicted.temperature).toBe(5);
+    expect(saved[0].predicted.pressure).toBeUndefined();
+    const metric = explorer.getByRole('combobox', { name: 'Live timeline metric', exact: true });
+    await metric.selectOption('pressure');
+    await expect(explorer.locator('[data-weather-live-timeline-detail]')).toContainText('Not available');
+    const event = page.waitForEvent('download');
+    await explorer.getByRole('button', { name: 'Download live timeline CSV', exact: true }).click();
+    const stream = await (await event).createReadStream();
+    const pieces: Buffer[] = [];
+    for await (const piece of stream!) pieces.push(Buffer.from(piece));
+    const row = Buffer.concat(pieces).toString('utf8').split('\r\n').find(line => line.includes(time));
+    expect(row).toContain('"","excluded"');
+    await page.getByRole('button', { name: /^Open checkpoint hour, saved forecast / }).click();
+    await expect(explorer.locator('[data-weather-live-timeline-detail]')).toContainText(time);
+    await expect(metric).toHaveValue('temperature');
+  });
+
   test('lets a newer coordinate request win even when the old response arrives last', async ({ page }) => {
     await mount(page);
     await search(page, '40, -75');
@@ -264,6 +418,8 @@ test.describe('Weather Systems — resilient live connections', () => {
     // its map fallback so software-rendered 3D cannot consume the request timer.
     await page.evaluate(() => {
       (window as any).__toolData.weatherSystems.immersiveSceneMode = 'geographic';
+      (window as any).__toolData.weatherSystems.liveHourDraft = { reasoning: 'Work from the previous session' };
+      (window as any).__toolData.weatherSystems.livePlaceUndo = { schema: 'weather-saved-place-v1', name: 'Previous site', latitude: 40, longitude: -75 };
       (window as any).__toolData._threeLoaded = false;
       (window as any).__rerender();
     });
@@ -291,6 +447,8 @@ test.describe('Weather Systems — resilient live connections', () => {
     expect(await loading(page)).toBe(false);
     expect((await requests(page))[0].aborted).toBe(true);
     const imported = await preservedData(page);
+    expect(await page.evaluate(() => (window as any).__toolData.weatherSystems.liveHourDraft)).toBeNull();
+    expect(await page.evaluate(() => (window as any).__toolData.weatherSystems.livePlaceUndo)).toBeNull();
     expect(imported).toEqual({ live: importedLive, timeline: importedTimeline, index: 1, snapshots: [] });
     await settle(page, 0, provider(-8));
     expect(await preservedData(page)).toEqual(imported);

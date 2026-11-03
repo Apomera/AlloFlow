@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { loadAlloModule } from './setup.js';
 // Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
 // allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
 import { readFileSync } from './helpers/host_source.js';
@@ -52,6 +53,53 @@ describe('Guided Mode host wiring', () => {
     expect(phaseO).toContain("finalData.sourceMode === 'file'");
     expect(phaseO).toContain('fileInputRef.current.click()');
     expect(phaseO).toContain("safeSetItem('allo_wizard_completed', 'true')");
+  });
+
+  it('keeps an older analysis from advancing a new passage, including during the handoff delay', () => {
+    loadAlloModule('generation_matrix_module.js');
+    const start = app.indexOf('    const HISTORY_ADVANCE_STEPS = {');
+    const end = app.indexOf('\n  }, [history,', start);
+    expect(start).toBeGreaterThan(0);
+    expect(end).toBeGreaterThan(start);
+    const observe = new Function('added', 'inputText', '_resourceMutationStateRef', 'setTimeout', 'setGuidedStep', `
+      const guidedLessonScope = inputText, guidedAdvanceLessonRef = { current: _resourceMutationStateRef.current.inputText };
+      const items = added, guidedStep = 0, guidedActiveSteps = [{ id: 'analysis', phase: 'understand' }, { id: 'glossary', phase: 'understand' }];
+      const _guidedAdvanceTokenRef = {}, _guidedAdvanceTimerRef = {}, _guidedCurrentStepRef = { current: 0 };
+      const setGuidedAdvanceNotice = () => {};
+      ${app.slice(start, end)}
+    `);
+    const old = { id: 'a', type: 'analysis', data: { originalText: 'Passage A' } };
+    const fresh = { id: 'b', type: 'analysis', data: { originalText: 'Passage B' } };
+    const live = { current: { inputText: 'Passage B', history: [old] } };
+    const timers = [], visits = [];
+    const run = (item, text) => observe([item], text, live, fn => timers.push(fn), index => visits.push(index));
+    run(old, 'Passage B');
+    expect(timers).toHaveLength(0);
+    run(old, 'Passage A');
+    timers.shift()(); // B is current by the time A's timer fires.
+    expect(visits).toEqual([]);
+    live.current.history.push(fresh);
+    run(fresh, 'Passage B');
+    timers.shift()();
+    expect(visits).toEqual([1]);
+  });
+
+  it('records an explicit jump past B’s unchecked Analysis even when A’s completion is saved', () => {
+    loadAlloModule('generation_matrix_module.js');
+    const start = app.indexOf('  const handleGuidedJump =');
+    const end = app.indexOf('\n  const focusGuidedTarget =', start);
+    expect(start).toBeGreaterThan(0);
+    expect(end).toBeGreaterThan(start);
+    const jump = new Function('inputText', 'history', `
+      const guidedCompletedIds = ['analysis', 'glossary'], guidedActiveSteps = [{ id: 'analysis' }, { id: 'quiz' }];
+      const setGuidedStep = () => {}, setGuidedAdvanceNotice = () => {}, rememberGuidedNavigation = () => {};
+      let skipped; const setGuidedSkippedIds = updater => { skipped = updater([]); };
+      ${app.slice(start, end)}
+      handleGuidedJump(1, ['analysis', 'glossary']); return skipped;
+    `);
+    const checkA = { id: 'a', type: 'analysis', data: { originalText: 'A' } };
+    expect(jump('B', [checkA])).toEqual(['analysis', 'glossary']);
+    expect(jump('A', [checkA])).toEqual(['glossary']);
   });
 
   it('centralizes generator auto-advance in one cancellable host observer', () => {
@@ -206,7 +254,7 @@ describe('Guided Mode host wiring', () => {
   it('tracks explicit skips separately from completed steps', () => {
     expect(app).toContain('const handleGuidedSkip = (wasSkipped = false)');
     expect(app).toContain('setGuidedSkippedIds');
-    expect(banner).toContain('guidedSkippedIds.includes(item.id)');
+    expect(banner).toContain('effectiveSkippedIds.includes(item.id)');
     expect(banner).toContain('handleGuidedSkip(true)');
     expect(banner).toContain('handleGuidedSkip(false)');
   });
@@ -301,13 +349,13 @@ describe('Guided Mode improvement wiring', () => {
     expect(fullPackRun).toContain('onClick={createGuidedHomeworkShare}');
     expect(app).toContain('setShowSessionStartOptions(true)');
     expect(app).toContain('previewGuidedStudentAssignment={previewGuidedStudentAssignment}');
-    expect(app).toContain('onExportSuccess: () => confirmBuilderGuidedDelivery(builderGuidedDeliveryContext)');
+    expect(app).toContain('onExportSuccess: outcome => confirmBuilderGuidedDelivery(builderGuidedDeliveryContext, outcome)');
     expect(app).toContain('exportContext !== _builderGuidedDeliveryContextRef.current');
   });
 
   it('keeps one intended left-panel surface visible for Directions, Delivery, and final review', () => {
     expect(app).toContain("guidedActiveSteps[guidedStep]?.id === 'directions')) ? undefined : 'none'");
-    expect(fullPackRun).toContain("guidedActiveSteps[guidedStep]?.id === 'package-deliver' || guidedActiveSteps[guidedStep]?.id === '_final'");
+    expect(fullPackRun).toContain("guidedActiveSteps[guidedStep]?.id === 'package-deliver' || (guidedActiveSteps[guidedStep]?.id === '_final' && isRunActive)");
     expect(app).toContain("if (currentStep.id === '_final') return false;");
     expect(app).toContain("guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'");
     expect(app).not.toContain("guidedActiveSteps[guidedStep]?.id === 'alignment' || guidedActiveSteps[guidedStep]?.id === '_final'");

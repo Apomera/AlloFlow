@@ -21,9 +21,7 @@ session sweeps in, or ships, other sessions' half-finished work.
 - **To undo your own change**, edit it back, or restore from a copy you saved
   yourself before you started. Never from git: the file may also hold other
   sessions' uncommitted work.
-- **A gate that was green going red with no edit from you** is the signal that
-  someone else changed a file under you. Re-run your gates after any long
-  operation.
+- When a check changes unexpectedly, re-read its affected inputs and investigate concurrent changes. Rerun relevant checks when their inputs changed; do not repeat unaffected checks after routine bookkeeping.
 
 ## When the user does ask you to commit
 
@@ -55,8 +53,7 @@ pair they have not synced yet). **Wait, or ask the user.** Do not run `--fix`
 on, or hand-sync, another session's files to unblock yourself. If a commit
 fails the hook, **unstage what you staged**.
 
-`.git/index.lock` contention is normal. Check the lock's age and whether a git
-process is live before removing it; a real operation clears on its own.
+`.git/index.lock` contention is normal. Coordinate with the actual owner and preserve interrupted-operation evidence; do not delete another session's Git lock.
 
 ## Before you overwrite a file you did not just write
 
@@ -79,11 +76,8 @@ it.
 
 ## Verification
 
-- A gate that cannot fail is worse than none. Give new gates a `--selftest` and
-  **mutation-verify** them: break the thing on purpose, confirm the gate goes
-  red, restore from your own saved copy (not git), and **verify the restore by
-  re-reading the file** — OneDrive has left a mutation in place while the shell
-  reported success.
+- Use existing checks and validation proportionate to the change. For security or integrity guards, confirm representative bad input is rejected; build new gate/mutation machinery only when useful.
+- Use disposable task-owned fixtures for temporary mutations and re-read restored bytes. Do not use Git restore to undo changes in the shared tree.
 - Harnesses here load `sel_hub/` and `stem_lab/` straight from disk
   (`readdirSync`, `addScriptTag`). That is not what the app does: the app fetches
   the modules named in `var selToolModules` / `stemToolModules` in
@@ -101,3 +95,8 @@ Product review backlog: see docs/review-backlog-2026-10-27.md. Items distinguish
 `App.jsx` alone is erased by the next build. Edit ANTI, then run `node build.js`.
 ANTI is pasted into Gemini Canvas verbatim and carries a comment-byte ratchet, so
 keep added comments tight.
+
+
+## Coordination policy
+
+Follow AGENTS.md for the current user-approved coordination policy. Its lightweight rules supersede the former AF-012 admission/FIFO/checkpoint requirements and older Work Log instructions. The ledger remains optional history/status; preserve actual active work and the Git, access and publication safeguards above.

@@ -197,6 +197,15 @@ var _lazyIcon = function (name) {
     var context = number != null ? _quizGradedCopy('quiz.review.question_number', 'Question {number}').replace('{number}', String(number)) : '';
     return _quizPlain([label, [context, q.question || ''].filter(Boolean).join(': ')].filter(Boolean).join(' — '));
   }
+  var _quizComposingFields = new WeakSet();
+  var _quizCompositionEvents = {
+    onCompositionStart: function (event) { _quizComposingFields.add(event.currentTarget); },
+    onCompositionEnd: function (event) { _quizComposingFields.delete(event.currentTarget); },
+    onBlur: function (event) { _quizComposingFields.delete(event.currentTarget); }
+  };
+  function _quizIsComposingText(event) {
+    return _quizComposingFields.has(event.currentTarget) || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229;
+  }
   function AssessmentReasoningInput(p) {
     var q = p.q || {};
     var reasoningHelpId = React.useId();
@@ -3728,7 +3737,7 @@ var _lazyIcon = function (name) {
       }
     });
     var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Numeric response</span><p className="text-sm text-slate-800 leading-relaxed">{_quizRich(q.question || '')}</p><AssessmentQuestionSupport q={q} />{q.unit && <p className="text-[11px] text-slate-500 mt-1">{'Include units (' + q.unit + ').'}</p>}</div></div><input ref={!grade || grade.status === 'invalid' ? responseFocusRef : null} type="text" inputMode="decimal" aria-label={_quizResponseLabel(p, 'Numeric response')} aria-invalid={grade && grade.status === 'invalid' && !grade.graderUnavailable && !grade.invalidKey ? true : undefined} aria-describedby={grade && grade.status === 'invalid' ? numericErrorId : undefined} value={response} onChange={function (e) { updateResponse(e.target.value); }} onKeyDown={function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } }} disabled={!!grade && grade.status !== 'invalid'} placeholder={q.unit ? 'Example: 12.5 ' + q.unit : 'Enter a number'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" /><p id={numericErrorId} data-assessment-numeric-error role="status" aria-live="polite" aria-atomic="true" className="text-xs text-rose-700">{numericErrorMessage(grade)}</p><QuizVoiceInputButton value={response} onChange={updateResponse} disabled={!!grade && grade.status !== 'invalid'} allowDictation={p.allowDictation} label="Dictate number or units" />{!grade || grade.status === 'invalid' ? <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={!response.trim()} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">{_quizGradedCopy('quiz.student.check_value', 'Check value')}</button>{renderRules.allowIDontKnow && !grade && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">{_quizGradedCopy('ui_common.i_dont_know', "I don't know")}</button>}</div> : null}{grade && grade.status !== 'invalid' && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div ref={grade && grade.status !== 'invalid' ? responseFocusRef : null} tabIndex={-1} data-assessment-numeric-result className={'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ Correct response under this scoring policy' : grade.status === 'partially-correct' ? 'Partially correct — check the value or units' : 'Not yet — check your calculation and units'}</div>{grade.status !== 'idk' && <p data-assessment-numeric-details className={'text-xs mt-1 text-' + color + '-900'}>{numericPartsFeedback(grade)}</p>}{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{'Expected ' + q.correctValue + (q.unit ? ' ' + q.unit : '') + (Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : '') + '.'}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade && grade.status !== 'invalid' ? grade : null, value: confidence, onChange: updateConfidence })}</div>;
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Numeric response</span><p className="text-sm text-slate-800 leading-relaxed">{_quizRich(q.question || '')}</p><AssessmentQuestionSupport q={q} />{q.unit && <p className="text-[11px] text-slate-500 mt-1">{'Include units (' + q.unit + ').'}</p>}</div></div><input {..._quizCompositionEvents} ref={!grade || grade.status === 'invalid' ? responseFocusRef : null} type="text" inputMode="decimal" aria-label={_quizResponseLabel(p, 'Numeric response')} aria-invalid={grade && grade.status === 'invalid' && !grade.graderUnavailable && !grade.invalidKey ? true : undefined} aria-describedby={grade && grade.status === 'invalid' ? numericErrorId : undefined} value={response} onChange={function (e) { updateResponse(e.target.value); }} onKeyDown={function (e) { if (e.key === 'Enter' && !_quizIsComposingText(e)) { e.preventDefault(); submit(); } }} disabled={!!grade && grade.status !== 'invalid'} placeholder={q.unit ? 'Example: 12.5 ' + q.unit : 'Enter a number'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" /><p id={numericErrorId} data-assessment-numeric-error role="status" aria-live="polite" aria-atomic="true" className="text-xs text-rose-700">{numericErrorMessage(grade)}</p><QuizVoiceInputButton value={response} onChange={updateResponse} disabled={!!grade && grade.status !== 'invalid'} allowDictation={p.allowDictation} label="Dictate number or units" />{!grade || grade.status === 'invalid' ? <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={!response.trim()} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">{_quizGradedCopy('quiz.student.check_value', 'Check value')}</button>{renderRules.allowIDontKnow && !grade && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">{_quizGradedCopy('ui_common.i_dont_know', "I don't know")}</button>}</div> : null}{grade && grade.status !== 'invalid' && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div ref={grade && grade.status !== 'invalid' ? responseFocusRef : null} tabIndex={-1} data-assessment-numeric-result className={'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ Correct response under this scoring policy' : grade.status === 'partially-correct' ? 'Partially correct — check the value or units' : 'Not yet — check your calculation and units'}</div>{grade.status !== 'idk' && <p data-assessment-numeric-details className={'text-xs mt-1 text-' + color + '-900'}>{numericPartsFeedback(grade)}</p>}{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{'Expected ' + q.correctValue + (q.unit ? ' ' + q.unit : '') + (Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : '') + '.'}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade && grade.status !== 'invalid' ? grade : null, value: confidence, onChange: updateConfidence })}</div>;
   }
   function _quizExtractJson(raw) {
     var value = raw && typeof raw === 'object' && raw.text ? raw.text : raw;
@@ -4572,39 +4581,75 @@ var _lazyIcon = function (name) {
     var convertConfirmState = React.useState(false);
     var addOpenState = React.useState(false);
     var addTypeState = React.useState(currentType);
+    var triggerRefs = React.useRef({});
+    var pendingFocus = React.useRef(null);
+    var actionScope = JSON.stringify([p.questionIdx, q.id || '', _quizStableAssessmentData({ questions: [q] })]);
+    var scopeRef = React.useRef(actionScope);
+    var questionLabel = _quizGradedCopy('quiz.review.question_number', 'Question {number}').replace('{number}', String(p.questionIdx + 1));
+    function closePanel(kind, event) {
+      pendingFocus.current = { kind: kind, from: event.currentTarget, scope: actionScope };
+      if (kind === 'delete') setDeleteConfirmOpen(false);
+      else if (kind === 'convert') convertConfirmState[1](false);
+      else addOpenState[1](false);
+    }
+    function escapePanel(kind, event) {
+      if (event.key !== 'Escape' || _quizIsComposingText(event)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      closePanel(kind, event);
+    }
+    React.useLayoutEffect(function () {
+      if (scopeRef.current !== actionScope) {
+        scopeRef.current = actionScope;
+        pendingFocus.current = null;
+        setDeleteConfirmOpen(false);
+        convertConfirmState[1](false);
+        addOpenState[1](false);
+        targetTypeState[1](currentType);
+        addTypeState[1](currentType);
+        return;
+      }
+      var pending = pendingFocus.current;
+      pendingFocus.current = null;
+      if (!pending || pending.scope !== actionScope) return;
+      var trigger = triggerRefs.current[pending.kind];
+      var active = document.activeElement;
+      if (trigger && trigger.isConnected && !trigger.disabled && (active === document.body || active === pending.from || pending.from.contains(active))) trigger.focus();
+    });
+    var controlSize = { minHeight: 44, minWidth: 44, maxWidth: '100%' };
     // While a quiz is live the teacher sees the live dashboard, not this list, so
     // structure changes cannot renumber items students are answering.
     var structureDisabled = disabled;
     var idBase = 'assess-item-' + p.questionIdx;
     var smallButton = 'px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold disabled:opacity-30';
     var typeOptions = _QUIZ_AUTHOR_TYPES.map(function (entry) { return <option key={entry[0]} value={entry[0]}>{_quizAuthorTypeLabel(entry[0])}</option>; });
-    return <div className="ml-9 mb-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2 space-y-2">
+    return <div data-assess-item-actions role="group" aria-label={questionLabel} className="mb-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2 space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
-        <button type="button" disabled={structureDisabled || p.questionIdx <= 0} onClick={function () { action(p.questionIdx, 'move', -1); }} className={smallButton}>{t('common.move_up')}</button>
-        <button type="button" disabled={structureDisabled || p.questionIdx >= p.totalQuestions - 1} onClick={function () { action(p.questionIdx, 'move', 1); }} className={smallButton}>{t('common.move_down')}</button>
-        <button type="button" disabled={structureDisabled} onClick={function () { action(p.questionIdx, 'duplicate'); }} className={smallButton}>{t('common.duplicate')}</button>
-        <button type="button" disabled={disabled || p.regenerating} onClick={function () { if (typeof p.onRegenerate === 'function') p.onRegenerate(p.questionIdx, q); }} className="px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40">{p.regenerating ? t('quiz.authoring.regenerating') : t('quiz.authoring.regenerate')}</button>
-        {!deleteConfirmOpen ? <button type="button" disabled={structureDisabled} onClick={function () { setDeleteConfirmOpen(true); }} className="ml-auto px-2 py-1 rounded bg-white border border-rose-300 text-rose-700 text-xs font-semibold disabled:opacity-30">{t('common.delete')}</button> : <span className="ml-auto inline-flex items-center gap-1" role="group" aria-label={t('quiz.authoring.confirm_delete_label')}><button type="button" autoFocus onClick={function () { setDeleteConfirmOpen(false); action(p.questionIdx, 'delete'); }} className="px-2 py-1 rounded bg-rose-700 text-white text-xs font-semibold">{t('quiz.authoring.confirm_delete')}</button><button type="button" onClick={function () { setDeleteConfirmOpen(false); }} className="px-2 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">{t('common.cancel')}</button></span>}
+        <button type="button" style={controlSize} disabled={structureDisabled || p.questionIdx <= 0} onClick={function () { action(p.questionIdx, 'move', -1); }} className={smallButton}>{t('common.move_up')}</button>
+        <button type="button" style={controlSize} disabled={structureDisabled || p.questionIdx >= p.totalQuestions - 1} onClick={function () { action(p.questionIdx, 'move', 1); }} className={smallButton}>{t('common.move_down')}</button>
+        <button type="button" style={controlSize} disabled={structureDisabled} onClick={function () { action(p.questionIdx, 'duplicate'); }} className={smallButton}>{t('common.duplicate')}</button>
+        <button type="button" style={controlSize} disabled={disabled || p.regenerating} onClick={function () { if (typeof p.onRegenerate === 'function') p.onRegenerate(p.questionIdx, q); }} className="px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40">{p.regenerating ? t('quiz.authoring.regenerating') : t('quiz.authoring.regenerate')}</button>
+        {!deleteConfirmOpen ? <button type="button" style={controlSize} disabled={structureDisabled} ref={function (node) { triggerRefs.current.delete = node; }} onClick={function () { setDeleteConfirmOpen(true); }} className="ml-auto px-2 py-1 rounded bg-white border border-rose-300 text-rose-700 text-xs font-semibold disabled:opacity-30">{t('common.delete')}</button> : <span className="ml-auto inline-flex items-center gap-1 flex-wrap" role="group" aria-label={t('quiz.authoring.confirm_delete_label') + ' — ' + questionLabel} onKeyDown={function (event) { escapePanel('delete', event); }}><button type="button" style={controlSize} onClick={function () { setDeleteConfirmOpen(false); action(p.questionIdx, 'delete'); }} className="px-2 py-1 rounded bg-rose-700 text-white text-xs font-semibold">{t('quiz.authoring.confirm_delete')}</button><button type="button" style={controlSize} autoFocus onClick={function (event) { closePanel('delete', event); }} className="px-2 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">{t('common.cancel')}</button></span>}
       </div>
       <div className="flex items-end gap-2 flex-wrap" data-assess-type-tools>
-        <label className="text-[11px] font-semibold text-slate-700" htmlFor={idBase + '-type'}>{t('quiz.authoring.change_type')}<select id={idBase + '-type'} data-assess-change-type value={targetType} disabled={structureDisabled || p.regenerating} onChange={function (event) { targetTypeState[1](event.target.value); convertConfirmState[1](false); }} className="block mt-1 text-xs border-slate-300 rounded p-1.5 bg-white">{typeOptions}</select></label>
+        <label className="text-[11px] font-semibold text-slate-700" htmlFor={idBase + '-type'}>{t('quiz.authoring.change_type')}<select style={controlSize} id={idBase + '-type'} data-assess-change-type value={targetType} disabled={structureDisabled || p.regenerating} onChange={function (event) { targetTypeState[1](event.target.value); convertConfirmState[1](false); }} className="block mt-1 text-xs border-slate-300 rounded p-1.5 bg-white">{typeOptions}</select></label>
         {!convertConfirmState[0]
-          ? <button type="button" data-assess-convert disabled={structureDisabled || p.regenerating || targetType === currentType || typeof p.onChangeType !== 'function'} onClick={function () { convertConfirmState[1](true); }} className={smallButton}>{p.regenerating ? t('quiz.authoring.rewriting') : t('quiz.authoring.rewrite_as', { type: _quizAuthorTypeLabel(targetType) })}</button>
-          : <span className="inline-flex items-center gap-1 flex-wrap" role="group" aria-label={t('quiz.authoring.confirm_rewrite_label')}><span className="text-[11px] text-slate-700">{t('quiz.authoring.confirm_rewrite', { n: p.questionIdx + 1, type: _quizAuthorTypeLabel(targetType) })}</span><button type="button" autoFocus data-assess-convert-confirm onClick={function () { convertConfirmState[1](false); p.onChangeType(p.questionIdx, q, targetType); }} className="px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold">{t('quiz.authoring.rewrite')}</button><button type="button" onClick={function () { convertConfirmState[1](false); }} className={smallButton}>{t('common.cancel')}</button></span>}
-        <button type="button" data-assess-add-toggle aria-expanded={addOpenState[0]} aria-controls={idBase + '-add'} disabled={structureDisabled || typeof p.onAddItem !== 'function'} onClick={function () { addOpenState[1](!addOpenState[0]); }} className={smallButton + ' ml-auto'}>{t('quiz.authoring.add_below')}</button>
+          ? <button type="button" style={controlSize} ref={function (node) { triggerRefs.current.convert = node; }} data-assess-convert disabled={structureDisabled || p.regenerating || targetType === currentType || typeof p.onChangeType !== 'function'} onClick={function () { convertConfirmState[1](true); }} className={smallButton}>{p.regenerating ? t('quiz.authoring.rewriting') : t('quiz.authoring.rewrite_as', { type: _quizAuthorTypeLabel(targetType) })}</button>
+          : <span className="inline-flex items-center gap-1 flex-wrap" role="group" aria-label={t('quiz.authoring.confirm_rewrite_label') + ' — ' + questionLabel} onKeyDown={function (event) { escapePanel('convert', event); }}><span className="text-[11px] text-slate-700">{t('quiz.authoring.confirm_rewrite', { n: p.questionIdx + 1, type: _quizAuthorTypeLabel(targetType) })}</span><button type="button" style={controlSize} data-assess-convert-confirm onClick={function () { convertConfirmState[1](false); p.onChangeType(p.questionIdx, q, targetType); }} className="px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold">{t('quiz.authoring.rewrite')}</button><button type="button" style={controlSize} autoFocus onClick={function (event) { closePanel('convert', event); }} className={smallButton}>{t('common.cancel')}</button></span>}
+        <button type="button" style={controlSize} ref={function (node) { triggerRefs.current.add = node; }} data-assess-add-toggle aria-expanded={addOpenState[0]} aria-controls={idBase + '-add'} disabled={structureDisabled || typeof p.onAddItem !== 'function'} onClick={function () { addOpenState[1](!addOpenState[0]); }} className={smallButton + ' ml-auto'}>{t('quiz.authoring.add_below')}</button>
       </div>
-      {addOpenState[0] && <div id={idBase + '-add'} role="group" aria-label={t('quiz.authoring.add_after_label', { n: p.questionIdx + 1 })} className="rounded-md border border-indigo-200 bg-white p-2 space-y-2" data-assess-add-panel>
+      {addOpenState[0] && <div id={idBase + '-add'} role="group" aria-label={t('quiz.authoring.add_after_label', { n: p.questionIdx + 1 })} className="rounded-md border border-indigo-200 bg-white p-2 space-y-2" data-assess-add-panel onKeyDown={function (event) { escapePanel('add', event); }}>
         <div className="flex items-end gap-2 flex-wrap">
-          <label className="text-[11px] font-semibold text-slate-700" htmlFor={idBase + '-add-type'}>{t('quiz.authoring.new_item_type')}<select id={idBase + '-add-type'} data-assess-add-type value={addTypeState[0]} onChange={function (event) { addTypeState[1](event.target.value); }} className="block mt-1 text-xs border-slate-300 rounded p-1.5 bg-white">{typeOptions}</select></label>
-          <button type="button" data-assess-add-ai disabled={!!p.adding} onClick={function () { p.onAddItem(p.questionIdx, addTypeState[0], 'ai'); }} className="px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40">{p.adding ? t('quiz.authoring.writing') : t('quiz.authoring.write_for_me')}</button>
-          <button type="button" data-assess-add-blank onClick={function () { addOpenState[1](false); p.onAddItem(p.questionIdx, addTypeState[0], 'blank'); }} className={smallButton}>{t('quiz.authoring.start_blank')}</button>
-          <button type="button" onClick={function () { addOpenState[1](false); }} className={smallButton}>{t('common.cancel')}</button>
+          <label className="text-[11px] font-semibold text-slate-700" htmlFor={idBase + '-add-type'}>{t('quiz.authoring.new_item_type')}<select style={controlSize} autoFocus id={idBase + '-add-type'} data-assess-add-type value={addTypeState[0]} onChange={function (event) { addTypeState[1](event.target.value); }} className="block mt-1 text-xs border-slate-300 rounded p-1.5 bg-white">{typeOptions}</select></label>
+          <button type="button" style={controlSize} data-assess-add-ai disabled={!!p.adding} onClick={function () { p.onAddItem(p.questionIdx, addTypeState[0], 'ai'); }} className="px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40">{p.adding ? t('quiz.authoring.writing') : t('quiz.authoring.write_for_me')}</button>
+          <button type="button" style={controlSize} data-assess-add-blank onClick={function () { addOpenState[1](false); p.onAddItem(p.questionIdx, addTypeState[0], 'blank'); }} className={smallButton}>{t('quiz.authoring.start_blank')}</button>
+          <button type="button" style={controlSize} onClick={function (event) { closePanel('add', event); }} className={smallButton}>{t('common.cancel')}</button>
         </div>
         <p className="text-[11px] text-slate-600">{t('quiz.authoring.add_help')}</p>
       </div>}
       {q.type === 'mcq' && Array.isArray(q.options) && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <label className="text-[11px] font-semibold text-slate-700">{t('quiz.authoring.correct_answer')}<select value={q.correctAnswer || ''} onChange={function (event) { action(p.questionIdx, 'patch', { correctAnswer: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded p-1.5 bg-white"><option value="">{t('quiz.authoring.choose_answer')}</option>{q.options.map(function (option, index) { return <option key={index} value={option}>{option ? _quizPlain(option) : t('quiz.authoring.option_n', { n: index + 1 })}</option>; })}</select></label>
-        <label className="text-[11px] font-semibold text-slate-700">{t('quiz.authoring.concept_label')}<input value={q.conceptLabel || ''} onChange={function (event) { action(p.questionIdx, 'patch', { conceptLabel: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded p-1.5 bg-white" /></label>
+        <label className="text-[11px] font-semibold text-slate-700">{t('quiz.authoring.correct_answer')}<select style={controlSize} value={q.correctAnswer || ''} onChange={function (event) { action(p.questionIdx, 'patch', { correctAnswer: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded p-1.5 bg-white"><option value="">{t('quiz.authoring.choose_answer')}</option>{q.options.map(function (option, index) { return <option key={index} value={option}>{option ? _quizPlain(option) : t('quiz.authoring.option_n', { n: index + 1 })}</option>; })}</select></label>
+        <label className="text-[11px] font-semibold text-slate-700">{t('quiz.authoring.concept_label')}<input style={controlSize} value={q.conceptLabel || ''} onChange={function (event) { action(p.questionIdx, 'patch', { conceptLabel: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded p-1.5 bg-white" /></label>
       </div>}
     </div>;
   }
@@ -4995,10 +5040,10 @@ var _lazyIcon = function (name) {
     var statusColor = grade.status === 'correct' ? 'emerald' : grade.status === 'partially-correct' ? 'amber' : grade.status === 'submitted' ? 'indigo' : grade.status === 'incorrect' ? 'rose' : grade.status === 'error' ? 'rose' : grade.status === 'idk' ? 'sky' : 'slate';
     var statusLabel = grade.status === 'correct' ? _quizGradedCopy('quiz.student.status_correct', 'Correct') : grade.status === 'partially-correct' ? _quizGradedCopy('quiz.student.status_close', 'Close') : grade.status === 'submitted' ? _quizGradedCopy('quiz.student.status_submitted', 'Submitted for review') : grade.status === 'incorrect' ? _quizGradedCopy('quiz.student.status_not_yet', 'Not yet') : grade.status === 'unclear' ? _quizGradedCopy('quiz.student.status_unclear', 'Unclear') : grade.status === 'error' ? _quizGradedCopy('quiz.student.status_error', 'Error') : grade.status === 'idk' ? _quizGradedCopy('quiz.student.status_idk', 'Marked I do not know') : '';
     var typeLabel = q.type === 'fill-blank' ? _quizGradedCopy('quiz.student.type_fill_blank', 'Fill-in-the-blank') : q.type === 'self-explanation' ? _quizGradedCopy('quiz.student.type_self_explanation', 'Explain your reasoning') : _quizGradedCopy('quiz.student.type_short_answer', 'Brief written response');
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">{typeLabel}</span><p className="text-sm text-slate-800 leading-relaxed">{_quizRich(q.question || '')}</p><AssessmentQuestionSupport q={q} criteriaId={criteriaId} /></div></div>{q.type === 'fill-blank' && <p id={policyId} className="mb-2 text-sm text-slate-700">{_quizFillBlankInstruction(q)}</p>}{q.type === 'fill-blank' ? <input aria-label={_quizResponseLabel(p, _quizGradedCopy('a11y.fill_in_blank', 'Fill in the blank'))} type="text" value={response} ref={responseFocusRef} aria-describedby={responseDescription} onChange={function (ev) {
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">{typeLabel}</span><p className="text-sm text-slate-800 leading-relaxed">{_quizRich(q.question || '')}</p><AssessmentQuestionSupport q={q} criteriaId={criteriaId} /></div></div>{q.type === 'fill-blank' && <p id={policyId} className="mb-2 text-sm text-slate-700">{_quizFillBlankInstruction(q)}</p>}{q.type === 'fill-blank' ? <input aria-label={_quizResponseLabel(p, _quizGradedCopy('a11y.fill_in_blank', 'Fill in the blank'))} type="text" value={response} {..._quizCompositionEvents} ref={responseFocusRef} aria-describedby={responseDescription} onChange={function (ev) {
         setResponse(ev.target.value);
       }} onKeyDown={function (ev) {
-        if (ev.key === 'Enter') {
+        if (ev.key === 'Enter' && !_quizIsComposingText(ev)) {
           ev.preventDefault();
           submitGrade();
         }
@@ -6175,9 +6220,7 @@ var _lazyIcon = function (name) {
     }
     React.useEffect(function () {
       if (!draftNamespace || !recordResponsesRef.current) return undefined;
-      var timer = 0;
       function flush() {
-        timer = 0;
         var meta = recordAttemptMetaRef.current || {};
         var snapshot = _quizResponseSnapshot(assessmentData, _quizReadWorkingDraft(draftNamespace).items, { status: 'in-progress', attemptId: meta.attemptId || '', startedAt: meta.startedAt || null });
         if (!snapshot.responded && !snapshot.answered && !snapshot.items.some(function (entry) { return entry.confidence; }) && !snapshot.reflections.some(function (entry) { return entry.response; }) && !recordedResponsesRef.current.assessmentDraft) return;
@@ -6185,14 +6228,12 @@ var _lazyIcon = function (name) {
       }
       function onDraft(event) {
         if (!event || !event.detail || event.detail.namespace !== draftNamespace) return;
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(flush, 400);
+        flush();
       }
       window.addEventListener('alloflow:assessment-draft-changed', onDraft);
       if (_quizReadDraft(draftNamespace)) flush();
       return function () {
         window.removeEventListener('alloflow:assessment-draft-changed', onDraft);
-        if (timer) { clearTimeout(timer); flush(); }
       };
     }, [draftNamespace, recordResourceId]);
     React.useEffect(function () {
@@ -6525,7 +6566,7 @@ var _lazyIcon = function (name) {
           toggleRefinePanel(key);
         }} disabled={isLoading} className={'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50'} title={isLoading ? 'Refining…' : 'Refine this image'} aria-label={t("a11y.refine_image")} data-help-key="quiz_image_refine_btn">{isLoading ? '⋯' : '✏️'}</button>{isOpen && <div className="mt-2 p-2 rounded border border-indigo-200 bg-indigo-50 text-xs"><div className="flex items-center gap-2 mb-1.5 flex-wrap"><button type="button" onClick={function () {
               refineQuizImage(qIdx, target, optIdx, 'Remove all text and labels from this image. Keep everything else identical.');
-            }} disabled={isLoading} className="text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50" aria-label="Remove text from this image" title={t("tooltips.one_click_remove_text")}><span aria-hidden="true">🧹 </span>{t("ui_common.remove_text")}</button></div><textarea aria-label="Image refinement instructions" value={inputValue} onChange={function (e) {
+            }} disabled={isLoading} className="text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50" aria-label="Remove text from this image" title={t("tooltips.one_click_remove_text")}><span aria-hidden="true">🧹 </span>{t("ui_common.remove_text")}</button></div><textarea aria-label="Image refinement instructions" value={inputValue} {..._quizCompositionEvents} onChange={function (e) {
             var v = e.target.value;
             setQuizImageRefineInputs(function (prev) {
               var next = Object.assign({}, prev);
@@ -6533,7 +6574,7 @@ var _lazyIcon = function (name) {
               return next;
             });
           }} onKeyDown={function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey && !_quizIsComposingText(e)) {
               e.preventDefault();
               refineQuizImage(qIdx, target, optIdx);
             }

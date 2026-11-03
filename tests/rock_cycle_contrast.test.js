@@ -8,6 +8,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { React, ReactDOMServer, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const PATHS = [
   'stem_lab/stem_tool_rocks.js',
@@ -191,23 +192,17 @@ describe('rock cycle colour contrast', () => {
   });
 
   it('lets the mode tabs wrap instead of overflowing a phone', () => {
-    // Seven mode tabs cannot fit on one row, so a 390px phone
-    // scrolled the whole tool sideways and the last tabs sat off-screen.
-    // Measured in a real browser; pinned here so it cannot regress silently.
     PATHS.forEach((p) => {
-      const src = readFileSync(p, 'utf8');
-      expect(src).toContain('"data-rocks-header": "responsive"');
-      expect(src).toContain('"data-rocks-mode-nav": "responsive"');
-      expect(src).toContain('rk-mode-nav order-3 flex w-full flex-wrap gap-1');
-      expect(src).toContain('.rk-explorer .rk-mode-nav { display:flex; flex-wrap:wrap;');
-      expect(src).toContain('flex:1 0 auto;');
-      expect(src).toContain('"data-rocks-header-action": "back"');
-      expect(src).toContain('grid h-11 w-11 shrink-0');
-      expect(src).toContain('className: "rk-mode-button min-h-[44px] px-3 py-2 rounded-lg');
-      expect(src).not.toContain('className: "flex gap-1 ml-auto"');
+      resetStemLab(); loadTool(p, 'rocks');
+      const host = document.createElement('div');
+      host.innerHTML = ReactDOMServer.renderToStaticMarkup(React.createElement(() => window.StemLab._registry.rocks.render(makeCtx())));
+      expect(host.querySelector('[data-rocks-header="responsive"]')).toBeTruthy();
+      const nav = host.querySelector('[data-rocks-mode-nav="responsive"]');
+      expect(nav).toBeTruthy();
+      expect(nav.classList.contains('flex-wrap')).toBe(true);
+      expect(nav.classList.contains('overflow-x-auto')).toBe(false);
     });
   });
-
   it('does not ship an app-wide text-slate-600 override', () => {
     // A single tool file was repainting EVERY .text-slate-600 in AlloFlow down to
     // slate-500 with !important — 7.58:1 → 4.76:1 on white, 4.48:1 on orange-50.

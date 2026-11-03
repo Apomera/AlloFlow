@@ -5,9 +5,9 @@ const source = fs.readFileSync('view_faq_source.jsx', 'utf8');
 
 describe('FAQ keyboard and control semantics', () => {
   it('uses named native buttons for question and answer sentence audio', () => {
-    expect(source.match(/<button type="button" key=\{sIdx\} id=\{`sentence-/g)?.length).toBe(2);
-    expect(source.match(/aria-label=\{label\('faq\.read_sentence', 'Read sentence: \{sentence\}'\)\.replace\('\{sentence\}', s\)\}/g)?.length).toBe(2);
-    expect(source).not.toContain('return <span key={sIdx} id={`sentence-');
+    expect(source.match(/<button type="button" key=\{sIdx\} id=\{`sentence-/g)?.length).toBe(1);
+    expect(source.match(/aria-label=\{label\('faq\.read_sentence',\s*'Read sentence: \{sentence\}'\)\.replace\('\{sentence\}',\s*s\)\}/g)?.length).toBe(2);
+    expect(source).toContain('data-faq-listen-question');
   });
 
   it('uses a dedicated accordion button instead of a button role containing controls', () => {

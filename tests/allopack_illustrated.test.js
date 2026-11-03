@@ -10,9 +10,11 @@ const React=requireApp('react');
 const ReactDOMServer=requireApp('react-dom/server');
 const babel=require('@babel/core');
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,''));
-const pack=read('allopacks/illustrated/water_cycle_grade6.allopack.json');
+const pack=read('allopacks/current/water_cycle_grade6.allopack.json');
 const glossary=pack.history.find(r=>r.type==='glossary').data;
-const panels=pack.history.filter(r=>r.type==='image').flatMap(r=>r.data.visualPlan.panels);
+// Lesson panels; the 2026-11-02 collection pass added memory/challenge reference companions.
+const references=pack.history.filter(r=>r.type==='image'&&/-visual-reference$/.test(r.id));
+const panels=pack.history.filter(r=>r.type==='image'&&!references.includes(r)).flatMap(r=>r.data.visualPlan.panels);
 const source=fs.readFileSync('view_glossary_source.jsx','utf8');
 const helper=source.slice(0,source.indexOf('// Lazy Lucide'));
 const getAlt=new Function(helper+'\nreturn getGlossaryImageAlt;')();
@@ -24,6 +26,8 @@ describe('illustrated water cycle accessibility and portability',()=>{
   expect(glossary).toHaveLength(10);expect(panels).toHaveLength(14);
   for(const item of glossary){expect(getAlt(item)).toBe(item.imageAlt);expect(item.imageAlt.length).toBeGreaterThan(20);expect(item.imageAlt.length).toBeLessThanOrEqual(250);expect(item.imageAltHash).toBe(hashImage(item.image));}
   for(const p of panels){expect(p.alt.length).toBeGreaterThan(20);expect(p.alt.length).toBeLessThanOrEqual(250);expect(p.altHash).toBe(hashImage(p.imageUrl));expect(p.altSource).toBe('vision');expect(p.decorative).toBe(false);}
+  const companions=references.flatMap(r=>r.data.visualPlan.panels);expect(references.map(r=>r.id).sort()).toEqual(['wc-challenge-visual-reference','wc-memory-visual-reference']);expect(companions).toHaveLength(4);
+  for(const p of companions){expect(p.alt.length).toBeGreaterThan(20);expect(p.altHash).toBe(hashImage(p.imageUrl));expect(p.caption).toBeTruthy();expect(p.decorative).toBe(false);}
  });
  it('never names the term inside its own picture description (flashcard quiz mode shows the image)',()=>{
   for(const item of glossary){expect(item.imageAlt.toLowerCase()).not.toContain(item.term.toLowerCase());}
@@ -32,10 +36,12 @@ describe('illustrated water cycle accessibility and portability',()=>{
   const manifest=read('allopacks/media/water_cycle_grade6/manifest.json');
   const urls=[...glossary.map(i=>i.image),...panels.map(i=>i.imageUrl)];
   expect(new Set(urls).size).toBe(24);
-  for(const a of manifest.assets){
-   const expected='data:image/webp;base64,'+fs.readFileSync('allopacks/media/water_cycle_grade6/'+a.file).toString('base64');
-   expect(urls).toContain(expected);
-  }
+  // The 2026-11-02 collection pass re-encoded these (<=768px WebP q72) to fit pack budgets, so
+  // pin the 1:1 mapping through each reviewed description instead of the original bytes.
+  expect(manifest.assets).toHaveLength(24);
+  const alts=[...glossary.map(i=>i.imageAlt),...panels.map(p=>p.alt)];
+  for(const a of manifest.assets)expect(alts,a.file).toContain(a.alt);
+  for(const u of urls)expect(u.startsWith('data:image/webp;base64,')).toBe(true);
  });
  it('keeps native editable labels and captions separate from images',()=>{
   const labels=panels.flatMap(p=>p.labels);
@@ -78,7 +84,9 @@ describe('illustrated water cycle accessibility and portability',()=>{
   // illustrated editions; catalog/approved/water_cycle.json is gone, so an entry for it
   // would be a 404 for every teacher who clicked it.
   expect(catalog.entries.find(e=>e.slug==='water_cycle')).toBeUndefined();
-  expect(catalog.entries.find(e=>e.slug==='water_cycle_grade6_illustrated').path).toBe('allopacks/illustrated/water_cycle_grade6.allopack.json');
+  // 2026-11-02: one current illustrated pack per topic; this older illustrated copy is kept but unlisted.
+  expect(catalog.entries.find(e=>e.slug==='water_cycle_grade6').path).toBe('allopacks/current/water_cycle_grade6.allopack.json');
+  expect(catalog.entries.find(e=>e.slug==='water_cycle_grade6_illustrated')).toBeUndefined();
  });
 });
 

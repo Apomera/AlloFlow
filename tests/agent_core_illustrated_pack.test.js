@@ -6,7 +6,12 @@ import vm from 'node:vm';
 const require = createRequire(import.meta.url);
 const service = require('../agent_core_resource_pack_module.js');
 const profile = { profile: 'illustrated' };
-const readPack = (slug) => JSON.parse(readFileSync(`allopacks/illustrated/${slug}.allopack.json`, 'utf8'));
+const readPack = (slug) => JSON.parse(readFileSync(`allopacks/current/${slug}.allopack.json`, 'utf8'));
+// Published packs include memory-card (cards[].visualImage) and challenge (visual.image) pictures;
+// since 2026-11-02 the illustrated profile accepts them with the native raster and alt checks.
+const picturePaths = (pack) => pack.history.flatMap((item, index) =>
+  item.type === 'memory-aid' ? item.data.cards.flatMap((card, c) => card.visualImage ? [{ index, card: c }] : [])
+    : item.type === 'applied-challenge' && item.data.visual?.image ? [{ index }] : []);
 const water = readPack('water_cycle_grade6');
 const image = water.history.find((item) => item.type === 'glossary').data[0].image;
 const altWindow = { AlloModules: {}, React: {} };
@@ -25,6 +30,44 @@ function glossaryPack() {
 }
 
 describe('illustrated AlloPack service compatibility', () => {
+  it.each(['water_cycle_grade6', 'crew_norms_grade6_8'])('accepts the memory-card and challenge pictures of the published %s pack', (slug) => {
+    const pack = readPack(slug);
+    const found = picturePaths(pack);
+    expect(found.some((p) => p.card !== undefined)).toBe(true);
+    expect(found.some((p) => p.card === undefined)).toBe(true);
+    const result = service.validatePack(pack, profile);
+    expect(result.ok, JSON.stringify(result.errors)).toBe(true);
+    expect(result.errors.map((e) => e.code)).not.toContain('unsupported-image-placement');
+  });
+
+  it.each([
+    ['remote URL', 'https://example.invalid/picture.png', 'unsupported-image-source'],
+    ['SVG data', 'data:image/svg+xml;base64,PHN2Zy8+', 'unsupported-image-source'],
+    ['malformed base64', 'data:image/png;base64,not-valid-base64!', null],
+  ])('still rejects a %s in memory-card and challenge picture fields', (_label, bad, code) => {
+    for (const target of ['memory', 'challenge']) {
+      const pack = structuredClone(water);
+      const at = picturePaths(pack).find((p) => (target === 'memory') === (p.card !== undefined));
+      const data = pack.history[at.index].data;
+      if (target === 'memory') data.cards[at.card].visualImage = bad; else data.visual.image = bad;
+      const result = service.validatePack(pack, profile);
+      expect(result.ok, target).toBe(false);
+      const path = target === 'memory' ? `pack.history[${at.index}].data.cards[${at.card}].visualImage` : `pack.history[${at.index}].data.visual.image`;
+      expect(result.errors.some((e) => e.path === path && (!code || e.code === code)), target + ' ' + JSON.stringify(result.errors)).toBe(true);
+    }
+  });
+
+  it('still requires a description for memory-card and challenge pictures', () => {
+    const pack = structuredClone(water);
+    const memory = picturePaths(pack).find((p) => p.card !== undefined);
+    const challenge = picturePaths(pack).find((p) => p.card === undefined);
+    pack.history[memory.index].data.cards[memory.card].visualAlt = '';
+    pack.history[challenge.index].data.visual.alt = '';
+    const codes = service.validatePack(pack, profile).errors.map((e) => e.code + ' ' + e.path);
+    expect(codes).toContain(`invalid-image-alt pack.history[${memory.index}].data.cards[${memory.card}].visualAlt`);
+    expect(codes).toContain(`invalid-image-alt pack.history[${challenge.index}].data.visual.alt`);
+  });
+
   it.each(['water_cycle_grade6', 'crew_norms_grade6_8'])('round-trips the complete published %s pack without metadata loss', (slug) => {
     const pack = readPack(slug);
     const before = structuredClone(pack);

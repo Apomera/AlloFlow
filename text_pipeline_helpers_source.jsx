@@ -1389,7 +1389,7 @@ const _validatedSupportInsertionIndex = (support, partResolution, isJson) => {
 // search provider supplies sources without supports, retain any explicit
 // [Source N] tokens for the content engine and optionally append the source
 // list; never fabricate claim-level attribution by distributing links.
-const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson = false, includeBibliography = true, textParts) => {
+const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson = false, includeBibliography = true, textParts, formatSourceMarker) => {
     if (!metadata || typeof text !== 'string') return text;
     const rawChunks = Array.isArray(metadata.groundingChunks) ? metadata.groundingChunks : [];
     if (rawChunks.length === 0) return text;
@@ -1425,12 +1425,13 @@ const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson =
         const marker = Array.from(originalIndices)
             .sort((a, b) => a - b)
             .map(originalIndex => {
+                if (typeof formatSourceMarker === 'function') return formatSourceMarker(originalIndex);
                 const entry = entriesByOriginalIndex.get(originalIndex);
                 const label = `⁽${toSuperscript(originalIndex + 1)}⁾`;
                 const uri = entry.chunk?.web?.uri;
                 return uri ? `[${label}](${uri})` : label;
             })
-            .join(' ');
+            .filter(Boolean).join(' ');
         if (!marker) return;
 
         const before = newText[index - 1] || '';

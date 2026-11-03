@@ -2284,6 +2284,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (type === 'suv') return 1950;
     return 1550;
   }
+  function applyTrafficImpactVelocity(player, other, playerMass) {
+    playerMass = playerMass || 1500;
+    var otherMass = trafficVehicleMass(other.type);
+    var totalMass = playerMass + otherMass;
+    var playerX = Math.cos(player.heading), playerY = Math.sin(player.heading);
+    var otherX = Math.cos(other.heading), otherY = Math.sin(other.heading);
+    // Share momentum in world space, then project it onto each heading so a
+    // vehicle can be pushed backwards and a small tap preserves road speed.
+    var sharedX = (playerMass * player.speed * playerX + otherMass * other.speed * otherX) / totalMass;
+    var sharedY = (playerMass * player.speed * playerY + otherMass * other.speed * otherY) / totalMass;
+    player.speed = sharedX * playerX + sharedY * playerY;
+    other.speed = sharedX * otherX + sharedY * otherY;
+  }
   // 2D oriented-rectangle overlap (Separating Axis Theorem). This replaces
   // center-point radii that let the nose of a 4.5 m car pass through traffic.
   function vehicleRectsOverlap(a, aSize, b, bSize) {
@@ -3233,8 +3246,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // can never hold a lane indefinitely. Active crossings are never timed out.
   var RR_CURB_YIELD_HOLD_MAX = 4;
 
-  function trafficPedestrianControl(world, vehicle, pedestrians, signals, dt) {
-    var size = vehicleFootprint(vehicle.type), speed = Math.abs(Number(vehicle.speed) || 0);
+  function trafficPedestrianControl(world, vehicle, pedestrians, signals, dt, options) {
+    options = options || {};
+    var type = options.vehicleType || vehicle.type;
+    var size = type === 'cyclist' || type === 'motorcycle'
+      ? vulnerableRoadUserFootprint({ type: type }) : vehicleFootprint(type);
+    var speed = Math.abs(Number(vehicle.speed) || 0);
     var mainRoad = !vehicle.crossStreet && !vehicle._turning;
     var curved = mainRoad && world && world.spline;
     var frame = curved ? mainRoadLocalPoint(world, vehicle.x, vehicle.y)
@@ -3275,7 +3292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         activeDistance = Math.min(activeDistance, distance);
         return;
       }
-      if (!crossingRelevant || !ped.waitingAtCrosswalk || ped.crossDwell > 0 ||
+      if (options.activeOnly || !crossingRelevant || !ped.waitingAtCrosswalk || ped.crossDwell > 0 ||
           (ahead < frontReach + 1.08 && vehicle._curbYieldKey !== String(station))) return;
       var signal = null;
       (signals || []).forEach(function(candidate) {
@@ -3302,8 +3319,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return { required: usableDistance < Infinity, distance: usableDistance, targetSpeed: targetSpeed };
   }
 
-  function guardTrafficPedestrianMotion(vehicle, previous, pedestrians) {
-    var size = vehicleFootprint(vehicle.type);
+  function guardTrafficPedestrianMotion(vehicle, previous, pedestrians, vehicleType) {
+    var type = vehicleType || vehicle.type;
+    var size = type === 'cyclist' || type === 'motorcycle'
+      ? vulnerableRoadUserFootprint({ type: type }) : vehicleFootprint(type);
     var turn = normalizeSignedAngle(vehicle.heading - previous.heading);
     var sweptDistance = Math.hypot(vehicle.x - previous.x, vehicle.y - previous.y) +
       Math.abs(turn) * Math.hypot(size.length, size.width) / 2;
@@ -3419,14 +3438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       p3: end, startHeading: startHeading, endHeading: endHeading,
       direction: direction, laneOffset: laneOffset, length: 0
     };
-    var previous = path.p0;
-    for (var sample = 1; sample <= 16; sample++) {
-      var point = intersectionTurnPoint(path, sample / 16);
-      path.length += Math.hypot(point.x - previous.x, point.y - previous.y);
-      previous = point;
-    }
-    path.length = Math.max(1, path.length);
-    return path;
+    return measureIntersectionTurnPath(path);
   }
 
   function intersectionTurnPoint(path, progress) {
@@ -3441,6 +3453,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var dy = 3 * u * u * (path.p1.y - path.p0.y) +
       6 * u * t * (path.p2.y - path.p1.y) + 3 * t * t * (path.p3.y - path.p2.y);
     return { x: x, y: y, heading: Math.atan2(dy, dx), progress: t };
+  }
+
+  function measureIntersectionTurnPath(path) {
+    var previous = path.p0;
+    path.length = 0;
+    path.travelDistances = [0];
+    for (var sample = 1; sample <= 128; sample++) {
+      var point = intersectionTurnPoint(path, sample / 128);
+      path.length += Math.hypot(point.x - previous.x, point.y - previous.y);
+      path.travelDistances.push(path.length);
+      previous = point;
+    }
+    path.length = Math.max(1, path.length);
+    return path;
+  }
+
+  // A cubic parameter is not distance: advancing it uniformly makes traffic
+  // surge through some parts of a turn. Keep the raw sampler for connectors.
+  function intersectionTurnPose(path, progress) {
+    var fraction = Math.max(0, Math.min(1, Number(progress) || 0));
+    var distances = path.travelDistances;
+    var parameter = fraction;
+    if (distances && distances.length > 1 && fraction > 0 && fraction < 1) {
+      var last = distances.length - 1;
+      var distance = fraction * distances[last];
+      var low = 0, high = last;
+      while (high - low > 1) {
+        var middle = (low + high) >> 1;
+        if (distances[middle] < distance) low = middle;
+        else high = middle;
+      }
+      var part = (distance - distances[low]) /
+        Math.max(1e-9, distances[high] - distances[low]);
+      parameter = (low + part) / last;
+    }
+    var point = intersectionTurnPoint(path, parameter);
+    point.progress = fraction;
+    return point;
   }
 
   function crossStreetTravelDirection(pose, vehicleHeading) {
@@ -3551,6 +3601,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     };
   }
 
+  // Spline stations are authored Y coordinates. Physical distance follows the
+  // lane ribbon, including its offset on bends. Bound sampling work per query.
+  function mainRoadLaneDistance(world, startStation, endStation, lateral) {
+    var stationDelta = endStation - startStation;
+    var samples = Math.min(64, Math.max(1, Math.ceil(Math.abs(stationDelta) / 2)));
+    var previous = mainRoadWorldPoint(world, startStation, lateral);
+    var distance = 0;
+    for (var sample = 1; sample <= samples; sample++) {
+      var point = mainRoadWorldPoint(world,
+        startStation + stationDelta * sample / samples, lateral);
+      distance += Math.hypot(point.x - previous.x, point.y - previous.y);
+      previous = point;
+    }
+    return distance;
+  }
+
   // Following clearance is a physical road distance, while the shared road-state
   // classifier deliberately retains authored station units for other traffic
   // decisions. Sample only eligible following candidates, with bounded work.
@@ -3560,19 +3626,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var centerDistance = state.ahead;
     if (world && world.spline && state.from && state.to &&
         state.from.corridorKey === 'main' && state.to.corridorKey === 'main') {
-      var startStation = state.from.station;
-      var stationDelta = state.to.station - startStation;
       var laneOffset = (state.from.lateral + state.to.lateral) * 0.5;
-      var samples = Math.min(64, Math.max(1, Math.ceil(Math.abs(stationDelta) / 2)));
-      var previous = mainRoadWorldPoint(world, startStation, laneOffset);
-      centerDistance = 0;
-      for (var sample = 1; sample <= samples; sample++) {
-        var point = mainRoadWorldPoint(world,
-          startStation + stationDelta * sample / samples, laneOffset);
-        centerDistance += Math.hypot(point.x - previous.x, point.y - previous.y);
-        previous = point;
-      }
-      centerDistance *= Math.sign(state.ahead);
+      centerDistance = mainRoadLaneDistance(world, state.from.station,
+        state.to.station, laneOffset) * Math.sign(state.ahead);
     }
     return centerDistance;
   }
@@ -3935,14 +3991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       direction: mainDirection, laneOffset: laneOffset, length: 0,
       destinationRoad: 'main'
     };
-    var previous = path.p0;
-    for (var sample = 1; sample <= 16; sample++) {
-      var next = intersectionTurnPoint(path, sample / 16);
-      path.length += Math.hypot(next.x - previous.x, next.y - previous.y);
-      previous = next;
-    }
-    path.length = Math.max(1, path.length);
-    return path;
+    return measureIntersectionTurnPath(path);
   }
 
   function playerControlApproach(world, signal, car, vehicleLength) {
@@ -3978,6 +4027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // on a curve is not treated as off-road or assigned a misleading control
     // distance because its raw X differs from the centerline.
     var carRoadFrame = spline ? mainRoadLocalPoint(world, car.x, car.y) : null;
+    var frontRoadFrame = spline ? mainRoadLocalPoint(world, frontX, frontY) : null;
     var signalRoadFrame = spline ? mainRoadLocalPoint(world, signal.x, signal.y) : null;
     var carStation = carRoadFrame ? carRoadFrame.longitudinal : car.y;
     var signalStation = signalRoadFrame ? signalRoadFrame.longitudinal : signal.y;
@@ -3989,31 +4039,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       : intersectionStopLineCoordinate(signalStation, travelSign);
     return { sameRoad: signalOnMain && Math.abs(lateral) <= layout.pavedHalfWidth + 0.75,
       approachGroup: 'main', travelSign: travelSign,
-      frontCoordinate: spline ? mainRoadLocalPoint(world, frontX, frontY).longitudinal : frontY,
+      frontCoordinate: frontRoadFrame ? frontRoadFrame.longitudinal : frontY,
+      frontLateral: frontRoadFrame ? frontRoadFrame.lateral : lateral,
       controlCoordinate: mainControl,
       stopCenterCoordinate: signal.type === 'flagger' ? mainControl
         : vehicleStopCenterCoordinate(signalStation, travelSign, length),
       vehicleCenterCoordinate: carStation, distanceFromIntersection: Math.abs(carStation - signalStation),
       approachKey: 'main_' + travelSign, corridor: null };
   }
-  function controlDistanceAhead(world, signal, car, vehicleLength) {
-    var approach = playerControlApproach(world, signal, car, vehicleLength);
+  function controlApproachDistanceMeters(world, approach, range) {
     if (!approach.sameRoad || !approach.travelSign) return null;
-    return (approach.controlCoordinate - approach.frontCoordinate) * approach.travelSign;
+    var signedDistance = (approach.controlCoordinate - approach.frontCoordinate) * approach.travelSign;
+    if (world && world.spline && approach.approachGroup === 'main') {
+      // An offset lane can change its endpoint Y by at most twice its
+      // lateral offset. Skip distant streamed controls before sampling.
+      if (range != null && Math.abs(signedDistance) > range + 2 * Math.abs(approach.frontLateral)) return null;
+      return Math.sign(signedDistance) * mainRoadLaneDistance(world,
+        approach.frontCoordinate, approach.controlCoordinate, approach.frontLateral);
+    }
+    return signedDistance;
+  }
+
+  function controlDistanceAhead(world, signal, car, vehicleLength) {
+    return controlApproachDistanceMeters(world,
+      playerControlApproach(world, signal, car, vehicleLength));
   }
 
   function drivingSignalPreview(world, signals, car, vehicleLength, weather) {
     var range = drivingSignalPreviewMeters(car.speed, weather);
     var result = { signal: null, distanceMeters: Infinity, approach: null };
     (signals || []).forEach(function(signal) {
-      var distance = controlDistanceAhead(world, signal, car, vehicleLength);
+      var approach = playerControlApproach(world, signal, car, vehicleLength);
+      var distance = controlApproachDistanceMeters(world, approach, range);
       // Include the line itself and a 5 cm numerical tolerance. A signal must
       // not disappear just as the learner completes the required stop.
       if (distance == null || distance < -0.05 || distance >= range) return;
       distance = Math.max(0, distance);
       if (distance < result.distanceMeters) {
-        result = { signal: signal, distanceMeters: distance,
-          approach: playerControlApproach(world, signal, car, vehicleLength) };
+        result = { signal: signal, distanceMeters: distance, approach: approach };
       }
     });
     return result;
@@ -4289,10 +4352,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return state;
   }
 
+  // The rail head is 10 cm wide. Measure from its near edge, on either
+  // approach, for both the painted stop line and the vehicle clearance.
+  var RR_RAIL_CENTER_OFFSET = 0.72;
+  var RR_RAIL_WIDTH = 0.10;
+  var RR_RAIL_NEAR_EDGE = RR_RAIL_CENTER_OFFSET + RR_RAIL_WIDTH / 2;
+  var RR_RAIL_MIN_CLEARANCE = 15 * 0.3048;
+  var RR_RAIL_MAX_CLEARANCE = 50 * 0.3048;
+  var RR_RAIL_STOP_OFFSET = RR_RAIL_NEAR_EDGE + RR_RAIL_MIN_CLEARANCE;
+
   function railroadRequiresFullStop(vehicleType, crossing) {
     var type = String(vehicleType || '').toLowerCase();
-    return !!(crossing && crossing.activeControl === false &&
-      (type === 'school_bus' || type === 'schoolbus' || type === 'bus'));
+    return !!crossing && (type === 'school_bus' || type === 'schoolbus' || type === 'bus');
+  }
+
+  function railroadApproach(vehicle, crossing, vehicleType, side, world) {
+    var heading = crossing.heading || 0;
+    var tangentX = Math.sin(heading), tangentY = Math.cos(heading);
+    var dx = vehicle.x - crossing.centerX, dy = vehicle.y - crossing.centerY;
+    var along = dx * tangentX + dy * tangentY;
+    var lateral = dx * tangentY - dy * tangentX;
+    if (side == null) side = along < 0 ? -1 : 1;
+    var alignment = Math.sin(vehicle.heading + heading);
+    var size = vehicleFootprint(vehicleType || vehicle.type);
+    var reach = (Math.abs(alignment) * size.length +
+      Math.abs(Math.cos(vehicle.heading + heading)) * size.width) / 2;
+    var clearance = side * along - reach - RR_RAIL_NEAR_EDGE;
+    // A legal lane can bend away from the tangent of the rails during the
+    // approach. Check the road at the vehicle, but measure its physical
+    // clearance and any swept contact in the frame of the actual track.
+    var roadLateral = world && world.spline ? mainRoadLocalPoint(world, vehicle.x, vehicle.y).lateral : lateral;
+    var inLane = Math.abs(roadLateral) <= crossing.halfWidth;
+    var towardCrossing = side * alignment < 0;
+    return { side: side, clearance: clearance, lateral: lateral, inLane: inLane,
+      towardCrossing: towardCrossing, distanceToLine: clearance - RR_RAIL_MIN_CLEARANCE,
+      inStopZone: inLane && towardCrossing && clearance >= RR_RAIL_MIN_CLEARANCE - 1e-6 &&
+        clearance <= RR_RAIL_MAX_CLEARANCE + 1e-6 };
+  }
+
+  // One record per vehicle and approach. A stop behind another vehicle can
+  // count anywhere inside the legal band. Require a continuous dwell there.
+  function updateRailroadStop(vehicle, crossing, approach, dt) {
+    var record = vehicle._railStopRecord;
+    if (!approach.inLane || !approach.towardCrossing || approach.clearance > RR_RAIL_MAX_CLEARANCE + 1e-6) {
+      if (record && record.crossing === crossing) vehicle._railStopRecord = null;
+      return null;
+    }
+    if (!record || record.crossing !== crossing || record.side !== approach.side) {
+      record = vehicle._railStopRecord = { crossing: crossing, side: approach.side, timer: 0, complete: false };
+    }
+    if (!record.complete) {
+      record.timer = approach.inStopZone && Math.abs(vehicle.speed) < 0.15 ? record.timer + dt : 0;
+      record.complete = record.timer >= 0.8;
+    }
+    return record;
+  }
+
+  function crossesRailroadStopLine(before, after, crossing) {
+    if (before.distanceToLine < -1e-6 || after.distanceToLine >= -1e-6) return false;
+    var fraction = Math.max(0, before.distanceToLine) / (before.distanceToLine - after.distanceToLine);
+    return Math.abs(before.lateral + (after.lateral - before.lateral) * fraction) <= crossing.halfWidth;
   }
 
   function railroadTrainCollisionAt(vehicle, crossing, state) {
@@ -6797,6 +6916,126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 }
     ];
     return types[Math.floor(Math.random() * types.length)];
+  }
+
+  function emergencySirenSpatialState(listener, source) {
+    listener = listener || {}; source = source || {};
+    var dx = Number(source.x) - Number(listener.x);
+    var dy = Number(source.y) - Number(listener.y);
+    var distance = Math.hypot(dx, dy);
+    if (!isFinite(distance)) return { distance: 0, pan: 0, dopplerScale: 1 };
+    var inverseDistance = distance > 1e-6 ? 1 / distance : 0;
+    var nx = dx * inverseDistance, ny = dy * inverseDistance;
+    var listenerHeading = isFinite(listener.heading) ? Number(listener.heading) : 0;
+    var sourceHeading = isFinite(source.heading) ? Number(source.heading) : 0;
+    var listenerSpeed = isFinite(listener.speed) ? Number(listener.speed) : 0;
+    var sourceSpeed = isFinite(source.speed) ? Number(source.speed) : 0;
+    var listenerRadial = listenerSpeed *
+      (Math.cos(listenerHeading) * nx + Math.sin(listenerHeading) * ny);
+    var sourceRadial = sourceSpeed *
+      (Math.cos(sourceHeading) * nx + Math.sin(sourceHeading) * ny);
+    // Still-air Doppler, projected along listener -> source. Equal velocities
+    // produce no shift. Bounds keep invalid/extreme telemetry out of the synth.
+    var soundSpeed = 343;
+    var doppler = (soundSpeed + listenerRadial) /
+      Math.max(soundSpeed * 0.25, soundSpeed + sourceRadial);
+    return { distance: distance,
+      pan: Math.max(-1, Math.min(1, -Math.sin(listenerHeading) * nx + Math.cos(listenerHeading) * ny)),
+      dopplerScale: Math.max(0.5, Math.min(2, doppler)) };
+  }
+
+  function emergencyTrafficQueueControl(world, responder, actors, dt) {
+    var size = vehicleFootprint(emergencyVehicleFootprintType(responder.kind));
+    var cruise = Math.max(0, Number(responder._cruiseSpeed == null ? responder.speed : responder._cruiseSpeed) || 0);
+    var target = Infinity, travel = Infinity, following = false;
+    (actors || []).forEach(function(leader) {
+      if (!leader || leader === responder || leader._hit) return;
+      var relation = followingVehicleRoadState(world, responder, leader, 1);
+      if (!relation.eligible || relation.ahead <= 0) return;
+      var ahead = followingCenterDistance(world, responder, leader, relation);
+      var leadSize = leader.type === 'cyclist' || leader.type === 'motorcycle'
+        ? vulnerableRoadUserFootprint(leader) : vehicleFootprint(leader.type);
+      var angle = (Number(leader.heading) || 0) - (Number(responder.heading) || 0);
+      var leadLength = Math.abs(Math.cos(angle)) * leadSize.length + Math.abs(Math.sin(angle)) * leadSize.width;
+      var leadWidth = Math.abs(Math.cos(angle)) * leadSize.width + Math.abs(Math.sin(angle)) * leadSize.length;
+      var control = trafficFollowingControl(ahead, relation.lateral,
+        Math.max(0, (Number(leader.speed) || 0) * Math.cos(angle)),
+        Math.max(cruise, Number(responder.speed) || 0), leadLength, size.length,
+        leadWidth, size.width, dt);
+      if (!control.following) return;
+      following = true;
+      target = Math.min(target, control.targetSpeed);
+      travel = Math.min(travel, Math.max(0, ahead - (leadLength + size.length) / 2 - 0.25));
+    });
+    return { following: following, targetSpeed: target, travelLimit: travel };
+  }
+
+  function guardEmergencyTrafficMotion(responder, previous, actors) {
+    var size = vehicleFootprint(emergencyVehicleFootprintType(responder.kind));
+    var turn = normalizeSignedAngle(responder.heading - previous.heading);
+    var distance = Math.hypot(responder.x - previous.x, responder.y - previous.y) +
+      Math.abs(turn) * Math.hypot(size.length, size.width) / 2;
+    var steps = Math.max(1, Math.ceil(distance / 0.25));
+    for (var step = 1; step <= steps; step++) {
+      var part = step / steps;
+      var pose = { x: previous.x + (responder.x - previous.x) * part,
+        y: previous.y + (responder.y - previous.y) * part, heading: previous.heading + turn * part };
+      for (var index = 0; index < (actors || []).length; index++) {
+        var other = actors[index];
+        if (!other || other === responder || other._hit) continue;
+        var otherSize = other.type === 'cyclist' || other.type === 'motorcycle'
+          ? vulnerableRoadUserFootprint(other) : vehicleFootprint(other.type);
+        if (!vehicleRectsOverlap(pose, size, other, otherSize)) continue;
+        if (vehicleRectsOverlap(previous, size, other, otherSize) &&
+            Math.hypot(pose.x - other.x, pose.y - other.y) >
+              Math.hypot(previous.x - other.x, previous.y - other.y)) continue;
+        responder.x = previous.x; responder.y = previous.y; responder.heading = previous.heading;
+        responder._roadStation = previous._roadStation;
+        responder._laneOff = previous._laneOff;
+        responder.speed = 0;
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function ordinaryEmergencySpawnState(world, responder, actors, pedestrians, wildlife, dt) {
+    var own = vehicleFootprint(emergencyVehicleFootprintType(responder.kind));
+    var clearance = { length: own.length + 3, width: own.width + 0.5 };
+    var nearby = (actors || []).filter(function(actor) { return actor && !actor._hit; });
+    for (var i = 0; i < nearby.length; i++) {
+      if (vehicleRectsOverlap(responder, clearance, nearby[i], roundaboutActorSize(nearby[i])))
+        return { clear: false, speed: 0, reason: 'occupied' };
+    }
+    if ((pedestrians || []).some(function(ped) {
+      return ped && !ped._hit && pointOverlapsVehicle(responder, clearance, ped, 0.28);
+    })) return { clear: false, speed: 0, reason: 'occupied' };
+    if (wildlife && !wildlife.hit && (wildlife.life == null || wildlife.life > 0)) {
+      var appearance = landmarkVehicleAppearance(wildlife.kind);
+      var blocked = appearance
+        ? vehicleRectsOverlap(responder, clearance, wildlife, { length: appearance.length, width: appearance.width })
+        : pointOverlapsVehicle(responder, clearance, wildlife, wildlifeCollisionRadius(wildlife));
+      if (blocked) return { clear: false, speed: 0, reason: 'occupied' };
+    }
+    var control = emergencyTrafficQueueControl(world, responder, nearby, dt);
+    var speed = control.following ? Math.min(responder.speed, control.targetSpeed) : responder.speed;
+    // Do not insert a slow responder into a closing vehicle's stopping space.
+    for (var rearIndex = 0; rearIndex < nearby.length; rearIndex++) {
+      var rear = nearby[rearIndex], rearSpeed = Math.max(0, Number(rear.speed) || 0);
+      if (!rearSpeed) continue;
+      var relation = followingVehicleRoadState(world, rear, responder, 1);
+      if (!relation.eligible || relation.ahead <= 0) continue;
+      var angle = responder.heading - (Number(rear.heading) || 0);
+      var projectedLength = Math.abs(Math.cos(angle)) * own.length + Math.abs(Math.sin(angle)) * own.width;
+      var projectedWidth = Math.abs(Math.cos(angle)) * own.width + Math.abs(Math.sin(angle)) * own.length;
+      var rearSize = roundaboutActorSize(rear);
+      var rearControl = trafficFollowingControl(followingCenterDistance(world, rear, responder, relation),
+        relation.lateral, Math.max(0, speed * Math.cos(angle)), rearSpeed,
+        projectedLength, rearSize.length, projectedWidth, rearSize.width, dt);
+      if (rearControl.following && rearControl.targetSpeed + 0.5 < rearSpeed)
+        return { clear: false, speed: 0, reason: 'closing_rear' };
+    }
+    return { clear: true, speed: Math.max(0, speed) };
   }
 
   // Traffic signals — placed at intersections along the main road.
@@ -12110,7 +12349,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var ras = rideAlongStateRef.current;
             if (!ras.stopControls) ras.stopControls = {};
             if (!ras.announcedHazards) ras.announcedHazards = {};
-            if (!ras.railStops) ras.railStops = {};
             var rNow = timeRef.current;
             var raStartup = rNow < (graceRef.current.until || 0);
             var raSpeedMps = Math.abs(car.speed);
@@ -12142,7 +12380,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             for (var rsi = 0; rsi < sigList.length; rsi++) {
               var sig = sigList[rsi];
               if (!sig || ['light', 'flagger', 'stop'].indexOf(sig.type) === -1) continue;
-              var raSignalAhead = controlDistanceAhead(raWorld, sig, car, raPlayerSize.length);
+              var raSignalApproach = playerControlApproach(raWorld, sig, car, raPlayerSize.length);
+              var raSignalAhead = controlApproachDistanceMeters(raWorld, raSignalApproach, raPlanDistance);
               if (raSignalAhead == null || raSignalAhead <= 0 || raSignalAhead > raPlanDistance) continue;
               if (!raNearestControl || raSignalAhead < raNearestControl.ahead) {
                 raNearestControl = { signal: sig, ahead: raSignalAhead };
@@ -12254,44 +12493,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var raCrossings = raWorld._railroadCrossings || [];
             for (var rrAi = 0; rrAi < raCrossings.length; rrAi++) {
               var raCrossing = raCrossings[rrAi];
-              var raTanX = Math.sin(raCrossing.heading || 0);
-              var raTanY = Math.cos(raCrossing.heading || 0);
-              var raLong = (car.x - raCrossing.centerX) * raTanX +
-                (car.y - raCrossing.centerY) * raTanY;
-              var raApproachSign = raLong < 0 ? -1 : 1;
-              var raRailStopPoint = {
-                x: raCrossing.centerX + raApproachSign * 2.2 * raTanX,
-                y: raCrossing.centerY + raApproachSign * 2.2 * raTanY
-              };
-              var raRailRel = roadAwareRelativePosition(raWorld, car, raRailStopPoint);
-              if (raRailRel.ahead <= 0 || raRailRel.ahead > raPlanDistance) continue;
+              var raRail = railroadApproach(car, raCrossing, veh.id, null, raWorld);
+              if (!raRail.towardCrossing || !raRail.inLane || raRail.distanceToLine < -1e-6 ||
+                  raRail.distanceToLine > raPlanDistance) continue;
               var raRailState = railroadCrossingControlState(rNow, raCrossing);
-              var raPassiveBusStop = railroadRequiresFullStop(veh.id, raCrossing);
-              var raRailKey = String(raCrossing.chunkIdx) + '_' + raApproachSign;
-              var raRailRecord = ras.railStops[raRailKey] ||
-                (ras.railStops[raRailKey] = { stoppedAt: null, complete: false });
-              if (raPassiveBusStop && !raRailRecord.complete) {
-                if (raRailRel.ahead < 2 && raSpeedMph < 0.7) {
-                  if (raRailRecord.stoppedAt == null) raRailRecord.stoppedAt = rNow;
-                  if (rNow - raRailRecord.stoppedAt >= 1) raRailRecord.complete = true;
-                } else if (raSpeedMph >= 0.7) {
-                  raRailRecord.stoppedAt = null;
-                }
-              }
-              var raRailMustStop = raRailState.stopRequired ||
-                (raPassiveBusStop && !raRailRecord.complete);
+              var raBusStop = railroadRequiresFullStop(veh.id, raCrossing);
+              var raRailRecord = car._railStopRecord;
+              var raRailMustStop = raRailState.stopRequired || (raBusStop &&
+                !(raRailRecord && raRailRecord.crossing === raCrossing &&
+                  raRailRecord.side === raRail.side && raRailRecord.complete));
               if (raRailMustStop) {
-                var raRailTarget = rideAlongApproachSpeedMph(raRailRel.ahead, scn.weather, 1.3);
-                if (raRailRel.ahead < 2) raRailTarget = 0;
+                var raRailTarget = rideAlongApproachSpeedMph(raRail.distanceToLine, scn.weather, 1.3);
+                if (raRail.distanceToLine < 2 || (raRail.inStopZone && Math.abs(car.speed) < 0.15)) raRailTarget = 0;
                 raTarget = Math.min(raTarget, raRailTarget);
-                if (!raNearestRail || raRailRel.ahead < raNearestRail.ahead) {
+                if (!raNearestRail || raRail.distanceToLine < raNearestRail.ahead) {
                   raNearestRail = { crossing: raCrossing, state: raRailState,
-                    key: raRailKey, ahead: raRailRel.ahead,
-                    passiveBusStop: raPassiveBusStop };
+                    key: raCrossing.chunkIdx + '_' + raRail.side, ahead: raRail.distanceToLine,
+                    busStop: raBusStop };
                 }
               }
             }
-            if (Object.keys(ras.railStops).length > 80) ras.railStops = {};
 
             // Pedestrians and wildlife are full-stop hazards. Cyclists and
             // motorcycles moving with traffic receive a real following gap;
@@ -12449,7 +12670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 (raNearestRail.state.stopRequired ? 'active' : 'bus-stop');
               if (ras.lastRailKey !== raRailNarrationKey) {
                 ras.lastRailKey = raRailNarrationKey;
-                speak(raNearestRail.passiveBusStop && !raNearestRail.state.stopRequired
+                speak(raNearestRail.busStop && !raNearestRail.state.stopRequired
                   ? 'Railroad crossing ahead. This school bus must make a full stop and look and listen.'
                   : 'Railroad warning active. Stopping before the tracks and waiting for the gate to clear.',
                   'hazard', 'critical');
@@ -12806,44 +13027,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
                 break;
               }
-              var tanX = Math.sin(crossing.heading || 0), tanY = Math.cos(crossing.heading || 0);
-              var prevLong = (car.x - crossing.centerX) * tanX + (car.y - crossing.centerY) * tanY;
-              var approachSign = prevLong < 0 ? -1 : 1;
-              var stopFeature = { centerX: crossing.centerX + approachSign * 2.2 * tanX,
-                centerY: crossing.centerY + approachSign * 2.2 * tanY,
-                heading: crossing.heading, halfWidth: crossing.halfWidth };
-              var passiveBusStop = railroadRequiresFullStop(currentVehicle && currentVehicle.id, crossing);
-              var passiveKey = String(approachSign);
-              if (passiveBusStop) {
-                crossing._playerPassiveStops = crossing._playerPassiveStops || {};
-                var passiveRecord = crossing._playerPassiveStops[passiveKey] ||
-                  (crossing._playerPassiveStops[passiveKey] = { timer: 0, complete: false });
-                var stopDx = car.x - stopFeature.centerX, stopDy = car.y - stopFeature.centerY;
-                if (!passiveRecord.complete && Math.sqrt(stopDx * stopDx + stopDy * stopDy) < 1.25) {
-                  if (Math.abs(car.speed) < 0.15) passiveRecord.timer += dt;
-                  else passiveRecord.timer = 0;
-                  if (passiveRecord.timer >= 0.8) {
-                    passiveRecord.complete = true;
-                    statsRef.current.stops = (statsRef.current.stops || 0) + 1;
-                    addToast('SCHOOL BUS RAILROAD STOP COMPLETE');
-                    eventToastRef.current = { msg: 'Full stop complete. Open the door/look and listen, then cross only when clear.', until: timeRef.current + 3.5 };
-                  }
-                }
-                if (!passiveRecord.complete && crossedFiniteRoadFeature(car.x, car.y, newX, newY, stopFeature)) {
-                  newX = car.x; newY = car.y; car.speed = 0; motionBlocked = true;
-                  if (!passiveRecord.penalized) {
-                    passiveRecord.penalized = true;
-                    statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 20);
-                    statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
-                    addToast('SCHOOL BUS MUST STOP AT RAILROAD CROSSING -20 safety');
-                    eventToastRef.current = { msg: 'School buses must make a full stop at passive railroad crossings even when no train is visible.', until: timeRef.current + 4.5 };
-                  }
-                  break;
-                }
+              var railType = currentVehicle && currentVehicle.id;
+              var rail = railroadApproach(car, crossing, railType, null, rrWorld);
+              var busStop = railroadRequiresFullStop(railType, crossing);
+              var record = busStop ? updateRailroadStop(car, crossing, rail, dt) : null;
+              if (record && record.complete && !record.credited) {
+                record.credited = true;
+                statsRef.current.stops = (statsRef.current.stops || 0) + 1;
+                addToast('SCHOOL BUS RAILROAD STOP COMPLETE');
+                eventToastRef.current = { msg: 'Full stop complete. Look and listen, then cross only when clear.', until: timeRef.current + 3.5 };
               }
-              if (!rrState.stopRequired) continue;
-              if (!crossedFiniteRoadFeature(car.x, car.y, newX, newY, stopFeature)) continue;
+              var missedStop = busStop && (!record || !record.complete);
+              if (!rrState.stopRequired && !missedStop) continue;
+              var proposedRail = railroadApproach({ x: newX, y: newY, heading: car.heading }, crossing, railType, rail.side);
+              if (!crossesRailroadStopLine(rail, proposedRail, crossing)) continue;
               newX = car.x; newY = car.y; car.speed = 0; motionBlocked = true;
+              if (!rrState.stopRequired) {
+                if (!record || !record.penalized) {
+                  if (record) record.penalized = true;
+                  statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 20);
+                  statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
+                  addToast('SCHOOL BUS MUST STOP AT RAILROAD CROSSING -20 safety');
+                  eventToastRef.current = { msg: 'Stop 15–50 ft from the nearest rail, then look and listen before crossing.', until: timeRef.current + 4.5 };
+                }
+                break;
+              }
               if (crossing._lastPlayerViolationCycle !== rrState.cycle) {
                 crossing._lastPlayerViolationCycle = rrState.cycle;
                 statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 25);
@@ -13493,6 +13701,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var peds = pedsRef.current || [];
           var emergency = emergencyRef.current;
           var scn = currentScenario;
+          var trafficRiders = (cyclistsRef.current || []).filter(function(rider) {
+            return rider && !rider._hit && !rider._roundaboutState;
+          });
+          var guardTrafficRiderMotion = function(actor, previous) {
+            if (!trafficRiders.length || actor._roundaboutState) return true;
+            var size = vehicleFootprint(actor.type);
+            var turn = actor.heading - previous.heading;
+            while (turn > Math.PI) turn -= Math.PI * 2;
+            while (turn < -Math.PI) turn += Math.PI * 2;
+            var distance = Math.hypot(actor.x - previous.x, actor.y - previous.y) +
+              Math.abs(turn) * Math.hypot(size.length, size.width) / 2;
+            var steps = Math.max(1, Math.ceil(distance / 0.25));
+            var from = Object.assign({}, actor, previous);
+            var compatible = trafficRiders.filter(function(rider) {
+              return actor._turning || followingVehicleRoadState(infiniteWorldRef.current, from, rider, 1).eligible;
+            });
+            for (var step = 1; step <= steps; step++) {
+              var part = step / steps;
+              var pose = { x: previous.x + (actor.x - previous.x) * part,
+                y: previous.y + (actor.y - previous.y) * part, heading: previous.heading + turn * part };
+              for (var index = 0; index < compatible.length; index++) {
+                var rider = compatible[index], riderSize = vulnerableRoadUserFootprint(rider);
+                if (!vehicleRectsOverlap(pose, size, rider, riderSize)) continue;
+                if (vehicleRectsOverlap(previous, size, rider, riderSize) &&
+                    Math.hypot(pose.x - rider.x, pose.y - rider.y) >
+                      Math.hypot(previous.x - rider.x, previous.y - rider.y)) continue;
+                actor.x = previous.x; actor.y = previous.y; actor.heading = previous.heading;
+                actor._roadStation = previous._roadStation; actor._turnProgress = previous._turnProgress;
+                actor.laneOffset = previous.laneOffset; actor.speed = 0;
+                actor._aeb = true; actor._slowFor = 2;
+                return false;
+              }
+            }
+            return true;
+          };
           // Main-road controls are authored by station, while a vehicle's world
           // Y drifts whenever it occupies a lateral lane on a bend. Keep all
           // approach/turn gates on the same local frame used for lane recovery.
@@ -13545,7 +13788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return;
             }
             var pedestrianPreviousPose = { x: t.x, y: t.y, heading: t.heading,
-              _roadStation: t._roadStation, _turnProgress: t._turnProgress };
+              _roadStation: t._roadStation, _turnProgress: t._turnProgress, laneOffset: t.laneOffset };
             // ── School bus stop-arm cycle ──
             // Periodically a school bus stops to pick up/drop off kids, extending its stop arm
             // and flashing red lights. Surrounding traffic must stop (enforced in the yield block
@@ -13613,19 +13856,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var activeBumpDist = Infinity;
             signals.forEach(function(s) {
               if (!t.crossStreet) {
-                // Main-road car: signal is on the main road ahead. On curves, raw `rel.lat`
-                // (world X diff) can exceed 3 even for an in-path signal because the spline
-                // bends. Use forward-distance gate only, but verify the signal is for our
-                // road by checking spline center alignment at the signal's Y.
-                var signalStation = signalStationFor(s);
-                var controlY = s.type === 'flagger'
-                  ? workZoneStopLineForDirection(s, forwardSign)
-                  : intersectionStopLineCoordinate(signalStation, forwardSign);
-                var rel = aheadOf(s.x, controlY);
-                var splineAtSignal = (infiniteWorldRef.current && infiniteWorldRef.current.spline)
-                  ? infiniteWorldRef.current.spline.centerAt(signalStation) : s.x;
-                var signalLatFromSpline = Math.abs(s.x - splineAtSignal);
-                if (rel.ahead > 0 && rel.ahead < signalDetectRange && signalLatFromSpline < 3) {
+                // Share the player's painted-line projection and physical lane
+                // distance. Mixing the signal's X with the stop line's Y shifts
+                // the effective bar on bends, especially for long vehicles.
+                var trafficLength = vehicleFootprint(t.type).length;
+                var mainApproach = playerControlApproach(infiniteWorldRef.current, s, t, trafficLength);
+                var frontDistance = controlApproachDistanceMeters(infiniteWorldRef.current, mainApproach, signalDetectRange);
+                if (mainApproach.approachGroup !== 'main' || frontDistance == null || frontDistance < -1e-6) return;
+                // Existing braking and stop-sign bookkeeping use center distance.
+                var rel = { ahead: frontDistance + trafficLength * 0.5 };
+                if (frontDistance < signalDetectRange) {
                   var mainMovementIndication = s.type === 'light'
                     ? trafficSignalMovementIndication(s, 'main', t._turnIntent || 'straight')
                     : null;
@@ -13697,41 +13937,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }
             });
-            // Active railroad crossings participate in the same distance-aware AI
-            // braking model as red lights. The stop bar is selected on the car's
-            // approach side of the track and projected through the curved-road frame.
+            // The rail limit is already measured from the bumper. Keep it
+            // separate from intersection controls that still use center distances.
+            var railStopDistance = Infinity;
             var rrControls = infiniteWorldRef.current && infiniteWorldRef.current._railroadCrossings;
             if (!t.crossStreet && rrControls) rrControls.forEach(function(rrControl) {
-              var rrControlState = railroadCrossingControlState(timeRef.current, rrControl);
-              var rrTanX = Math.sin(rrControl.heading || 0), rrTanY = Math.cos(rrControl.heading || 0);
-              var rrLong = (t.x - rrControl.centerX) * rrTanX + (t.y - rrControl.centerY) * rrTanY;
-              var rrApproachSign = rrLong < 0 ? -1 : 1;
-              var rrStopX = rrControl.centerX + rrApproachSign * 2.2 * rrTanX;
-              var rrStopY = rrControl.centerY + rrApproachSign * 2.2 * rrTanY;
-              var rrAhead = aheadOf(rrStopX, rrStopY).ahead;
-              if (!(rrAhead > 0 && rrAhead < signalDetectRange)) return;
-              var rrPassiveKey = 'rr_' + rrControl.chunkIdx + '_' + rrApproachSign;
+              var rrApproach = railroadApproach(t, rrControl, t.type, null, infiniteWorldRef.current);
               var rrMandatoryStop = railroadRequiresFullStop(t.type, rrControl);
-              t._railroadStops = t._railroadStops || {};
-              var rrStopRecord = t._railroadStops[rrPassiveKey] ||
-                (t._railroadStops[rrPassiveKey] = { timer: 0, complete: false });
-              if (rrMandatoryStop && !rrStopRecord.complete) {
-                slowFor = Math.max(slowFor, 2);
-                if (Math.abs(t.speed) < 0.2 && rrAhead < 1.2) {
-                  rrStopRecord.timer += dt;
-                  if (rrStopRecord.timer >= 0.8) rrStopRecord.complete = true;
-                } else if (rrAhead < 2.5) {
-                  rrStopRecord.timer = 0;
-                }
-              } else if (rrControlState.stopRequired) {
-                slowFor = Math.max(slowFor, 2);
-              } else if (rrControl.activeControl === false && rrAhead < 12) {
-                slowFor = Math.max(slowFor, 1); // slow, look, and listen at passive crossbucks
+              var rrRecord = rrMandatoryStop ? updateRailroadStop(t, rrControl, rrApproach, dt) : null;
+              if (!rrApproach.inLane || !rrApproach.towardCrossing ||
+                  rrApproach.distanceToLine < -1e-6 || rrApproach.distanceToLine > signalDetectRange) return;
+              if (railroadCrossingControlState(timeRef.current, rrControl).stopRequired ||
+                  (rrMandatoryStop && !(rrRecord && rrRecord.complete))) {
+                var holdInZone = rrApproach.inStopZone && Math.abs(t.speed) < 0.15;
+                railStopDistance = Math.min(railStopDistance, holdInZone ? 0 : Math.max(0, rrApproach.distanceToLine));
+              } else if (rrControl.activeControl === false && rrApproach.distanceToLine < 12) {
+                slowFor = Math.max(slowFor, 1);
               }
-              if (slowFor === 2 && rrAhead < activeControlDist) {
-                activeControl = rrControl; activeControlDist = rrAhead;
-              }
-           });
+            });
             // AI anticipates the same finite, rotated speed-bump features used by
             // player contact instead of discovering them only after impact.
             var aiBumps = infiniteWorldRef.current && infiniteWorldRef.current._speedBumps;
@@ -13771,7 +13994,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // (and the player). If the intersection is clear, proceed. Otherwise stay put.
             // Each vehicle gets its own random wait (1.2–3.2s) + small per-vehicle jitter
             // to break ties so two AIs at a 4-way don't both move on the same frame.
-            if (activeStopSign && slowFor === 2 && Math.abs(t.speed) < 0.4) {
+            var stoppedAtSign = activeStopDist <= vehicleFootprint(t.type).length * 0.5 + 1.5;
+            if (activeStopSign && stoppedAtSign && slowFor === 2 && Math.abs(t.speed) < 0.4) {
               var stopKey = (activeStopSign.x | 0) + '_' + (activeStopSign.y | 0);
               if (!t._stopArrivedAt) {
                 t._stopArrivedAt = timeRef.current;
@@ -13877,8 +14101,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   t._stopWaitTarget = waitedFor + 0.6;
                 }
               }
-            } else if (!activeStopSign) {
-              // No stop sign controlling us anymore — clear the arrival state.
+            } else if (!activeStopSign || !stoppedAtSign) {
+              // Arrival priority belongs to a vehicle at the line. Moving back
+              // into the queue requires a fresh stop when it reaches the front.
               // Don't bother removing ourselves from any queue here; stale entries
               // get pruned by the >10s check above.
               t._stopArrivedAt = 0;
@@ -13889,15 +14114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (t._stopReleasedAt && timeRef.current - t._stopReleasedAt < 1.5) {
               slowFor = Math.min(slowFor, 1);
             }
-            // ── Yield to cyclists when passing close ──
-            (cyclistsRef.current || []).forEach(function(cy) {
-              if (!cy) return;
-              var crel = aheadOf(cy.x, cy.y);
-              // If cyclist is directly ahead and we haven't passed them, slow to give room.
-              if (crel.ahead > 0 && crel.ahead < 4 && Math.abs(crel.lat) < 2) {
-                slowFor = Math.max(slowFor, 1);
-              }
-            });
+            // Rider queues below use physical road and body clearance.
             // ── Intersection safety: check cross-traffic before entering ──
             // Real drivers look both ways even on green because red-light-runners exist.
             // If we're approaching an intersection (any signal within ~8 cells) AND any
@@ -14026,8 +14243,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // nearby AI cars silently extend their follow distance. Real defensive drivers do this.
             var pSafety = statsRef.current.safetyScore;
             var erraticMult = 1.0;
-            if (pSafety < 70) erraticMult = 1.35;
-            else if (pSafety < 50) erraticMult = 1.6;
+            if (pSafety < 50) erraticMult = 1.6;
+            else if (pSafety < 70) erraticMult = 1.35;
             // Also expand if we've seen many hard brakes recently
             if (statsRef.current.hardBrakes >= 3) erraticMult = Math.max(erraticMult, 1.3);
             // Follow car ahead — distance scaled by personality.followMult + erraticMult (direction-aware).
@@ -14113,14 +14330,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 t._aeb = true;
                 t.speed = Math.max(0, t.speed - 8 * dt); // hard ~0.8g deceleration burst
                 // If the emergency brake wasn't enough → crash. Attribute fault correctly.
-                if (t.speed > 2 && playerAhead < 1.2) {
+                if (t.speed > 2 && playerAhead < 1.2 &&
+                    roadUserImpactClosingState(playerCar, t).closingSpeed > 0.5) {
                   if (!t._rearEndCooldown || timeRef.current - t._rearEndCooldown > 8) {
                     t._rearEndCooldown = timeRef.current;
                     // Set the generic collision cooldown too — without this, the
                     // AI-vs-player collision check at ~line 8307 would fire on the
                     // same frame and double-charge the crash + safety penalty.
                     t._hitCooldown = timeRef.current;
-                    statsRef.current.crashes++;
                     statsRef.current._lastCrashAt = timeRef.current;
                     // ── FAULT DETERMINATION ──
                     // Normally a rear-end = rear car's fault (following too close). BUT if the
@@ -14164,8 +14381,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       eventToastRef.current = { msg: '⚠️ AI at fault — they tailgated. In reality you\'d collect their insurance.', until: timeRef.current + 5 };
                       speak('You were rear-ended. The driver behind was following too closely.');
                     }
-                    t.speed *= 0.3;
-                    playerCar.speed += t.speed * 0.2; // push player forward
+                    applyTrafficImpactVelocity(playerCar, t, currentVehicle && currentVehicle.mass);
+                    separateVehicleAfterImpact(infiniteWorldRef.current, playerCar, t, 0.6);
+                    return; // The contact resolves this traffic vehicle's movement for this frame.
                   }
                 }
               } else if (playerAhead > 0 && playerAhead < 6) {
@@ -14220,7 +14438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // stop at the line; the previous flat targetSpeed=0 + speed-lerp let
               // fast approachers overshoot. Uses kinematic v² = 2·a·d so the
               // deceleration profile is smooth and physically grounded.
-              if (activeControl && activeControlDist > 0 && activeControlDist < signalDetectRange) {
+              if (activeControl && activeControlDist > 0) {
                 var aiFrontOverhang = vehicleFootprint(t.type).length * 0.5 + 0.25;
                 var stopLineDist = Math.max(0, activeControlDist - aiFrontOverhang);
                 if (stopLineDist > 0.3) {
@@ -14271,13 +14489,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               targetSpeed = Math.min(targetSpeed, playerFollowControl.targetSpeed);
               if (playerFollowControl.braking) t._aeb = true;
             }
-            // A pedestrian stop forms a queue. Its followers must protect the
-            // lead vehicle's body too; otherwise the later overlap resolver can
-            // push that safely stopped vehicle into the crossing.
-            var pedestrianQueueSpeed = Infinity;
-            if (peds.length) traffic.forEach(function(leader) {
-              if (leader === t || !!leader.crossStreet !== !!t.crossStreet ||
-                  (!pedestrianControl.required && !leader._pedestrianYielding)) return;
+            // Every queue needs bumper clearance, including red lights and
+            // railroad warnings. Center-only following can let a car overlap a
+            // longer bus and push it through its stop line during separation.
+            var trafficQueueSpeed = Infinity;
+            traffic.forEach(function(leader) {
+              if (leader === t || !!leader.crossStreet !== !!t.crossStreet) return;
               var leadSize = vehicleFootprint(leader.type);
               var relation = !t.crossStreet ? followingVehicleRoadState(infiniteWorldRef.current, t, leader,
                 (leadSize.width + followerTrafficSize.width) / 2 + 0.25) : null;
@@ -14290,20 +14507,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 Math.max(0, leader.speed * Math.cos(leader.heading - t.heading)),
                 Math.max(t.speed, targetSpeed), leadSize.length, followerTrafficSize.length,
                 leadSize.width, followerTrafficSize.width, dt);
-              if (control.following) pedestrianQueueSpeed = Math.min(pedestrianQueueSpeed, control.targetSpeed);
+              if (control.following) trafficQueueSpeed = Math.min(trafficQueueSpeed, control.targetSpeed);
+            });
+            var riderQueueSpeed = Infinity;
+            trafficRiders.forEach(function(rider) {
+              var riderSize = vulnerableRoadUserFootprint(rider);
+              var angle = (Number(rider.heading) || 0) - (Number(t.heading) || 0);
+              var riderLength = Math.abs(Math.cos(angle)) * riderSize.length + Math.abs(Math.sin(angle)) * riderSize.width;
+              var riderWidth = Math.abs(Math.cos(angle)) * riderSize.width + Math.abs(Math.sin(angle)) * riderSize.length;
+              var relation = followingVehicleRoadState(infiniteWorldRef.current, t, rider,
+                (riderWidth + followerTrafficSize.width) / 2 + 0.25);
+              if (!relation.eligible || !relation.sameLane || relation.ahead <= 0) return;
+              var ahead = followingCenterDistance(infiniteWorldRef.current, t, rider, relation);
+              var leadSpeed = Math.max(0, (Number(rider.speed) || 0) * Math.cos(angle));
+              var control = trafficFollowingControl(ahead, relation.lateral, leadSpeed,
+                Math.max(t.speed, targetSpeed), riderLength, followerTrafficSize.length,
+                riderWidth, followerTrafficSize.width, dt);
+              if (!control.following) return;
+              var stepTarget = Math.max(control.targetSpeed, Math.max(0, t.speed - 5.5 * Math.max(0, dt)));
+              var stoppingCap = Math.sqrt(leadSpeed * leadSpeed + 11 * Math.max(0, ahead - control.holdGap));
+              riderQueueSpeed = Math.min(riderQueueSpeed, stepTarget, stoppingCap);
+              // The rider updates later in the tick and may stop immediately.
+              if (dt > 0) riderQueueSpeed = Math.min(riderQueueSpeed,
+                Math.max(0, ahead - (riderLength + followerTrafficSize.length) / 2 - 0.25) / dt);
+              if (control.braking) slowFor = Math.max(slowFor, 1);
             });
             // Frame-rate-independent approach: exp-based smoothing with a 0.5 s time
             // constant. `Math.min(1, dt * 2)` was biased toward low frame rates (AI cars
             // accelerated faster at 30 fps than 60 fps); this form converges at the same
             // rate regardless of fps.
             var speedLerp = 1 - Math.exp(-dt / 0.5);
-            targetSpeed = Math.min(targetSpeed, pedestrianControl.targetSpeed, pedestrianQueueSpeed);
+            targetSpeed = Math.min(targetSpeed, pedestrianControl.targetSpeed, trafficQueueSpeed, riderQueueSpeed);
+            if (railStopDistance < Infinity) {
+              targetSpeed = Math.min(targetSpeed, Math.sqrt(2 * 3.5 * Math.max(0, railStopDistance - 0.3)));
+            }
             t.speed += (targetSpeed - t.speed) * speedLerp;
             if (pedestrianControl.required) {
               t.speed = Math.min(t.speed, pedestrianControl.targetSpeed);
               slowFor = Math.max(slowFor, pedestrianControl.targetSpeed < 0.1 ? 2 : 1);
             }
-            t.speed = Math.min(t.speed, pedestrianQueueSpeed);
+            t.speed = Math.min(t.speed, trafficQueueSpeed, riderQueueSpeed);
+            if (slowFor === 2 && activeControl && dt > 0) {
+              var signalTravel = Math.max(0, activeControlDist - vehicleFootprint(t.type).length * 0.5 - 0.25);
+              t.speed = Math.min(t.speed, signalTravel / dt);
+            }
+            if (railStopDistance < Infinity && dt > 0) {
+              // A late warning can arrive inside the normal braking distance.
+              // Preserve a small gap even on that first simulation step.
+              t.speed = Math.min(t.speed, Math.max(0, railStopDistance - 0.25) / dt);
+            }
             if (playerFollowControl && t.speed > playerFollowControl.targetSpeed) {
               // Smoothing is comfortable during ordinary changes, but cannot be
               // allowed to consume the remaining physical clearance.
@@ -14619,16 +14871,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     t._turnCrossPose, t._turnCrossDirection, t._turnIntent);
                   t._turnProgress = 0;
                 }
-                var pathSpeed = Math.max(pedestrianControl.required ? 0 : 2, Math.abs(t.speed || 0));
+                var pathSpeed = Math.abs(t.speed || 0);
                 t._turnProgress = Math.min(1, (t._turnProgress || 0) +
                   pathSpeed * dt / Math.max(1, t._turnPath ? t._turnPath.length : 1));
                 var turnPoint = t._turnPath
-                  ? intersectionTurnPoint(t._turnPath, t._turnProgress)
+                  ? intersectionTurnPose(t._turnPath, t._turnProgress)
                   : { x: t.x, y: t.y, heading: t._turnTarget, progress: 1 };
                 t.x = turnPoint.x;
                 t.y = turnPoint.y;
                 t.heading = turnPoint.heading;
                 if (!guardTrafficPedestrianMotion(t, pedestrianPreviousPose, peds)) return;
+                if (!guardTrafficRiderMotion(t, pedestrianPreviousPose)) return;
                 if (turnPoint.progress >= 1) {
                   t.heading = t._turnTarget;
                   t._turning = false;
@@ -14794,14 +15047,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Cross-street turns use the same cubic lane-to-lane path model
               // and finish in the authored outer/right main-road lane.
               if (t._turning && t._turnPath && t._turnPath.destinationRoad === 'main') {
-                var crossPathSpeed = Math.max(pedestrianControl.required ? 0 : 2, Math.abs(t.speed || 0));
+                var crossPathSpeed = Math.abs(t.speed || 0);
                 t._turnProgress = Math.min(1, (t._turnProgress || 0) +
                   crossPathSpeed * dt / Math.max(1, t._turnPath.length));
-                var crossTurnPoint = intersectionTurnPoint(t._turnPath, t._turnProgress);
+                var crossTurnPoint = intersectionTurnPose(t._turnPath, t._turnProgress);
                 t.x = crossTurnPoint.x;
                 t.y = crossTurnPoint.y;
                 t.heading = crossTurnPoint.heading;
                 if (!guardTrafficPedestrianMotion(t, pedestrianPreviousPose, peds)) return;
+                if (!guardTrafficRiderMotion(t, pedestrianPreviousPose)) return;
                 if (crossTurnPoint.progress >= 1) {
                   t.heading = t._turnPath.endHeading;
                   t.laneOffset = t._turnPath.laneOffset;
@@ -14856,6 +15110,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               t.x += Math.cos(t.heading) * t.speed * dt;
             }
             guardTrafficPedestrianMotion(t, pedestrianPreviousPose, peds);
+            guardTrafficRiderMotion(t, pedestrianPreviousPose);
             // Wrap / respawn traffic relative to player position. Native cross-street
             // cars (spawned by the intersection) wrap around the X axis to keep cross-
             // traffic flowing. Cars that turned off the main road instead drive off
@@ -14974,6 +15229,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // the intervening map as if the vehicle drove that route.
           var pedestrianSeparationPoses = peds.length ? traffic.map(function(actor) {
             return { x: actor.x, y: actor.y, heading: actor.heading,
+              _roadStation: actor._roadStation, _turnProgress: actor._turnProgress };
+          }) : null;
+          var riderSeparationPoses = trafficRiders.length ? traffic.map(function(actor) {
+            return { x: actor.x, y: actor.y, heading: actor.heading, laneOffset: actor.laneOffset,
               _roadStation: actor._roadStation, _turnProgress: actor._turnProgress };
           }) : null;
           // ── AABB COLLISION RESOLUTION (Phase 2 "suspenders") ──
@@ -15201,6 +15460,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           if (pedestrianSeparationPoses) traffic.forEach(function(actor, index) {
             guardTrafficPedestrianMotion(actor, pedestrianSeparationPoses[index], peds);
+          });
+          if (riderSeparationPoses) traffic.forEach(function(actor, index) {
+            guardTrafficRiderMotion(actor, riderSeparationPoses[index]);
           });
         };
 
@@ -15532,9 +15794,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var em = emergencyRef.current;
           var car = carRef.current;
           if (!em) {
-            var spawn = null;
+            var pendingSpawn = updateEmergency._pendingRoadSpawn;
+            if (pendingSpawn && (pendingSpawn.scenarioId !== currentScenario.id ||
+                pendingSpawn.drillMode !== !!d.emergencyDrillMode)) {
+              pendingSpawn = null; updateEmergency._pendingRoadSpawn = null;
+            }
+            if (pendingSpawn && timeRef.current < pendingSpawn.retryAt) return;
+            var spawn = pendingSpawn ? pendingSpawn.spawn : null;
             // Drill mode: timer-based, every 20-35 seconds
-            if (d.emergencyDrillMode && timeRef.current > _nextDrillSpawn) {
+            if (!spawn && d.emergencyDrillMode && timeRef.current > _nextDrillSpawn) {
               _nextDrillSpawn = timeRef.current + 20 + Math.random() * 15;
               var drillTypes = [
                 { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
@@ -15572,7 +15840,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   getContinuousScenarioProfile(currentScenario.id));
                 var emPlayerLayout = roadLayoutFor(emPlayerProfile);
                 if (Math.abs(emPlayerFrame.lateral) >
-                    emPlayerLayout.pavedHalfWidth + 0.75) return;
+                    emPlayerLayout.pavedHalfWidth + 0.75) {
+                  updateEmergency._pendingRoadSpawn = null; return;
+                }
               }
               var emTravelSign = emSpawnSpline
                 ? mainRoadTravelSign(infiniteWorldRef.current, car)
@@ -15594,7 +15864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 ? (Math.PI / 2 - emThetaAtSpawn)
                 : (-Math.PI / 2 - emThetaAtSpawn);
               var emCruiseSpeed = Math.abs(car.speed) + 12;
-              emergencyRef.current = {
+              var emCandidate = {
                 kind: spawn.kind, icon: spawn.icon, color: spawn.color, sirenFreq: spawn.sirenFreq,
                 x: emSpawnX,
                 y: emSpawnY,
@@ -15609,7 +15879,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 responded: false,
                 checked: false
               };
-              if (emRoundaboutSpawn) Object.assign(emergencyRef.current, emRoundaboutSpawn);
+              if (emRoundaboutSpawn) Object.assign(emCandidate, emRoundaboutSpawn);
+              else {
+                var emSpawnState = ordinaryEmergencySpawnState(infiniteWorldRef.current, emCandidate,
+                  trafficRef.current.concat(cyclistsRef.current, [Object.assign({}, car, { type: currentVehicle.id })]),
+                  pedsRef.current, wildlifeRef.current, dt);
+                if (!emSpawnState.clear) {
+                  updateEmergency._pendingRoadSpawn = { spawn: spawn, retryAt: timeRef.current + 0.5,
+                    scenarioId: currentScenario.id, drillMode: !!d.emergencyDrillMode };
+                  return;
+                }
+                emCandidate.speed = emSpawnState.speed;
+                emCandidate._aebActive = emCandidate.speed < emCruiseSpeed;
+              }
+              updateEmergency._pendingRoadSpawn = null;
+              emergencyRef.current = emCandidate;
               var emSpawnGuidance = emRoundaboutSpawn
                 ? roundaboutEmergencyGuidance(roundaboutEmergencyAssessment(car, currentVehicle.id,
                   emergencyRef.current, trafficRef.current, { pedestrians: pedsRef.current, cyclists: cyclistsRef.current }))
@@ -15648,6 +15932,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // on the actual road through curves.
           var emiSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
           var emRoundabout = currentScenario.id === 'roundabout' && !!em._roundaboutState;
+          var emQueueActors = trafficRef.current.concat(cyclistsRef.current.filter(function(rider) { return !rider._hit; }));
+          var emQueuePrevious = { x: em.x, y: em.y, heading: em.heading,
+            _roadStation: em._roadStation, _laneOff: em._laneOff };
+          var emQueueSpeed = Infinity;
+          var emPedestrianSpeed = Infinity;
+          var emPedestrianType = emergencyVehicleFootprintType(em.kind);
+          var emPedestrianControl = !emRoundabout
+            ? trafficPedestrianControl(infiniteWorldRef.current, em, pedsRef.current, [], dt,
+                { vehicleType: emPedestrianType, activeOnly: true }) : null;
+          var emQueueControl = !emRoundabout
+            ? emergencyTrafficQueueControl(infiniteWorldRef.current, em, emQueueActors, dt) : null;
+          if (emQueueControl && emQueueControl.following && dt > 0) {
+            if (em._cruiseSpeed == null) em._cruiseSpeed = Math.max(0, Number(em.speed) || 0);
+            // Plan before moving, with bounded braking for an ordinary approach.
+            // The travel cap handles a late-created queue inside stopping range.
+            emQueueSpeed = emQueueControl.targetSpeed < em.speed
+              ? Math.max(emQueueControl.targetSpeed, em.speed - 6.5 * dt)
+              : Math.min(emQueueControl.targetSpeed, em.speed + 3 * dt);
+            emQueueSpeed = Math.min(emQueueSpeed, emQueueControl.travelLimit / dt);
+            em.speed = emQueueSpeed;
+            em._aebActive = true;
+          }
+          if (emPedestrianControl && emPedestrianControl.required && dt > 0) {
+            if (em._cruiseSpeed == null) em._cruiseSpeed = Math.max(0, Number(em.speed) || 0);
+            // Both plans use the pre-step speed, so queue and crossing braking
+            // combine by their minimum cap rather than adding decelerations.
+            emPedestrianSpeed = Math.min(em.speed, emPedestrianControl.targetSpeed);
+            em.speed = emPedestrianSpeed;
+            em._aebActive = true;
+          }
           if (emRoundabout) {
             updateRoundaboutTrafficVehicle(em, dt,
               trafficRef.current.concat(cyclistsRef.current.filter(function(rider) { return !rider._hit; })),
@@ -15695,6 +16009,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var emFallbackSign = Number(em._travelSign) < 0 ? -1 : 1;
             em.y += emFallbackSign * em.speed * dt;
           }
+          if (!emRoundabout && !guardEmergencyTrafficMotion(em, emQueuePrevious, emQueueActors.concat(
+              [Object.assign({}, car, { type: currentVehicle.id })]))) {
+            emQueueSpeed = 0;
+            em._aebActive = true;
+          }
+          if (!emRoundabout && !guardTrafficPedestrianMotion(em, emQueuePrevious,
+              pedsRef.current, emPedestrianType)) {
+            em._laneOff = emQueuePrevious._laneOff;
+            emPedestrianSpeed = 0;
+            em._aebActive = true;
+          }
           em.life -= dt;
           // Keep pass/response timing in the same road frame as the streamed
           // spline. Raw world Y fires immediately for southbound cars and late
@@ -15732,6 +16057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             em.speed = Math.min(em._cruiseSpeed, em.speed + 6 * dt);
             if (em.speed >= em._cruiseSpeed - 0.05) em._aebActive = false;
           }
+          em.speed = Math.min(em.speed, emQueueSpeed, emPedestrianSpeed);
           var emResponseDistance = Math.max(6, emFollow.holdGap + 0.25);
           // Do not let an AEB-held responder time out while the learner is
           // completing the maneuver. The eight-second response window below
@@ -15742,28 +16068,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           try {
             if (audioRef.current._sirenOsc) {
               var wob = em.sirenFreq + Math.sin(timeRef.current * 8) * 200;
-              audioRef.current._sirenOsc.frequency.setTargetAtTime(wob, audioRef.current.ctx.currentTime, 0.05);
-              // Stereo pan tracks lateral offset of em relative to car heading.
-              // Transform em→car vector into the car's frame so "right" means
-              // right-of-player regardless of which way the car is facing.
-              var relX = em.x - car.x;
-              var relY = em.y - car.y;
-              var cosH = Math.cos(car.heading);
-              var sinH = Math.sin(car.heading);
-              // Forward axis = (cosH, sinH); lateral = (-sinH, cosH).
-              var lateral = emRoadLateral || (-sinH * relX + cosH * relY);
-              var forward = emRoadAhead || (cosH * relX + sinH * relY);
-              var dist = Math.hypot(relX, relY);
-              var panTarget = Math.max(-1, Math.min(1, lateral / 6));
-              if (audioRef.current._sirenPan) audioRef.current._sirenPan.pan.setTargetAtTime(panTarget, audioRef.current.ctx.currentTime, 0.08);
+              var sirenSpatial = emergencySirenSpatialState(car, em);
+              audioRef.current._sirenOsc.frequency.setTargetAtTime(
+                wob * sirenSpatial.dopplerScale, audioRef.current.ctx.currentTime, 0.06);
+              if (audioRef.current._sirenPan) audioRef.current._sirenPan.pan.setTargetAtTime(
+                sirenSpatial.pan, audioRef.current.ctx.currentTime, 0.08);
               // Distance muffle — cutoff 1kHz far away, 5kHz when right next to you.
-              var cutoff = Math.max(800, 5000 - dist * 180);
+              var cutoff = Math.max(800, 5000 - sirenSpatial.distance * 180);
               if (audioRef.current._sirenLPF) audioRef.current._sirenLPF.frequency.setTargetAtTime(cutoff, audioRef.current.ctx.currentTime, 0.15);
-              // Doppler-ish pitch shift — higher when approaching (forward > 0 and
-              // closing), lower after it passes. Real Doppler needs velocity vectors;
-              // a quick approximation from forward distance still feels right.
-              var dopScale = forward > 0 ? 1.05 : 0.92;
-              audioRef.current._sirenOsc.frequency.setTargetAtTime(wob * dopScale, audioRef.current.ctx.currentTime, 0.06);
               // Fade out as it passes
               if (!emRoundabout && emRoadAhead > 5) audioRef.current._sirenGain.gain.setTargetAtTime(0.01, audioRef.current.ctx.currentTime, 0.3);
             }
@@ -15888,12 +16200,148 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var cySpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
           var cyPlayer = carRef.current;
           var cyPlayerSize = vehicleFootprint(currentVehicle && currentVehicle.id);
+          var riderSignalDistance = function(cy, signal, range) {
+            var world = infiniteWorldRef.current, size = vulnerableRoadUserFootprint(cy);
+            var distance, angle, group, sign;
+            if (cy.crossStreet) {
+              if (cy._chunk != null && signal._chunk != null && cy._chunk !== signal._chunk) return null;
+              var station = cySpline ? mainRoadLocalPoint(world, signal.x, signal.y).longitudinal : signal.y;
+              var center = cySpline ? mainRoadWorldPoint(world, station, 0) : signal;
+              var pose = cy._crossPose || crossStreetPose(center.x, center.y,
+                cySpline ? cySpline.headingAt(station) : 0, 6.5, CROSS_STREET_LENGTH);
+              var signalLocal = crossStreetLocalPoint(pose, signal.x, signal.y);
+              var local = crossStreetLocalPoint(pose, cy.x, cy.y);
+              sign = crossStreetTravelDirection(pose, cy.heading);
+              if (!sign || Math.abs(signalLocal.longitudinal) > 3 || Math.abs(signalLocal.lateral) > 1 ||
+                  Math.abs(local.lateral) > pose.width * 0.5 + 0.75) return null;
+              distance = (intersectionStopLineCoordinate(0, sign) - local.longitudinal) * sign;
+              angle = cy.heading + pose.heading;
+              distance -= Math.abs(Math.cos(angle)) * size.length / 2 + Math.abs(Math.sin(angle)) * size.width / 2;
+              group = 'cross';
+            } else {
+              if (!cySpline && Math.abs(signal.x - MAP_SIZE / 2) > 3) return null;
+              var approach = playerControlApproach(world, signal, cy, 0);
+              if (!approach.sameRoad || approach.approachGroup !== 'main') return null;
+              distance = controlApproachDistanceMeters(world, approach, range == null ? null : range + size.length);
+              if (distance == null) return null;
+              angle = cy.heading + (cySpline ? cySpline.headingAt(approach.frontCoordinate) : 0);
+              distance -= Math.abs(Math.sin(angle)) * size.length / 2 + Math.abs(Math.cos(angle)) * size.width / 2;
+              group = 'main'; sign = approach.travelSign;
+            }
+            return { signal: signal, distance: distance, approachGroup: group, travelSign: sign };
+          };
+          var riderSignalControl = function(cy) {
+            var speed = Math.max(0, Number(cy.speed) || 0), nearest = null;
+            var range = Math.max(14, speed * 1.2 + speed * speed / 7 + vulnerableRoadUserFootprint(cy).length / 2 + 2);
+            (signalsRef.current || []).forEach(function(signal) {
+              if (!signal || signal.type !== 'light') return;
+              var candidate = riderSignalDistance(cy, signal, range);
+              if (!candidate || candidate.distance < -1e-6 || candidate.distance > range) return;
+              if (!nearest || candidate.distance < nearest.distance) nearest = candidate;
+            });
+            if (!nearest) {
+              if (cy._riderYellowSignal) cy._riderYellowSignal = null;
+              return { required: false, targetSpeed: Infinity };
+            }
+            var indication = trafficSignalIndication(nearest.signal, nearest.approachGroup);
+            var key = nearest.approachGroup + ':' + nearest.travelSign + ':' +
+              String(nearest.signal._chunk == null ? '' : nearest.signal._chunk) + ':' + nearest.signal.x + ':' + nearest.signal.y;
+            var stop = indication === 'red';
+            if (indication === 'yellow') {
+              if (!cy._riderYellowSignal || cy._riderYellowSignal.key !== key)
+                cy._riderYellowSignal = { key: key, stop: nearest.distance >= speed * speed / 7 + 0.4 };
+              stop = cy._riderYellowSignal.stop;
+            } else if (cy._riderYellowSignal) cy._riderYellowSignal = null;
+            nearest.required = stop;
+            nearest.targetSpeed = Infinity;
+            if (stop) {
+              var usable = Math.max(0.05, nearest.distance - 0.4 - speed * Math.max(0, dt) / 2);
+              var deceleration = Math.min(6.5, Math.max(1.5, speed * speed / (2 * usable)));
+              nearest.targetSpeed = Math.max(0, speed - deceleration * Math.max(0, dt));
+            }
+            return nearest;
+          };
+          var guardRiderSignalMotion = function(cy, previous, control) {
+            if (!control.required) return true;
+            var after = riderSignalDistance(cy, control.signal);
+            if (!after || after.distance >= -1e-6) return true;
+            cy.x = previous.x; cy.y = previous.y; cy.heading = previous.heading;
+            cy._roadStation = previous._roadStation; cy._bikeLane = previous._bikeLane;
+            cy.speed = 0;
+            return false;
+          };
+          var cyQueueActors = (trafficRef.current || []).concat(cyclistsRef.current || [],
+            emergencyRef.current ? [emergencyRef.current] : []);
+          var riderQueueControl = function(cy) {
+            var size = vulnerableRoadUserFootprint(cy);
+            var cruise = Math.max(0, Number(cy._cruiseSpeed) || 0, Number(cy.speed) || 0);
+            var target = Infinity;
+            cyQueueActors.forEach(function(leader) {
+              if (!leader || leader === cy || leader._hit) return;
+              var leadSize = leader.type === 'cyclist' || leader.type === 'motorcycle'
+                ? vulnerableRoadUserFootprint(leader)
+                : vehicleFootprint(leader.kind ? emergencyVehicleFootprintType(leader.kind) : leader.type);
+              var angle = (Number(leader.heading) || 0) - (Number(cy.heading) || 0);
+              var leadLength = Math.abs(Math.cos(angle)) * leadSize.length + Math.abs(Math.sin(angle)) * leadSize.width;
+              var leadWidth = Math.abs(Math.cos(angle)) * leadSize.width + Math.abs(Math.sin(angle)) * leadSize.length;
+              var relation = followingVehicleRoadState(infiniteWorldRef.current, cy, leader,
+                (leadWidth + size.width) / 2 + 0.25);
+              if (!relation.eligible || !relation.sameLane || relation.ahead <= 0) return;
+              var ahead = followingCenterDistance(infiniteWorldRef.current, cy, leader, relation);
+              var control = trafficFollowingControl(ahead, relation.lateral,
+                Math.max(0, (Number(leader.speed) || 0) * Math.cos(angle)),
+                cruise, leadLength, size.length, leadWidth, size.width, dt);
+              if (!control.following) return;
+              target = Math.min(target, control.targetSpeed);
+              // A leader can stop later in this tick. Never spend its existing body gap.
+              if (dt > 0) target = Math.min(target,
+                Math.max(0, ahead - (leadLength + size.length) / 2 - 0.25) / dt);
+            });
+            return target;
+          };
+          var guardRiderQueueMotion = function(cy, previous) {
+            var size = vulnerableRoadUserFootprint(cy);
+            var turn = cy.heading - previous.heading;
+            while (turn > Math.PI) turn -= Math.PI * 2;
+            while (turn < -Math.PI) turn += Math.PI * 2;
+            var distance = Math.hypot(cy.x - previous.x, cy.y - previous.y) +
+              Math.abs(turn) * Math.hypot(size.length, size.width) / 2;
+            var steps = Math.max(1, Math.ceil(distance / 0.25));
+            var from = Object.assign({}, cy, previous);
+            var leaders = cyQueueActors.filter(function(other) {
+              if (!other || other === cy || other._hit) return false;
+              var state = followingVehicleRoadState(infiniteWorldRef.current, from, other, 1);
+              return state.eligible && state.ahead > 0;
+            });
+            for (var step = 1; step <= steps; step++) {
+              var part = step / steps;
+              var pose = { x: previous.x + (cy.x - previous.x) * part,
+                y: previous.y + (cy.y - previous.y) * part, heading: previous.heading + turn * part };
+              for (var index = 0; index < leaders.length; index++) {
+                var other = leaders[index];
+                var otherSize = other.type === 'cyclist' || other.type === 'motorcycle'
+                  ? vulnerableRoadUserFootprint(other)
+                  : vehicleFootprint(other.kind ? emergencyVehicleFootprintType(other.kind) : other.type);
+                if (!vehicleRectsOverlap(pose, size, other, otherSize)) continue;
+                if (vehicleRectsOverlap(previous, size, other, otherSize) &&
+                    Math.hypot(pose.x - other.x, pose.y - other.y) >
+                      Math.hypot(previous.x - other.x, previous.y - other.y)) continue;
+                cy.x = previous.x; cy.y = previous.y; cy.heading = previous.heading;
+                cy._roadStation = previous._roadStation; cy._bikeLane = previous._bikeLane;
+                cy.speed = 0;
+                return false;
+              }
+            }
+            return true;
+          };
           var applyRiderFollowingControl = function(cy) {
             if (!cy || !cyPlayer) return;
             if (!(typeof cy._cruiseSpeed === 'number' && isFinite(cy._cruiseSpeed) &&
                 cy._cruiseSpeed > 0)) {
               cy._cruiseSpeed = Math.max(0, Number(cy.speed) || 0);
             }
+            var cyPedestrianControl = trafficPedestrianControl(
+              infiniteWorldRef.current, cy, pedsRef.current, [], dt, { activeOnly: true });
             var cyPlayerRelation = roadAwareRelativePosition(
               infiniteWorldRef.current, cy, cyPlayer);
             var cyHeadingAlignment = Math.cos(
@@ -15905,6 +16353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cySize.length, cyPlayerSize.width, cySize.width, cy.type, dt);
             cy._followingPlayer = cyFollow.following;
             cy._brakingForPlayer = cyFollow.braking;
+            var cyQueueSpeed = riderQueueControl(cy);
             var cyAcceleration = cy.type === 'motorcycle' ? 2.8 : 1.4;
             if (Number(cy.speed) > cyFollow.targetSpeed) {
               // Apply the safe cap immediately. Easing deceleration can consume
@@ -15914,6 +16363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cy.speed = Math.min(cyFollow.targetSpeed,
                 Math.max(0, Number(cy.speed) || 0) + cyAcceleration * dt);
             }
+            cy.speed = Math.min(cy.speed, cyPedestrianControl.targetSpeed, cyQueueSpeed);
           };
           cyclistsRef.current.forEach(function(cy) {
             // Keep an impacted rider visible and stationary at the separated
@@ -15926,6 +16376,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 cyPlayer, currentVehicle && currentVehicle.id, pedsRef.current);
               return;
             }
+            var cyPreviousPose = { x: cy.x, y: cy.y, heading: cy.heading,
+              _roadStation: cy._roadStation, _bikeLane: cy._bikeLane };
+            var cyRecycled = false;
+            var cySignalControl = riderSignalControl(cy);
             // Spline-aware heading + lateral hold so cyclists stay on the bike lane
             // edge through curves instead of drifting into trees / oncoming traffic.
             if (cySpline && !cy.crossStreet) {
@@ -15953,6 +16407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               while (cyDh < -Math.PI) cyDh += 2 * Math.PI;
               cy.heading += cyDh * (1 - Math.exp(-dt / 0.4));
               applyRiderFollowingControl(cy);
+              cy.speed = Math.min(cy.speed, cySignalControl.targetSpeed);
               cy.y += Math.sin(cy.heading) * cy.speed * dt;
               cy.x += Math.cos(cy.heading) * cy.speed * dt;
               // Lateral correction uses the same tangent/perpendicular frame as
@@ -15965,9 +16420,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cy.y -= (cy.y - cyTargetPoint.y) * cyLerp;
             } else {
               applyRiderFollowingControl(cy);
+              cy.speed = Math.min(cy.speed, cySignalControl.targetSpeed);
               cy.y += Math.sin(cy.heading) * cy.speed * dt;
               cy.x += Math.cos(cy.heading) * cy.speed * dt;
             }
+            guardRiderSignalMotion(cy, cyPreviousPose, cySignalControl);
+            guardRiderQueueMotion(cy, cyPreviousPose);
             if (cySpline && !cy.crossStreet) {
               var cyPlayerFrame = mainRoadLocalPoint(
                 infiniteWorldRef.current, carRef.current.x, carRef.current.y);
@@ -15976,6 +16434,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 ? cy._roadStation
                 : mainRoadLocalPoint(infiniteWorldRef.current, cy.x, cy.y).longitudinal;
               if (Math.abs(cyCurrentStation - cyPlayerStation) > MAP_SIZE * 0.6) {
+                cyRecycled = true;
                 var cyRespawnSide = Math.random() < 0.5 ? -1 : 1;
                 var cyRespawnDir = Math.sin(cy.heading) >= 0 ? 1 : -1;
                 var cyRespawnMax = MAP_SIZE * 0.6 - 6;
@@ -16000,11 +16459,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (cy._cruiseSpeed > 0) cy.speed = cy._cruiseSpeed;
               }
             } else {
-              if (cy.y < -2) cy.y = MAP_SIZE + 2;
-              if (cy.y > MAP_SIZE + 2) cy.y = -2;
+              if (cy.y < -2) { cy.y = MAP_SIZE + 2; cyRecycled = true; }
+              if (cy.y > MAP_SIZE + 2) { cy.y = -2; cyRecycled = true; }
             }
             // Small wobble for cyclists (keep — adds life)
             if (cy.type === 'cyclist') cy.x += Math.sin(timeRef.current * 3 + cy.y) * 0.002;
+            if (cyRecycled) cy._riderYellowSignal = null;
+            else {
+              guardRiderSignalMotion(cy, cyPreviousPose, cySignalControl);
+              guardRiderQueueMotion(cy, cyPreviousPose);
+            }
+            if (!cyRecycled && !guardTrafficPedestrianMotion(cy, cyPreviousPose, pedsRef.current))
+              cy._bikeLane = cyPreviousPose._bikeLane;
           });
         };
 
@@ -17177,20 +17643,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Thresholds lowered from >2 m/s (~4.5 mph) to ~0.5 m/s (~1 mph) so a slow-speed
             // tap still records as a minor bump — previously you could nose into a stopped
             // car at 3 mph with no crash flag, which hid unsafe habits in the stats.
-            // Closing speed must factor in DIRECTION. Both car.speed and t.speed are
-            // signed scalars along their own heading direction — so two cars going
-            // OPPOSITE directions (head-on) at 10 m/s each have closing speed 20 m/s,
-            // not |10−10| = 0. Convert each to a velocity vector and take the
-            // relative-velocity magnitude along the line connecting the two cars.
-            var carVx = Math.cos(car.heading) * car.speed;
-            var carVy = Math.sin(car.heading) * car.speed;
-            var tVx = Math.cos(t.heading) * t.speed;
-            var tVy = Math.sin(t.heading) * t.speed;
-            var relVx = carVx - tVx;
-            var relVy = carVy - tVy;
-            // Closing speed = component of (-relV) along (other → self) direction
-            // ≈ Math.hypot(relVx, relVy) is the upper bound; use it as worst-case impact.
-            var relativeSpeed = Math.hypot(relVx, relVy);
             // Gate on the CLOSING speed and either party moving — requiring the
             // PLAYER to be moving (absSpeed) silently dropped every crash into a
             // stopped player (T-boned at a light, AI drifting into a parked car).
@@ -17227,16 +17679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   statsRef.current.safetyScore -= 10;
                   addToast('💥 Fender bender. -10 safety');
                 }
-                // Perfectly inelastic momentum approximation in world space.
-                // Project the shared post-impact velocity back onto each vehicle's
-                // heading; this handles rear-end, head-on, and side impacts without
-                // averaging unrelated signed scalar speeds.
-                var playerMass = (currentVehicle && currentVehicle.mass) || 1500;
-                var trafficMass = trafficVehicleMass(t.type);
-                var sharedVx = (playerMass * carVx + trafficMass * tVx) / (playerMass + trafficMass);
-                var sharedVy = (playerMass * carVy + trafficMass * tVy) / (playerMass + trafficMass);
-                car.speed = (sharedVx * Math.cos(car.heading) + sharedVy * Math.sin(car.heading)) * 0.35;
-                t.speed = (sharedVx * Math.cos(t.heading) + sharedVy * Math.sin(t.heading)) * 0.35;
+                applyTrafficImpactVelocity(car, t, currentVehicle && currentVehicle.mass);
                 // Keep rear-end separation on the authored lane through bends.
                 separateVehicleAfterImpact(infiniteWorldRef.current, car, t, 0.6);
                 // Queue crash FX at the contact midpoint. severity scales spark count
@@ -25038,11 +25481,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       rrZ + outerTieLat * rrPerpZ); chunkGroup.add(outerTie);
                   }
                 });
-                [-0.72, 0.72].forEach(function(railForwardOff) {
-                  addRailroadStrip(railMat, railForwardOff, 0.10, rrLateralSpan, 0.014);
+                [-RR_RAIL_CENTER_OFFSET, RR_RAIL_CENTER_OFFSET].forEach(function(railForwardOff) {
+                  addRailroadStrip(railMat, railForwardOff, RR_RAIL_WIDTH, rrLateralSpan, 0.014);
                 });
                 var rrStopMat = new T.MeshBasicMaterial({ color: 0xf5f5f5 });
-                [-2.2, 2.2].forEach(function(stopOff) {
+                [-RR_RAIL_STOP_OFFSET, RR_RAIL_STOP_OFFSET].forEach(function(stopOff) {
                   addRailroadStrip(rrStopMat, stopOff, 0.3, roadHalfW * 2 * 0.95, 0.015);
                 });
                 try {
@@ -26371,84 +26814,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     pedSigFace.position.set(poleLocalX, 3.2, poleLocalZ + 0.10);
                     crossGroup.add(pedSigFace);
                   }
-                } else {
-                  // STOP SIGN (4-way stop intersection) — octagonal red sign with white STOP text.
-                  // Local +X is along the cross-street; local +Z is along the main road tangent.
-                  // Main-road approach signs sit on the corners (±X offset for cross-street side,
-                  // ±Z offset for which approach), facing along the main road tangent.
-                  [-1, 1].forEach(function(sgSide) {
-                    var ssPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
-                    ssPole.position.set(sgSide * 4.5, 1.15, sgSide * 3.5);
-                    crossGroup.add(ssPole);
-                    // Octagonal face via canvas texture
-                    try {
-                      var ssCan = document.createElement('canvas');
-                      ssCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
-                      ssCan.width = 256; ssCan.height = 256;
-                      var ssCtx = ssCan.getContext('2d');
-                      ssCtx.clearRect(0, 0, 256, 256);
-                      ssCtx.fillStyle = '#dc2626';
-                      ssCtx.beginPath();
-                      for (var oi2 = 0; oi2 < 8; oi2++) {
-                        var oa2 = (oi2 / 8) * Math.PI * 2 + Math.PI / 8;
-                        var ox2 = 128 + Math.cos(oa2) * 120, oy2 = 128 + Math.sin(oa2) * 120;
-                        if (oi2 === 0) ssCtx.moveTo(ox2, oy2); else ssCtx.lineTo(ox2, oy2);
-                      }
-                      ssCtx.closePath(); ssCtx.fill();
-                      ssCtx.strokeStyle = '#ffffff'; ssCtx.lineWidth = 10; ssCtx.stroke();
-                      ssCtx.fillStyle = '#ffffff';
-                      ssCtx.font = 'bold 74px system-ui, sans-serif';
-                      ssCtx.textAlign = 'center';
-                      ssCtx.textBaseline = 'middle';
-                      ssCtx.fillText('STOP', 128, 128);
-                      var ssTex = new T.CanvasTexture(ssCan);
-                      var ssMat = new T.MeshBasicMaterial({ map: ssTex, transparent: true, side: T.DoubleSide });
-                      var ssFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), ssMat);
-                      ssFace.position.set(sgSide * 4.5, 2.2, sgSide * 3.5);
-                      ssFace.rotation.y = sgSide === 1 ? Math.PI : 0;
-                      crossGroup.add(ssFace);
-                    } catch (ssErr) {
-                      // Fallback: plain red octagon plane
-                      var fbMat = new T.MeshBasicMaterial({ color: 0xdc2626, side: T.DoubleSide });
-                      var fbFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), fbMat);
-                      fbFace.position.set(sgSide * 4.5, 2.2, sgSide * 3.5);
-                      fbFace.rotation.y = sgSide === 1 ? Math.PI : 0;
-                      crossGroup.add(fbFace);
+                } else if (streamedControlType === 'stop') {
+                  // Each legal approach gets a sign on its right curb. The
+                  // lettered front faces approaching traffic, with a plain
+                  // opaque metal back visible to drivers leaving the junction.
+                  var stopFaceGeometry = new T.CircleGeometry(0.5, 8, Math.PI / 8);
+                  var stopFrontMaterial = new T.MeshBasicMaterial({ color: 0xdc2626, side: T.FrontSide });
+                  var stopBackMaterial = new T.MeshBasicMaterial({ color: 0x9ca3af, side: T.BackSide });
+                  try {
+                    var stopCanvas = document.createElement('canvas');
+                    stopCanvas.setAttribute('aria-hidden', 'true');
+                    stopCanvas.width = 256; stopCanvas.height = 256;
+                    var stopContext = stopCanvas.getContext('2d');
+                    stopContext.fillStyle = '#dc2626';
+                    stopContext.fillRect(0, 0, 256, 256);
+                    stopContext.strokeStyle = '#ffffff'; stopContext.lineWidth = 8;
+                    stopContext.beginPath();
+                    for (var stopCorner = 0; stopCorner < 8; stopCorner++) {
+                      var stopAngle = stopCorner * Math.PI / 4 + Math.PI / 8;
+                      var stopX = 128 + Math.cos(stopAngle) * 118;
+                      var stopY = 128 + Math.sin(stopAngle) * 118;
+                      if (stopCorner === 0) stopContext.moveTo(stopX, stopY);
+                      else stopContext.lineTo(stopX, stopY);
                     }
+                    stopContext.closePath(); stopContext.stroke();
+                    stopContext.fillStyle = '#ffffff';
+                    stopContext.font = 'bold 74px system-ui, sans-serif';
+                    stopContext.textAlign = 'center'; stopContext.textBaseline = 'middle';
+                    stopContext.fillText('STOP', 128, 128);
+                    stopFrontMaterial.map = new T.CanvasTexture(stopCanvas);
+                    stopFrontMaterial.color.setHex(0xffffff);
+                  } catch (stopTextureError) { /* The opaque red octagon still identifies a stop. */ }
+                  var addIntersectionStopSign = function(name, x, z, yaw) {
+                    var stopGroup = new T.Group();
+                    stopGroup.name = name;
+                    stopGroup.position.set(x, crossLocalSurfaceHeight(x, z), z);
+                    stopGroup.rotation.y = yaw;
+                    var stopPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
+                    stopPole.position.set(0, 1.15, 0);
+                    stopGroup.add(stopPole);
+                    var stopFront = new T.Mesh(stopFaceGeometry, stopFrontMaterial);
+                    stopFront.name = name + '-front';
+                    stopFront.position.set(0, 2.2, 0.07);
+                    stopGroup.add(stopFront);
+                    var stopBack = new T.Mesh(stopFaceGeometry, stopBackMaterial);
+                    stopBack.name = name + '-back';
+                    stopBack.position.copy(stopFront.position);
+                    stopGroup.add(stopBack);
+                    crossGroup.add(stopGroup);
+                  };
+                  var stopBarOffset = Math.abs(intersectionStopLineCoordinate(0, 1));
+                  var mainStopDirections = chunk.oneWay ? [chunk.oneWayDirection] : [1, -1];
+                  mainStopDirections.forEach(function(stopDirection) {
+                    addIntersectionStopSign('intersection-stop-main-' + stopDirection,
+                      -stopDirection * (roadHalfW + 0.65),
+                      -stopDirection * Math.max(stopBarOffset, crossWidth / 2 + 0.65),
+                      stopDirection > 0 ? Math.PI : 0);
                   });
-                  // Cross-street stop signs — sit further out along local +X (the cross-street
-                  // direction), on the curb side of each approach. rotation.y = π/2 makes the
-                  // face perpendicular to local +X so cross-street drivers see it head-on.
-                  [-1, 1].forEach(function(ccSide) {
-                    var csPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
-                    csPole.position.set(ccSide * 3.5, 1.15, ccSide * 4.5);
-                    crossGroup.add(csPole);
-                    try {
-                      var cs_can = document.createElement('canvas');
-                      cs_can.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
-                      cs_can.width = 256; cs_can.height = 256;
-                      var cs_ctx = cs_can.getContext('2d');
-                      cs_ctx.fillStyle = '#dc2626';
-                      cs_ctx.beginPath();
-                      for (var oi3 = 0; oi3 < 8; oi3++) {
-                        var oa3 = (oi3 / 8) * Math.PI * 2 + Math.PI / 8;
-                        var ox3 = 128 + Math.cos(oa3) * 120, oy3 = 128 + Math.sin(oa3) * 120;
-                        if (oi3 === 0) cs_ctx.moveTo(ox3, oy3); else cs_ctx.lineTo(ox3, oy3);
-                      }
-                      cs_ctx.closePath(); cs_ctx.fill();
-                      cs_ctx.strokeStyle = '#ffffff'; cs_ctx.lineWidth = 10; cs_ctx.stroke();
-                      cs_ctx.fillStyle = '#ffffff';
-                      cs_ctx.font = 'bold 74px system-ui, sans-serif';
-                      cs_ctx.textAlign = 'center';
-                      cs_ctx.textBaseline = 'middle';
-                      cs_ctx.fillText('STOP', 128, 128);
-                      var cs_tex = new T.CanvasTexture(cs_can);
-                      var cs_mat = new T.MeshBasicMaterial({ map: cs_tex, transparent: true, side: T.DoubleSide });
-                      var cs_face = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), cs_mat);
-                      cs_face.position.set(ccSide * 3.5, 2.2, ccSide * 4.5);
-                      cs_face.rotation.y = Math.PI / 2;
-                      crossGroup.add(cs_face);
-                    } catch (ccErr) { /* fallback omitted */ }
+                  var crossStopDirections = chunk.crossStreetOneWayDirection
+                    ? [chunk.crossStreetOneWayDirection] : [1, -1];
+                  crossStopDirections.forEach(function(stopDirection) {
+                    addIntersectionStopSign('intersection-stop-cross-' + stopDirection,
+                      -stopDirection * Math.max(stopBarOffset, roadHalfW + 0.65),
+                      stopDirection * (crossWidth / 2 + 0.65),
+                      -stopDirection * Math.PI / 2);
                   });
                 }
                 if (streamedControlType === 'flagger') {
@@ -39611,6 +40040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       vehicleRectsOverlap: vehicleRectsOverlap, pointOverlapsVehicle: pointOverlapsVehicle,
       vulnerableRoadUserImpactAttribution: vulnerableRoadUserImpactAttribution,
       roadUserImpactClosingState: roadUserImpactClosingState,
+      applyTrafficImpactVelocity: applyTrafficImpactVelocity,
       movingRoadUserBlockedByStoppedVehicle: movingRoadUserBlockedByStoppedVehicle,
       vulnerableRoadUserStartupClearance: vulnerableRoadUserStartupClearance,
       vulnerableRoadUserClosingRespawnMin: vulnerableRoadUserClosingRespawnMin,
@@ -39653,10 +40083,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       intersectionMovementsConflict: intersectionMovementsConflict,
       requestIntersectionReservation: requestIntersectionReservation,
       createIntersectionTurnPath: createIntersectionTurnPath, intersectionTurnPoint: intersectionTurnPoint,
+      intersectionTurnPose: intersectionTurnPose,
       playerControlApproach: playerControlApproach,
       crossStreetCorridorAt: crossStreetCorridorAt,
       crossedFiniteRoadFeature: crossedFiniteRoadFeature, railroadCrossingState: railroadCrossingState,
       railroadCrossingControlState: railroadCrossingControlState, railroadRequiresFullStop: railroadRequiresFullStop,
+      railroadApproach: railroadApproach, updateRailroadStop: updateRailroadStop,
+      crossesRailroadStopLine: crossesRailroadStopLine,
       railroadTrainCollisionAt: railroadTrainCollisionAt,
       roadCrownHeight: roadCrownHeight, roadShoulderDrainageDrop: roadShoulderDrainageDrop,
       roadLaneArrowSpecs: roadLaneArrowSpecs, mainRoadLocalPoint: mainRoadLocalPoint,
@@ -39668,7 +40101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       separateRoadUserAfterImpact: separateRoadUserAfterImpact,
       separateVehicleAfterImpact: separateVehicleAfterImpact,
       assessRoadLanePosition: assessRoadLanePosition,
-      controlDistanceAhead: controlDistanceAhead,
+      controlDistanceAhead: controlDistanceAhead, controlApproachDistanceMeters: controlApproachDistanceMeters,
       signedRoadCurvatureAt: signedRoadCurvatureAt, guardrailSideForRoad: guardrailSideForRoad,
       GUARDRAIL_CURVATURE_THRESHOLD: GUARDRAIL_CURVATURE_THRESHOLD,
       roadBankAngleAt: roadBankAngleAt,
@@ -39726,6 +40159,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       trafficPedestrianControl: trafficPedestrianControl, guardTrafficPedestrianMotion: guardTrafficPedestrianMotion,
       spawnMotorcycles: spawnMotorcycles, spawnSignals: spawnSignals,
       trafficSignalIndication: trafficSignalIndication, updateSignals: updateSignals, maybeSpawnEmergency: maybeSpawnEmergency,
+      emergencySirenSpatialState: emergencySirenSpatialState,
+      ordinaryEmergencySpawnState: ordinaryEmergencySpawnState,
+      emergencyTrafficQueueControl: emergencyTrafficQueueControl,
+      guardEmergencyTrafficMotion: guardEmergencyTrafficMotion,
       maybeSpawnWildlife: maybeSpawnWildlife,
       // coaching / grading / misc
       pushDriveEvent: pushDriveEvent, coachTipFor: coachTipFor,

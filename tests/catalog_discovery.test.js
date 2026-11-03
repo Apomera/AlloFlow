@@ -15,6 +15,6 @@ describe('catalog discovery',()=>{
  it('does not treat a missing grade as a match',()=>{expect(matches({title:'Unknown grade'},{grade:'7'})).toBe(false);expect(matches({grade_level:'All grades'},{grade:'7'})).toBe(true);});
  it('retains subject filtering and handles malformed tags',()=>{expect(matches(entry,{subject:'Math'})).toBe(false);expect(matches({...entry,tags:{}},{search:'sound'})).toBe(true);expect(matches(null,{})).toBe(false);});
  it('treats blank filters as no filters',()=>{expect(matches(entry,{search:'   ',grade:'   '})).toBe(true);});
- it('finds actual Water Cycle metadata with a natural-language activity query',()=>{const entries=JSON.parse(fs.readFileSync('catalog/index.json','utf8')).entries;expect(entries.filter(e=>matches(e,{search:'water memory aid',grade:'6'})).some(e=>e.slug==='water_cycle_grade6_illustrated')).toBe(true);});
+ it('finds actual Water Cycle metadata with a natural-language activity query',()=>{const entries=JSON.parse(fs.readFileSync('catalog/index.json','utf8')).entries;expect(entries.filter(e=>matches(e,{search:'water memory aid',grade:'6'})).some(e=>e.slug==='water_cycle_grade6'&&e.path==='allopacks/current/water_cycle_grade6.allopack.json')).toBe(true);});
  it('keeps the browser mirror byte-identical',()=>{expect(fs.readFileSync('desktop/web-app/public/catalog_module.js','utf8')).toBe(fs.readFileSync('catalog_module.js','utf8'));});
 });

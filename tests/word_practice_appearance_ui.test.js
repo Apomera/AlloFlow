@@ -40,6 +40,7 @@ describe.each(sources)('Word Sounds card appearance (%s)', (_, source) => {
     expect(control(setup, 'Card font').value).toBe('verdana'); expect(control(setup, 'Card text size').value).toBe('1.4');
     button(doc, 'Save word set').click(); await vi.waitFor(() => expect(blobs.length).toBe(1));
     const saved = JSON.parse(await new Promise(resolve => { const reader = new win.FileReader(); reader.onload = () => resolve(reader.result); reader.readAsText(blobs[0]); }));
+    button(doc, 'I saved the file').click(); await new Promise(resolve => setTimeout(resolve, 0));
     expect(saved.options).toMatchObject({ cardFont: 'verdana', cardTextScale: 1.4, cardTheme: 'mist' });
     change(win, setup, 'Card font', 'arial');
     const file = doc.querySelector('input[type=file]'); Object.defineProperty(file, 'files', { configurable: true, value: [{ size: 10000, text: async () => JSON.stringify(saved) }] }); file.dispatchEvent(new win.Event('change', { bubbles: true }));

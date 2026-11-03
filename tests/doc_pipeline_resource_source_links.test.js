@@ -171,7 +171,7 @@ describe('shared source links for standalone resource printing', () => {
     ['academic_discourse_reading_space_grade6', 'reading-space-glossary', 1],
     ['reading_decisions_grade6', 'decision-unit-portfolio', 3],
   ])('keeps the actual recorded sources with %s / %s', (filename, id, count) => {
-    const pack = JSON.parse(readFileSync(`allopacks/${filename}.allopack.json`, 'utf8'));
+    const pack = JSON.parse(readFileSync(`allopacks/current/${filename}.allopack.json`, 'utf8'));
     const item = pack.history.find(resource => resource.id === id), before = JSON.stringify(pack);
     const { document, block } = render([item]);
     expect(document.querySelectorAll('[data-alloflow-resource-id]')).toHaveLength(1);

@@ -102,29 +102,27 @@ describe('walkthrough copilot delivery client', () => {
     expect(codes(copilot.createDelivery({ execUrl: GOOD_URL }))).toContain('transport-missing');
   });
 
-  it('claims the script and keeps the returned token for later calls', async () => {
+  it('reconnects using the token supplied by the owner', async () => {
     const io = recorder({
       claim: { ok: true, token: 'tok-123', owner: 'principal@school.org', version: 1 },
       selftest: (body) => ({ ok: true, service: 'alloflow-walkthrough-records', echoToken: body.token }),
     });
-    const delivery = copilot.createDelivery({ execUrl: GOOD_URL, post: io.post }).value;
-    expect(delivery.hasToken).toBe(false);
-
-    const claimed = await delivery.claim();
-    expect(claimed.ok).toBe(true);
-    expect(claimed.value.token).toBe('tok-123');
+    const delivery = copilot.createDelivery({ execUrl: GOOD_URL, token: 'tok-123', post: io.post }).value;
+    expect(delivery.hasToken).toBe(true);
 
     await delivery.selfTest();
-    expect(io.sent[1].body.token, 'the token must travel on subsequent calls').toBe('tok-123');
+    expect(io.sent).toHaveLength(1);
+    expect(io.sent[0].body).toMatchObject({ action: 'selftest', token: 'tok-123' });
   });
 
-  it('surfaces the script refusal rather than pretending it worked', async () => {
+  it('rejects public enrollment locally without contacting even an old script', async () => {
     const io = recorder({ claim: { ok: false, code: 'already_claimed', error: 'This script is already connected to a device.' } });
     const delivery = copilot.createDelivery({ execUrl: GOOD_URL, post: io.post }).value;
     const claimed = await delivery.claim();
     expect(claimed.ok).toBe(false);
-    expect(codes(claimed)).toContain('already_claimed');
-    expect(claimed.errors[0].message).toMatch(/already connected/i);
+    expect(codes(claimed)).toContain('owner_setup_required');
+    expect(claimed.errors[0].message).toMatch(/setupWalkthroughOwner/);
+    expect(io.sent).toHaveLength(0);
   });
 
   it('delivers only the approved record, never the draft', async () => {
@@ -215,8 +213,9 @@ describe('walkthrough records apps script contract', () => {
     expect(script).toContain('disclosure_required');
   });
 
-  it('refuses unauthenticated mutations once claimed, and cannot be re-claimed', () => {
-    expect(script).toContain('already_claimed');
+  it('requires owner setup and refuses unauthenticated mutations', () => {
+    expect(script).toContain('owner_setup_required');
+    expect(script).toContain('setupWalkthroughOwner');
     expect(script).toContain('not_claimed');
     expect(script).toMatch(/supplied !== stored/);
   });
@@ -258,5 +257,8 @@ describe('shipped apps script source module', () => {
     expect(all).toContain('Who has access: Anyone');
     expect(all, 'the unverified-app warning must not be hidden from the user').toMatch(/has not verified/i);
     expect(all).toContain('/exec');
+    expect(all).toContain('setupWalkthroughOwner');
+    expect(all).toContain('wr_admin_token');
+    expect(JSON.parse(shipped.manifest)).toEqual(JSON.parse(readFileSync(resolve(root, 'apps_script/walkthrough_records/appsscript.json'), 'utf8')));
   });
 });

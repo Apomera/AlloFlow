@@ -3,7 +3,7 @@
 // reads a web page for the owner. Evaluates the REAL apps_script/session_mailbox/
 // Code.gs against mocked Google services, including a fake Drive REST endpoint
 // that records the multipart conversion upload, and pins the manifest so the
-// scope story in the README stays true: drive.file + external requests only.
+// scope story in the README stays true: identity + drive.file + external requests.
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -136,6 +136,7 @@ function makeSandbox(opts = {}) {
     };
     const rootFolder = makeFolder('AlloFlow Class Mailbox', null);
     const services = {
+        Session: { getActiveUser: () => ({ getEmail: () => "owner@example.test" }), getEffectiveUser: () => ({ getEmail: () => "owner@example.test" }) },
         CacheService: { getScriptCache: () => cache },
         PropertiesService: { getScriptProperties: () => ({
             getProperty: k => (props.has(k) ? props.get(k) : null),
@@ -178,10 +179,11 @@ function makeSandbox(opts = {}) {
             ? { create: () => { throw new Error('You do not have permission to call FormApp.create'); } }
             : makeFormApp(forms),
     };
-    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle };');
+    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, setupMailboxOwner: setupMailboxOwner };');
     const gs = factory(...Object.values(services));
     const call = p => JSON.parse(gs.handle(p).getContent());
-    const admin = call({ a: 'claim' }).admin;
+    gs.setupMailboxOwner();
+    const admin = props.get("admin");
     return { call, admin, files, forms, fetches, rootFolder, cacheStore };
 }
 
@@ -190,8 +192,9 @@ const b64 = s => Buffer.from(s, 'utf8').toString('base64');
 describe('manifest keeps the scope story true', () => {
     const manifest = JSON.parse(manifestText);
 
-    it('declares only drive.file and external requests, as an anonymous web app executing as the owner', () => {
+    it('declares only identity, drive.file and external requests, as an anonymous web app executing as the owner', () => {
         expect(manifest.oauthScopes).toEqual([
+            'https://www.googleapis.com/auth/userinfo.email',
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/script.external_request',
         ]);

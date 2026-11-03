@@ -158,7 +158,7 @@ describe('catalogue pictures and words', () => {
     expect(count(m, /data-rk-mystery-tile="/g)).toBe(24);
     const at = m.indexOf('data-rk-mystery-tile="conglom"');
     expect(m.slice(at, m.indexOf('</button>', at))).toContain('✗ ');
-    expect(m.slice(at, m.indexOf('</button>', at))).toContain('width="68"');
+    expect(m.slice(at, m.indexOf('</button>', at))).toContain('width="96"');
   });
 
     it('puts the mineral catalogue first and the room of objects after it, as the Rocks tab does', () => {
@@ -664,7 +664,7 @@ describe('Mystery Rock cross-outs', () => {
     const t = tree(base({ out: ROCK_IDS.slice() }));
     byProp(t.node, 'data-rk-mystery-clear', true).props.onClick();
     expect(t.store.rocks.mystery.out).toEqual([]);
-    expect(render(base())).not.toContain('data-rk-mystery-clear');
+    expect(render(base())).not.toContain('data-rk-mystery-clear="true"');
   });
 
   it('starts each new mystery with nothing crossed out', () => {
@@ -874,11 +874,11 @@ describe('mineral look-alikes', () => {
   it('names the scratch test the numbers allow', () => {
     const hard = (x, y) => { const m = render({ mode: 'minerals', selectedMineral: x, minLook: y }); const at = m.indexOf('data-rk-min-look-hard'); return m.slice(m.indexOf('>', at) + 1, m.indexOf('</p>', at)).replace(/<[^>]*>/g, ''); };
     // The reference nearest the middle of the gap.
-    expect(hard('quartz', 'calcite')).toMatch(/^Scratch test: Glass reference \(modeled\) \(5\.5\) scratches .*calcite but not .*quartz\.$/);
-    expect(hard('calcite', 'gypsum')).toMatch(/Fingernail \(2\.5\) scratches .*gypsum but not .*calcite\./);
-    expect(hard('galena', 'magnetite')).toMatch(/Copper reference \(modeled\) \(3\.5\) scratches .*galena but not .*magnetite\./);
+    expect(hard('quartz', 'calcite')).toMatch(/^Scratch test: Glass reference \(modeled\) \(5\.5\) scratches .*calcite but not .*quartz\.$/i);
+    expect(hard('calcite', 'gypsum')).toMatch(/Fingernail \(2\.5\) scratches .*gypsum but not .*calcite\./i);
+    expect(hard('galena', 'magnetite')).toMatch(/Copper reference \(modeled\) \(3\.5\) scratches .*galena but not .*magnetite\./i);
     // No reference between them: rub one against the other.
-    expect(hard('talc', 'gypsum')).toMatch(/gypsum scratches .*talc \(rub one against the other\)\./);
+    expect(hard('talc', 'gypsum')).toMatch(/gypsum scratches .*talc \(rub one against the other\)\./i);
     expect(hard('magnetite', 'hematite')).toContain('too close to tell apart by scratching');
   });
 

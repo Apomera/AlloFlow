@@ -1,0 +1,43 @@
+import {afterEach,beforeAll,describe,it,expect,vi} from 'vitest';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {resolve} from 'node:path';
+const require=createRequire(import.meta.url),React=require(resolve('desktop/web-app/node_modules/react'));
+const {createRoot}=require(resolve('desktop/web-app/node_modules/react-dom/client'));
+const {act}=React;
+const resource={id:'sort',type:'concept-sort',data:{categories:[{id:'c1',label:'Animals'},{id:'c2',label:'Plants'}],items:[{id:'i1',content:'Otter',categoryId:'c1',image:'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg"/%3E'},{id:'i2',content:'Pine',categoryId:'c2'}]}};
+let host,root,frames,api;
+beforeAll(()=>{window.React=globalThis.React=React;globalThis.IS_REACT_ACT_ENVIRONMENT=true;delete window.AlloModules.ConceptSortView;new Function(readFileSync(process.env.ALLO_CONCEPT_VIEW||'view_concept_sort_module.js','utf8'))();});
+afterEach(()=>{if(root)act(()=>root.unmount());root=null;document.body.innerHTML='';vi.restoreAllMocks();vi.unstubAllGlobals();});
+function mount(extra={}){
+  frames=[];vi.stubGlobal('requestAnimationFrame',fn=>{frames.push(fn);return frames.length;});
+  const calls={category:vi.fn(),item:vi.fn(),move:vi.fn(),regenerate:vi.fn(),image:vi.fn(),clear:vi.fn(),remove:vi.fn(),refine:vi.fn(),start:vi.fn()};
+  function Harness(){
+    const [current,setCurrent]=React.useState(structuredClone(resource)),[edit,setEdit]=React.useState(null);
+    api={setCurrent,setEdit,current};
+    const save=(kind,id,text)=>{calls[kind](id,text);setCurrent(r=>({...r,data:{...r.data,[kind==='item'?'items':'categories']:r.data[kind==='item'?'items':'categories'].map(x=>x.id===id?{...x,[kind==='item'?'content':'label']:text}:x)}}));};
+    return React.createElement(window.AlloModules.ConceptSortView,{t:k=>k,isTeacherMode:true,isIndependentMode:false,generatedContent:current,csEdit:edit,setCsEdit:setEdit,csAddingCatId:null,csAddingText:'',csBusyId:null,isConceptSortGame:false,setCsAddingCatId:()=>{},setCsAddingText:()=>{},csUpdateItemText:(id,text)=>save('item',id,text),csUpdateCategoryLabel:(id,text)=>save('category',id,text),csMoveItem:calls.move,csRegenerateItem:calls.regenerate,csRegenerateItemImage:calls.image,csUploadItemImage:()=>{},csClearItemImage:calls.clear,csDeleteItem:calls.remove,csRefineItemImage:calls.refine,handleSetIsConceptSortGameToTrue:calls.start,csAddItem:()=>{},setConceptSortImageScale:()=>{},...extra});
+  }
+  host=document.createElement('div');document.body.append(host);root=createRoot(host);act(()=>root.render(React.createElement(Harness)));return calls;
+}
+const trigger=(kind,id)=>{const current=api.current.data[kind==='item'?'items':'categories'].find(x=>x.id===id),label=kind==='item'?current.content:current.label;return [...host.querySelectorAll('button')].find(b=>b.dataset.conceptSortEdit===kind&&b.dataset.conceptSortEditId===id)||[...host.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')===(kind==='item'?'concept_sort.edit_item ':'concept_sort.rename_category ')+label);};
+const editor=()=>host.querySelector('[data-concept-sort-editor]');
+const input=()=>editor()?.querySelector('input')||host.querySelector('input[aria-label="a11y.edit_item_text"],input[aria-label="a11y.edit_category_name"]');
+const action=text=>[...editor().querySelectorAll('button')].find(b=>b.textContent===text);
+const flush=()=>act(()=>{while(frames.length)frames.shift()();});
+function open(kind,id){act(()=>{trigger(kind,id).focus();trigger(kind,id).click();});expect(document.activeElement).toBe(input());}
+function type(text){act(()=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input(),text);input().dispatchEvent(new Event('input',{bubbles:true}));});}
+function key(name,extra={}){const event=new KeyboardEvent('keydown',{key:name,bubbles:true,cancelable:true,...extra});act(()=>input().dispatchEvent(event));return event;}
+describe('Concept Sort teacher editing',()=>{
+  it.each([['category','c1'],['item','i1']])('saves a %s once and returns focus to its trigger',(kind,id)=>{const calls=mount();open(kind,id);type('Revised label');const save=action('Save');act(()=>save.focus());expect(calls[kind]).not.toHaveBeenCalled();act(()=>save.click());flush();expect(calls[kind]).toHaveBeenCalledExactlyOnceWith(id,'Revised label');expect(editor()).toBeNull();expect(document.activeElement).toBe(trigger(kind,id));expect(trigger(kind,id).textContent).toBe('Revised label');});
+  it.each([['category','c1','Animals'],['item','i1','Otter']])('lets a keyboard user cancel the %s without a blur save',(kind,id,original)=>{const calls=mount();open(kind,id);type('Discard this');act(()=>action('Cancel').focus());expect(calls[kind]).not.toHaveBeenCalled();act(()=>action('Cancel').click());flush();expect(calls[kind]).not.toHaveBeenCalled();expect(document.activeElement).toBe(trigger(kind,id));expect(trigger(kind,id).textContent).toBe(original);});
+  it('Enter saves and Escape discards, both restoring useful keyboard focus',()=>{const calls=mount();open('item','i1');type('River otter');expect(key('Enter').defaultPrevented).toBe(true);flush();expect(calls.item).toHaveBeenCalledExactlyOnceWith('i1','River otter');open('item','i1');type('Discard');expect(key('Escape').defaultPrevented).toBe(true);flush();expect(calls.item).toHaveBeenCalledTimes(1);expect(trigger('item','i1').textContent).toBe('River otter');expect(document.activeElement).toBe(trigger('item','i1'));});
+  it.each([{isComposing:true},{keyCode:229}])('does not save the Enter used to compose text (%j)',flag=>{const calls=mount();open('item','i1');type('文字');key('Enter',flag);expect(calls.item).not.toHaveBeenCalled();expect(input()).not.toBeNull();key('Enter');flush();expect(calls.item).toHaveBeenCalledExactlyOnceWith('i1','文字');});
+  it('honors composition start/end even when the key event lacks the composing flag',()=>{const calls=mount();open('category','c1');type('動物');act(()=>input().dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true})));key('Enter');key('Escape');expect(editor()).not.toBeNull();expect(calls.category).not.toHaveBeenCalled();act(()=>input().dispatchEvent(new CompositionEvent('compositionend',{bubbles:true})));key('Enter');flush();expect(calls.category).toHaveBeenCalledExactlyOnceWith('c1','動物');});
+  it('keeps save-on-leaving behavior without taking focus away from the next control',()=>{const calls=mount();const outside=document.createElement('button');document.body.append(outside);open('item','i1');type('River otter');act(()=>outside.focus());flush();expect(calls.item).toHaveBeenCalledExactlyOnceWith('i1','River otter');expect(document.activeElement).toBe(outside);expect(editor()).toBeNull();});
+  it('does not send delayed focus into a different resource',()=>{mount();open('item','i1');key('Escape');act(()=>api.setCurrent({...resource,id:'different-sort'}));flush();expect(document.activeElement).not.toBe(trigger('item','i1'));});
+  it('does not interrupt a newly opened editor with delayed focus from the previous edit',()=>{mount();open('item','i1');key('Escape');open('category','c1');flush();expect(document.activeElement).toBe(input());expect(input().getAttribute('aria-label')).toContain('Animals');});
+  it('names each card action and preserves the selected item callbacks',()=>{const calls=mount();const find=label=>host.querySelector('[aria-label="'+label+'"]');const remove=find('Delete this item: Otter');expect(remove).not.toBeNull();expect(find('Delete this item: Pine')).not.toBeNull();act(()=>remove.click());expect(calls.remove).toHaveBeenCalledExactlyOnceWith('i1');act(()=>find('Regenerate image only: Otter').click());expect(calls.image).toHaveBeenCalledExactlyOnceWith(resource.data.items[0]);const select=find('Move item to a different category: Otter');act(()=>{select.value='c2';select.dispatchEvent(new Event('change',{bubbles:true}));});expect(calls.move).toHaveBeenCalledExactlyOnceWith('i1','c2');expect(remove.style.width).toBe('44px');expect(select.style.minHeight).toBe('44px');});
+  it('uses the existing translations for explicit Save and Cancel controls',()=>{mount({t:key=>({'common.save':'Guardar','common.cancel':'Cancelar','a11y.edit_item_text':'Editar texto'}[key]||key)});open('item','i1');expect(action('Guardar')).toBeDefined();expect(action('Cancelar')).toBeDefined();expect(input().getAttribute('aria-label')).toBe('Editar texto: Otter');});
+  it('keeps the student activity launch and hides teacher editing controls',()=>{const calls=mount({isTeacherMode:false});expect(host.querySelector('[data-concept-sort-edit]')).toBeNull();act(()=>host.querySelector('[data-help-key="concept_sort_start_button"]').click());expect(calls.start).toHaveBeenCalledTimes(1);});
+});

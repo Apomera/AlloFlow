@@ -12,6 +12,8 @@ const FONTS = [
   { id: 'default', label: 'Default (System)', family: '', cssClass: '' },
   { id: 'opendyslexic', label: 'OpenDyslexic', family: "'OpenDyslexic', sans-serif", cssClass: 'font-opendyslexic', googleFont: null },
   { id: 'lexend', label: 'Lexend', family: "'Lexend', sans-serif", cssClass: 'font-lexend', googleFont: 'Lexend:wght@400;500;700' },
+  { id: 'andika-italic', label: 'Andika Italic', family: "'Andika', sans-serif", cssClass: 'font-andika-italic' },
+  { id: 'andika-bold-italic', label: 'Andika Bold Italic', family: "'Andika', sans-serif", cssClass: 'font-andika-bold-italic' },
 ];
 const DEFAULTS = { fontId: 'default', fontFamily: '', fontClass: '', baseFontSize: 16, lineHeight: 1.6, letterSpacing: 0, colorOverlay: 'none', readingRuler: false, fonts: FONTS };
 function bridge(patch = {}) {
@@ -109,6 +111,29 @@ describe('flash-card export: the options step', () => {
 });
 
 describe('flash-card export: the file', () => {
+  it.each([
+    ['andika-bold-italic', true, 'italic', '700'],
+    ['andika-italic', true, 'italic', 'normal'],
+    ['andika-bold-italic', false, 'normal', 'normal'],
+  ])('renders %s across language-tagged definitions and quotes when reader settings are %s', async (fontId, enabled, style, weight) => {
+    bridge({ fontId, baseFontSize: 24 });
+    vi.spyOn(window.AlloModules.UIFontLibrary, 'exportFontFaceCss').mockResolvedValue({ head: '', css: '' });
+    const run = exporter(glossary({ data: [{ term: 'Leaf', def: 'Une feuille.', definitionLanguage: 'French', contextSentence: 'تنمو الورقة.', contextSentenceLanguage: 'Arabic' }] }));
+    await run.api.handleExportFlashcards('standard', { includeAudio: false, useReadingSettings: enabled });
+    const dom = new JSDOM(run.html());
+    cleanups.push(() => dom.window.close());
+    const doc = dom.window.document;
+    const definition = doc.querySelector('.back .def-text > span[lang]');
+    const quote = doc.querySelector('.back [data-context-sentence] q');
+    expect([definition.lang, definition.dir, quote.lang, quote.dir]).toEqual(['fr', 'ltr', 'ar', 'rtl']);
+    for (const passage of [definition, quote]) {
+      const computed = dom.window.getComputedStyle(passage);
+      expect(computed.fontStyle || 'normal').toBe(style);
+      expect(computed.fontWeight || 'normal').toBe(weight);
+      if (enabled) expect(computed.fontFamily).toContain('Andika');
+    }
+  });
+
   it('on: embeds the reader font as data and applies the reader CSS', async () => {
     bridge({ fontId: 'opendyslexic', baseFontSize: 20, lineHeight: 1.8, letterSpacing: 0.05 });
     const fetch = stubFontFetch();
@@ -175,7 +200,8 @@ describe('flash-card export: the file', () => {
     const rules = [...dom.window.document.styleSheets].flatMap((sheet) => [...sheet.cssRules]).filter((rule) => rule.style);
     const sizes = rules.filter((rule) => rule.style.fontSize && rule.selectorText !== 'html').map((rule) => [rule.selectorText, rule.style.fontSize]);
     expect(sizes.length).toBeGreaterThan(8);
-    expect(sizes.filter(([, value]) => !/rem$/.test(value)), 'every card font size follows the root size').toEqual([]);
+    expect(sizes.filter(([selector, value]) => selector !== '.language-alias' && !/rem$/.test(value)), 'card text follows the root size').toEqual([]);
+    expect(sizes.filter(([selector]) => selector === '.language-alias'), 'alias markers scale with their root-relative parent').toEqual([['.language-alias', '0.85em']]);
     const rule = (selector) => rules.filter((r) => r.selectorText === selector).at(-1);
     expect(rule('html').style.fontSize).toBe('32px');
     expect(rule('.cut-guide').style.position).toBe('static');

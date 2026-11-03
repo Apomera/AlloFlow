@@ -89,7 +89,7 @@ describe('native AlloPack authoring coverage', () => {
   });
 
   it('attaches native single/timeline images without mutating the input', () => {
-    const image = JSON.parse(readFileSync('allopacks/illustrated/water_cycle_grade6.allopack.json')).history.find(item => item.type === 'glossary').data[0].image;
+    const image = JSON.parse(readFileSync('allopacks/current/water_cycle_grade6.allopack.json')).history.find(item => item.type === 'glossary').data[0].image;
     const timeline = pack(examples.find(item => item.type === 'timeline')).value;
     const before = structuredClone(timeline);
     const report = service.attachImage(timeline, { resourceId: timeline.history[0].id, slot: 'timeline', index: 0, dataUrl: image, alt: 'Water-cycle illustration for an authoring test.', altSource: 'planning' }, native);

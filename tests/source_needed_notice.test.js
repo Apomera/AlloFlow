@@ -31,6 +31,7 @@ let SourceNeededNotice;
 beforeAll(() => {
   window.React = React;
   SourceNeededNotice = new Function('React', sliceBlock(MODULE, 'function useAiTextAvailable(') + '\n'
+    + sliceBlock(MODULE, 'function createPathFork(') + '\nconst PathFork = createPathFork();\n'
     + sliceBlock(MODULE, 'function OtherWaysToStart(') + '\n'
     + sliceBlock(MODULE, 'function SourceNeededNotice(') + '\nreturn SourceNeededNotice;')(React);
 });

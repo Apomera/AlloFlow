@@ -57,9 +57,10 @@
               // sentence at once.
               let activeSweepCharOffset = 0;
               let lastWasActiveSentence = false;
-              return group.words.map(({ wordData, index: i }) => {
+              return group.words.map(({ wordData, index: i }, position) => {
                 if (wordData.pos === 'newline') {
-                  return <div key={wordData.id || i} className="w-full h-4" />;
+                  if (position > 0 && group.words[position - 1]?.wordData?.pos === 'newline') return null;
+                  return <div key={wordData.id || i} aria-hidden="true" style={{ height: '0.55em' }} />;
                 }
                 const tokenStr = wordData.text.replace(/\s+/g, '').toLowerCase();
                 const assignedIdx = group.sentence;
@@ -1706,6 +1707,15 @@
   // The unnamed-learner session the page last saw (host readingLearnerSession).
   var anonymousPlaceSession, anonymousPlaceClears = 0;
   var readingPlaceStore = createReadingPlaceStore({ getStorage: () => window.localStorage, getLocks: () => window.navigator.locks });
+  function createListeningPlace(learner, identity, version) {
+    const text = JSON.stringify(version);
+    const scope = { learner, itemId: JSON.stringify(['read-along', ...identity]), fingerprint: readingPlaceStore.textCheck(text), text };
+    return {
+      key: JSON.stringify([learner, scope.itemId, scope.fingerprint]),
+      read: () => readingPlaceStore.load(scope).place?.listeningSentence,
+      write: index => readingPlaceStore.save(scope, { listeningSentence: index })
+    };
+  }
   if (window.__alloReadingPlaceGuardCleanup) window.__alloReadingPlaceGuardCleanup();
   window.__alloReadingPlaceGuardCleanup = readingPlaceStore.watchPage(window);
 
@@ -3108,7 +3118,10 @@
       if (typeof props.closeRevision === 'function') props.closeRevision();
       if (typeof props.setSelectionMenu === 'function') props.setSelectionMenu(null);
       listenAlongOpenerRef.current = event && event.currentTarget;
-      setComparisonKaraoke({ text, language, scope: listenAlongScope, entries, sentences: entries.map(entry => entry.text), languages: entries.map(entry => simplifiedLanguageTag(entry.language)) });
+      var sentences = entries.map(entry => entry.text), languages = entries.map(entry => simplifiedLanguageTag(entry.language));
+      var pane = event?.currentTarget?.dataset?.comparisonKaraoke || (protectedOriginal ? 'source' : 'adapted');
+      var listeningPlace = getListeningPlace(pane, text, language, sentences, languages);
+      setComparisonKaraoke({ text, language, scope: listenAlongScope, entries, sentences, languages, listeningPlace });
     }
     function closeListenAlong() {
       setComparisonKaraoke(null);
@@ -3598,15 +3611,21 @@
       if (store !== readAloudStore || (typeof store.getRevision === 'function' && store.getRevision() !== readAloudStoreRevision)) refresh();
       return function () { active = false; if (typeof unsubscribe === 'function') unsubscribe(); };
     }, [readAloudStore, readAloudStoreRevision, audioStatusTick, generatedContent?.id, generatedContent?.karaokeAudio]);
+    var legacyPlaybackSentences = React.useRef([]);
+    var canReadByText = function (sentence, options, entries) {
+      if (options?.occurrence > 0 || !Array.isArray(entries)) return false;
+      var key = getReadAloudAudioKey(sentence);
+      return entries.filter(entry => getReadAloudAudioKey(entry?.text || entry) === key).length === 1;
+    };
     var getStoredReadAloudAudioUrl = function (sentence, identityOptions) {
       try {
         var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
         if (typeof sharedInspect === 'function') {
           var inspection = sharedInspect(sentence, 'reference', identityOptions);
-          if (inspection && inspection.storedUrl) return inspection.storedUrl;
-          if (inspection && inspection.status === 'ready' && inspection.url) return inspection.url;
+          if (inspection) return inspection.storedUrl || (inspection.status === 'ready' && inspection.url) || null;
         }
       } catch (_) {}
+      if (!canReadByText(sentence, identityOptions, narrationSentences)) return null;
       var st = getReadAloudStore();
       try {
         return st && typeof st.get === 'function' ? st.get(sentence, identityOptions || {}) : null;
@@ -3629,6 +3648,7 @@
         priority: 'interactive'
       }, requestOptions || {});
       options.language = language;
+      options.allowProviderFallback = !/^[ab][fm]_/i.test(voice);
       // Snapshot the synthesis profile with the request. The shared service uses
       // it for compatibility and provider resolution, so a settings change
       // mid-request cannot relabel the voice the learner actually heard.
@@ -3648,7 +3668,7 @@
       // Direct store/callTTS compatibility path while the shared host module loads.
       try {
         var st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
-        if (st) {
+        if (st && !options.force && canReadByText(sentenceText, options, legacyPlaybackSentences.current)) {
           // Stored-clip compatibility guard (2026-07-17): this resolver used
           // to return st.get() blind, bypassing the voice guard the main
           // playSequence path applies — so an older Puck AI clip kept playing
@@ -3682,7 +3702,7 @@
       var st = getReadAloudStore();
       var source = inspection && inspection.source != null ? inspection.source : null;
       var metadata = inspection && inspection.metadata ? inspection.metadata : null;
-      if (!inspection) {
+      if (!inspection && canReadByText(sentence, identityOptions, narrationSentences)) {
         try {
           if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence, identityOptions || {});
           if (st && typeof st.metadataOf === 'function') metadata = st.metadataOf(sentence, identityOptions || {});
@@ -3715,8 +3735,9 @@
           if (inspection && inspection.status) return inspection.status === 'ready' || inspection.status === 'stale';
         }
       } catch (_) {}
+      if (!canReadByText(sentence, identityOptions, narrationSentences)) return false;
       var st = getReadAloudStore();
-      try { return !!(st && st.has(sentence, identityOptions || {})); } catch (_) { return false; }
+      try { return !!(st && st.has(sentence)); } catch (_) { return false; }
     };
     var getReadAloudIdentityOptions = function (entry) {
       var language = entry && entry.language ? entry.language : (leveledTextLanguage || 'English');
@@ -3881,12 +3902,11 @@
         if (spoken && typeof current.handleSpeak === 'function') current.handleSpeak(spoken, 'immersive-word-' + (word.id || index), 0, true);
       }
     }, []);
-    var getReadAloudSentencesForText = function (rawText) {
-      return getReadAloudSentenceEntriesForText(rawText).map(function (entry) { return entry.text; });
-    };
-    var karaokeReaderSentences = React.useMemo(function () {
-      return getReadAloudSentencesForText(simplifiedReadAloudText);
-    }, [generatedContent && generatedContent.data]);
+    var karaokeEntries = React.useMemo(() => getReadAloudSentenceEntriesForText(simplifiedReadAloudText, leveledTextLanguage),
+      [simplifiedReadAloudText, leveledTextLanguage, readingTranslationLanguage]);
+    var karaokeReaderSentences = React.useMemo(() => karaokeEntries.map(entry => entry.text), [karaokeEntries]);
+    var karaokeLanguages = React.useMemo(() => karaokeEntries.map(entry => simplifiedLanguageTag(entry.language)), [karaokeEntries]);
+    legacyPlaybackSentences.current = comparisonKaraoke?.sentences || karaokeReaderSentences;
     // Announcing every sentence again, in English, talked over the voice that
     // was reading it. Say only that read-aloud started.
     var activeReadAloudStatus = React.useMemo(function () {
@@ -4647,7 +4667,7 @@
     var requestedComparisonSource = pairPreferences.source || 'linked';
     var selectedComparisonArtifact = isTeacherMode && (history || []).find(item => String(item.id) === requestedComparisonSource && item.id !== generatedContent?.id && ['analysis', 'simplified'].includes(item.type) && getArtifactReadingText(item));
     var comparisonSourceId = selectedComparisonArtifact ? requestedComparisonSource : 'linked';
-    var listenAlongScope = [generatedContent?.id, generatedContent?.data, leveledTextLanguage, isCompareMode, !!isTeacherMode, props.readingLearnerKey, !!props.isStudentPreview, comparisonSourceId, comparisonLanguage];
+    var listenAlongScope = [generatedContent?.id, generatedContent?._artifactInstanceId, generatedContent?.data, leveledTextLanguage, isCompareMode, !!isTeacherMode, props.readingLearnerKey, props.readingLearnerSession, !!props.isStudentPreview, comparisonSourceId, comparisonLanguage, capturedSource?.text];
     var listenAlongIsCurrent = comparisonKaraoke?.scope.every((value, index) => value === listenAlongScope[index]);
     React.useEffect(function () { setComparisonKaraoke(null); listenAlongOpenerRef.current = null; }, [...listenAlongScope, isEditingLeveledText]);
     function updateComparisonPreference(field, value) {
@@ -4893,6 +4913,15 @@
       && !(typeof getSideBySideContent === 'function' && getSideBySideContent(simplifiedReadAloudText));
     var outlineSections = React.useMemo(() => placeAvailable ? readingOutlineSections(simplifiedReadAloudText) : [], [placeAvailable, simplifiedReadAloudText]);
     var placeScope = { learner: placeLearner, itemId: placeItemId, fingerprint: placeFingerprint, text: generatedContent?.data };
+    function getListeningPlace(pane, text, language, sentences, languages) {
+      if (!placeItemId || placePreview || !sentences?.length) return null;
+      const sourceId = pane === 'source' && isCompareMode ? selectedComparisonArtifact?.id || capturedSource?.sourceArtifactId : null;
+      const identity = [!!isTeacherMode, placeItemId, generatedContent?._artifactInstanceId || '', pane, sourceId || '', language || '', placeLearner ? '' : props.readingLearnerSession || ''];
+      return createListeningPlace(placeLearner, identity, [generatedContent?.data, text, sentences, languages || []]);
+    }
+    var immersiveListeningPlace = React.useMemo(() => isImmersiveReaderActive && isKaraokeOverlayActive
+      ? getListeningPlace(protectedOriginal ? 'source' : 'adapted', simplifiedReadAloudText, leveledTextLanguage, karaokeReaderSentences, karaokeLanguages) : null,
+      [isImmersiveReaderActive, isKaraokeOverlayActive, placeItemId, generatedContent?._artifactInstanceId, generatedContent?.data, placePreview, placeLearner, props.readingLearnerSession, isTeacherMode, protectedOriginal, simplifiedReadAloudText, leveledTextLanguage, karaokeReaderSentences, karaokeLanguages, comparisonSourceId, capturedSource?.sourceArtifactId, isCompareMode]);
     // Unnamed learners share one scope on a page. When the host says who is using
     // the page changed, or the reader asks to clear, their page-only work is dropped.
     var [, setAnonymousClearTick] = React.useState(0);
@@ -6439,7 +6468,7 @@
             </div>
             <div className="flex flex-wrap gap-2">
               <button type="button" data-comparison-listen={version.key} aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview || !version.text || typeof handleSpeak !== 'function'} onClick={() => listenInPlace(bothChoices.find(choice => choice.key === version.key), bothActive)} aria-label={bothActive?.key === version.key ? (version.key === 'source' ? viewText('simplified.compare_stop_reading_original', 'Stop reading the original') : viewText('simplified.compare_stop_reading_adapted', 'Stop reading the adapted text')) : version.key === 'source' ? viewText('simplified.compare_listen_here_original', 'Listen here to the original') : viewText('simplified.compare_listen_here_adapted', 'Listen here to the adapted text')} className={comparisonButtonClass}>{bothActive?.key === version.key ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}{bothActive?.key === version.key ? viewText('common.stop', 'Stop') : viewText('simplified.compare_listen', 'Listen')}</button>
-              <button type="button" data-comparison-karaoke={version.key} aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview || !version.text || !KaraokeReaderOverlay} className={comparisonButtonClass} aria-label={version.key === 'source' ? readerText('simplified.listen_highlighted_original', 'Listen with highlights: original') : readerText('simplified.listen_highlighted_adapted', 'Listen with highlights: adapted text')} onClick={event => openListenAlong(version.text, version.language || readingLanguage, event, version.key === 'source' && !showDiff && comparisonGlosses.length ? listenPlanFor(version.text, comparisonGlosses, version.language || readingLanguage).text : null)}><Volume2 size={16} aria-hidden="true" />{readerText('simplified.listen_highlighted', 'Listen with highlights')}</button>
+              <button type="button" data-comparison-karaoke={version.key} aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview || !version.text || !KaraokeReaderOverlay} className={comparisonButtonClass} aria-label={version.key === 'source' ? readerText('simplified.listen_highlighted_original', 'Read along with audio: original') : readerText('simplified.listen_highlighted_adapted', 'Read along with audio: adapted text')} onClick={event => openListenAlong(version.text, version.language || readingLanguage, event, version.key === 'source' && !showDiff && comparisonGlosses.length ? listenPlanFor(version.text, comparisonGlosses, version.language || readingLanguage).text : null)}><Volume2 size={16} aria-hidden="true" />{readerText('simplified.listen_highlighted', 'Read along with audio')}</button>
               {version.key === 'source' && props.onReadOriginal && original.text && <button type="button" className={comparisonButtonClass} onClick={() => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)}>{viewText('simplified.compare_open_original_reader', 'Open original reader')}</button>}
             </div>
           </div>
@@ -6630,7 +6659,7 @@
         };
         var content = formatted ? simplifiedInline(block.text, renderLeaf, block.textStart) : renderLeaf(line, lineStart);
         var Tag = block.type === 'heading' ? simplifiedHeadingTag(block.level, headingLevels) : block.type === 'quote' ? 'blockquote' : 'span';
-        var markdownStyle = block.type === 'heading' ? { fontWeight: 750, fontSize: block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em', marginBlock: '0.6em 0.3em' } : block.type === 'quote' ? { borderInlineStart: '3px solid #a5b4fc', paddingInlineStart: '1em' } : spaceSingleBreaks && line.trim() ? { display: 'inline-block', width: '100%', marginBottom: '0.75em' } : undefined;
+        var markdownStyle = block.type === 'heading' ? { fontWeight: 750, fontSize: block === blocks[0] ? '1.55em' : block.level === 1 ? '1.4em' : block.level === 2 ? '1.25em' : '1.15em', marginBlock: '0.6em 0.3em' } : block.type === 'quote' ? { borderInlineStart: '3px solid #a5b4fc', paddingInlineStart: '1em' } : spaceSingleBreaks && line.trim() ? { display: 'inline-block', width: '100%', marginBottom: '0.55em' } : undefined;
         var isRelated = !!relatedRange && relatedRange.end > lineStart && relatedRange.start < lineStart + line.length;
         const explanationText = interactionMode === 'explain' ? (formatted ? plainReadingText(block.text) : line) : '';
         const explain = event => {
@@ -6672,9 +6701,11 @@
         {isTeacherMode && verifiedOriginal && props.onUpdateReadingSupports && <div data-original-support-editor hidden={isZenMode} style={{ display: isZenMode ? 'none' : undefined }}><ReadingGlossEditor draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, false)} item={generatedContent} supports={checkedSupports} request={glossEditorRequest?.scope === glossEditingScope ? glossEditorRequest : null} onEditingChange={onGlossEditingChange} onReveal={() => { openTeacherSetup(); if (isZenMode) props.onFocusViewChange?.(false); }} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} /></div>}
       </section>;
     }
+    const readAlongAction = !isCompareMode && <button type="button" data-reader-listen-along title={readerText('simplified.follow_audio_help', 'Open a full-screen reader that highlights the text as it is spoken.')} aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview || isEditingLeveledText || !KaraokeReaderOverlay || !karaokeReaderSentences.length} onClick={event => openListenAlong(simplifiedReadAloudText, readingLanguage, event, protectedOriginal && activeGlosses.length ? listenPlanFor(simplifiedReadAloudText, activeGlosses, readingLanguage).text : null)} className="min-h-11 inline-flex max-w-full items-center justify-center gap-2 rounded-lg border border-indigo-300 bg-white px-3 py-2 font-semibold text-indigo-900 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><Volume2 size={16} aria-hidden="true" />{readerText('simplified.listen_highlighted', 'Read along with audio')}</button>;
     function renderOriginalReading() {
       return <div ref={clozeBodyRef} data-simplified-reading-body="true" className="text-lg font-medium font-sans" style={{ maxWidth: 'min(' + readingColumn + 'ch, 100%)', marginInline: 'auto' }}>{readingColumnHead}<div data-original-reading-controls className="mb-3 space-y-2 text-sm font-normal">
-        <div className="flex flex-wrap items-center gap-2"><button type="button" data-reader-listen onClick={() => listenToOriginal('plain')} className="min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-3 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{originalListenKey === 'plain' ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}{originalListenKey === 'plain' ? viewText('simplified.original_stop_original', 'Stop original') : viewText('simplified.original_listen_to_original', 'Listen to original')}</button>{checkedSupports?.annotations?.length > 0 && <button type="button" className="min-h-11 inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-white px-3 py-2 font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50" data-reader-listen-supports disabled={!audioGlosses.length} onClick={() => listenToOriginal('supports')}>{originalListenKey === 'supports' ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}{originalListenKey === 'supports' ? viewText('simplified.original_stop_gloss_reading', 'Stop reading word help') : viewText('simplified.original_listen_with_glosses', 'Listen with word help')}</button>}{props.onReadReflect && <button type="button" data-original-read-reflect onClick={openReadingReflection} className="min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-indigo-800">{readerText('simplified.read_reflect', 'Read & reflect')}</button>}{renderReadingPlaceControls()}</div>
+        <div className="flex flex-wrap items-center gap-2"><button type="button" data-reader-listen onClick={() => listenToOriginal('plain')} className="min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-3 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{originalListenKey === 'plain' ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}{originalListenKey === 'plain' ? viewText('simplified.original_stop_original', 'Stop original') : viewText('simplified.original_listen_to_original', 'Listen to original')}</button>{checkedSupports?.annotations?.length > 0 && <button type="button" className="min-h-11 inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-white px-3 py-2 font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50" data-reader-listen-supports disabled={!audioGlosses.length} onClick={() => listenToOriginal('supports')}>{originalListenKey === 'supports' ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}{originalListenKey === 'supports' ? viewText('simplified.original_stop_gloss_reading', 'Stop reading word help') : viewText('simplified.original_listen_with_glosses', 'Listen with word help')}</button>}
+        {readAlongAction}{props.onReadReflect && <button type="button" data-original-read-reflect onClick={openReadingReflection} className="min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-indigo-800">{readerText('simplified.read_reflect', 'Read & reflect')}</button>}{renderReadingPlaceControls()}</div>
         {checkedSupports?.annotations?.length > 0 && <div data-original-support-settings className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-2">{checkedSupports?.annotations?.length > 0 && <><label className="inline-flex min-h-11 items-center gap-2"><input type="checkbox" checked={showReadingGlosses} onChange={e => setShowReadingGlosses(e.target.checked)} />{viewText('simplified.compare_show_glosses', 'Show word help')}</label><label className="flex min-h-11 min-w-0 flex-wrap items-center gap-2 text-slate-700">{viewText('simplified.compare_gloss_density', 'Amount of help')}<select value={glossDensity} onChange={e => setGlossDensity(e.target.value)} className="min-h-11 min-w-0 max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><option value="all">{viewText('simplified.compare_all_supports', 'All word help')}</option><option value="light">{viewText('simplified.compare_lighter', 'Lighter')}</option></select></label></>}</div>}
       </div><p role="status" data-gloss-status className={glossNotice ? 'my-3 rounded bg-indigo-50 p-3 text-base font-normal text-indigo-900' : 'sr-only'}>{glossNotice}</p><div data-original-place className="text-base font-normal">{renderReadingPlacePanels()}</div><div data-reading-passage="true" data-original-source="true" role="region" aria-label={viewText('simplified.original_original_reading', 'Original reading')} tabIndex={-1} ref={readingStartRef} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }} className="text-lg leading-relaxed">{renderExactPassage(simplifiedReadAloudText, 'original', readingLanguage, activeGlosses, generatedContent, null, true, sentenceListen(originalChoices, originalActive, originalNow, simplifiedReadAloudText, active => active?.key || (activeGlosses.length && originalChoices[0].plan ? 'supports' : 'plain')))}</div>{renderPictureCredits(activeGlosses)}<div data-original-prompts className="text-base font-normal">{renderSectionPromptsArea()}</div></div>;
     }
@@ -6815,10 +6846,10 @@
               return trailingLinks ? <React.Fragment key={index}>{sentenceButton}{renderReadingInline(trailingLinks.trim())} </React.Fragment> : sentenceButton;
             });
             var style = { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 'inherit' };
-            if (block.type === 'heading') { style.fontWeight = 750; style.fontSize = block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em'; style.marginBlock = '0.9em 0.45em'; }
-            return <Tag key={key} style={style} className={block.type === 'quote' ? 'border-l-4 border-indigo-200 pl-4 my-3 italic' : block.type === 'p' ? 'my-3' : undefined}>{content}</Tag>;
+            if (block.type === 'heading') { style.fontWeight = 750; style.fontSize = paragraphIndex === 0 && block === blocks[0] ? '1.55em' : block.level === 1 ? '1.4em' : block.level === 2 ? '1.25em' : '1.15em'; style.marginBlock = '0.9em 0.45em'; }
+            return <Tag key={key} style={style} className={block.type === 'quote' ? 'border-l-4 border-indigo-200 pl-4 my-3 italic' : block.type === 'p' ? 'my-1' : undefined}>{content}</Tag>;
           };
-          return <React.Fragment key={paragraphId}><div data-reading-paragraph={paragraphId} data-reading-focused={!!shouldFocus} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={getContentDirection(section.label)} {...lineFocusParagraphProps(paragraphId)} onMouseUp={isSelectionMode || interactionMode === 'define' ? handleTextMouseUp : undefined} style={{ marginBottom: '1.15em' }} className={`rounded-xl transition-opacity motion-reduce:transition-none ${isLineFocusMode ? shouldFocus ? 'opacity-100 bg-slate-800 p-4 text-white' : 'opacity-20 blur-[1px]' : section.key === 'tgt' ? 'text-slate-700' : 'text-slate-800'}`}>{simplifiedNestLists(blocks, renderBlock)}</div>{section.key === 'mono' && renderSectionThink(paragraphId)}</React.Fragment>;
+          return <React.Fragment key={paragraphId}><div data-reading-paragraph={paragraphId} data-reading-focused={!!shouldFocus} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={getContentDirection(section.label)} {...lineFocusParagraphProps(paragraphId)} onMouseUp={isSelectionMode || interactionMode === 'define' ? handleTextMouseUp : undefined} style={{ marginBlockEnd: '0.7em' }} className={`rounded-xl transition-opacity motion-reduce:transition-none ${isLineFocusMode ? shouldFocus ? 'opacity-100 bg-slate-800 p-4 text-white' : 'opacity-20 blur-[1px]' : section.key === 'tgt' ? 'text-slate-700' : 'text-slate-800'}`}>{simplifiedNestLists(blocks, renderBlock)}</div>{section.key === 'mono' && renderSectionThink(paragraphId)}</React.Fragment>;
         });
       });
       var sourceDirection = getContentDirection(readingLanguage);
@@ -6828,7 +6859,7 @@
           {(props.isStudentPreview || typeof handleSpeak === 'function') && <button type="button" data-reader-listen aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview || !simplifiedReadAloudText} onClick={() => { if (isPlaying && playingContentId === 'simplified-main' && typeof stopPlayback === 'function') stopPlayback(); else handleSpeak(interactionMode === 'cloze' ? maskClozeTerms(simplifiedReadAloudText) : simplifiedReadAloudText, 'simplified-main', 0, false, readingLanguage); }} className="min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-3 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50">{isPlaying && playingContentId === 'simplified-main' ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}{isPlaying && playingContentId === 'simplified-main' ? readerText('common.stop_reading', 'Stop reading aloud') : readerText('simplified.listen_start', 'Listen from the beginning')}</button>}
           
           
-          {props.onReadReflect && <button type="button" onClick={openReadingReflection} className="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-indigo-800">{readerText('simplified.read_reflect', 'Read & reflect')}</button>}
+          {readAlongAction}{props.onReadReflect && <button type="button" onClick={openReadingReflection} className="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-indigo-800">{readerText('simplified.read_reflect', 'Read & reflect')}</button>}
           {renderReadingPlaceControls()}
         </div>
         {renderReadingPlacePanels()}
@@ -6847,7 +6878,7 @@
       </div>;
     }
 
-    return <>{renderStudentPreview()}<div ref={readerSurfaceRef} data-adapted-reader={isTeacherMode ? "teacher" : "student"} className="space-y-6">{comparisonKaraoke && listenAlongIsCurrent && !isEditingLeveledText && !props.isStudentPreview && KaraokeReaderOverlay && <KaraokeReaderOverlay isOpen={true} isTeacher={isTeacherMode} playbackOnly={true} onClose={closeListenAlong} text={comparisonKaraoke.text} sentenceList={comparisonKaraoke.sentences} sentenceLanguages={comparisonKaraoke.languages} language={simplifiedLanguageTag(comparisonKaraoke.language)} getAudioUrl={getComparisonKaraokeAudioUrl} />}<span className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-read-aloud-status>{activeReadAloudStatus}</span>{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
+    return <>{renderStudentPreview()}<div ref={readerSurfaceRef} data-adapted-reader={isTeacherMode ? "teacher" : "student"} className="space-y-6">{comparisonKaraoke && listenAlongIsCurrent && !isEditingLeveledText && !props.isStudentPreview && KaraokeReaderOverlay && <KaraokeReaderOverlay listeningPlace={comparisonKaraoke.listeningPlace} requestedVoice={selectedVoice} isOpen={true} isTeacher={isTeacherMode} playbackOnly={true} onClose={closeListenAlong} text={comparisonKaraoke.text} sentenceList={comparisonKaraoke.sentences} sentenceLanguages={comparisonKaraoke.languages} language={simplifiedLanguageTag(comparisonKaraoke.language)} getAudioUrl={getComparisonKaraokeAudioUrl} />}<span className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-read-aloud-status>{activeReadAloudStatus}</span>{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
         backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
       }} onPointerMove={e => { if (immersiveSettings.lineFocus && e.clientY > immersiveToolbarBottom) setImmersiveRulerY(e.clientY); }} onFocusCapture={e => { if (immersiveSettings.lineFocus && !e.target.closest("[data-immersive-toolbar]") && e.target.closest("[role=dialog]") === immersiveDialogRef.current) { const rect = e.target.getBoundingClientRect(); setImmersiveRulerY(Math.max(immersiveToolbarBottom + immersiveSettings.textSize * 2.5, rect.top + Math.min(rect.height / 2, immersiveSettings.textSize * 2.5))); } }}><ImmersiveToolbar settings={immersiveSettings} setSettings={setImmersiveSettings} onClose={handleCloseImmersiveReader} onGeneratePOS={handleGeneratePOSData} isGeneratingPOS={isAnalyzingPos} posReady={!!generatedContent?.posEnriched} onGenerateSyllables={handleGeneratePOSData} isGeneratingSyllables={isAnalyzingPos} syllablesReady={!!generatedContent?.posEnriched} playbackRate={playbackRate} setPlaybackRate={setPlaybackRate} lineHeight={lineHeight} setLineHeight={setLineHeight} letterSpacing={letterSpacing} setLetterSpacing={setLetterSpacing} isFocusReaderActive={isFocusReaderActive} onToggleFocusReader={() => setIsFocusReaderActive(!isFocusReaderActive)} isChunkReaderActive={isChunkReaderActive} onToggleChunkReader={() => {
           setIsChunkReaderActive(!isChunkReaderActive);
@@ -6872,7 +6903,7 @@
               window.speechSynthesis && window.speechSynthesis.cancel();
             } catch (e) {}
           }
-        }} totalSentences={immersiveSentences.length || 1} /><ErrorBoundary fallbackMessage="Focus reader encountered an error. Please close and reopen."><FocusReaderOverlay language={leveledTextLanguage} isOpen={isFocusReaderActive} onClose={handleCloseSpeedReader} text={simplifiedDisplayBody.replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /><PerspectiveCrawlOverlay isOpen={isCrawlReaderActive} onClose={() => setIsCrawlReaderActive(false)} text={(immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /><KaraokeReaderOverlay isOpen={isKaraokeOverlayActive} isTeacher={isTeacherMode} onClose={() => setIsKaraokeOverlayActive(false)} getAudioUrl={getKaraokeAudioUrl} sentenceList={karaokeReaderSentences} captureOn={saveTtsAsPlayed} onCaptureChange={setSaveTtsAsPlayedEnabled} text={(immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /></ErrorBoundary>{immersiveSettings.lineFocus && <><div className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out motion-reduce:transition-none" style={{
+        }} totalSentences={immersiveSentences.length || 1} /><ErrorBoundary fallbackMessage="Focus reader encountered an error. Please close and reopen."><FocusReaderOverlay language={leveledTextLanguage} isOpen={isFocusReaderActive} onClose={handleCloseSpeedReader} text={simplifiedDisplayBody.replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /><PerspectiveCrawlOverlay isOpen={isCrawlReaderActive} onClose={() => setIsCrawlReaderActive(false)} text={(immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /><KaraokeReaderOverlay listeningPlace={immersiveListeningPlace} requestedVoice={selectedVoice} isOpen={isKaraokeOverlayActive} isTeacher={isTeacherMode} onClose={() => setIsKaraokeOverlayActive(false)} getAudioUrl={getKaraokeAudioUrl} sentenceList={karaokeReaderSentences} captureOn={saveTtsAsPlayed} onCaptureChange={setSaveTtsAsPlayedEnabled} text={(immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /></ErrorBoundary>{immersiveSettings.lineFocus && <><div className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out motion-reduce:transition-none" style={{
             top: immersiveToolbarBottom + 'px',
             height: Math.max(0, immersiveRulerY - immersiveSettings.textSize * 2.5 - immersiveToolbarBottom) + 'px'
           }} /><div className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out motion-reduce:transition-none" style={{
@@ -6925,7 +6956,7 @@
                 {props.isStudentPreview ? <label className="flex min-w-0 flex-col gap-1.5 text-sm"><span className="font-semibold text-slate-700">{readerText('header.reading_theme_aria', 'Reading theme')}</span><span className="flex min-w-0 items-center gap-2"><span data-adapted-theme-preview aria-hidden="true" className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-lg font-semibold" style={{ backgroundColor: 'var(--adapted-paper, #ffffff)', color: 'var(--adapted-ink, #172033)', borderColor: 'var(--adapted-border, #cbd5e1)' }}>Aa</span><select data-adapted-theme-picker value={readingTheme || 'default'} aria-describedby={readerId('simplified-theme-scope')} onChange={e => setReadingTheme(e.target.value)} aria-label={simplifiedReadingThemeLabel} className={`min-h-11 w-full min-w-0 flex-1 px-3 py-2 rounded-lg text-sm font-semibold border transition-colors cursor-pointer ${readingTheme === 'default' ? 'border-slate-200 bg-white text-slate-600' : 'border-indigo-300 bg-indigo-50 text-indigo-700'}`}><option value="default">{readerText('simplified.theme_follow_app', 'Use app theme')}</option><option value="warm">{t('header.reading_theme_warm')}</option><option value="sepia">{t('header.reading_theme_sepia')}</option><option value="dark">{t('header.reading_theme_dark')}</option><option value="dim">{readerText('header.reading_theme_dim', 'Dim')}</option><option value="highContrast">{t('header.reading_theme_contrast')}</option><option value="blue">{t('header.reading_theme_blue')}</option><option value="green">{t('header.reading_theme_green')}</option><option value="rose">{t('header.reading_theme_rose')}</option><option value="dyslexia">{t('header.reading_theme_easy_read')}</option></select></span><span id={readerId('simplified-theme-scope')} className="text-xs leading-relaxed text-slate-600">{readerText('simplified.theme_scope', 'Changes the reading area. Your app theme stays the same.')}</span></label> : <SimplifiedReadingSettingsButton t={t} label={readerText('reading_settings.title', 'Reading settings')} />}
                 <label className="flex min-w-0 flex-col gap-1.5 text-sm"><span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1"><span className="font-semibold text-slate-700">{readerText('simplified.reading_width', 'Reading width')}</span><span aria-hidden="true" className="text-slate-600">{readingWidthName}</span></span><input type="range" data-reading-width aria-label={readerText('simplified.reading_width', 'Reading width')} min={READING_WIDTH.min} max={READING_WIDTH.max} step={READING_WIDTH.step} value={readingColumn} aria-valuetext={readingWidthName + ', ' + viewText('simplified.reading_width_characters', 'about {count} characters per line', { count: readingColumn })} onChange={e => updateReadingColumn(e.target.value)} className="min-h-11 w-full min-w-0 accent-indigo-700" /></label>
               </div>
-              <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 border-t border-slate-200 pt-3">{!isCompareMode && <button type="button" data-reader-listen-along aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview || isEditingLeveledText || !KaraokeReaderOverlay || !karaokeReaderSentences.length} onClick={event => openListenAlong(simplifiedReadAloudText, readingLanguage, event, protectedOriginal && activeGlosses.length ? listenPlanFor(simplifiedReadAloudText, activeGlosses, readingLanguage).text : null)} className="min-h-11 inline-flex max-w-full items-center justify-center gap-2 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><Volume2 size={16} aria-hidden="true" />{readerText('simplified.listen_highlighted', 'Listen with highlights')}</button>}<button type="button" aria-label={readerText('simplified.immersive_reader', 'Immersive Reader')} data-help-key="simplified_immersive_reader" onClick={() => {
+              <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 border-t border-slate-200 pt-3"><button type="button" aria-label={readerText('simplified.immersive_reader', 'Immersive Reader')} data-help-key="simplified_immersive_reader" onClick={() => {
                 if (generatedContent.immersiveData) {
                   setIsImmersiveReaderActive(true);
                 } else {

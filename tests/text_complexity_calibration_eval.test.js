@@ -8,20 +8,10 @@ const require = createRequire(import.meta.url);
 const Evaluator = require('../dev-tools/evaluate_text_complexity_calibration.cjs');
 const fixture = require('./fixtures/text_complexity_calibration.json');
 
-const extractHostReadability = () => {
-  const hostPaths = ['AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx'];
-  let source = '';
-  let start = -1;
-  let end = -1;
-  for (const hostPath of hostPaths) {
-    source = readFileSync(hostPath, 'utf8');
-    start = source.indexOf('const calculateReadability = (text) => {');
-    end = source.indexOf('\n  const getStructureForLength =', start);
-    if (start >= 0 && end > start) break;
-  }
-  if (start < 0 || end <= start) throw new Error('Unable to extract calculateReadability from an application host');
-  // eslint-disable-next-line no-new-func
-  return new Function(`${source.slice(start, end)}\nreturn calculateReadability;`)();
+const loadHostReadability = () => {
+  const hostWindow = { AlloModules: {}, React: require('../desktop/web-app/node_modules/react') };
+  new Function('window', readFileSync('host_handlers_module.js', 'utf8'))(hostWindow);
+  return hostWindow.AlloModules.createHostHandlers({}).calculateReadability;
 };
 
 describe('offline text-complexity calibration evaluator', () => {
@@ -59,9 +49,12 @@ describe('offline text-complexity calibration evaluator', () => {
   });
 
   it('stays in parity with the production offline readability implementation', () => {
-    const hostReadability = extractHostReadability();
+    const hostReadability = loadHostReadability();
     const englishSamples = fixture.samples.filter((sample) => sample.language === 'English');
 
+    const wrapped = "A teacher’s example wraps\nwithout starting another sentence.";
+    expect(Evaluator.calculateReadability(wrapped)).toEqual(hostReadability(wrapped.replace('\n', ' ')));
+    for (const [text] of [["The solution contained 3.5 grams of dissolved salt in a small container.",1],["Dr. Rivera carefully observed the plant as it grew toward the sunlight.",1],["Prof. Green and Ms. Rivera measured 0.25 liters. The water was clear.",2],["J. R. Tolkien wrote this story. We read it.",2],["The U.S. government published a report. Read the report.",2],["He moved to the U.S. We wrote to him.",2],["Try vegetables, e.g. carrots, in the soup. Mix them in.",2],["Bring paper, pencils, etc. We will begin soon.",2],["Read Fig. 2 and compare the results.",1]]) expect(Evaluator.calculateReadability(text)).toEqual(hostReadability(text));
     for (const sample of englishSamples) {
       expect(Evaluator.calculateReadability(sample.text), sample.id).toEqual(hostReadability(sample.text));
     }

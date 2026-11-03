@@ -18,20 +18,25 @@ async function inspect(page){return page.evaluate(()=>{
  const head=m.getObjectByName('continuous-cranial-surface'),strips=[];let invalid=0,outside=0;
  m.traverse(p=>{
   if(!['mouth-crease','brow-relief'].includes(p.userData.dinoFeature))return;
-  const g=p.geometry,a=g.attributes.position,roots=g.attributes.dinoFaceRoot,parameters=g.parameters;let maxHeight=0,minHeight=Infinity,rootGap=0;
-  for(let i=0;i<a.count;i++){
+  const g=p.geometry,a=g.attributes.position,roots=g.attributes.dinoFaceRoot,parameters=g.parameters,rendered=new Set<number>(Array.from(g.index.array));let maxHeight=0,minHeight=Infinity,rootGap=0;
+  for(const i of rendered){
    const world=new T.Vector3().fromBufferAttribute(a,i).applyMatrix4(p.matrixWorld),root=new T.Vector3().fromBufferAttribute(roots,i).applyMatrix4(p.matrixWorld),screen=world.clone().project(cam),height=world.distanceTo(root);
    maxHeight=Math.max(maxHeight,height);minHeight=Math.min(minHeight,height);
    rootGap=Math.max(rootGap,root.distanceTo(new T.Vector3().fromBufferAttribute(roots,i).applyMatrix4(head.matrixWorld)));
    if(!Number.isFinite(screen.x+screen.y+screen.z))invalid++;if(Math.abs(screen.x)>1||Math.abs(screen.y)>1||Math.abs(screen.z)>1)outside++;
   }
-  strips.push({feature:p.userData.dinoFeature,...parameters,maxHeight,minHeight,rootGap,parent:p.parent.name,material:p.material.type,opacity:p.material.opacity,transparent:p.material.transparent,depthWrite:p.material.depthWrite,skinMapped:!!g.attributes.dinoSkinPosition});
+  strips.push({feature:p.userData.dinoFeature,...parameters,rendered:rendered.size,maxHeight,minHeight,rootGap,parent:p.parent.name,material:p.material.type,opacity:p.material.opacity,transparent:p.material.transparent,depthWrite:p.material.depthWrite,skinMapped:!!g.attributes.dinoSkinPosition});
  });
  return {strips,invalid,outside,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,errors:w.__events.errors,lost:w.__glLive().lost,shaderFailures:renderer.info.programs.filter(p=>p.diagnostics&&p.diagnostics.runnable===false).length};
 });}
 function check(r){
  expect(r.invalid).toBe(0);expect(r.outside).toBe(0);expect(r.errors).toEqual([]);expect(r.lost).toBe(false);expect(r.shaderFailures).toBe(0);expect(r.strips).toHaveLength(4);
- for(const s of r.strips){expect(s.projected).toBe(s.samples);expect(s.parent).toBe('continuous-cranial-surface');expect(s.rootGap).toBeLessThan(1e-8);expect(s.maxHeight).toBeLessThanOrEqual((s.relief+s.offset)*1.01);expect(s.minHeight).toBeGreaterThan(s.offset*.97);if(s.feature==='mouth-crease')expect(s.material).toBe('MeshBasicMaterial');else expect(s.skinMapped).toBe(true);}
+ for(const s of r.strips){
+  expect(s.rendered).toBeGreaterThan(0);expect(s.rendered).toBeLessThanOrEqual(s.projected);expect(s.projected).toBeLessThanOrEqual(s.samples);expect(s.parent).toBe('continuous-cranial-surface');expect(s.rootGap).toBeLessThan(1e-8);expect(s.maxHeight).toBeLessThanOrEqual((s.relief+s.offset)*1.01);
+  // Blended brow edges meet the skin; only the seated decal keeps a fixed offset.
+  if(s.blendSurface)expect(s.minHeight).toBeLessThan(s.offset*.97);else expect(s.minHeight).toBeGreaterThan(s.offset*.97);
+  if(s.feature==='mouth-crease')expect(s.material).toBe('MeshBasicMaterial');else expect(s.skinMapped).toBe(true);
+ }
 }
 for(const id of ['anchiornis','microraptor','tyrannosaurus','spinosaurus','triceratops','parasaurolophus','brachiosaurus'])test(id+' has seated tapered facial contours',async({page})=>{
  await mount(page,id);await page.getByRole('button',{name:'Study head details',exact:true}).click();const before=await inspect(page);check(before);
@@ -45,7 +50,7 @@ for(const id of ['anchiornis','microraptor','tyrannosaurus','spinosaurus','trice
  if(id==='microraptor'){
   const modelBefore=await page.evaluate(()=>{const w=window as any;return {model:w.__coatScene.getObjectByName('dinolab-specimen').uuid};});
   await page.getByRole('slider',{name:'Body inference opacity',exact:true}).press('Home');await expect.poll(async()=>(await inspect(page)).strips.every(s=>s.opacity===.22&&s.transparent&&!s.depthWrite)).toBe(true);
-  await page.getByRole('slider',{name:'Body inference opacity',exact:true}).press('End');const after=await inspect(page);check(after);expect(after.strips.every(s=>s.opacity===1&&!s.transparent&&s.depthWrite)).toBe(true);expect(after.geometries).toBe(before.geometries);expect(after.textures).toBe(before.textures);
+  await page.getByRole('slider',{name:'Body inference opacity',exact:true}).press('End');const after=await inspect(page);check(after);expect(after.strips.every(s=>s.opacity===1&&(s.feature==='mouth-crease'?s.transparent&&!s.depthWrite:!s.transparent&&s.depthWrite))).toBe(true);expect(after.geometries).toBe(before.geometries);expect(after.textures).toBe(before.textures);
   expect(await page.evaluate(()=>(window as any).__coatScene.getObjectByName('dinolab-specimen').uuid)).toBe(modelBefore.model);
   fs.writeFileSync(report+'/opacity-resources.json',JSON.stringify({before,after},null,2));
  }

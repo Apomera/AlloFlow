@@ -177,7 +177,7 @@ function controls(page) {
     results.checks.push('Jug adds/removes 50 mL on release; preview, pointer cancellation, off-canvas release, and camera mode preserve evidence.');
 
     await ui.station('heat');
-    await ui.stroke('dial', 0, -25);
+    await ui.stroke('dial', 0, -45);
     assert.equal((await ui.current()).values.heat, 'medium');
     assert.equal((await ui.current()).values.seconds || 0, 0, 'Turning heat does not advance modeled cooking');
     await ui.stroke('mushroom', 48, 0);

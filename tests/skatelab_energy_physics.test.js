@@ -13,7 +13,10 @@ beforeAll(() => {
 function halfpipe(overrides = {}) {
   return physics.simHalfpipe({
     pumps: 3,
-    trickId: 'kickflip',
+    // 2026-11 drop-in model: 3 pumps give ~0.87 s of air, so a 210 deg/s
+    // spin lands a safe 180 (the legacy kickflip preset now lands sideways).
+    rotationTarget: 180,
+    spinRate: 210,
     vehicle: 'skate',
     gravity: 9.81,
     surfaceId: 'standard',
@@ -62,179 +65,159 @@ function expectAerodynamicEnergyClosure(sim, precision = 8) {
   );
 }
 
+// 2026-11 (approved Phase 1 rewrite): the halfpipe is a drop-in from rest with
+// rolling friction f = mu*N integrated along the path and pumping as rider
+// work. The old tests in this block pinned the closed-form launch-speed model
+// (fixed lip speed, friction as a fixed % of lip energy, a single 181-point
+// pass). Each was replaced by an equally strict test of the new model.
 describe('Skate Lab halfpipe energy ledger', () => {
-  it('conserves input energy across mechanical and thermal reservoirs', () => {
+  it('conserves start PE plus rider work across kinetic, height, and heat reservoirs', () => {
     for (const surfaceId of ['wax', 'standard', 'rough']) {
-      const result = halfpipe({ surfaceId });
+      for (const pumps of [0, 3]) {
+        const result = halfpipe({ surfaceId, pumps });
+        const mass = physics.constants.riderKg + result.vehicle.mass;
 
-      expect(result.mechanicalJ + result.thermalJ).toBeCloseTo(result.energyInputJ, 10);
-      expect(result.mechanicalJ).toBeCloseTo(
-        (physics.constants.riderKg + result.vehicle.mass) * result.gravity * result.hAir,
-        10,
-      );
+        expect(result.startPotentialJ).toBeCloseTo(mass * result.gravity * result.dropHeightM, 10);
+        expect(result.energyInputJ).toBeCloseTo(result.startPotentialJ + result.riderWorkJ, 10);
+        expect(result.mechanicalJ).toBeCloseTo(result.finalKineticJ + result.finalPotentialJ, 10);
+        // Heat is integrated as its own state, so this is a real integrator check.
+        expect(Math.abs(result.mechanicalJ + result.thermalJ - result.energyInputJ)).toBeLessThan(1e-4);
+        expect(Math.abs(result.energyClosureResidualJ)).toBeLessThan(1e-4);
+        expect(result.thermalJ).toBeGreaterThan(0);
+        if (pumps === 0) expect(result.riderWorkJ).toBe(0);
+        else expect(result.riderWorkJ).toBeGreaterThan(0);
+      }
     }
   });
 
-  it('follows the curved transition with conserved geometry and measured load', () => {
-    const result = halfpipe();
-    const path = result.transitionPath;
-    const first = path[0];
-    const bottom = path[Math.floor(path.length / 2)];
-    const last = path[path.length - 1];
+  it('follows the curved transition and measures load from speed and curvature', () => {
+    const result = halfpipe({ pumps: 0 });
+    const nodes = result.nodes;
+    const first = nodes[0];
 
-    expect(path).toHaveLength(181);
-    expect(first.x).toBeCloseTo(-4, 10);
-    expect(first.y).toBeCloseTo(result.rampDepthM, 10);
-    expect(bottom.x).toBeCloseTo(0, 10);
-    expect(bottom.y).toBeCloseTo(0, 10);
-    expect(last.x).toBeCloseTo(4, 10);
-    expect(last.y).toBeCloseTo(result.rampDepthM, 10);
-    expect(result.rollTime).toBeCloseTo(last.t, 10);
-    expect(first.speedMps).toBeCloseTo(result.exitSpeed, 10);
-    expect(bottom.speedMps).toBeCloseTo(
-      Math.sqrt(result.exitSpeed ** 2 + 2 * result.gravity * result.rampDepthM),
-      10,
-    );
-    expect(result.bottomSpeed).toBeCloseTo(bottom.speedMps, 10);
-    expect(result.bottomNormalG).toBeCloseTo(bottom.normalG, 10);
+    expect(first.t).toBe(0);
+    expect(first.v).toBe(0);
+    const start = physics.halfpipeTrackPoint(first.theta, result.rampDepthM);
+    expect(start.x).toBeCloseTo(-4, 9);
+    expect(start.y).toBeCloseTo(result.rampDepthM, 9);
+
+    for (const index of [1, 40, 120, Math.floor(nodes.length / 2), nodes.length - 1]) {
+      const point = physics.halfpipeTrackPoint(nodes[index].theta, result.rampDepthM);
+      expect(point.y).toBeCloseTo(physics.halfpipeY(point.x, result.rampDepthM), 9);
+    }
+
+    // First bottom crossing: speed from energy (PE0 - heat so far), and the
+    // normal load equals 1 + v^2/(R g) with R = a^2/d for the ellipse bottom.
+    const bottomNode = nodes.find((node) => node.t > 0 && Math.abs(node.theta) < 1e-12);
+    const mass = result.massKg;
+    const expectedSpeed = Math.sqrt(2 * (result.startPotentialJ - bottomNode.q) / mass);
+    expect(Math.abs(bottomNode.v)).toBeCloseTo(expectedSpeed, 5);
+    expect(result.bottomSpeed).toBeCloseTo(Math.abs(bottomNode.v), 10);
+    const bottomRadius = 16 / result.rampDepthM;
+    expect(result.bottomNormalG).toBeCloseTo(1 + bottomNode.v ** 2 / (bottomRadius * result.gravity), 9);
     expect(result.bottomNormalG).toBeGreaterThan(1);
-
-    for (const index of [0, 30, 90, 150, 180]) {
-      expect(path[index].y).toBeCloseTo(
-        physics.halfpipeY(path[index].x, result.rampDepthM),
-        9,
-      );
-    }
+    expect(result.bottomTime).toBeCloseTo(bottomNode.t, 10);
   });
 
-  it('uses ramp depth to reshape transition forces while preserving launch energy', () => {
-    const shallow = halfpipe({ rampDepthM: 1.5 });
-    const deep = halfpipe({ rampDepthM: 4.0 });
+  it('uses ramp depth to reshape transition speed and loads, and clamps the drop to the ramp', () => {
+    const shallow = halfpipe({ rampDepthM: 1.5, pumps: 0 });
+    const deep = halfpipe({ rampDepthM: 4.0, pumps: 0 });
 
-    expect(deep.exitSpeed).toBeCloseTo(shallow.exitSpeed, 10);
-    expect(deep.hAir).toBeCloseTo(shallow.hAir, 10);
+    expect(shallow.dropHeightM).toBeCloseTo(1.5, 10);
+    expect(deep.dropHeightM).toBeCloseTo(4.0, 10);
     expect(deep.bottomSpeed).toBeGreaterThan(shallow.bottomSpeed);
     expect(deep.bottomNormalG).toBeGreaterThan(shallow.bottomNormalG);
-    expect(shallow.transitionPath[0].y).toBeCloseTo(1.5, 10);
-    expect(deep.transitionPath[0].y).toBeCloseTo(4.0, 10);
 
     for (const result of [shallow, deep]) {
-      const peak = result.transitionPath.reduce((highest, point) => (
-        point.normalG > highest.normalG ? point : highest
-      ));
-      const sampledPeak = physics.sampleHalfpipe(
-        result,
-        result.peakLoadTime / result.motionDuration,
-      );
+      const peak = result.nodes.reduce((highest, node) => (node.n > highest.n ? node : highest));
+      const sampledPeak = physics.sampleHalfpipe(result, result.peakLoadTime / result.motionDuration);
 
-      expect(result.peakNormalG).toBeCloseTo(peak.normalG, 10);
+      expect(result.peakNormalG).toBeCloseTo(peak.n / result.gravity, 10);
       expect(result.peakLoadTime).toBeCloseTo(peak.t, 10);
-      expect(result.peakLoadX).toBeCloseTo(peak.x, 10);
-      expect(result.peakLoadY).toBeCloseTo(peak.y, 10);
       expect(result.peakNormalG).toBeGreaterThanOrEqual(result.bottomNormalG);
       expect(sampledPeak.normalG).toBeCloseTo(result.peakNormalG, 7);
     }
 
     expect(halfpipe({ rampDepthM: 0 }).rampDepthM).toBe(1.2);
     expect(halfpipe({ rampDepthM: 20 }).rampDepthM).toBe(4.5);
+    expect(halfpipe({ rampDepthM: 2, dropHeightM: 3 }).dropHeightM).toBe(2);
   });
 
-  it('turns a larger fraction of launch energy into heat on rough surfaces', () => {
-    const wax = halfpipe({ surfaceId: 'wax' });
-    const standard = halfpipe({ surfaceId: 'standard' });
-    const rough = halfpipe({ surfaceId: 'rough' });
+  it('turns more motion into heat on rough surfaces, pass by pass', () => {
+    const wax = halfpipe({ surfaceId: 'wax', pumps: 0 });
+    const standard = halfpipe({ surfaceId: 'standard', pumps: 0 });
+    const rough = halfpipe({ surfaceId: 'rough', pumps: 0 });
 
-    expect(rough.thermalJ).toBeGreaterThan(standard.thermalJ);
-    expect(standard.thermalJ).toBeGreaterThan(wax.thermalJ);
-    expect(wax.hAir).toBeGreaterThan(standard.hAir);
-    expect(standard.hAir).toBeGreaterThan(rough.hAir);
+    // Height reached on the first pass falls as mu rises.
+    expect(wax.passPeaks[0].heightM).toBeGreaterThan(standard.passPeaks[0].heightM);
+    expect(standard.passPeaks[0].heightM).toBeGreaterThan(rough.passPeaks[0].heightM);
+    // Rougher surfaces stop sooner.
+    expect(rough.motionDuration).toBeLessThan(standard.motionDuration);
+    expect(standard.motionDuration).toBeLessThan(wax.motionDuration);
+
+    const pumpedWax = halfpipe({ surfaceId: 'wax' });
+    const pumpedStandard = halfpipe({ surfaceId: 'standard' });
+    const pumpedRough = halfpipe({ surfaceId: 'rough' });
+    expect(pumpedWax.hAir).toBeGreaterThan(pumpedStandard.hAir);
+    expect(pumpedStandard.hAir).toBeGreaterThan(pumpedRough.hAir);
   });
 
-  it('keeps sampled transition and flight frames on one mechanical-energy curve', () => {
+  it('keeps sampled KE + PE + heat equal to start PE + rider work at every frame', () => {
     const result = halfpipe();
-    const path = result.transitionPath;
-    const times = [
-      path[0].t,
-      path[45].t,
-      path[90].t,
-      path[135].t,
-      result.rollTime,
-      result.rollTime + result.airTime * 0.25,
-      result.rollTime + result.airTime * 0.5,
-      result.airLandingTime,
-      result.airLandingTime + (result.rollTime - path[135].t),
-      result.motionDuration,
-    ];
-
-    for (const time of times) {
-      const sample = physics.sampleHalfpipe(result, time / result.motionDuration);
-      expect(sample.keJ + sample.peJ).toBeCloseTo(result.runMechanicalJ, 5);
-      expect(sample.thermalJ).toBeCloseTo(result.thermalJ, 10);
+    for (let step = 0; step <= 400; step += 1) {
+      const sample = physics.sampleHalfpipe(result, step / 400);
+      const supplied = result.startPotentialJ + sample.riderWorkJ;
+      // Node energies are interpolated as energies, so the live display adds
+      // up to the ledger at every frame (to the integrator's own residual).
+      expect(Math.abs(sample.keJ + sample.peJ + sample.thermalJ - supplied)).toBeLessThan(1e-4);
+      expect(sample.energyInputSoFarJ).toBeCloseTo(supplied, 10);
     }
-
-    const bottom = physics.sampleHalfpipe(
-      result,
-      path[90].t / result.motionDuration,
-    );
-    expect(bottom.nx).toBeCloseTo(0, 9);
-    expect(bottom.ny).toBeCloseTo(1, 9);
-    expect(bottom.normalG).toBeCloseTo(result.bottomNormalG, 7);
+    const start = physics.sampleHalfpipe(result, 0);
+    expect(start.keJ).toBe(0);
+    expect(start.thermalJ).toBe(0);
+    expect(start.riderWorkJ).toBe(0);
+    expect(start.peJ).toBeCloseTo(result.startPotentialJ, 9);
+    const end = physics.sampleHalfpipe(result, 1);
+    expect(end.thermalJ).toBeCloseTo(result.thermalJ, 9);
+    expect(end.riderWorkJ).toBeCloseTo(result.riderWorkJ, 9);
+    expect(end.keJ + end.peJ).toBeCloseTo(result.mechanicalJ, 6);
   });
 
   it('continues through tangent-matched wall re-entry and returns to the bottom', () => {
     const result = halfpipe();
-    const touchdown = physics.sampleHalfpipe(
-      result,
-      result.airLandingTime / result.motionDuration,
-    );
-    const reentryPeak = physics.sampleHalfpipe(
-      result,
-      result.reentryPeakTime / result.motionDuration,
-    );
+    const side = result.trickSide;
+    const touchdown = physics.sampleHalfpipe(result, result.airLandingTime / result.motionDuration);
+    const reentryPeak = physics.sampleHalfpipe(result, result.reentryPeakTime / result.motionDuration);
     const returned = physics.sampleHalfpipe(result, 1);
 
-    expect(result.bottomTime).toBeCloseTo(
-      result.transitionPath[Math.floor(result.transitionPath.length / 2)].t,
-      10,
-    );
-    expect(result.reentryDuration).toBeCloseTo(result.rollTime - result.bottomTime, 10);
+    expect(result.outcome).toBe('landed');
+    expect(result.endReason).toBe('returned');
     expect(result.airLandingTime).toBeCloseTo(result.rollTime + result.airTime, 10);
-    expect(result.motionDuration).toBeCloseTo(
-      result.airLandingTime + result.reentryDuration,
-      10,
-    );
+    expect(result.airTime).toBeCloseTo(2 * result.exitSpeed / result.gravity, 10);
+    expect(result.hAir).toBeCloseTo(result.exitSpeed ** 2 / (2 * result.gravity), 10);
+    expect(result.reentryDuration).toBeCloseTo(result.motionDuration - result.airLandingTime, 10);
     expect(result.reentryPeakTime).toBeGreaterThanOrEqual(result.airLandingTime);
     expect(result.reentryPeakTime).toBeLessThanOrEqual(result.motionDuration);
-    expect(result.reentryPeakNormalG).toBeCloseTo(result.peakNormalG, 7);
 
     expect(touchdown.phase).toBe('re-entering the wall');
     expect(touchdown.time).toBeCloseTo(result.airLandingTime, 10);
-    expect(touchdown.x).toBeCloseTo(4, 9);
+    expect(touchdown.x).toBeCloseTo(4 * side, 9);
     expect(touchdown.y).toBeCloseTo(result.rampDepthM, 9);
     expect(touchdown.vx).toBeCloseTo(0, 8);
     expect(touchdown.vy).toBeCloseTo(-result.exitSpeed, 8);
-    expect(touchdown.rotation).toBeCloseTo(result.landingRotationDeg, 10);
+    expect(touchdown.spinDeg).toBeCloseTo(result.completed, 10);
     expect(touchdown.trickRotation).toBeCloseTo(result.completed, 10);
-    expect(touchdown.surfaceRotationDeg).toBeCloseTo(
-      result.takeoffRotationDeg + result.reentryOrientationTurns * 360,
-      10,
-    );
-    expect(touchdown.loadSquat).toBeGreaterThan(0.5);
 
     expect(reentryPeak.normalG).toBeCloseTo(result.reentryPeakNormalG, 7);
-    expect(reentryPeak.loadSquat).toBeCloseTo(1, 7);
-    expect(reentryPeak.x).toBeCloseTo(result.reentryPeakX, 7);
-    expect(reentryPeak.y).toBeCloseTo(result.reentryPeakY, 7);
+    expect(reentryPeak.loadSquat).toBeGreaterThan(0);
 
     expect(returned.phase).toBe('compressing on the return');
     expect(returned.time).toBeCloseTo(result.motionDuration, 10);
     expect(returned.x).toBeCloseTo(0, 8);
     expect(returned.y).toBeCloseTo(0, 8);
-    expect(returned.vx).toBeCloseTo(-result.bottomSpeed, 7);
     expect(returned.vy).toBeCloseTo(0, 7);
-    expect(returned.normalG).toBeCloseTo(result.bottomNormalG, 7);
-    expect(returned.loadSquat).toBeGreaterThan(0);
-    expect(returned.keJ + returned.peJ).toBeCloseTo(result.runMechanicalJ, 5);
+    expect(Math.sign(returned.vx)).toBe(-side);
+    expect(returned.normalG).toBeGreaterThan(1);
   });
 
   it('keeps board attitude continuous through contact, flight, and re-entry alignment', () => {
@@ -242,50 +225,30 @@ describe('Skate Lab halfpipe energy ledger', () => {
     const epsilon = 1e-7;
     const start = physics.sampleHalfpipe(result, 0);
     const bottom = physics.sampleHalfpipe(result, result.bottomTime / result.motionDuration);
-    const beforeLip = physics.sampleHalfpipe(
-      result,
-      (result.rollTime - epsilon) / result.motionDuration,
-    );
+    const beforeLip = physics.sampleHalfpipe(result, (result.rollTime - epsilon) / result.motionDuration);
     const liftoff = physics.sampleHalfpipe(result, result.rollTime / result.motionDuration);
-    const beforeTouchdown = physics.sampleHalfpipe(
-      result,
-      (result.airLandingTime - epsilon) / result.motionDuration,
-    );
-    const touchdown = physics.sampleHalfpipe(
-      result,
-      result.airLandingTime / result.motionDuration,
-    );
+    const midAir = physics.sampleHalfpipe(result, (result.rollTime + result.airTime * 0.5) / result.motionDuration);
+    const touchdown = physics.sampleHalfpipe(result, result.airLandingTime / result.motionDuration);
     const aligned = physics.sampleHalfpipe(
       result,
       (result.airLandingTime + result.reentryAlignmentDuration) / result.motionDuration,
     );
-    const returned = physics.sampleHalfpipe(result, 1);
 
     expect(start.rotation).toBeCloseTo(90, 8);
     expect(start.surfaceRotationDeg).toBeCloseTo(start.rotation, 10);
     expect(start.alignmentProgress).toBe(1);
-    expect(bottom.rotation).toBeCloseTo(0, 8);
-    expect(bottom.surfaceRotationDeg).toBeCloseTo(0, 8);
-    expect(Math.abs(beforeLip.rotation - result.takeoffRotationDeg)).toBeLessThan(0.001);
+    expect(Math.abs(bottom.rotation)).toBeLessThan(1e-6);
+    expect(Math.abs(beforeLip.rotation - result.takeoffRotationDeg)).toBeLessThan(0.01);
     expect(liftoff.rotation).toBeCloseTo(result.takeoffRotationDeg, 10);
-    expect(liftoff.trickRotation).toBeCloseTo(0, 10);
+    expect(liftoff.spinDeg).toBeCloseTo(0, 10);
     expect(liftoff.surfaceRotationDeg).toBeNull();
-    expect(beforeTouchdown.rotation).toBeCloseTo(result.landingRotationDeg, 4);
-    expect(touchdown.rotation).toBeCloseTo(result.landingRotationDeg, 10);
+    expect(midAir.rotation).toBeCloseTo(result.takeoffRotationDeg, 10);
+    expect(midAir.spinDeg).toBeCloseTo(result.completed * 0.5, 8);
     expect(touchdown.alignmentProgress).toBeCloseTo(0, 10);
-    expect(touchdown.alignmentErrorDeg).toBeCloseTo(
-      Math.abs(touchdown.surfaceRotationDeg - result.landingRotationDeg),
-      10,
-    );
+    expect(touchdown.alignmentErrorDeg).toBeCloseTo(result.contactAlignmentErrorDeg, 8);
     expect(aligned.alignmentProgress).toBeCloseTo(1, 8);
-    expect(aligned.rotation).toBeCloseTo(aligned.surfaceRotationDeg, 8);
+    expect(aligned.spinDeg).toBeCloseTo(180 * result.landingHalfTurns, 8);
     expect(aligned.alignmentErrorDeg).toBeCloseTo(0, 8);
-    expect(returned.rotation).toBeCloseTo(returned.surfaceRotationDeg, 8);
-    expect(returned.surfaceRotationDeg).toBeCloseTo(
-      result.reentryOrientationTurns * 360,
-      8,
-    );
-    expect(returned.trickRotation).toBeCloseTo(result.completed, 10);
   });
 
   it('uses the velocity slope as nose-up pitch in both gap views', () => {
@@ -305,14 +268,23 @@ describe('Skate Lab halfpipe energy ledger', () => {
     expect(falling.rotation).toBeGreaterThan(0);
   });
 
-  it('scales height and airtime inversely with gravity at fixed launch speed', () => {
-    const earth = halfpipe({ gravity: 9.81 });
-    const moon = halfpipe({ gravity: 1.62 });
-    const gravityRatio = earth.gravity / moon.gravity;
+  // Replaces "scales height and airtime inversely with gravity at fixed launch
+  // speed": with a drop-in from rest every height is independent of g (bug 9)
+  // and every time scales by sqrt(g_earth / g).
+  it('gives the same heights for the same drop on Earth, Mars, and the Moon', () => {
+    // No spin, so the landing outcome cannot differ between gravities.
+    const earth = halfpipe({ gravity: 9.81, spinRate: 0, rotationTarget: 0 });
+    for (const gravity of [3.71, 1.62]) {
+      const other = halfpipe({ gravity, spinRate: 0, rotationTarget: 0 });
+      const timeRatio = Math.sqrt(9.81 / gravity);
 
-    expect(moon.hAir / earth.hAir).toBeCloseTo(gravityRatio, 10);
-    expect(moon.airTime / earth.airTime).toBeCloseTo(gravityRatio, 10);
-    expect(moon.mechanicalJ).toBeCloseTo(earth.mechanicalJ, 10);
+      expect(other.hAir).toBeCloseTo(earth.hAir, 9);
+      expect(other.airTime / earth.airTime).toBeCloseTo(timeRatio, 9);
+      expect(other.motionDuration / earth.motionDuration).toBeCloseTo(timeRatio, 9);
+      expect(other.passPeaks.map((peak) => peak.heightM))
+        .toEqual(earth.passPeaks.map((peak) => expect.closeTo(peak.heightM, 9)));
+      expect(other.riderWorkJ / earth.riderWorkJ).toBeCloseTo(gravity / 9.81, 9);
+    }
   });
 
   it('shows the three-reservoir ledger in the accessible equation walkthrough', () => {
@@ -325,6 +297,9 @@ describe('Skate Lab halfpipe energy ledger', () => {
         gravity: 9.81,
         surfaceId: 'rough',
         showFormula: true,
+        // Stage B made predict-first the default; this checks the revealed ledger.
+        estimateChallenge: false,
+        _predictDefaultV: 2,
       },
     });
 

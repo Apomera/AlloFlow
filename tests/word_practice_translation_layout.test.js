@@ -14,14 +14,19 @@ function change(win, node, value) { node.value = value; node.dispatchEvent(new w
 const translations = [{ language: 'Arabic', text: 'تحتاج الأشجار إلى الماء.\nوتحتاج إلى ضوء الشمس.' }, { language: 'Japanese', text: '木は水を必要とします。\n日光も必要です。' }];
 
 describe.each(sources)('translation layout and card instruction sizes (%s)', (_, source) => {
-  it('groups every complete passage below its smaller language caption in preview, live and offline cards', async () => {
+  it('groups every complete passage below its language caption in preview, live and offline cards', async () => {
     const win = load(source), pack = { words: [{ word: 'tree', translations }], options: { mode: 'vocabulary', repetitions: 1, shuffle: false, cardTextScale: 1.4, cardTheme: 'cream' } };
     win.AlloModules.WordPractice.open(pack);
     const check = (view, parent, captionSelector, passageSelector) => {
       const captions = [...parent.querySelectorAll(captionSelector)], passages = [...parent.querySelectorAll(passageSelector)];
       expect(passages.map(node => node.textContent)).toEqual(translations.map(item => item.text));
       expect(passages.map(node => node.dir)).toEqual(['rtl', 'ltr']);
-      captions.forEach((caption, index) => { expect(caption.nextElementSibling).toBe(passages[index]); expect(view.getComputedStyle(caption).display).toBe('block'); expect(parseFloat(caption.style.fontSize)).toBeCloseTo(1.225); });
+      captions.forEach((caption, index) => {
+        expect(caption.nextElementSibling).toBe(passages[index]);
+        expect(view.getComputedStyle(caption).display).toBe('block');
+        expect(caption.lang).toBe('en');
+        expect(caption.dir).toBe('ltr');
+      });
       passages.forEach(node => { expect(view.getComputedStyle(node).display).toBe('block'); expect(view.getComputedStyle(node).textAlign).toBe('start'); });
     };
     const setup = win.document.querySelector('.awp-appearance'); button(setup, 'Show meaning').click(); check(win, setup, '.awp-preview-language-name', '.awp-preview-translation');

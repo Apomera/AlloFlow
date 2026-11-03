@@ -346,6 +346,21 @@ function _quizResponseLabel(p, label) {
   var context = number != null ? _quizGradedCopy('quiz.review.question_number', 'Question {number}').replace('{number}', String(number)) : '';
   return _quizPlain([label, [context, q.question || ''].filter(Boolean).join(': ')].filter(Boolean).join(' — '));
 }
+var _quizComposingFields = new WeakSet();
+var _quizCompositionEvents = {
+  onCompositionStart: function (event) {
+    _quizComposingFields.add(event.currentTarget);
+  },
+  onCompositionEnd: function (event) {
+    _quizComposingFields.delete(event.currentTarget);
+  },
+  onBlur: function (event) {
+    _quizComposingFields.delete(event.currentTarget);
+  }
+};
+function _quizIsComposingText(event) {
+  return _quizComposingFields.has(event.currentTarget) || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229;
+}
 function AssessmentReasoningInput(p) {
   var q = p.q || {};
   var reasoningHelpId = React.useId();
@@ -6605,7 +6620,7 @@ function NumericResponseCard(p) {
     q: q
   }), q.unit && /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mt-1"
-  }, 'Include units (' + q.unit + ').'))), /*#__PURE__*/React.createElement("input", {
+  }, 'Include units (' + q.unit + ').'))), /*#__PURE__*/React.createElement("input", _extends({}, _quizCompositionEvents, {
     ref: !grade || grade.status === 'invalid' ? responseFocusRef : null,
     type: "text",
     inputMode: "decimal",
@@ -6617,7 +6632,7 @@ function NumericResponseCard(p) {
       updateResponse(e.target.value);
     },
     onKeyDown: function (e) {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !_quizIsComposingText(e)) {
         e.preventDefault();
         submit();
       }
@@ -6625,7 +6640,7 @@ function NumericResponseCard(p) {
     disabled: !!grade && grade.status !== 'invalid',
     placeholder: q.unit ? 'Example: 12.5 ' + q.unit : 'Enter a number',
     className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
-  }), /*#__PURE__*/React.createElement("p", {
+  })), /*#__PURE__*/React.createElement("p", {
     id: numericErrorId,
     "data-assessment-numeric-error": true,
     role: "status",
@@ -7971,6 +7986,50 @@ function AssessmentItemActions(p) {
   var convertConfirmState = React.useState(false);
   var addOpenState = React.useState(false);
   var addTypeState = React.useState(currentType);
+  var triggerRefs = React.useRef({});
+  var pendingFocus = React.useRef(null);
+  var actionScope = JSON.stringify([p.questionIdx, q.id || '', _quizStableAssessmentData({
+    questions: [q]
+  })]);
+  var scopeRef = React.useRef(actionScope);
+  var questionLabel = _quizGradedCopy('quiz.review.question_number', 'Question {number}').replace('{number}', String(p.questionIdx + 1));
+  function closePanel(kind, event) {
+    pendingFocus.current = {
+      kind: kind,
+      from: event.currentTarget,
+      scope: actionScope
+    };
+    if (kind === 'delete') setDeleteConfirmOpen(false);else if (kind === 'convert') convertConfirmState[1](false);else addOpenState[1](false);
+  }
+  function escapePanel(kind, event) {
+    if (event.key !== 'Escape' || _quizIsComposingText(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    closePanel(kind, event);
+  }
+  React.useLayoutEffect(function () {
+    if (scopeRef.current !== actionScope) {
+      scopeRef.current = actionScope;
+      pendingFocus.current = null;
+      setDeleteConfirmOpen(false);
+      convertConfirmState[1](false);
+      addOpenState[1](false);
+      targetTypeState[1](currentType);
+      addTypeState[1](currentType);
+      return;
+    }
+    var pending = pendingFocus.current;
+    pendingFocus.current = null;
+    if (!pending || pending.scope !== actionScope) return;
+    var trigger = triggerRefs.current[pending.kind];
+    var active = document.activeElement;
+    if (trigger && trigger.isConnected && !trigger.disabled && (active === document.body || active === pending.from || pending.from.contains(active))) trigger.focus();
+  });
+  var controlSize = {
+    minHeight: 44,
+    minWidth: 44,
+    maxWidth: '100%'
+  };
   // While a quiz is live the teacher sees the live dashboard, not this list, so
   // structure changes cannot renumber items students are answering.
   var structureDisabled = disabled;
@@ -7983,11 +8042,15 @@ function AssessmentItemActions(p) {
     }, _quizAuthorTypeLabel(entry[0]));
   });
   return /*#__PURE__*/React.createElement("div", {
-    className: "ml-9 mb-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2 space-y-2"
+    "data-assess-item-actions": true,
+    role: "group",
+    "aria-label": questionLabel,
+    className: "mb-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2 space-y-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    style: controlSize,
     disabled: structureDisabled || p.questionIdx <= 0,
     onClick: function () {
       action(p.questionIdx, 'move', -1);
@@ -7995,6 +8058,7 @@ function AssessmentItemActions(p) {
     className: smallButton
   }, t('common.move_up')), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    style: controlSize,
     disabled: structureDisabled || p.questionIdx >= p.totalQuestions - 1,
     onClick: function () {
       action(p.questionIdx, 'move', 1);
@@ -8002,6 +8066,7 @@ function AssessmentItemActions(p) {
     className: smallButton
   }, t('common.move_down')), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    style: controlSize,
     disabled: structureDisabled,
     onClick: function () {
       action(p.questionIdx, 'duplicate');
@@ -8009,6 +8074,7 @@ function AssessmentItemActions(p) {
     className: smallButton
   }, t('common.duplicate')), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    style: controlSize,
     disabled: disabled || p.regenerating,
     onClick: function () {
       if (typeof p.onRegenerate === 'function') p.onRegenerate(p.questionIdx, q);
@@ -8016,18 +8082,25 @@ function AssessmentItemActions(p) {
     className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40"
   }, p.regenerating ? t('quiz.authoring.regenerating') : t('quiz.authoring.regenerate')), !deleteConfirmOpen ? /*#__PURE__*/React.createElement("button", {
     type: "button",
+    style: controlSize,
     disabled: structureDisabled,
+    ref: function (node) {
+      triggerRefs.current.delete = node;
+    },
     onClick: function () {
       setDeleteConfirmOpen(true);
     },
     className: "ml-auto px-2 py-1 rounded bg-white border border-rose-300 text-rose-700 text-xs font-semibold disabled:opacity-30"
   }, t('common.delete')) : /*#__PURE__*/React.createElement("span", {
-    className: "ml-auto inline-flex items-center gap-1",
+    className: "ml-auto inline-flex items-center gap-1 flex-wrap",
     role: "group",
-    "aria-label": t('quiz.authoring.confirm_delete_label')
+    "aria-label": t('quiz.authoring.confirm_delete_label') + ' — ' + questionLabel,
+    onKeyDown: function (event) {
+      escapePanel('delete', event);
+    }
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    autoFocus: true,
+    style: controlSize,
     onClick: function () {
       setDeleteConfirmOpen(false);
       action(p.questionIdx, 'delete');
@@ -8035,8 +8108,10 @@ function AssessmentItemActions(p) {
     className: "px-2 py-1 rounded bg-rose-700 text-white text-xs font-semibold"
   }, t('quiz.authoring.confirm_delete')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: function () {
-      setDeleteConfirmOpen(false);
+    style: controlSize,
+    autoFocus: true,
+    onClick: function (event) {
+      closePanel('delete', event);
     },
     className: "px-2 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold"
   }, t('common.cancel')))), /*#__PURE__*/React.createElement("div", {
@@ -8046,6 +8121,7 @@ function AssessmentItemActions(p) {
     className: "text-[11px] font-semibold text-slate-700",
     htmlFor: idBase + '-type'
   }, t('quiz.authoring.change_type'), /*#__PURE__*/React.createElement("select", {
+    style: controlSize,
     id: idBase + '-type',
     "data-assess-change-type": true,
     value: targetType,
@@ -8057,6 +8133,10 @@ function AssessmentItemActions(p) {
     className: "block mt-1 text-xs border-slate-300 rounded p-1.5 bg-white"
   }, typeOptions)), !convertConfirmState[0] ? /*#__PURE__*/React.createElement("button", {
     type: "button",
+    style: controlSize,
+    ref: function (node) {
+      triggerRefs.current.convert = node;
+    },
     "data-assess-convert": true,
     disabled: structureDisabled || p.regenerating || targetType === currentType || typeof p.onChangeType !== 'function',
     onClick: function () {
@@ -8068,7 +8148,10 @@ function AssessmentItemActions(p) {
   })) : /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1 flex-wrap",
     role: "group",
-    "aria-label": t('quiz.authoring.confirm_rewrite_label')
+    "aria-label": t('quiz.authoring.confirm_rewrite_label') + ' — ' + questionLabel,
+    onKeyDown: function (event) {
+      escapePanel('convert', event);
+    }
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-700"
   }, t('quiz.authoring.confirm_rewrite', {
@@ -8076,7 +8159,7 @@ function AssessmentItemActions(p) {
     type: _quizAuthorTypeLabel(targetType)
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    autoFocus: true,
+    style: controlSize,
     "data-assess-convert-confirm": true,
     onClick: function () {
       convertConfirmState[1](false);
@@ -8085,12 +8168,18 @@ function AssessmentItemActions(p) {
     className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold"
   }, t('quiz.authoring.rewrite')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: function () {
-      convertConfirmState[1](false);
+    style: controlSize,
+    autoFocus: true,
+    onClick: function (event) {
+      closePanel('convert', event);
     },
     className: smallButton
   }, t('common.cancel'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    style: controlSize,
+    ref: function (node) {
+      triggerRefs.current.add = node;
+    },
     "data-assess-add-toggle": true,
     "aria-expanded": addOpenState[0],
     "aria-controls": idBase + '-add',
@@ -8106,13 +8195,18 @@ function AssessmentItemActions(p) {
       n: p.questionIdx + 1
     }),
     className: "rounded-md border border-indigo-200 bg-white p-2 space-y-2",
-    "data-assess-add-panel": true
+    "data-assess-add-panel": true,
+    onKeyDown: function (event) {
+      escapePanel('add', event);
+    }
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-end gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700",
     htmlFor: idBase + '-add-type'
   }, t('quiz.authoring.new_item_type'), /*#__PURE__*/React.createElement("select", {
+    style: controlSize,
+    autoFocus: true,
     id: idBase + '-add-type',
     "data-assess-add-type": true,
     value: addTypeState[0],
@@ -8122,6 +8216,7 @@ function AssessmentItemActions(p) {
     className: "block mt-1 text-xs border-slate-300 rounded p-1.5 bg-white"
   }, typeOptions)), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    style: controlSize,
     "data-assess-add-ai": true,
     disabled: !!p.adding,
     onClick: function () {
@@ -8130,6 +8225,7 @@ function AssessmentItemActions(p) {
     className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40"
   }, p.adding ? t('quiz.authoring.writing') : t('quiz.authoring.write_for_me')), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    style: controlSize,
     "data-assess-add-blank": true,
     onClick: function () {
       addOpenState[1](false);
@@ -8138,8 +8234,9 @@ function AssessmentItemActions(p) {
     className: smallButton
   }, t('quiz.authoring.start_blank')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: function () {
-      addOpenState[1](false);
+    style: controlSize,
+    onClick: function (event) {
+      closePanel('add', event);
     },
     className: smallButton
   }, t('common.cancel'))), /*#__PURE__*/React.createElement("p", {
@@ -8149,6 +8246,7 @@ function AssessmentItemActions(p) {
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700"
   }, t('quiz.authoring.correct_answer'), /*#__PURE__*/React.createElement("select", {
+    style: controlSize,
     value: q.correctAnswer || '',
     onChange: function (event) {
       action(p.questionIdx, 'patch', {
@@ -8168,6 +8266,7 @@ function AssessmentItemActions(p) {
   }))), /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700"
   }, t('quiz.authoring.concept_label'), /*#__PURE__*/React.createElement("input", {
+    style: controlSize,
     value: q.conceptLabel || '',
     onChange: function (event) {
       action(p.questionIdx, 'patch', {
@@ -9174,17 +9273,18 @@ function FreeformItemCard(p) {
   }))), q.type === 'fill-blank' && /*#__PURE__*/React.createElement("p", {
     id: policyId,
     className: "mb-2 text-sm text-slate-700"
-  }, _quizFillBlankInstruction(q)), q.type === 'fill-blank' ? /*#__PURE__*/React.createElement("input", {
+  }, _quizFillBlankInstruction(q)), q.type === 'fill-blank' ? /*#__PURE__*/React.createElement("input", _extends({
     "aria-label": _quizResponseLabel(p, _quizGradedCopy('a11y.fill_in_blank', 'Fill in the blank')),
     type: "text",
-    value: response,
+    value: response
+  }, _quizCompositionEvents, {
     ref: responseFocusRef,
     "aria-describedby": responseDescription,
     onChange: function (ev) {
       setResponse(ev.target.value);
     },
     onKeyDown: function (ev) {
-      if (ev.key === 'Enter') {
+      if (ev.key === 'Enter' && !_quizIsComposingText(ev)) {
         ev.preventDefault();
         submitGrade();
       }
@@ -9192,7 +9292,7 @@ function FreeformItemCard(p) {
     placeholder: t("placeholders.missing_word_or_phrase"),
     disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted',
     className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
-  }) : /*#__PURE__*/React.createElement("textarea", {
+  })) : /*#__PURE__*/React.createElement("textarea", {
     "aria-label": _quizResponseLabel(p, typeLabel + " response"),
     value: response,
     ref: responseFocusRef,
@@ -11682,9 +11782,7 @@ function QuizViewContent(props) {
   }
   React.useEffect(function () {
     if (!draftNamespace || !recordResponsesRef.current) return undefined;
-    var timer = 0;
     function flush() {
-      timer = 0;
       var meta = recordAttemptMetaRef.current || {};
       var snapshot = _quizResponseSnapshot(assessmentData, _quizReadWorkingDraft(draftNamespace).items, {
         status: 'in-progress',
@@ -11700,17 +11798,12 @@ function QuizViewContent(props) {
     }
     function onDraft(event) {
       if (!event || !event.detail || event.detail.namespace !== draftNamespace) return;
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(flush, 400);
+      flush();
     }
     window.addEventListener('alloflow:assessment-draft-changed', onDraft);
     if (_quizReadDraft(draftNamespace)) flush();
     return function () {
       window.removeEventListener('alloflow:assessment-draft-changed', onDraft);
-      if (timer) {
-        clearTimeout(timer);
-        flush();
-      }
     };
   }, [draftNamespace, recordResourceId]);
   React.useEffect(function () {
@@ -12088,9 +12181,10 @@ function QuizViewContent(props) {
       title: t("tooltips.one_click_remove_text")
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
-    }, "🧹 "), t("ui_common.remove_text"))), /*#__PURE__*/React.createElement("textarea", {
+    }, "🧹 "), t("ui_common.remove_text"))), /*#__PURE__*/React.createElement("textarea", _extends({
       "aria-label": "Image refinement instructions",
-      value: inputValue,
+      value: inputValue
+    }, _quizCompositionEvents, {
       onChange: function (e) {
         var v = e.target.value;
         setQuizImageRefineInputs(function (prev) {
@@ -12100,7 +12194,7 @@ function QuizViewContent(props) {
         });
       },
       onKeyDown: function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey && !_quizIsComposingText(e)) {
           e.preventDefault();
           refineQuizImage(qIdx, target, optIdx);
         }
@@ -12109,7 +12203,7 @@ function QuizViewContent(props) {
       rows: 2,
       className: "w-full text-xs p-1.5 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200  resize-y",
       disabled: isLoading
-    }), /*#__PURE__*/React.createElement("div", {
+    })), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mt-1.5"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",

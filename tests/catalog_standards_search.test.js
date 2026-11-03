@@ -71,18 +71,21 @@ describe('the real catalog index', () => {
       expect(entry.standards || [], entry.path).toEqual(parseStandards(pack.allopack.standards));
     }
   });
-  it('finds the three Novak-informed packs by SL.6.1 and keeps them under review until Katie agrees', () => {
-    const novak = entries.filter(e => /\/(?:academic_discourse_reading_space|academic_discourse_more_practice|reading_decisions)_grade6\.allopack\.json$/.test(e.path));
-    expect(novak).toHaveLength(3);
-    for (const e of novak) {
-      expect(matches(e, { search: 'SL.6.1' }), e.path).toBe(true);
-      expect(e.license, e.path).toBe('Not specified');
-      expect(e.review_status, e.path).toMatch(/review pending/i);
+  it('keeps the three Novak-informed packs unlisted until Katie agrees, with their files retained', () => {
+    // 2026-11-02: withheld from the catalog pending the author's review; shared privately only.
+    const pattern = /\/(?:academic_discourse_reading_space|academic_discourse_more_practice|reading_decisions)_grade6\.allopack\.json$/;
+    expect(entries.filter(e => pattern.test(e.path))).toHaveLength(0);
+    const withheld = JSON.parse(fs.readFileSync('catalog/superseded_allopacks.json', 'utf8')).withheld.map(w => w.path);
+    expect(withheld.filter(p => pattern.test('/' + p))).toHaveLength(3);
+    for (const p of withheld) {
+      const pack = JSON.parse(fs.readFileSync(p, 'utf8').replace(/^﻿/, ''));
+      expect(pack.allopack.standards, p).toContain('SL.6.1');
     }
   });
   it('makes codes searchable on the public library page', () => {
     const library = fs.readFileSync('library.html', 'utf8');
-    expect(library).toMatch(/data-pack-search="[^"]*CCSS\.ELA-LITERACY\.SL\.6\.1[^"]*"/);
+    expect(library).toMatch(/data-pack-search="[^"]*CCSS\.ELA-LITERACY\.RI\.6\.8[^"]*"/);
+    expect(library).not.toMatch(/data-pack-search="[^"]*CCSS\.ELA-LITERACY\.SL\.6\.1[^"]*"/); // Novak-informed packs unlisted
     expect(library).toContain('<p class="pack-standards"><strong>Standards:</strong>');
   });
 });
@@ -99,7 +102,12 @@ describe('community submissions', () => {
       metadata: { title: 'Test lesson', subject: 'Science', grade_level: '6', ...metadata },
       affirmations: { author_or_authorized: true, no_pii: true, license_agreed: true, age_eligible: true },
     }),
-  }), { GITHUB_PAT: 'test-token-not-used' }, { waitUntil() {} });
+  }), { GITHUB_PAT: 'test-token-not-used', SUBMIT_RATE: memoryKv() }, { waitUntil() {} });
+  // The Worker refuses submissions when its rate-limit KV is missing, so give it one.
+  function memoryKv() {
+    const store = new Map();
+    return { async get(key) { return store.has(key) ? store.get(key) : null; }, async put(key, value) { store.set(key, String(value)); } };
+  }
   const errorOf = async response => (await response.json()).error || '';
 
   it('accepts both non-commercial licenses and rejects unknown ones', async () => {

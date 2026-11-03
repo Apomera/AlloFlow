@@ -56,6 +56,164 @@
 
   const appBridgePending = new Map();
   let appBridgeSequence = 0;
+  let nativeImageDocumentId = '';
+  let nativeImageCapable = false;
+  let nativeImageSessionId = '';
+  let nativeImageEnabled = false;
+  let nativeImageRequest = null;
+  let nativeImageAccessQueue = Promise.resolve();
+  let nativeImageSeenRequests = new Set();
+  let nativeImageNotice = '';
+
+  function nativeImageNonce() {
+    return Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  function queueNativeImageAccess(enabled, sessionId = '') {
+    nativeImageAccessQueue = nativeImageAccessQueue.catch(() => {}).then(() => api('/api/local-images/app-access', {
+      method: 'POST', keepalive: !enabled, body: JSON.stringify(enabled ? { enabled: true, sessionId } : { enabled: false }),
+    }));
+    return nativeImageAccessQueue;
+  }
+
+  function renderNativeImageConnection() {
+    const toggle = $('#local-images-app-access');
+    if (!toggle) return;
+    const requested = Boolean(nativeImageSessionId);
+    toggle.checked = requested;
+    toggle.disabled = !requested && (!state.appBridgeReady || !nativeImageCapable || !localImagesStatus?.ready
+      || localImagesStatus?.generation?.busy || localImagesStatus?.generation?.needsStop);
+    let message = nativeImageNotice;
+    if (!message) {
+      if (!state.appBridgeReady) message = 'Open the AlloFlow app view to connect local images.';
+      else if (!nativeImageCapable) message = 'This app build needs the updated image bridge. Update AlloFlow Desktop before connecting SANA.';
+      else if (nativeImageEnabled) message = 'SANA is connected for this app session. Image requests stay on this computer.';
+      else if (requested) message = 'Connecting this app session…';
+      else if (!localImagesStatus?.ready) message = 'Start SANA and wait for Ready, then enable this connection.';
+      else message = 'Off. Enable to use SANA for image requests in this app session.';
+    }
+    setText('#local-images-app-result', message);
+  }
+
+  function cancelNativeImageRequest() {
+    const pending = nativeImageRequest;
+    if (!pending) return;
+    nativeImageRequest = null;
+    clearTimeout(pending.timer);
+    pending.controller.abort();
+    api('/api/local-images/cancel', { method: 'POST', keepalive: true, body: JSON.stringify({ sessionId: pending.sessionId, requestId: pending.requestId }) })
+      .catch(() => {}).finally(() => refreshLocalImagesStatus().catch(() => {}));
+    // Keep the last observed server activity until a new status confirms it.
+    // Cancelling delivery does not prove GPU inference has ended.
+    renderLocalImagesStatus();
+  }
+
+  function revokeNativeImageAccess(reason = '', notifyApp = false) {
+    const hadAccess = Boolean(nativeImageSessionId);
+    nativeImageSessionId = '';
+    nativeImageEnabled = false;
+    nativeImageSeenRequests = new Set();
+    nativeImageNotice = reason;
+    cancelNativeImageRequest();
+    if (hadAccess) queueNativeImageAccess(false).catch(() => {
+      nativeImageNotice = 'The app connection is off. If the service is still busy, use Stop before reconnecting.';
+      renderNativeImageConnection();
+    });
+    if (notifyApp && state.appBridgeReady && nativeImageCapable) {
+      appBridgeRequest('images.configure', { enabled: false }).catch(() => {});
+    }
+    renderNativeImageConnection();
+  }
+
+  async function toggleNativeImageAccess(event) {
+    if (!event.target.checked) {
+      revokeNativeImageAccess('The app connection is off. Cancelling a request may leave the GPU working; use Stop if needed.', true);
+      return;
+    }
+    if (!state.appBridgeReady || !nativeImageCapable || !localImagesStatus?.ready
+      || localImagesStatus?.generation?.busy || localImagesStatus?.generation?.needsStop) {
+      event.target.checked = false; renderNativeImageConnection(); return;
+    }
+    const sessionId = nativeImageNonce(), documentId = nativeImageDocumentId;
+    nativeImageSessionId = sessionId;
+    nativeImageEnabled = false;
+    nativeImageNotice = '';
+    renderNativeImageConnection();
+    try {
+      const access = await queueNativeImageAccess(true, sessionId);
+      if (nativeImageSessionId !== sessionId || nativeImageDocumentId !== documentId) return;
+      if (access?.enabled !== true) throw new Error('Native image access was not enabled.');
+      const result = await appBridgeRequest('images.configure', { enabled: true, sessionId });
+      if (nativeImageSessionId !== sessionId || nativeImageDocumentId !== documentId) return;
+      if (result?.enabled !== true) throw new Error('The app did not accept the image connection.');
+      nativeImageEnabled = true;
+    } catch (_) {
+      if (nativeImageSessionId === sessionId) revokeNativeImageAccess('Could not connect the app. Refresh SANA status and retry with an updated Desktop app.', true);
+    }
+    renderNativeImageConnection();
+  }
+
+  function validNativeImagePayload(operation, payload) {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
+    const keys = operation === 'edit' ? ['prompt', 'width', 'image'] : ['prompt', 'width'];
+    if (Object.keys(payload).some((key) => !keys.includes(key))) return false;
+    if (typeof payload.prompt !== 'string' || !payload.prompt.trim() || payload.prompt.length > 4000) return false;
+    if (!Number.isInteger(payload.width) || payload.width < 64 || payload.width > 1024) return false;
+    if (operation === 'edit') {
+      if (typeof payload.image !== 'string' || !payload.image || payload.image.length > 8 * 1024 * 1024) return false;
+      return /^(?:data:image\/(?:png|jpeg|webp);base64,)?[A-Za-z0-9+/]+={0,2}$/.test(payload.image);
+    }
+    return operation === 'generate';
+  }
+
+  function sendNativeImageResponse(target, sessionId, requestId, ok, result, error) {
+    const current = getAppBridgeTarget();
+    if (!nativeImageEnabled || nativeImageSessionId !== sessionId || !current
+      || current.window !== target.window || current.origin !== target.origin) return;
+    current.window.postMessage({ channel: APP_BRIDGE_CHANNEL, version: APP_BRIDGE_VERSION, kind: 'image-response',
+      sessionId, requestId, ok, ...(ok ? { result } : { error: String(error || 'Local image request failed.').slice(0, 500) }) }, current.origin);
+  }
+
+  async function handleNativeImageRequest(target, data) {
+    if (!nativeImageEnabled || data.sessionId !== nativeImageSessionId || !/^[A-Za-z0-9_-]{8,96}$/.test(data.requestId || '')) return;
+    if (data.kind === 'image-cancel') {
+      if (nativeImageRequest?.requestId === data.requestId) cancelNativeImageRequest();
+      return;
+    }
+    if (nativeImageSeenRequests.has(data.requestId)) return;
+    if (nativeImageRequest || nativeImageSeenRequests.size >= 256) {
+      sendNativeImageResponse(target, data.sessionId, data.requestId, false, null, 'Another local image request is active. Wait, or reconnect this session if its request limit was reached.'); return;
+    }
+    if (!validNativeImagePayload(data.operation, data.payload)) {
+      sendNativeImageResponse(target, data.sessionId, data.requestId, false, null, 'The local image request is invalid or too large.'); return;
+    }
+    nativeImageSeenRequests.add(data.requestId);
+    const pending = { sessionId: data.sessionId, requestId: data.requestId, controller: new AbortController(), timer: null };
+    nativeImageRequest = pending;
+    localImagesStatus = { ...localImagesStatus, generation: { ...localImagesStatus?.generation, busy: true } };
+    localImagesPollUntil = Date.now() + 30 * 60 * 1000;
+    renderLocalImagesStatus();
+    scheduleLocalImagesPoll();
+    pending.timer = setTimeout(() => {
+      if (nativeImageRequest !== pending) return;
+      sendNativeImageResponse(target, pending.sessionId, pending.requestId, false, null, 'The image request timed out. Use Stop if SANA remains busy.');
+      cancelNativeImageRequest();
+    }, 125000);
+    try {
+      const result = await api('/api/local-images/' + data.operation, { method: 'POST', signal: pending.controller.signal,
+        body: JSON.stringify({ sessionId: pending.sessionId, requestId: pending.requestId, ...data.payload }) });
+      if (nativeImageRequest !== pending) return;
+      const value = result?.image;
+      if (typeof value !== 'string' || value.length > 8 * 1024 * 1024 || !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(value)) throw new Error('The local image response was invalid.');
+      sendNativeImageResponse(target, pending.sessionId, pending.requestId, true, { image: value });
+    } catch (error) {
+      if (nativeImageRequest === pending) sendNativeImageResponse(target, pending.sessionId, pending.requestId, false, null, error.message);
+    } finally {
+      clearTimeout(pending.timer);
+      if (nativeImageRequest === pending) nativeImageRequest = null;
+      refreshLocalImagesStatus().catch(() => {});
+    }
+  }
 
   function expectedAppOrigin() {
     try {
@@ -127,10 +285,19 @@
     if (!target || event.source !== target.window || event.origin !== target.origin) return;
     if (!data || data.channel !== APP_BRIDGE_CHANNEL || data.version !== APP_BRIDGE_VERSION) return;
     if (data.kind === 'ready') {
+      const documentId = /^[a-f0-9]{32}$/.test(data.documentId || '') ? data.documentId : '';
+      if (documentId !== nativeImageDocumentId) revokeNativeImageAccess();
+      nativeImageDocumentId = documentId;
+      nativeImageCapable = Boolean(documentId && data.nativeImages === 1);
       state.appBridgeReady = true;
+      renderNativeImageConnection();
       pushBundledAppConfig();
       setTimeout(() => inspectKokoroVoice().catch(() => {}), 100);
       target.frame.dataset.bridgeReady = 'true';
+      return;
+    }
+    if (data.kind === 'image-request' || data.kind === 'image-cancel') {
+      handleNativeImageRequest(target, data).catch(() => {});
       return;
     }
     const pending = appBridgePending.get(String(data.id || ''));
@@ -149,6 +316,9 @@
   }
 
   function resetAppBridge() {
+    revokeNativeImageAccess();
+    nativeImageDocumentId = '';
+    nativeImageCapable = false;
     state.appBridgeReady = false;
     state.appBridgeStatus = null;
     for (const pending of appBridgePending.values()) {
@@ -158,6 +328,7 @@
       pending.reject(new Error('The AlloFlow app view reloaded.'));
     }
     appBridgePending.clear();
+    renderNativeImageConnection();
   }
 
   window.addEventListener('message', handleAppBridgeMessage);
@@ -1170,6 +1341,154 @@
       });
     } finally {
       appWindow.__alloflowDesktopKokoroDownload = null;
+    }
+  }
+
+  // Local image controls never provision or start a service during refresh.
+  let localImagesStatus = null;
+  let localImagesPending = false;
+  let localImagesPollTimer = null;
+  let localImagesPollUntil = 0;
+  let localImagesPollErrors = 0;
+  let localImagesReadVersion = 0;
+
+  function selectedLocalImageModel() {
+    const id = $('#local-images-model')?.value;
+    return (localImagesStatus?.models || []).find((model) => model.id === id);
+  }
+
+  function renderLocalImagesStatus(status) {
+    if (status) localImagesStatus = { ...localImagesStatus, ...status };
+    const current = localImagesStatus;
+    if (!current) return;
+    const select = $('#local-images-model');
+    const previousId = select.value;
+    const models = current.models || [];
+    select.replaceChildren(...models.map((model) => {
+      const option = document.createElement('option');
+      option.value = model.id;
+      option.textContent = model.label || model.id;
+      return option;
+    }));
+    select.value = models.some((model) => model.id === previousId)
+      ? previousId : (current.selectedModelId || models[0]?.id || '');
+    const model = selectedLocalImageModel();
+    const busy = Boolean(localImagesPending || current.busy);
+    const generationBlocked = Boolean(nativeImageRequest || current.generation?.busy || current.generation?.needsStop);
+    const needsStop = ['running', 'loading', 'ready', 'unavailable', 'needs-restart'].includes(current.phase);
+    const prepared = Boolean(current.prepared && model && model.id === current.selectedModelId);
+    const accepted = $('#local-images-terms').checked;
+    select.disabled = busy || !models.length;
+    $('#local-images-terms').disabled = busy || !model;
+    $('#local-images-prepare').disabled = busy || generationBlocked || needsStop || !model || !accepted;
+    $('#local-images-install').disabled = busy || generationBlocked || needsStop || !prepared || !accepted || !current.preflight?.eligible;
+    $('#local-images-repair').disabled = busy || generationBlocked || needsStop || !prepared || !accepted || !current.preflight?.eligible;
+    $('#local-images-start').disabled = busy || generationBlocked || !prepared;
+    $('#local-images-stop').disabled = busy || (!current.prepared && !needsStop && !generationBlocked);
+    $('#local-images-refresh').disabled = localImagesPending;
+    setText('#local-images-phase', current.phase || 'Not checked');
+    setText('#local-images-download', model && Number.isFinite(model.downloadBytes)
+      ? (model.downloadBytes / 1024 ** 3).toFixed(1) + ' GiB model + runtime; at least 2 GiB extra working space'
+      : 'No reviewed model available');
+    setText('#local-images-endpoint', current.connection?.endpoint || 'Not prepared');
+    const terms = $('#local-images-model-terms');
+    terms.removeAttribute('href');
+    try {
+      const url = new URL(model?.termsUrl || '');
+      if (url.protocol === 'https:' && url.hostname === 'huggingface.co') terms.href = url.href;
+    } catch (_) { /* No arbitrary links from an unavailable catalog. */ }
+    const issues = [...(current.preflight?.issues || [])];
+    if (!prepared) issues.unshift('Prepare the selected model after reviewing its terms.');
+    if (needsStop) issues.unshift('Stop local images before changing settings or repairing the runtime.');
+    if (generationBlocked) issues.unshift(current.generation?.needsStop
+      ? 'The previous image request may still be running. Use Stop before starting another request.'
+      : 'An image request is running. Stop remains available if you need to end the service.');
+    $('#local-images-issues').replaceChildren(...issues.map((issue) => {
+      const item = document.createElement('li');
+      item.textContent = String(issue);
+      return item;
+    }));
+    setText('#local-images-result', [current.message, ...(current.notes || [])].filter(Boolean).join('\n'));
+    if (!current.ready && nativeImageEnabled) revokeNativeImageAccess('SANA is no longer ready. Start it, then reconnect this app session.', true);
+    renderNativeImageConnection();
+  }
+
+  function stopLocalImagesPolling() {
+    if (localImagesPollTimer) clearTimeout(localImagesPollTimer);
+    localImagesPollTimer = null;
+  }
+
+  function scheduleLocalImagesPoll() {
+    stopLocalImagesPolling();
+    const waiting = nativeImageRequest || localImagesStatus?.generation?.busy || localImagesStatus?.busy
+      || ['loading', 'starting', 'verifying', 'unavailable'].includes(localImagesStatus?.phase);
+    if (!waiting || localImagesPending) return;
+    if (Date.now() >= localImagesPollUntil) {
+      setText('#local-images-result', 'Automatic checks paused. Select Refresh to check the operation again.');
+      return;
+    }
+    const version = localImagesReadVersion;
+    localImagesPollTimer = setTimeout(async () => {
+      localImagesPollTimer = null;
+      try {
+        const status = await api('/api/local-images/status');
+        if (version !== localImagesReadVersion) return;
+        renderLocalImagesStatus(status);
+        localImagesPollErrors = 0;
+      } catch (_) {
+        if (version !== localImagesReadVersion) return;
+        localImagesPollErrors += 1;
+        if (localImagesPollErrors >= 3) {
+          setText('#local-images-result', 'Cannot reach the image manager. Select Refresh to check again.');
+          return;
+        }
+      }
+      scheduleLocalImagesPoll();
+    }, 3000);
+  }
+
+  async function refreshLocalImagesStatus() {
+    stopLocalImagesPolling();
+    const version = ++localImagesReadVersion;
+    try {
+      const status = await api('/api/local-images/status');
+      if (version !== localImagesReadVersion) return;
+      renderLocalImagesStatus(status);
+      localImagesPollUntil = Date.now() + 30 * 60 * 1000;
+      localImagesPollErrors = 0;
+      scheduleLocalImagesPoll();
+    } catch (_) {
+      if (version !== localImagesReadVersion) return;
+      setText('#local-images-result', 'Cannot check local images. Select Refresh to try again.');
+    }
+  }
+
+  async function runLocalImagesAction(action) {
+    if (!['prepare', 'install', 'repair', 'start', 'stop'].includes(action) || localImagesPending || localImagesStatus?.busy) return;
+    const button = $('#local-images-' + action);
+    if (!button || button.disabled) return;
+    if (action === 'stop') revokeNativeImageAccess('The app image connection is off.', true);
+    const needsTerms = ['prepare', 'install', 'repair'].includes(action);
+    const model = selectedLocalImageModel();
+    if (needsTerms && (!model || !$('#local-images-terms').checked)) return;
+    stopLocalImagesPolling();
+    localImagesReadVersion += 1;
+    localImagesPending = true;
+    renderLocalImagesStatus();
+    setText('#local-images-result', 'Sending ' + action + ' request…');
+    let actionError = '';
+    try {
+      const payload = needsTerms ? { modelId: model.id, termsAccepted: true } : {};
+      renderLocalImagesStatus(await api('/api/local-images/' + action, { method: 'POST', body: JSON.stringify(payload) }));
+      localImagesPollUntil = Date.now() + 30 * 60 * 1000;
+      localImagesPollErrors = 0;
+    } catch (error) {
+      actionError = error.message || 'The image operation could not be requested.';
+    } finally {
+      localImagesPending = false;
+      renderLocalImagesStatus();
+      if (actionError) setText('#local-images-result', actionError);
+      scheduleLocalImagesPoll();
     }
   }
 
@@ -2307,6 +2626,17 @@
     $('#check-sd').addEventListener('click', inspectSdTurbo);
     $('#download-sd').addEventListener('click', downloadSdTurbo);
     $('#test-voice').addEventListener('click', testKokoroVoice);
+    $('#local-images-model').addEventListener('change', () => {
+      $('#local-images-terms').checked = false;
+      renderLocalImagesStatus();
+    });
+    $('#local-images-terms').addEventListener('change', () => renderLocalImagesStatus());
+    $('#local-images-app-access').addEventListener('change', toggleNativeImageAccess);
+    $('#local-images-refresh').addEventListener('click', refreshLocalImagesStatus);
+    ['prepare', 'install', 'repair', 'start', 'stop'].forEach((action) => {
+      $('#local-images-' + action).addEventListener('click', () => runLocalImagesAction(action));
+    });
+    refreshLocalImagesStatus();
     $('#engine-start').addEventListener('click', startBuiltInEngine);
     $('#engine-probe').addEventListener('click', probeBuiltInEngine);
     $('#engine-stop').addEventListener('click', stopBuiltInEngine);
@@ -2317,8 +2647,10 @@
     $('#engine-model-dir-save').addEventListener('click', saveEngineModelDir);
     refreshEngineStatus().catch(() => {});
     $('#app-frame').addEventListener('load', () => {
+      resetAppBridge();
       setTimeout(inspectKokoroVoice, 800);
     });
+    window.addEventListener('pagehide', () => revokeNativeImageAccess());
     $('#check-updates').addEventListener('click', () => {
       runUpdateAction('checkForUpdates', 'Checking for updates...');
     });

@@ -116,7 +116,7 @@ describe('Guided lesson to Document Builder handoff', () => {
   });
 
   it('wires the same selection into the guided button, renderer, download handler, and Builder view', () => {
-    expect(host).toContain("openGuidedDocumentBuilder={() => openExportPreview('print', guidedCreatedHistoryIds)}");
+    expect(host).toContain("openGuidedDocumentBuilder={() => openExportPreview('print', guidedPackageIds)}");
     expect(host).toContain('const exportableResources = getBuilderExportableHistory();');
     expect(host).toContain('return generateFullPackHTML(exportableResources, sourceTopic');
     expect(host).toContain('getExportableHistory: getBuilderExportableHistory, getSkippedResources: getBuilderSkippedResources');

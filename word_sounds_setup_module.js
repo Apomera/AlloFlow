@@ -96,6 +96,30 @@
 
 function createWordSoundsCore(options = {}) {
   const VERSION = 1;
+  function preparedSentenceParts(sentence, before, target, after) {
+    if (![sentence, before, target, after].every((value) => typeof value === "string") || !target.trim()) return null;
+    const source = sentence.trim(), left = before.trim(), right = after.trim();
+    const fold = (value) => value.normalize("NFD").toLowerCase().replace(/\s+/gu, " ");
+    let leftEnd = left.length, rightStart = source.length - right.length;
+    if (!source.startsWith(left) || !source.endsWith(right)) {
+      const leftUnits = fold(left).length, rightUnits = fold(source).length - fold(right).length;
+      leftEnd = leftUnits === 0 ? 0 : -1;
+      rightStart = rightUnits === 0 ? 0 : -1;
+      let units = 0;
+      for (const part of source.matchAll(/\s+|\S/gu)) {
+        units += fold(part[0]).length;
+        const end = part.index + part[0].length;
+        if (units === leftUnits) leftEnd = end;
+        if (units === rightUnits) rightStart = end;
+      }
+      if (leftEnd < 0 || rightStart < 0 || fold(source.slice(0, leftEnd)) !== fold(left) || fold(source.slice(rightStart)) !== fold(right)) return null;
+    }
+    if (rightStart < leftEnd) return null;
+    const gap = source.slice(leftEnd, rightStart), answer = gap.trim();
+    if (fold(answer) !== fold(target.trim())) return null;
+    const start = sentence.indexOf(source) + leftEnd + gap.indexOf(answer);
+    return { before: sentence.slice(0, start), answer, after: sentence.slice(start + answer.length) };
+  }
   const root = typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : {};
   const scriptUrl = typeof document !== "undefined" ? document.currentScript?.src || document.baseURI : "";
   const pronunciationData = () => options.pronunciations || root.AlloModules?.WordSoundsPronunciations;
@@ -1721,7 +1745,7 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter((item) => item.ttsReady).length });
     return next;
   };
-  return { loadSyllablePronunciations, resolveSyllableCount, isTeacherSpokenSyllableCount, createReviewedSyllableCount, createSyllableCountAudioContext, selectSyllableCountAudio, recoverSyllableRecordingDraft, syllableCountWords, syllableRecordingTemplate, normalizeRecordedSyllableDependencies, packAudioLanguageKey, packAudioKey, packAudioAssets, portablePackAsset, packAudioProvenance, packAudioProfileStatus, packAudioInventory, planPackRepair, replacePackAssets, createReviewedSyllableTask, reviewedSyllableReady, syllableAssetSource, resolveSyllableTask, syllableReady, validSyllableBoard, syllableWords, isSyllableLanguageSupported, reviewedRhymeEdit, rhymePairStatus, createRhymeSession, buildSessionRhymeBoard, buildRhymeBoard, resolveManipulationTask, manipulationReady, VERSION, phonemeToken, phonemeLabel, soundKey, edgeSound, validSoundBoard, buildSoundSort, validWordFamilyBoard, wordFamilyInstruction, difficultyDecision, textEvidence, phonemeLabels, responseEvidence, profileCheck, knownWords: Object.keys(EDGES) };
+  return { preparedSentenceParts, loadSyllablePronunciations, resolveSyllableCount, isTeacherSpokenSyllableCount, createReviewedSyllableCount, createSyllableCountAudioContext, selectSyllableCountAudio, recoverSyllableRecordingDraft, syllableCountWords, syllableRecordingTemplate, normalizeRecordedSyllableDependencies, packAudioLanguageKey, packAudioKey, packAudioAssets, portablePackAsset, packAudioProvenance, packAudioProfileStatus, packAudioInventory, planPackRepair, replacePackAssets, createReviewedSyllableTask, reviewedSyllableReady, syllableAssetSource, resolveSyllableTask, syllableReady, validSyllableBoard, syllableWords, isSyllableLanguageSupported, reviewedRhymeEdit, rhymePairStatus, createRhymeSession, buildSessionRhymeBoard, buildRhymeBoard, resolveManipulationTask, manipulationReady, VERSION, phonemeToken, phonemeLabel, soundKey, edgeSound, validSoundBoard, buildSoundSort, validWordFamilyBoard, wordFamilyInstruction, difficultyDecision, textEvidence, phonemeLabels, responseEvidence, profileCheck, knownWords: Object.keys(EDGES) };
 }
 const WS_CORE = createWordSoundsCore();
 const WORD_FAMILY_PRESETS = new Proxy({}, {
@@ -4260,20 +4284,95 @@ function WordSoundsSyllableCountQueue({ words, resolveWord, contextFor, profileF
     setRepairWord(null);
   } }, tr("word_sounds.count_close_recording", "Close recording editor"))));
 }
-function buildWordPracticeSelection(selectedWords, glossaryTerms, preloadedWords) {
-  const records = /* @__PURE__ */ new Map(), ttsAssets = {};
-  const wordKey = (value) => String(value || "").normalize("NFC").trim().replace(/\s+/g, " ").toLowerCase();
-  [...Array.isArray(glossaryTerms) ? glossaryTerms : [], ...Array.isArray(preloadedWords) ? preloadedWords : []].forEach((item) => {
-    const record = typeof item === "string" ? { word: item } : item;
-    if (!record) return;
-    const key = wordKey(record.targetWord || record.word || record.term);
-    if (key) records.set(key, { ...records.get(key) || {}, ...record });
-    if (record._ttsAssets && typeof record._ttsAssets === "object") Object.assign(ttsAssets, record._ttsAssets);
-  });
-  return {
-    words: selectedWords.map((word) => ({ ...records.get(wordKey(word)) || {}, word })),
-    ttsAssets
-  };
+function buildWordPracticeSelection(selectedWords, glossaryTerms, preloadedWords, language = "English", preparedLanguage = language) {
+  const wordKey = (value) => WS_CORE.packAudioKey(String(value || "").normalize("NFC"));
+  const launchLanguage = WS_CORE.packAudioLanguageKey(language);
+  const selected = new Set(selectedWords.map(wordKey));
+  const matches = /* @__PURE__ */ new Map(), ttsAssetBanks = [], ttsAssets = /* @__PURE__ */ Object.create(null);
+  const idText = (value) => typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
+  const authoredId = (row) => idText(row?.entryId) || idText(row?.glossaryEntryId);
+  const reservedIds = /* @__PURE__ */ new Set();
+  for (const source of [glossaryTerms, preloadedWords]) {
+    for (const row of Array.isArray(source) ? source : []) {
+      const entryId = authoredId(row);
+      const id = entryId ? "entry:" + entryId : idText(row?.id);
+      if (id) reservedIds.add(id);
+    }
+  }
+  function collect(source, fallbackLanguage, isGlossary = false) {
+    for (const [index, item] of (Array.isArray(source) ? source : []).entries()) {
+      let record = typeof item === "string" ? { word: item } : item;
+      if (!record || typeof record !== "object") continue;
+      if (isGlossary && typeof record.baseLanguage === "string" && record.baseLanguage.trim()) {
+        record = {
+          ...record,
+          termLanguage: record.termLanguage || record.wordLanguage || record.baseLanguage.trim(),
+          definitionLanguage: record.definitionLanguage || record.baseLanguage.trim()
+        };
+      }
+      const termLanguage = record.termLanguage || record.wordLanguage || record.language || fallbackLanguage;
+      const scope = WS_CORE.packAudioLanguageKey(termLanguage);
+      const assets = record._ttsAssets;
+      if (assets && typeof assets === "object" && !Array.isArray(assets)) {
+        ttsAssetBanks.push({ language: termLanguage, assets });
+        if (scope === launchLanguage) {
+          for (const [name, clip] of Object.entries(assets)) {
+            if (["__proto__", "constructor", "prototype"].includes(name)) continue;
+            const recordedLanguage = (clip?.provenance || clip?.synthesisProfile || clip?.metadata)?.language;
+            if (!recordedLanguage || WS_CORE.packAudioLanguageKey(recordedLanguage) === launchLanguage) ttsAssets[name] = clip;
+          }
+        }
+      }
+      const spelling = record.targetWord || record.word || record.term, key = wordKey(spelling);
+      if (!selected.has(key)) continue;
+      const entryId = authoredId(record);
+      let id = entryId ? "entry:" + entryId : idText(record.id);
+      if (entryId) record = { ...record, entryId };
+      else if (id) record = { ...record, id };
+      else if (isGlossary) {
+        id = "glossary-row-" + index;
+        while (reservedIds.has(id)) id = "_" + id;
+        reservedIds.add(id);
+        record = { ...record, id };
+      }
+      if (!matches.has(key)) matches.set(key, []);
+      matches.get(key).push({ record, spelling, termLanguage, scope, id });
+    }
+  }
+  collect(glossaryTerms, language, true);
+  collect(preloadedWords, preparedLanguage);
+  const words = [];
+  for (const selectedWord of selectedWords) {
+    const candidates = matches.get(wordKey(selectedWord)) || [];
+    if (!candidates.length) {
+      words.push({ word: selectedWord });
+      continue;
+    }
+    const idsByLanguage = /* @__PURE__ */ new Map();
+    for (const { scope, id } of candidates) {
+      if (!idsByLanguage.has(scope)) idsByLanguage.set(scope, /* @__PURE__ */ new Set());
+      if (id) idsByLanguage.get(scope).add(id);
+    }
+    const entries = /* @__PURE__ */ new Map();
+    for (const { record, spelling, termLanguage, scope, id } of candidates) {
+      const ids = idsByLanguage.get(scope);
+      const identity = id || (ids.size === 1 ? ids.values().next().value : "");
+      if (!identity && ids.size > 1 && Object.keys(record).every((field) => ["word", "term", "targetWord", "termLanguage", "language", "wordLanguage", "_ttsAssets"].includes(field))) continue;
+      const key = JSON.stringify([scope, identity]);
+      const entry = entries.get(key) || { spelling, record: {} };
+      for (const [field, value] of Object.entries(record)) {
+        if (["__proto__", "constructor", "prototype"].includes(field)) continue;
+        if (value != null && value !== "" && !(Array.isArray(value) && !value.length)) entry.record[field] = value;
+      }
+      if (scope !== launchLanguage && !entry.record.termLanguage && !entry.record.wordLanguage && !entry.record.language) entry.record.termLanguage = termLanguage;
+      entries.set(key, entry);
+    }
+    for (const { spelling, record } of entries.values()) {
+      const word = entries.size === 1 ? selectedWord : spelling;
+      words.push({ ...record, word, ...record.targetWord ? { targetWord: word } : {} });
+    }
+  }
+  return { words, ttsAssets, ...ttsAssetBanks.length ? { ttsAssetBanks } : {} };
 }
 function chooseWordSoundsPreviewWords(words, limit, bankWords, resolveWord, range) {
   const initial = words.slice(0, Math.max(0, limit));
@@ -4410,13 +4509,30 @@ function wordSoundsSetupPreparationSelection(preloadedWords, selectedWords, fixe
   });
   return { wordsToProcess, sourceOccurrences, sourceOccurrenceIds };
 }
-const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, currentUiLanguage, preloadedWords = [], preparedSessionConfig = {}, syllableReviewSession, onShowReview, onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = "" }) => {
+const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, currentUiLanguage, preloadedWords = [], preparedSessionConfig = {}, syllableReviewSession, onShowReview, onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice: appVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = "" }) => {
   const localReviewSession = React.useRef({});
   const reviewSession = syllableReviewSession || localReviewSession.current;
   const setupDraft = reviewSession.setupDraft || (reviewSession.setupDraft = {});
   const useSetupState = (field, initial) => useWordSoundsSetupReviewState(setupDraft, field, initial);
+  const [packVoice, setPackVoice] = useSetupState("packVoice", () => "");
+  const selectedVoice = packVoice || appVoice;
   const generationVoiceRef = React.useRef(selectedVoice);
   generationVoiceRef.current = selectedVoice;
+  const packVoiceRequest = React.useRef(0);
+  React.useEffect(() => () => {
+    packVoiceRequest.current++;
+  }, []);
+  function choosePackVoice(voice) {
+    packVoiceRequest.current++;
+    generationVoiceRef.current = voice || appVoice;
+    setPackVoice(voice);
+  }
+  function onKokoroReady() {
+    const request = ++packVoiceRequest.current;
+    return (voice) => {
+      if (voice && request === packVoiceRequest.current) choosePackVoice(voice);
+    };
+  }
   const tf = (key, fallback, params) => {
     let v;
     try {
@@ -4433,6 +4549,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     return v;
   };
   const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
+  const recordingVoiceLabel = [window.KOKORO_VOICES, window.EDGE_TTS_VOICES, window.GEMINI_VOICES].flatMap((voices) => Array.isArray(voices) ? voices : []).find((voice) => voice.id === selectedVoice)?.label || selectedVoice || tf("word_sounds.default_voice", "Default");
   const [imageVisibilityMode, setImageVisibilityMode] = useSetupState("imageVisibilityMode", () => "smart");
   React.useEffect(() => {
     if (isProbeMode) setImageVisibilityMode("off");
@@ -4610,11 +4727,18 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     setWordPracticeStatus({ busy: true, notice: "" });
     try {
       if (typeof window.__alloOpenWordPractice !== "function") throw new Error("Presentation tools unavailable");
-      const selection = buildWordPracticeSelection(previewList.filter((_, index) => selectedIndices.has(index)), glossaryTerms, preloadedWords);
+      const language = wordSoundsLanguage || "English";
+      const selection = buildWordPracticeSelection(
+        previewList.filter((_, index) => selectedIndices.has(index)),
+        includeGlossary ? glossaryTerms : [],
+        preloadedWords,
+        language,
+        preparedSessionConfig.language || language
+      );
       await window.__alloOpenWordPractice({
         ...selection,
         title: tf("word_sounds.practice_title", "Word Fluency Pop-Up"),
-        language: wordSoundsLanguage || "English",
+        language,
         source: "word-sounds",
         callTTS,
         selectedVoice,
@@ -6017,7 +6141,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           if (typeof window !== "undefined" && !window.__kokoroOfferDeclined && onRequestKokoroOffer && !window.__kokoroOfferedThisPreload) {
             window.__kokoroOfferedThisPreload = true;
             try {
-              onRequestKokoroOffer("word_sounds");
+              onRequestKokoroOffer("word_sounds", onKokoroReady());
             } catch (_) {
             }
           }
@@ -6160,7 +6284,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     },
     /* @__PURE__ */ React.createElement(Eye, { size: 14 }),
     "Review Words"
-  )), (() => {
+  )), /* @__PURE__ */ React.createElement("div", { "data-word-sounds-recording-voice": true, className: "flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-slate-200 px-6 py-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("span", { role: "status", tabIndex: -1 }, packVoice ? tf("word_sounds.pack_voice_override", "Voice for new recordings: {voice} (Word Sounds only)", { voice: recordingVoiceLabel }) : tf("word_sounds.pack_voice_inherited", "Voice for new recordings: {voice} (app voice)", { voice: recordingVoiceLabel })), packVoice && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (event) => {
+    event.currentTarget.previousElementSibling?.focus();
+    choosePackVoice("");
+  }, className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-semibold text-indigo-800 focus-visible:ring-2 focus-visible:ring-indigo-600" }, tf("word_sounds.use_app_voice", "Use app voice")), !packVoice && isCanvasEnv && window._kokoroTTS?.ready && /^en/i.test(wordSoundsLanguage || "en") && !/^[abil][fm]_/i.test(appVoice || "") && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => choosePackVoice("af_heart"), className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-semibold text-indigo-800 focus-visible:ring-2 focus-visible:ring-indigo-600" }, tf("word_sounds.use_kokoro_voice", "Use Kokoro Voice"))), (() => {
     const isKokoroVoice = typeof selectedVoice === "string" && /^[abil][fm]_/i.test(selectedVoice);
     const kokoroReady = typeof window !== "undefined" && window._kokoroTTS && window._kokoroTTS.ready;
     const isEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith("en");
@@ -6172,19 +6299,18 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         type: "button",
         onClick: () => {
           if (typeof window === "undefined" || !window.__loadKokoroTTS) return;
+          const acceptVoice = onKokoroReady();
           window.__kokoroTTSDownloading = true;
           window.__loadKokoroTTS().then((ok) => {
             window.__kokoroTTSDownloading = false;
-            if (ok && typeof setSelectedVoice === "function") {
-              setSelectedVoice("af_heart");
-            }
+            if (ok) acceptVoice("af_heart");
           }).catch(() => {
             window.__kokoroTTSDownloading = false;
           });
         },
         className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg font-bold text-xs transition-colors shadow-sm"
       },
-      "Use Kokoro Voice"
+      tf("word_sounds.use_kokoro_voice", "Use Kokoro Voice")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {

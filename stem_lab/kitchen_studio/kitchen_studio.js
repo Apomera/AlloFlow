@@ -208,7 +208,7 @@
     controls.enableDamping = false; controls.enablePan = false; controls.minDistance = 3.2; controls.maxDistance = 16; controls.maxPolarAngle = Math.PI / 2.2;
     var ambient = new T.HemisphereLight(0xfffae8, 0x71856d, .65); scene.add(ambient);
     var light = new T.DirectionalLight(0xfff2d4, .75); light.position.set(-3, 8, 6); light.castShadow = true; light.shadow.mapSize.set(1024,1024); light.shadow.camera.left=-7; light.shadow.camera.right=7; light.shadow.camera.top=6; light.shadow.camera.bottom=-6; scene.add(light);
-    var meshes = [], pickable = [], groups = {}, materials = [],stationLabels=[],stationBadges=[]; var focused=false, focusedStation=null,touch=null,touchTargets={},highlighted=[],feedbackFrame=null,feedbackStart=0,lastSize=null;
+    var meshes = [], pickable = [], groups = {}, materials = [],stationLabels=[],stationBadges=[]; var focused=false, focusedStation=null,touch=null,keyboardView=null,feedbackView=null,rubGuide=null,discoveryView=null,discovered=null,dropView=null,dropGesture=null,stopDropUpdates=null,ovenView=null,ovenInspection=false,ovenDecorations=[],ovenPreference=false,ovenRevision=null,probeView=null,probeDepthInspection=false,probeDepthDecorations=[],measureView=null,panView=null,panInspection=false,panDecorations=[],boardView=null,boardInspection=false,boardDecorations=[],containerView=null,containerInspection=false,containerDecorations=[],containerDoorPreference=null,containerRevision=null,shownContainerRevision=null,lidPreference=false,measureInspection=false,inspectionDecorations=[],touchTargets={},probeCutaway=false,probeShownValues={},probeServed=false,probeHistorical=false,highlighted=[],feedbackFrame=null,feedbackStart=0,lastSize=null;
     function mat(color, extra) { var m = new T.MeshStandardMaterial(Object.assign({ color: color, roughness: .7 }, extra || {})); m.color.convertSRGBToLinear(); materials.push(m); return m; }
     function mesh(geometry, color, x, y, z, group, extra) { var obj = new T.Mesh(geometry, mat(color, extra)); obj.position.set(x,y,z); obj.castShadow = true; obj.receiveShadow = true; (group || scene).add(obj); meshes.push(obj); return obj; }
     function box(w,h,d,color,x,y,z,group,extra) { return mesh(new T.BoxGeometry(w,h,d),color,x,y,z,group,extra); }
@@ -230,13 +230,23 @@
     box(2.25,1.25,.08,'#f8f1d3',-.9,2.53,-2); box(.045,1.25,.1,'#a5bda0',-.9,2.53,-1.94); box(2.25,.045,.1,'#a5bda0',-.9,2.53,-1.94);
     box(1.35,.1,.55,'#927252',-3.3,2.45,-1.8); cyl(.14,.12,.33,'#bd825c',-3.4,2.67,-1.7); sphere(.23,'#568255',-3.4,2.94,-1.7);
     var loc={prep:[-3,0,-.85],knife:[-1.5,0,-.85],heat:[.1,0,-.85],probe:[1.65,0,-.85],measure:[3,0,-.6],chill:[3.65,0,-1.4]};
-    Object.keys(loc).forEach(function(id){var g=new T.Group();g.position.set.apply(g.position,loc[id]);scene.add(g);groups[id]=g;var p=box(1.25,.07,1.23,'#d5ba73',0,1.31,0,g);p.userData.mission=id;pickable.push(p);});
+    Object.keys(loc).forEach(function(id){var g=new T.Group();g.position.set.apply(g.position,loc[id]);scene.add(g);groups[id]=g;var p=box(1.25,.07,1.23,'#d5ba73',0,1.31,0,g);p.visible=id!=='chill';p.userData.mission=id;pickable.push(p);});
     // Sink, tap, soap, and a water surface that changes after washing.
     var sink=cyl(.44,.35,.12,'#a9bab1',0,1.37,0,groups.prep); var water=cyl(.35,.34,.015,'#83b8c2',0,1.44,0,groups.prep);
     var bubbles=[];for(var bi=0;bi<8;bi++){var bubble=sphere(.035+(bi%3)*.012,'#e2f4f0',Math.cos(bi)*.25,1.475,Math.sin(bi)*.24,groups.prep);bubble.visible=false;bubbles.push(bubble);}
     var tapStem=box(.065,.52,.065,'#aab7af',0,1.65,-.48,groups.prep),tapSpout=box(.065,.065,.3,'#aab7af',0,1.9,-.34,groups.prep),tapLever=box(.23,.05,.07,'#537d85',-.12,1.9,-.48,groups.prep);
     var waterStream=cyl(.018,.03,.4,'#8ed1df',0,1.68,-.19,groups.prep,{transparent:true,opacity:.65});waterStream.visible=false;
-    var soap=box(.18,.29,.16,'#d5ae68',.48,1.53,-.3,groups.prep);box(.12,.035,.06,'#455f49',.48,1.69,-.3,groups.prep);
+    var soap=box(.18,.29,.16,'#d5ae68',.48,1.53,-.3,groups.prep),soapPump=box(.12,.035,.06,'#455f49',.48,1.69,-.3,groups.prep);
+    var washingHands=new T.Group();washingHands.position.set(0,1.67,.25);washingHands.scale.setScalar(1.35);groups.prep.add(washingHands);
+    var washPalms=[],washParts=[],washLather=[];
+    [-1,1].forEach(function(side){
+      var palm=new T.Group();palm.position.set(side*.085,side===1?.025:0,side===1?-.025:.035);washingHands.add(palm);washPalms.push(palm);
+      var body=sphere(.1,'#c99b78',0,0,0,palm);body.scale.set(.7,.27,.9);washParts.push(body);
+      var cuff=box(.13,.045,.075,'#577f72',0,0,.11,palm);washParts.push(cuff);
+      for(var finger=0;finger<4;finger++){var digit=sphere(.025,'#d3a583',(finger-1.5)*.035,0,-.12,palm);digit.scale.set(.63,.8,2.7-(finger===0||finger===3?.5:0));washParts.push(digit);}
+      var thumb=sphere(.034,'#c99b78',side*.072,0,-.025,palm);thumb.scale.set(.7,.8,1.7);thumb.rotation.y=side*.45;washParts.push(thumb);
+    });
+    for(var foamIndex=0;foamIndex<12;foamIndex++){var foam=sphere(.019+(foamIndex%3)*.004,'#f5faf3',(foamIndex%4-1.5)*.045,.05+Math.floor(foamIndex/4)*.011,(Math.floor(foamIndex/4)-1)*.062,washingHands);foam.visible=false;washLather.push(foam);washParts.push(foam);}
     var cleanBoard=box(.38,.035,.64,'#b77e58',-.58,1.46,.28,groups.prep);
     var sanitizer=box(.18,.32,.16,'#6a8c9f',-.47,1.57,-.42,groups.prep),sanitizerPump=box(.23,.04,.06,'#354b3c',-.44,1.75,-.42,groups.prep),sanitizerBadge=badge(.34,.17,0,.06,.09,sanitizer);sanitizerBadge.write('SANITIZE','EQUIPMENT');sanitizer.visible=sanitizerPump.visible=false;
     box(.9,.07,.44,'#c39461',.26,1.3,.67,groups.prep);var vegetableBasket=cyl(.21,.17,.13,'#75906a',.30,1.42,.64,groups.prep),basketHandle=mesh(new T.TorusGeometry(.21,.018,8,36),'#456a50',.30,1.51,.64,groups.prep);basketHandle.rotation.x=Math.PI/2;
@@ -255,9 +265,33 @@
     var thumb=box(.065,.065,.14,'#c99b78',.19,-.005,.005,hand);thumb.rotation.y=.55;
     function poseHand(curl){fingerJoints.forEach(function(j){j.rotation.x=-curl*1.35;});hand.position.y=1.55+curl*.045;hand.position.z=.35-curl*.08;thumb.rotation.y=.55+curl*.55;renderer.domElement.dataset.gripCurl=String(Math.round(curl*100));}
     // Hob with burner, pan, and mushrooms whose material and spacing reflect state.
-    box(1.24,.06,1.1,'#343e36',0,1.39,0,groups.heat);var burner=cyl(.43,.43,.04,'#5c665b',0,1.45,0,groups.heat);
+    var hobSurface=box(1.24,.06,1.1,'#343e36',0,1.39,0,groups.heat);var burner=cyl(.43,.43,.04,'#5c665b',0,1.45,0,groups.heat);
     var panBowl=cyl(.43,.37,.09,'#303c33',0,1.53,0,groups.heat),panHandle=box(.57,.075,.13,'#3b453d',.58,1.54,0,groups.heat);
-    var dial=cyl(.14,.14,.07,'#e2cf9d',-.39,1.47,.43,groups.heat),dialMark=box(.025,.012,.09,'#294837',-.39,1.511,.39,groups.heat);
+    var dials=window.KitchenBurnerDials, dialRadius=.17, dialGrip=new T.Group(),dialScaleParts=[];
+    dialGrip.position.set(-.39,1.49,.43);groups.heat.add(dialGrip);
+    var dial=cyl(dialRadius,dialRadius,.1,'#395749',0,0,0,dialGrip);
+    var dialMark=box(.028,.012,.13,'#fff0c8',0,.056,-.082,dialGrip);
+    var dialParts=[dial,dialMark], dialCap=new T.Vector3();
+    dialGrip.getWorldPosition(dialCap);dialCap.y+=.05;
+    for(var tooth=0;tooth<16;tooth++){
+      var toothAngle=tooth*Math.PI/8;
+      var rib=box(.016,.068,.012,'#6a8571',Math.sin(toothAngle)*dialRadius,0,Math.cos(toothAngle)*dialRadius,dialGrip);
+      rib.rotation.y=toothAngle;dialParts.push(rib);
+    }
+    function addDialScale(){
+      var surface=document.createElement('canvas');surface.width=surface.height=256;
+      var ctx=surface.getContext('2d');ctx.fillStyle='#f6eed6';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 19px system-ui';
+      dials.levels.forEach(function(name,index){
+        var angle=dials.angle(index),x=Math.sin(angle),z=-Math.cos(angle);
+        ctx.fillText(name==='Medium'?'MED':name.toUpperCase(),128+105*x,128+105*z);
+        ctx.beginPath();ctx.moveTo(128+82*x,128+82*z);ctx.lineTo(128+90*x,128+90*z);ctx.strokeStyle='#f6eed6';ctx.lineWidth=3;ctx.stroke();
+      });
+      var texture=new T.CanvasTexture(surface);texture.encoding=T.sRGBEncoding;
+      dialScaleParts.push(cyl(.274,.27,.024,'#41534a',dialGrip.position.x,1.434,dialGrip.position.z,groups.heat));
+      var scale=mesh(new T.PlaneGeometry(.55,.55),'#ffffff',dialGrip.position.x,1.448,dialGrip.position.z,groups.heat,{map:texture,transparent:true,depthWrite:false});
+      scale.rotation.x=-Math.PI/2;scale.castShadow=false;dialScaleParts.push(scale);
+    }
+    addDialScale();
     var towel=box(.27,.04,.22,'#fff6de',.43,1.48,.43,groups.heat),towelFold=box(.25,.016,.11,'#d8d6c1',.43,1.508,.48,groups.heat);
     var cookTimer=box(.32,.22,.17,'#b67b43',-.48,1.54,-.45,groups.heat),timerBadge=badge(.32,.16,0,.025,.10,cookTimer);timerBadge.write('+30 s','SIMULATED');
     box(1.6,.08,.64,'#c39461',.12,1.29,.78,groups.heat);var servingPlate=cyl(.4,.37,.045,'#fff9e9',0,1.37,.83,groups.heat);
@@ -267,10 +301,21 @@
     function mushroomAngle(index){return index*Math.PI/4;}
     var mushrooms=[],stems=[];for(var j=0;j<8;j++){var stem=cyl(.033,.038,.075,'#c5b58b',Math.cos(mushroomAngle(j))*.2,1.59,Math.sin(mushroomAngle(j))*.2,groups.heat);var mush=sphere(.095,'#e6cfa7',Math.cos(mushroomAngle(j))*.2,1.645,Math.sin(mushroomAngle(j))*.2,groups.heat);mush.scale.y=.5;mushrooms.push(mush);stems.push(stem);}
     var droplets=mushrooms.map(function(m){return sphere(.024,'#8ab9c1',m.position.x,1.69,m.position.z,groups.heat);});
-    // The door opens locally while carrying; a drop records one simulated step.
+    // The door is a view-only tool; a platter drop records a simulated step.
+    var ovenStart=meshes.length;
     box(1.05,.84,.045,'#25352e',0,.75,.44,groups.probe);box(.065,.84,.36,'#40594a',-.5,.75,.62,groups.probe);box(.065,.84,.36,'#40594a',.5,.75,.62,groups.probe);box(1.05,.06,.36,'#40594a',0,1.15,.62,groups.probe);box(.94,.025,.35,'#acb5a5',0,.7,.62,groups.probe);
-    var ovenDoor=new T.Group();ovenDoor.position.set(0,.35,.81);groups.probe.add(ovenDoor);box(1.05,.78,.065,'#293d31',0,.39,0,ovenDoor);box(.83,.47,.025,'#768d79',0,.39,.046,ovenDoor);box(.65,.045,.075,'#d7bf8c',0,.69,.09,ovenDoor);
+    for(var rack=0;rack<7;rack++)box(.012,.014,.32,'#d0d6c9',-.36+rack*.12,.721,.62,groups.probe);
+    var ovenDoor=new T.Group();ovenDoor.position.set(0,.35,.81);groups.probe.add(ovenDoor);var ovenPanel=box(1.05,.78,.065,'#293d31',0,.39,0,ovenDoor),ovenGlass=box(.83,.47,.025,'#768d79',0,.39,.046,ovenDoor),ovenHandle=box(.65,.045,.075,'#d7bf8c',0,.69,.09,ovenDoor);
     var ovenSign=box(.45,.12,.06,'#456a50',0,1.17,.83,groups.probe),ovenBadge=badge(.45,.19,0,.005,.045,ovenSign);ovenBadge.write('COOK','1 SIM STEP');
+    var ovenParts=meshes.slice(ovenStart).concat([ovenDoor]);
+    function poseOven(opening,preview){
+      var fraction=Math.max(0,Math.min(1,opening));ovenDoor.rotation.x=1.1*fraction;
+      renderer.domElement.dataset.ovenOpening=String(fraction);renderer.domElement.dataset.ovenAngle=String(ovenDoor.rotation.x);renderer.domElement.dataset.ovenOpen=String(fraction>=.5);renderer.domElement.dataset.ovenPreview=String(!!preview);
+      var toggle=$('studioOvenToggle');toggle.textContent=fraction>=.5?'Close oven':'Open oven';toggle.setAttribute('aria-expanded',String(fraction>=.5));toggle.disabled=textView||probeDepthInspection;
+      var description=preview?'Door preview · release to finish, or press Escape to cancel.':'Oven door: '+(fraction>=.5?'open. Explore the shelf.':'closed. Pull the handle or use Open oven.');
+      if($('studioOvenReadout').textContent!==description)$('studioOvenReadout').textContent=description;
+    }
+    function setOvenView(opened){ovenPreference=!!opened;poseOven(ovenPreference?1:0,false);draw();}
     var chickenPlate=cyl(.46,.46,.05,'#fff6e3',0,1.39,0,groups.probe),chicken=sphere(.27,'#bd793b',0,1.56,0,groups.probe);chicken.scale.set(1.15,.65,.8);
     box(1.06,.08,.7,'#c39461',.34,1.3,1.02,groups.probe);var serveMat=box(.76,.025,.58,'#85a69d',.34,1.357,1.02,groups.probe),serveBadge=badge(.42,.19,0,.17,.25,serveMat);serveBadge.write('SERVE','CHICKEN');
     box(.035,.016,.34,'#aab7af',.79,1.37,1.02,groups.probe);box(.2,.012,.36,'#fff9e9',-.15,1.37,1.02,groups.probe);
@@ -278,26 +323,100 @@
     // Measuring jug is on a small island, with graduated fill and tick marks.
     groups.measure.position.set(2.4,0,1.05);box(1.4,1.18,1,'#75906a',0,.55,0,groups.measure);box(1.5,.1,1.1,'#f2e7d1',0,1.26,0,groups.measure);
     var jugStart=meshes.length,jug=cyl(.27,.23,.68,'#c9e1d9',0,1.68,0,groups.measure,{transparent:true,opacity:.28,depthWrite:false});var fill=cyl(.24,.21,.6,'#dba94f',0,1.65,0,groups.measure),liquidSurface=cyl(.24,.24,.008,'#f1ce79',0,1.35,0,groups.measure);fill.visible=liquidSurface.visible=false;
-    var scaleCanvas=document.createElement('canvas');scaleCanvas.width=300;scaleCanvas.height=660;var scaleContext=scaleCanvas.getContext('2d');scaleContext.fillStyle='rgba(237,243,232,.9)';scaleContext.fillRect(0,0,300,660);scaleContext.strokeStyle=scaleContext.fillStyle='#233e2e';scaleContext.lineWidth=5;scaleContext.font='bold 50px Arial';scaleContext.textBaseline='middle';
-    for(var mark=0;mark<=1000;mark+=50){var markY=630-mark*.6;scaleContext.beginPath();scaleContext.moveTo(12,markY);scaleContext.lineTo(mark%250===0?80:mark%100===0?54:35,markY);scaleContext.stroke();if(mark%250===0)scaleContext.fillText(String(mark),90,markY);}
+    var scaleCanvas=document.createElement('canvas');scaleCanvas.width=300;scaleCanvas.height=660;var scaleContext=scaleCanvas.getContext('2d');scaleContext.fillStyle='rgba(237,243,232,.9)';scaleContext.fillRect(0,0,300,660);scaleContext.strokeStyle=scaleContext.fillStyle='#233e2e';scaleContext.lineWidth=5;scaleContext.font='bold 42px Arial';scaleContext.textBaseline='middle';
+    for(var mark=0;mark<=1000;mark+=50){var markY=630-mark*.6;scaleContext.beginPath();scaleContext.moveTo(12,markY);scaleContext.lineTo(mark%100===0?80:42,markY);scaleContext.stroke();if(mark%100===0)scaleContext.fillText(String(mark),90,mark===0?markY-20:markY);}
     var scaleTexture=new T.CanvasTexture(scaleCanvas);scaleTexture.encoding=T.sRGBEncoding;mesh(new T.PlaneGeometry(.3,.66),'#ffffff',.03,1.65,.277,groups.measure,{map:scaleTexture,transparent:true,roughness:1});
     var jugHandle=box(.065,.4,.065,'#86a697',.38,1.65,0,groups.measure);box(.15,.045,.045,'#86a697',.32,1.87,0,groups.measure);box(.15,.045,.045,'#86a697',.32,1.44,0,groups.measure);
     var jugParts=meshes.slice(jugStart);
     var measureCheck=box(.42,.15,.18,'#456a50',-.44,1.4,.29,groups.measure),measureBadge=badge(.42,.21,0,.10,.04,measureCheck);measureBadge.write('CHECK','MEASURE');
-    var stockCarton=box(.27,.48,.25,'#a9bf8c',-.49,1.55,-.27,groups.measure);box(.27,.06,.25,'#dbe5c6',0,.27,0,stockCarton);cyl(.055,.055,.08,'#f9f3df',0,.34,0,stockCarton);var stockBadge=badge(.33,.17,0,.015,.14,stockCarton);stockBadge.write('STOCK','150 mL');
+    var stockCarton=box(.27,.48,.25,'#a9bf8c',-.49,1.55,-.27,groups.measure);box(.27,.06,.25,'#dbe5c6',0,.27,0,stockCarton);var stockSpout=cyl(.055,.055,.08,'#f9f3df',0,.34,0,stockCarton);cyl(.034,.034,.003,'#53664a',0,.043,0,stockSpout);var stockBadge=badge(.33,.17,0,.015,.14,stockCarton);stockBadge.write('STOCK','150 mL');
     var stockStream=cyl(.012,.017,1,'#e8bc68',0,2,0,groups.measure),measureShownMl=0;stockStream.visible=false;
+    var probeTip=sphere(.018,'#f09a40',0,-.22,0,probe);probeTip.material.emissive.set('#a34e10');probeTip.material.emissiveIntensity=.35;
+    var probeMaterialBase={transparent:chicken.material.transparent,opacity:chicken.material.opacity,depthWrite:chicken.material.depthWrite};
+    var measureGuide=new T.Group();measureGuide.position.set(2.4,0,1.35);measureGuide.visible=false;scene.add(measureGuide);
+    var guideGeometry=new T.BufferGeometry().setFromPoints([new T.Vector3(-.26,0,0),new T.Vector3(.3,0,0)]);
+    var guideMaterial=new T.LineBasicMaterial({color:'#245c42',depthTest:false});
+    var guideLine=new T.Line(guideGeometry,guideMaterial);guideLine.renderOrder=4;measureGuide.add(guideLine);meshes.push(guideLine);materials.push(guideMaterial);
     function showMeasureAmount(ml,preview){
       var amount=Math.max(0,Math.min(1000,ml||0)),level=amount/1000;fill.visible=liquidSurface.visible=amount>0;fill.scale.y=Math.max(.01,level);fill.position.y=1.35+.3*level;liquidSurface.position.y=1.35+.6*level;
       measureBadge.write(preview?amount+' mL':'CHECK',preview?'PREVIEW':amount+' mL');renderer.domElement.dataset.measurePreview=preview?String(amount):'';
+      if(measureView)measureView.preview(preview?amount:null);
     }
-    // Fridge with visible shelf and containers once the learner refrigerates them.
-    box(1.05,2.4,1.12,'#9fb4a0',0,1.17,0,groups.chill);var fridgeDoor=new T.Group();fridgeDoor.position.set(-.46,1.18,.59);groups.chill.add(fridgeDoor);box(.91,2.18,.055,'#c6d4bf',.46,0,0,fridgeDoor);box(.055,.6,.06,'#566e57',.15,.27,.06,fridgeDoor);box(.86,.025,.06,'#829a80',0,1.55,.64,groups.chill);
+    // Open cavity and shelves keep stored containers visible through the doorway.
+    box(1.05,2.4,.065,'#9fb4a0',0,1.17,-.53,groups.chill);
+    box(.065,2.4,1.12,'#9fb4a0',-.5,1.17,0,groups.chill);
+    box(.065,2.4,1.12,'#9fb4a0',.5,1.17,0,groups.chill);
+    box(.94,.065,1.12,'#9fb4a0',0,2.34,0,groups.chill);
+    box(.94,.065,1.12,'#9fb4a0',0,.015,0,groups.chill);
+    box(.91,2.23,.025,'#e2eadb',0,1.17,-.485,groups.chill);
+    [ .48,1.35,1.97 ].forEach(function(height){
+      box(.93,.025,.94,'#e1e7db',0,height,0,groups.chill);
+      box(.93,.045,.035,'#718e80',0,height,.46,groups.chill);
+    });
+    var fridgeDoor=new T.Group();fridgeDoor.position.set(.46,1.18,.59);groups.chill.add(fridgeDoor);
+    var fridgePanel=box(.91,2.18,.055,'#c6d4bf',-.46,0,0,fridgeDoor);
+    box(.85,2.08,.025,'#edf1e6',-.46,0,-.04,fridgeDoor);
+    box(.76,.07,.16,'#a0b4a2',-.46,-.68,-.11,fridgeDoor);
+    var fridgeHandle=box(.075,.6,.08,'#566e57',-.81,.65,.07,fridgeDoor);
+    var storageShownValues={},storageViewKey='',storageLogLength=0,doorPreference=null;
+    function fridgeIsOpen(){return doorPreference===null?!!storageShownValues.chilled:doorPreference;}
+    function poseFridge(opening){
+      var fraction=Math.max(0,Math.min(1,opening));fridgeDoor.rotation.y=1.9*fraction;
+      renderer.domElement.dataset.fridgeOpening=String(fraction);
+      renderer.domElement.dataset.fridgeOpen=String(fraction>=.5);
+      $('studioFridgeToggle').textContent=fraction>=.5?'Close refrigerator':'Open refrigerator';
+      $('studioFridgeToggle').setAttribute('aria-expanded',String(fraction>=.5));
+    }
+    function setFridgeView(opened){doorPreference=!!opened;poseFridge(fridgeIsOpen()?1:0);draw();}
     box(1.26,.1,1.12,'#f2e7d1',-.42,1.3,1.48,groups.chill);box(.08,1.25,.08,'#75906a',-.96,.64,1.95,groups.chill);box(.08,1.25,.08,'#75906a',.1,.64,1.95,groups.chill);
     var shallowTray=box(.5,.045,.43,'#79a4a2',-.87,1.39,1.68,groups.chill);box(.44,.025,.37,'#fff9e9',-.87,1.42,1.68,groups.chill);var trayBadge=badge(.49,.22,0,.24,.02,shallowTray);trayBadge.write('SHALLOW','DIVIDE HERE');
     var wasteBin=cyl(.27,.23,1.25,'#6a7a70',.49,.66,1.85,groups.chill);cyl(.29,.29,.06,'#394d43',.49,1.315,1.85,groups.chill);var binBadge=badge(.48,.22,0,.8,.03,wasteBin);binBadge.write('WASTE','DISCARD');
     var labelCard=box(.29,.04,.22,'#f4da9d',-.17,1.41,1.75,groups.chill),labelBadge=badge(.34,.17,0,.12,.02,labelCard);labelBadge.write('FOOD','+ DATE');
     var tub=box(.48,.12,.32,'#f3e9d3',-.3,1.46,1.03,groups.chill),lid=box(.51,.025,.35,'#79a4a2',-.3,1.535,1.03,groups.chill),labelMesh=box(.2,.055,.01,'#fff8de',-.3,1.46,1.198,groups.chill);labelMesh.visible=false;
     var dividedTub=box(.28,.085,.28,'#f3e9d3',-.75,1.43,1.04,groups.chill),dividedLid=box(.3,.02,.3,'#79a4a2',-.75,1.482,1.04,groups.chill);dividedTub.visible=dividedLid.visible=false;
+    function foodInside(body,small){
+      var food=new T.Group();body.add(food);food.visible=false;
+      var width=small?.23:.41,depth=small?.23:.25,height=small?.055:.09;
+      box(width,height,depth,'#bc995b',0,small?-.003:-.008,0,food);
+      for(var piece=0;piece<8;piece++){
+        var bit=box(small?.038:.05,.017,small?.04:.05,piece%3===0?'#d48842':piece%3===1?'#739057':'#dfc58b',(piece%4-1.5)*width/4,small?.031:.041,(Math.floor(piece/4)-.5)*depth*.45,food);bit.rotation.y=piece*.7;
+      }
+      return food;
+    }
+    var mainFood=foodInside(tub,false),dividedFood=foodInside(dividedTub,true);
+    var containerMaterials=[tub,dividedTub].map(function(body){return {material:body.material,transparent:body.material.transparent,opacity:body.material.opacity,depthWrite:body.material.depthWrite};});
+    var containerEdges=[tub,dividedTub].map(function(body){var edgeMaterial=new T.LineBasicMaterial({color:'#58766c',transparent:true,opacity:.75}),edges=new T.LineSegments(new T.EdgesGeometry(body.geometry),edgeMaterial);body.add(edges);edges.visible=false;meshes.push(edges);materials.push(edgeMaterial);return edges;});
+    function refreshContainerReadout(fraction,preview){
+      var v=storageShownValues;
+      $('studioLidToggle').disabled=!containerInspection||!!v.discarded||textView;
+      $('studioLidToggle').textContent=lidPreference?'Close lids':'Lift lids';$('studioLidToggle').setAttribute('aria-pressed',String(lidPreference));
+      $('studioFridgeToggle').disabled=containerInspection;
+      var subject=replayState?'Recorded containers: ':'Containers: ';
+      $('studioContainerReadout').textContent=v.discarded?subject+'Leftovers discarded.':(preview?'Preview · ':subject)+(v.shallow?'Two shallow containers. ':'One deep container. ')+(fraction>.5?'Lids lifted. ':'Lids closed. ')+(v.chilled?'In the refrigerator.':'On the counter.');
+    }
+    function poseLids(opening,preview){
+      var fraction=containerInspection&&!storageShownValues.discarded?Math.max(0,Math.min(1,opening)):0;
+      lid.position.set(tub.position.x,tub.position.y+.06*tub.scale.y+.0125+fraction*.22,tub.position.z-fraction*.10);lid.rotation.x=-fraction*.25;
+      dividedLid.position.set(dividedTub.position.x,dividedTub.position.y+.0525+fraction*.22,dividedTub.position.z-fraction*.10);dividedLid.rotation.x=-fraction*.25;
+      var cutaway=containerInspection&&fraction>.04&&!storageShownValues.discarded;
+      mainFood.visible=dividedFood.visible=cutaway;containerEdges.forEach(function(edge){edge.visible=cutaway;});
+      containerMaterials.forEach(function(saved){var m=saved.material,transparent=cutaway?true:saved.transparent;if(m.transparent!==transparent){m.transparent=transparent;m.needsUpdate=true;}m.opacity=cutaway?.22:saved.opacity;m.depthWrite=cutaway?false:saved.depthWrite;});
+      renderer.domElement.dataset.lidOpening=String(fraction);renderer.domElement.dataset.lidsOpen=String(fraction>=.5);renderer.domElement.dataset.lidPreview=String(!!preview);
+      renderer.domElement.dataset.containerCutaway=String(cutaway);renderer.domElement.dataset.bodyOpacity=String(tub.material.opacity);renderer.domElement.dataset.bodyDepthWrite=String(tub.material.depthWrite);
+      renderer.domElement.dataset.foodDepth=storageShownValues.discarded?'none':storageShownValues.shallow?'shallow':'deep';renderer.domElement.dataset.foodHeight=String(storageShownValues.discarded?0:.09*tub.scale.y);
+      refreshContainerReadout(fraction,preview);
+    }
+    function placeContainers(values,inside){
+      var base=inside?1.3625:1.35,mainX=inside?(values.shallow?.16:0):-.3,mainZ=inside?.07:1.03;
+      var height=values.shallow?.12:.24;
+      tub.visible=lid.visible=!values.discarded;tub.scale.y=values.shallow?1:2;
+      tub.position.set(mainX,base+height/2,mainZ);lid.position.set(mainX,base+height+.0125,mainZ);
+      labelMesh.visible=!!values.label&&!values.discarded;labelMesh.position.set(mainX,base+height/2,mainZ+.168);
+      dividedTub.visible=dividedLid.visible=!!values.shallow&&!values.discarded;
+      dividedTub.position.set(inside?-.30:-.75,base+.0425,inside?.07:1.04);
+      dividedLid.position.set(dividedTub.position.x,base+.095,dividedTub.position.z);
+      labelCard.visible=!values.label&&!values.discarded;
+    }
     var selection=new T.Mesh(new T.TorusGeometry(.62,.027,10,60),new T.MeshBasicMaterial({color:'#c08a28'}));selection.rotation.x=Math.PI/2;scene.add(selection);meshes.push(selection);
     label('01  CLEAN',-3,2.07,-.3);label('02  PREP',-1.5,2.05,-.3);label('03  HEAT',.1,2.05,-.3);label('04  CHECK',1.65,2.22,-.3);label('05  MEASURE',2.4,2.32,1.05);label('06  STORE',3.65,2.68,-1.2);
     Object.keys(groups).forEach(function(id){groups[id].traverse(function(obj){if(obj.isMesh||obj.isSprite){obj.userData.mission=id;pickable.push(obj);}});});
@@ -305,7 +424,8 @@
       var info={id:id,station:station,kind:kind,objects:objects,hint:hint,action:action,anchor:anchor||objects[0]};touchTargets[id]=info;
       objects.forEach(function(o){o.traverse(function(child){child.userData.touch=info;});});return info;
     }
-    tool('soap','prep','tap',[soap],'Tap the soap to model washing hands.','wash');
+    tool('soap','prep','tap',[soap,soapPump],'Tap the soap to model washing hands.','wash');
+    var handsTool=tool('washingHands','prep','handwash',washParts,'Rub the hands side to side three times, then carry them under the tap and release to model the full wash.',null,washPalms[0]);handsTool.moving=[washingHands,soapPump,waterStream].concat(washPalms,washLather);
     var faucetTool=tool('faucet','prep','tap',[tapStem,tapSpout,tapLever],'Tap the faucet for a water-only hand rinse.','rinse',tapLever);faucetTool.moving=faucetTool.objects.concat(waterStream);
     tool('sanitizer','prep','tap',[sanitizer,sanitizerPump],'Tap to model following the food-contact sanitizer instructions for this equipment.','sanitize',sanitizer);
     tool('prepBoard','prep','tap',[cleanBoard],'Tap the clean board to prepare equipment.','board');
@@ -314,46 +434,365 @@
     var matTool=tool('nonslipMat','knife','mat',matParts,'Slide the folded mat under the cutting board, then release.',null,matParts[0]);matTool.moving=[foldedMat,matBoard,cutBoard,whole,knife,knifeHandle,hand].concat(dice);
     var knifeTool=tool('knife','knife','cut',[knife,knifeHandle],'Pull the knife down, then lift it back before releasing.',null,knifeHandle);knifeTool.moving=[knife,knifeHandle,whole].concat(dice);
     var handParts=[];hand.traverse(function(o){if(o.isMesh)handParts.push(o);});var gripTool=tool('grip','knife','grip',handParts,'Drag up to curl the fingertips into a claw grip, or down to extend them.',null,handPalm);gripTool.moving=[hand,thumb].concat(fingerJoints);
-    tool('dial','heat','dial',[dial,dialMark],'Drag up for more heat, down for less. Release to set the burner.');
+    var dialTool=tool('dial','heat','dial',dialParts,'Turn the rim clockwise for more heat or back toward Off. You can also drag the centre up for more heat or down toward Off. Release to set the burner.',null,dial);
+    dialTool.moving=[dialGrip];
     tool('mushroom','heat','spread',mushrooms.concat(stems,droplets),'Carry a mushroom outward to make space in the pan.',null,mushrooms[0]);
     var spatulaTool=tool('spatula','heat','spatula',spatulaParts,'Carry the spatula to the outer pan ring to spread mushrooms, or to the centre to gather them.',null,spatulaBlade);spatulaTool.moving=[spatula].concat(mushrooms,stems,droplets);
     tool('towel','heat','dry',[towel,towelFold],'Rub the towel left and right through three passes, then release to dry the mushrooms.');
     tool('cookTimer','heat','tap',[cookTimer],'Tap once to advance the cook by 30 simulated seconds.','advance');
     var panTool=tool('pan','heat','plate',[panBowl,panHandle],'Carry the pan to the serving plate, then release to plate and switch off the burner.',null,panHandle);panTool.moving=[panBowl,panHandle].concat(mushrooms,stems,droplets);
     var probeTool=tool('probe','probe','probe',[probe,display],'Drag to place the thermometer; tap the display to take a fresh reading.',null,display);probeTool.tapAction='read';
+    var ovenTool=tool('ovenHandle','probe','ovenDoor',[ovenPanel,ovenGlass,ovenHandle],'Tap the handle, pull down to open, or push up to close the oven. Door exploration does not advance cooking.',null,ovenHandle);ovenTool.moving=[ovenDoor];ovenTool.viewOnly=true;
     var chickenTool=tool('chickenPlate','probe','chicken',[chickenPlate,chicken],'Carry the plate to the oven for a simulated cooking step, or to the serving board.',null,chickenPlate);chickenTool.moving=[chickenPlate,chicken,probe,display];
-    tool('jug','measure','pour',jugParts,'Drag up to add 50 mL, or down to remove 50 mL. Release to pour.',null,jugHandle);
+    var jugTool=tool('jug','measure','pour',jugParts,'Tap for an eye-level inspection, or drag up to add 50 mL and down to remove 50 mL.',null,jugHandle);jugTool.inspect=true;
     var stockTool=tool('stockCarton','measure','stock',[stockCarton],'Carry the stock carton over the jug, then release to pour one 150 mL measure.',null,stockCarton);stockTool.moving=[stockCarton,fill,liquidSurface];
     tool('measureCheck','measure','tap',[measureCheck],'Tap to check the measured quantity against the recipe.','check');
     tool('tub','chill','store',[tub,lid,labelMesh,dividedTub,dividedLid],'Carry leftovers to the shallow tray, fridge, or waste bin; release to choose.',null,lid);
     tool('labelCard','chill','label',[labelCard],'Carry the food-and-date label onto the container, then release.');
-    var toolNames={soap:'soap',faucet:'faucet',sanitizer:'sanitizer',prepBoard:'clean board',vegetableBasket:'vegetables',board:'cutting board',nonslipMat:'nonslip mat',knife:'knife',grip:'guide hand',dial:'heat dial',mushroom:'mushrooms',spatula:'spatula',towel:'towel',pan:'pan handle',cookTimer:'cook timer',probe:'thermometer',chickenPlate:'chicken plate',jug:'jug',stockCarton:'stock carton',measureCheck:'check card',tub:'leftovers',labelCard:'label'};Object.keys(touchTargets).forEach(function(id){touchTargets[id].name=toolNames[id];});
-    var destinations={probeCenter:new T.Vector3(1.65,1.65,-.85),probeSurface:new T.Vector3(1.94,1.65,-.85),fridge:new T.Vector3(3.65,1.65,-.98),servingPlate:new T.Vector3(.1,1.65,-.02),shallowTray:new T.Vector3(2.78,1.65,.28),wasteBin:new T.Vector3(4.14,1.65,.45),containerTarget:new T.Vector3(3.35,1.65,-.37),prepBoardTarget:new T.Vector3(-3.58,1.65,-.57),ovenDrop:new T.Vector3(1.65,.82,-.03),serveDrop:new T.Vector3(1.99,1.45,.17),jugFill:new T.Vector3(2.4,2.04,1.05),boardMat:new T.Vector3(-1.5,1.65,-.85),panCenter:new T.Vector3(.1,1.65,-.85),panEdge:new T.Vector3(.4,1.65,-.85)};
+    var doorTool=tool('fridgeHandle','chill','door',[fridgePanel,fridgeHandle],'Tap the handle, or pull down to open and push up to close. Release to leave the door in place.',null,fridgeHandle);
+    doorTool.moving=[fridgeDoor];doorTool.viewOnly=true;doorTool.viewTap=true;
+    var toolNames={soap:'soap',washingHands:'washing hands',faucet:'faucet',sanitizer:'sanitizer',prepBoard:'clean board',vegetableBasket:'vegetables',board:'cutting board',nonslipMat:'nonslip mat',knife:'knife',grip:'guide hand',dial:'heat dial',mushroom:'mushrooms',spatula:'spatula',towel:'towel',pan:'pan handle',cookTimer:'cook timer',probe:'thermometer',ovenHandle:'oven handle',chickenPlate:'chicken plate',jug:'jug',stockCarton:'stock carton',measureCheck:'check card',tub:'leftovers',labelCard:'label',fridgeHandle:'refrigerator handle'};Object.keys(touchTargets).forEach(function(id){touchTargets[id].name=toolNames[id];});
+    var destinations={washWater:new T.Vector3(-3,1.67,-1.04),probeCenter:new T.Vector3(1.65,1.65,-.85),probeSurface:new T.Vector3(1.94,1.65,-.85),fridge:new T.Vector3(3.65,1.65,-.98),servingPlate:new T.Vector3(.1,1.65,-.02),shallowTray:new T.Vector3(2.78,1.65,.28),wasteBin:new T.Vector3(4.14,1.65,.45),containerTarget:new T.Vector3(3.35,1.65,-.37),prepBoardTarget:new T.Vector3(-3.58,1.65,-.57),ovenDrop:new T.Vector3(1.65,.82,-.03),serveDrop:new T.Vector3(1.99,1.45,.17),jugFill:new T.Vector3(2.4,2.04,1.05),boardMat:new T.Vector3(-1.5,1.65,-.85),panCenter:new T.Vector3(.1,1.65,-.85),panEdge:new T.Vector3(.4,1.65,-.85)};
     var targetRing=new T.Mesh(new T.TorusGeometry(.33,.022,8,48),new T.MeshBasicMaterial({color:'#246b57',depthTest:false,transparent:true,opacity:.95}));targetRing.rotation.x=Math.PI/2;targetRing.visible=false;targetRing.renderOrder=4;scene.add(targetRing);meshes.push(targetRing);materials.push(targetRing.material);
     var ovenOutline=new T.Mesh(new T.BoxGeometry(.88,.53,.015),new T.MeshBasicMaterial({color:'#956017',wireframe:true,depthTest:false}));ovenOutline.position.copy(destinations.ovenDrop);ovenOutline.visible=false;ovenOutline.renderOrder=4;scene.add(ovenOutline);meshes.push(ovenOutline);materials.push(ovenOutline.material);
     var matOutline=new T.LineLoop(new T.BufferGeometry().setFromPoints([new T.Vector3(-.56,0,-.42),new T.Vector3(.56,0,-.42),new T.Vector3(.56,0,.42),new T.Vector3(-.56,0,.42)]),new T.LineBasicMaterial({color:'#956017',depthTest:false}));matOutline.position.set(-1.5,1.4,-.85);matOutline.visible=false;matOutline.renderOrder=4;scene.add(matOutline);meshes.push(matOutline);materials.push(matOutline.material);
     var spacingRings=[.15,.33].map(function(radius){var ring=new T.Mesh(new T.TorusGeometry(radius,.013,8,48),new T.MeshBasicMaterial({color:'#956017',depthTest:false}));ring.rotation.x=-Math.PI/2;ring.position.set(.1,1.7,-.85);ring.visible=false;ring.renderOrder=4;scene.add(ring);meshes.push(ring);materials.push(ring.material);return ring;});
-    var storageRings={};['fridge','shallowTray','wasteBin'].forEach(function(id){var ring=new T.Mesh(new T.TorusGeometry(.29,.02,8,48),new T.MeshBasicMaterial({color:'#956017',depthTest:false,transparent:true,opacity:.85}));ring.rotation.x=Math.PI/2;ring.position.copy(destinations[id]);ring.visible=false;ring.renderOrder=4;scene.add(ring);meshes.push(ring);materials.push(ring.material);storageRings[id]=ring;});
+    var storageRings={};['fridge','shallowTray','wasteBin'].forEach(function(id){var ring=new T.Mesh(new T.TorusGeometry(.29,.02,8,48),new T.MeshBasicMaterial({color:'#956017',depthTest:false,transparent:true,opacity:.85}));ring.rotation.x=Math.PI/2;ring.position.copy(destinations[id]);if(id==='fridge')ring.position.set(3.65,1.385,-1.33);ring.visible=false;ring.renderOrder=4;scene.add(ring);meshes.push(ring);materials.push(ring.material);storageRings[id]=ring;});
     var hoverRing=new T.Mesh(new T.TorusGeometry(.19,.018,8,40),new T.MeshBasicMaterial({color:'#956017',depthTest:false}));hoverRing.rotation.x=Math.PI/2;hoverRing.visible=false;hoverRing.renderOrder=4;scene.add(hoverRing);meshes.push(hoverRing);materials.push(hoverRing.material);
+    var probeRings=[.12,.29].map(function(radius){var ring=new T.Mesh(new T.TorusGeometry(radius,.012,8,48),new T.MeshBasicMaterial({color:'#f6cf7b',depthTest:false}));ring.rotation.x=-Math.PI/2;ring.position.set(1.65,1.745,-.85);ring.visible=false;ring.renderOrder=4;scene.add(ring);meshes.push(ring);materials.push(ring.material);return ring;});
+    var depthMarkers=[1.7355,1.56].map(function(y){var material=new T.MeshBasicMaterial({color:'#f6cf7b',depthTest:false}),ring=new T.Mesh(new T.TorusGeometry(.027,.0035,8,24),material);ring.position.set(0,y,0);ring.visible=false;ring.renderOrder=5;groups.probe.add(ring);meshes.push(ring);materials.push(material);return ring;});
+    var depthLineMaterial=new T.LineBasicMaterial({color:'#8aa99a',depthTest:false}),depthLine=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(.045,1.7355,0),new T.Vector3(.045,1.56,0)]),depthLineMaterial);depthLine.visible=false;depthLine.renderOrder=4;groups.probe.add(depthLine);meshes.push(depthLine);materials.push(depthLineMaterial);
+    function refreshDepthMarkers(depth,preview){
+      var visible=probeDepthInspection&&!probeServed&&!textView,selected=preview?window.KitchenStudioProbeDepth.placement(depth):probeShownValues.probe;
+      depthMarkers.forEach(function(marker,i){marker.visible=visible;marker.material.color.set(selected===(i?'thick':'surface')?'#8cddce':'#f6cf7b');});depthLine.visible=visible;
+    }
+    function showProbeDepth(depth,preview){
+      if(probeDepthInspection&&!probeServed){var pose=window.KitchenStudioProbeDepth.pose(depth);probe.position.copy(pose.shaft);display.position.copy(pose.display);probe.rotation.set(0,0,0);display.rotation.set(0,0,0);updateProbeTip();}
+      else poseProbe(probeShownValues.probe,probeServed);
+      renderer.domElement.dataset.probePlacement=probeServed?'resting':probeShownValues.probe||'unplaced';
+      writeProbeBadge();renderer.domElement.dataset.probePreview=preview?'depth':'';refreshProbeConsole();draw();
+    }
+    function updateProbeTip(){var p=new T.Vector3();probeTip.getWorldPosition(p);renderer.domElement.dataset.probeTip=JSON.stringify({x:p.x,y:p.y,z:p.z});}
+    function poseProbe(placement,served){
+      var pose=probeDepthInspection&&!served?window.KitchenStudioProbeDepth.pose(placement==='thick'?1:0):window.KitchenStudioProbe.pose(placement,served);
+      probe.position.copy(pose.shaft);display.position.copy(pose.display);probe.rotation.set(0,0,pose.rotationZ);display.rotation.set(0,0,pose.rotationZ);
+      renderer.domElement.dataset.probePlacement=served?'resting':placement||'unplaced';updateProbeTip();
+    }
+    function writeProbeBadge(){
+      var v=probeShownValues;probeBadge.write(v.reading==null?'—':v.reading+'°F',v.reading==null?(probeDepthInspection?(v.probe?'TAKE READING':'NOT PLACED'):'Tap to read'):probeServed?'RECORDED':v.probe==='surface'?'SURFACE':'INTERNAL');
+      renderer.domElement.dataset.probeBadge=v.reading==null?'unread':probeServed?'recorded':v.probe==='surface'?'surface':'internal';
+    }
+    function showProbeTargets(placement,visible){probeRings.forEach(function(ring,index){ring.visible=visible&&!probeDepthInspection;ring.material.color.set(placement===(index?'surface':'thick')?'#8cddce':'#f6cf7b');});}
+    function applyProbeCutaway(preview){
+      var active=current==='probe'&&!textView&&(probeCutaway||probeDepthInspection||preview),material=chicken.material,transparent=active?true:probeMaterialBase.transparent;
+      if(material.transparent!==transparent){material.transparent=transparent;material.needsUpdate=true;}
+      material.opacity=active?.3:probeMaterialBase.opacity;material.depthWrite=active?false:probeMaterialBase.depthWrite;
+      renderer.domElement.dataset.probeCutaway=String(active);
+    }
+    function refreshProbeConsole(){
+      var v=probeShownValues,section=$('studioProbeControls'),active=current==='probe'&&!textView&&!ovenInspection;
+      section.hidden=!active;$('studioProbeCutaway').setAttribute('aria-pressed',String(probeCutaway||probeDepthInspection));$('studioProbeCutaway').disabled=!active||probeDepthInspection||ovenInspection;
+      $('studioProbeCutawayHelp').hidden=!probeCutaway&&!probeDepthInspection;$('studioProbeRead').disabled=!active||sceneLocked()||!v.probe||probeServed||!!(probeView&&probeView.isPreviewing());
+      var placement=v.probe==='thick'?'Tip in the centre':v.probe==='surface'?'Tip at the surface':'Probe not placed';
+      var reading=v.reading==null?'No current reading.':v.reading+'°F / '+Math.round((v.reading-32)*5/9)+'°C.';
+      var message=(probeHistorical||probeServed?'Recorded thermometer: ':'Thermometer: ')+placement+'. '+reading+(probeServed?' Food served; thermometer at rest.':'');
+      var depthPreview=probeDepthInspection&&probeView&&probeView.isPreviewing();
+      if(depthPreview){var candidate=window.KitchenStudioProbeDepth.placement(probeView.getDepth());message='Placement preview. '+(candidate==='thick'?'Tip near the centre marker.':candidate==='surface'?'Tip near the surface marker.':'Move to the surface or centre marker.')+' Place the tip, then take a fresh reading.';probeBadge.write('PREVIEW','PLACE THEN READ');renderer.domElement.dataset.probeBadge='preview';renderer.domElement.dataset.probePreview='depth';}
+      refreshDepthMarkers(probeView?probeView.getDepth():0,!!depthPreview);
+      if($('studioProbeReadout').textContent!==message)$('studioProbeReadout').textContent=message;
+      applyProbeCutaway(false);showProbeTargets(v.probe,active&&probeCutaway&&!probeServed);
+    }
+    var stirGuide=new T.Group();stirGuide.position.set(.1,1.65,-.85);stirGuide.visible=false;scene.add(stirGuide);
+    var circlePoints=[];
+    for(var circleStep=0;circleStep<=64;circleStep++){
+      var circleAngle=Math.PI+circleStep*Math.PI/32;
+      circlePoints.push(new T.Vector3(Math.cos(circleAngle)*.23,0,Math.sin(circleAngle)*.23));
+    }
+    var stirGuideMaterial=new T.LineDashedMaterial({color:'#fff2d3',dashSize:.035,gapSize:.025,depthTest:false});
+    var guideCircle=new T.Line(new T.BufferGeometry().setFromPoints(circlePoints),stirGuideMaterial);guideCircle.computeLineDistances();guideCircle.renderOrder=4;
+    stirGuide.add(guideCircle);meshes.push(guideCircle);materials.push(stirGuideMaterial);
+    var stirProgressMaterial=new T.MeshBasicMaterial({color:'#9ee3b5',side:T.DoubleSide,depthTest:false});
+    var stirArc=new T.Mesh(new T.RingGeometry(.218,.242,64,1,Math.PI,Math.PI*2),stirProgressMaterial);stirArc.renderOrder=5;stirArc.visible=false;
+    stirGuide.add(stirArc);meshes.push(stirArc);materials.push(stirProgressMaterial);
+    var stirStartRing=new T.Mesh(new T.RingGeometry(.032,.043,28),new T.MeshBasicMaterial({color:'#e7ba57',side:T.DoubleSide,depthTest:false}));
+    stirStartRing.rotation.x=-Math.PI/2;stirStartRing.position.x=-.23;stirStartRing.renderOrder=6;
+    stirGuide.add(stirStartRing);meshes.push(stirStartRing);materials.push(stirStartRing.material);
+    function pourMode(){return $('studioControlledPour').getAttribute('aria-pressed')==='true'?'controlled':'portion';}
+    function setPourMode(mode){
+      if(current!=='measure'||sceneLocked())return;
+      touch.cancel('Pouring technique changed. Start a fresh pour.');if(measureView)measureView.close();
+      $('studioPortionPour').setAttribute('aria-pressed',String(mode==='portion'));$('studioControlledPour').setAttribute('aria-pressed',String(mode==='controlled'));
+      $('studioPourHelp').hidden=$('studioPourStep').hidden=mode!=='controlled';
+      stockTool.hint=mode==='controlled'?'Carry the carton to the jug mouth, tip down along the guide and return upright. Release to add up to 50 mL.':'Carry the stock carton over the jug, then release to pour one 150 mL measure.';
+      stockBadge.write('STOCK',mode==='controlled'?'50 mL':'150 mL');touch.handsOn();focus();touch.update();draw();renderer.domElement.scrollIntoView({block:'center',behavior:'auto'});
+    }
+    function pourInstruction(trace,ml){
+      var result=window.KitchenStudioPour.finish(trace);
+      if(!result.complete)return result.message;
+      var addition=Math.max(0,Math.min(50,1000-(ml||0)));
+      return addition?'Release to add '+addition+' mL. The jug will contain '+((ml||0)+addition)+' mL.':'Jug is full at 1,000 mL. Release to record the pour without adding more.';
+    }
+    function renderRubGuide(g){
+      if(!rubGuide)return;
+      var kind=g&&g.interactive&&!sceneLocked()?g.hit.kind:null;
+      var model=rubGuide.update(kind,kind==='handwash'?g.wash:kind==='dry'?g.trace:null);
+      if(model)$('studioTouchHint').textContent=model.instruction+' · Esc to cancel';
+    }
+    function renderCutGuide(g){
+      var guide=$('studioCutGuide'),trace=g&&g.interactive&&g.hit.kind==='cut'?g.trace:null;
+      renderer.domElement.dataset.cutPhase=trace?trace.phase:'idle';
+      guide.hidden=!trace||trace.invalid||textView;
+      if(guide.hidden)return;
+      var rect=renderer.domElement.getBoundingClientRect(),x=trace.start.x-rect.left,y=trace.start.y-rect.top;
+      guide.style.left=x+'px';guide.style.top=y+'px';guide.style.height=(45*trace.unit)+'px';
+      guide.dataset.phase=trace.phase;guide.dataset.side=x>rect.width-105?'left':'right';
+      guide.querySelector('i').style.top=(trace.depth*100)+'%';
+    }
+    function renderPourGuide(trace){
+      var guide=$('studioPourGuide'),canvas=renderer.domElement,rect=canvas.getBoundingClientRect();
+      canvas.dataset.pourPhase=trace?trace.phase:'idle';canvas.dataset.pourTilt=trace?String(trace.tilt):'0';canvas.dataset.pourAnchor=trace&&trace.anchor?JSON.stringify(trace.anchor):'';
+      guide.hidden=!trace||!trace.anchor||trace.invalid;
+      if(guide.hidden)return;
+      guide.style.left=(trace.anchor.x-rect.left)+'px';guide.style.top=(trace.anchor.y-rect.top)+'px';guide.style.height=(40*trace.unit)+'px';guide.dataset.ready=String(trace.phase==='ready');
+    }
+    function platingMode(){return $('studioControlledPlate').getAttribute('aria-pressed')==='true'?'controlled':'quick';}
+    function renderPlatingGuide(trace){
+      var guide=$('studioPlatingGuide'),canvas=renderer.domElement,rect=canvas.getBoundingClientRect();
+      canvas.dataset.platingPhase=trace?trace.phase:'idle';canvas.dataset.platingTilt=trace?String(trace.tilt):'0';canvas.dataset.platingAnchor=trace&&trace.anchor?JSON.stringify(trace.anchor):'';
+      if(!trace){canvas.dataset.platingPreview='false';canvas.dataset.platingTransfer='0';canvas.dataset.platingFoodCount='0';canvas.dataset.panPreviewAngle='0';}
+      guide.hidden=!trace||!trace.anchor||trace.invalid;
+      if(guide.hidden)return;
+      guide.style.left=(trace.anchor.x-rect.left)+'px';guide.style.top=(trace.anchor.y-rect.top)+'px';guide.style.height=(40*trace.unit)+'px';guide.dataset.ready=String(trace.phase==='ready');
+    }
+    function setPlatingMode(mode){
+      if(current!=='heat'||sceneLocked())return;touch.cancel('Plating technique changed. Start a fresh transfer.');
+      var controlled=mode==='controlled';$('studioControlledPlate').setAttribute('aria-pressed',String(controlled));$('studioQuickPlate').setAttribute('aria-pressed',String(!controlled));
+      $('studioPlatingHelp').hidden=$('studioPlatingStep').hidden=!controlled;
+      panTool.hint=controlled?'Carry the pan over the plate, follow the guide down to tip, return level, then release.':'Carry the pan to the serving plate, then release to plate and switch off the burner.';
+      touch.handsOn();if(panView)panView.update({plating:controlled});if(!panInspection)focus();touch.update();draw();renderer.domElement.scrollIntoView({block:'center',behavior:'auto'});
+    }
+    function resetStockStream(){
+      stockStream.visible=false;stockStream.scale.x=stockStream.scale.z=1;renderer.domElement.dataset.stockStream='false';
+    }
+    function drawStockStream(amount,visible,tilt){
+      resetStockStream();
+      var width=visible?window.KitchenStudioPourFlow.width(tilt===undefined?1:tilt):0;
+      if(width>0){
+        stockStream.visible=true;stockStream.scale.x=stockStream.scale.z=width;
+        stockCarton.updateWorldMatrix(true,false);var top=stockCarton.localToWorld(new T.Vector3(0,.385,0)),bottom=new T.Vector3(2.4,1.35+.6*amount/1000,1.05);
+        top=groups.measure.worldToLocal(top);bottom=groups.measure.worldToLocal(bottom);
+        var direction=top.clone().sub(bottom);stockStream.scale.y=direction.length();stockStream.position.copy(top.clone().add(bottom).multiplyScalar(.5));stockStream.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),direction.normalize());
+      }
+      renderer.domElement.dataset.stockStream=String(stockStream.visible);
+    }
+    function panMode(){return $('studioStirMode').getAttribute('aria-pressed')==='true'?'stir':'arrange';}
+    function renderStirGuide(trace){
+      var enabled=current==='heat'&&panMode()==='stir'&&!sceneLocked()&&!(panView&&panView.isDialFocused());
+      stirGuide.visible=enabled;stirArc.visible=enabled&&!!trace&&!trace.invalid;
+      var progress=trace?window.KitchenStudioStir.progress(trace):0;
+      renderer.domElement.dataset.stirProgress=String(progress);
+      renderer.domElement.dataset.stirPhase=trace?trace.phase:'idle';
+      if(!stirArc.visible)return;
+      stirArc.rotation.x=trace.travel<0?-Math.PI/2:Math.PI/2;
+      stirArc.geometry.setDrawRange(0,Math.floor(progress*64)*6);
+    }
+    function setPanMode(mode){
+      if(sceneLocked())return;
+      touch.cancel('Spatula technique changed. Start a fresh movement.');
+      $('studioArrangeMode').setAttribute('aria-pressed',String(mode==='arrange'));
+      $('studioStirMode').setAttribute('aria-pressed',String(mode==='stir'));
+      $('studioStirHelp').hidden=$('studioStirStep').hidden=mode!=='stir';
+      spatulaTool.hint=mode==='stir'?'Move the spatula to the start ring, follow one circle, then release for a 30-second simulated cooking step.':'Carry the spatula to the outer pan ring to spread mushrooms, or to the centre to gather them.';
+      renderStirGuide(null);touch.update();draw();
+    }
+    var heatContext=new T.Group(),dialFocusParts=[hobSurface,dialGrip].concat(dialScaleParts);
+    groups.heat.children.slice().forEach(function(object){if(dialFocusParts.indexOf(object)===-1)heatContext.add(object);});groups.heat.add(heatContext);
+    function refreshDialContext(){
+      var dialFocused=!!(panView&&panView.isDialFocused());heatContext.visible=!dialFocused;renderStirGuide(null);
+      if(panInspection)$('sceneStatus').textContent=dialFocused?'Burner dial view · turn the rim, then release':'Pan working view · use the tools or adjust the viewing angle';
+    }
     var contactRing=new T.Mesh(new T.TorusGeometry(.2,.025,8,40),new T.MeshBasicMaterial({color:'#246b57',depthTest:false,transparent:true,opacity:0}));contactRing.rotation.x=Math.PI/2;contactRing.visible=false;contactRing.renderOrder=5;scene.add(contactRing);meshes.push(contactRing);materials.push(contactRing.material);
     var motionPreference=window.matchMedia('(prefers-reduced-motion: reduce)');
     function stopFeedback(){if(feedbackFrame!==null)cancelAnimationFrame(feedbackFrame);feedbackFrame=null;contactRing.visible=false;renderer.domElement.dataset.feedback='idle';}
-    function pulse(id,accepted){stopFeedback();var info=touchTargets[id],drop=destinations[id];if((!info&&!drop)||textView||replayState||motionPreference.matches||document.hidden)return;if(drop)contactRing.position.copy(drop);else info.anchor.getWorldPosition(contactRing.position);contactRing.position.y+=.04;contactRing.material.color.set(accepted?'#246b57':'#956017');contactRing.material.opacity=.8;contactRing.scale.setScalar(1);contactRing.visible=true;renderer.domElement.dataset.feedback=accepted?'accepted':'retry';feedbackStart=performance.now();function frame(now){if(document.hidden||textView||replayState){stopFeedback();draw();return;}var t=Math.min(1,(now-feedbackStart)/420);contactRing.scale.setScalar(1+t*1.8);contactRing.material.opacity=.8*(1-t);if(t>=1)stopFeedback();else feedbackFrame=requestAnimationFrame(frame);draw();}feedbackFrame=requestAnimationFrame(frame);draw();}
-    function respond(action,s){var map={wash:'soap',rinse:'faucet',sanitize:'sanitizer',board:'prepBoard',prepare:'prepBoardTarget',secure:'board',claw:'grip',flat:'grip',dice:'knife',largeDice:'knife',dry:'towel',spread:'mushroom',crowd:'spatula',low:'dial',medium:'dial',high:'dial',advance:'cookTimer',plate:'servingPlate',thick:'probe',surface:'probe',read:'probe',cook:'ovenDrop',serve:'serveDrop',add50:'jug',add150:'jug',remove50:'jug',empty:'jug',check:'measureCheck',chill:'fridge',shallow:'shallowTray',label:'containerTarget',discard:'wasteBin'},entry=s.log[s.log.length-1];if(entry)pulse(map[action],entry.accepted);}
+    function pulse(id,accepted){stopFeedback();var info=touchTargets[id],drop=destinations[id];if((!info&&!drop)||textView||measureInspection||replayState||motionPreference.matches||document.hidden)return;if(drop)contactRing.position.copy(drop);else info.anchor.getWorldPosition(contactRing.position);contactRing.position.y+=.04;contactRing.material.color.set(accepted?'#246b57':'#956017');contactRing.material.opacity=.8;contactRing.scale.setScalar(1);contactRing.visible=true;renderer.domElement.dataset.feedback=accepted?'accepted':'retry';feedbackStart=performance.now();function frame(now){if(document.hidden||textView||replayState){stopFeedback();draw();return;}var t=Math.min(1,(now-feedbackStart)/420);contactRing.scale.setScalar(1+t*1.8);contactRing.material.opacity=.8*(1-t);if(t>=1)stopFeedback();else feedbackFrame=requestAnimationFrame(frame);draw();}feedbackFrame=requestAnimationFrame(frame);draw();}
+    function respond(action,s){var map={wash:'soap',rinse:'faucet',sanitize:'sanitizer',board:'prepBoard',prepare:'prepBoardTarget',secure:'board',claw:'grip',flat:'grip',dice:'knife',largeDice:'knife',dry:'towel',spread:'mushroom',crowd:'spatula',off:'dial',low:'dial',medium:'dial',high:'dial',advance:'cookTimer',plate:'servingPlate',thick:'probe',surface:'probe',read:'probe',cook:'ovenDrop',serve:'serveDrop',add50:'jug',add150:'jug',remove50:'jug',empty:'jug',check:'measureCheck',chill:'fridge',shallow:'shallowTray',label:'containerTarget',discard:'wasteBin'},entry=s.log[s.log.length-1];if(entry)pulse(map[action],entry.accepted);}
     function projectTargets(){
       var rect=renderer.domElement.getBoundingClientRect(),points={};
-      Object.keys(touchTargets).forEach(function(id){var o=touchTargets[id].anchor,p=new T.Vector3();o.getWorldPosition(p);if(id==='board')p.set(-1.1,1.445,-.62);if(id==='chickenPlate'){p.x+=.3;p.z+=.22;p.y+=.03;}p.project(camera);points[id]={x:(p.x+1)*rect.width/2,y:(1-p.y)*rect.height/2};});
+      Object.keys(touchTargets).forEach(function(id){var o=touchTargets[id].anchor,p=new T.Vector3();o.getWorldPosition(p);if(id==='board')p.set(-1.1,1.445,-.62);if(id==='dial')p.copy(dialCap);if(id==='chickenPlate'){p.x+=.3;p.z+=.22;p.y+=.03;}p.project(camera);points[id]={x:(p.x+1)*rect.width/2,y:(1-p.y)*rect.height/2};});
+      var tipPoint=new T.Vector3();probeTip.getWorldPosition(tipPoint);tipPoint.project(camera);points.probeTip={x:(tipPoint.x+1)*rect.width/2,y:(1-tipPoint.y)*rect.height/2};
+      var depthGuide=$('studioProbeDepthGuide');depthGuide.hidden=!probeDepthInspection||probeServed||textView;
+      depthMarkers.forEach(function(marker,i){var p=new T.Vector3();marker.getWorldPosition(p);p.project(camera);var at={x:(p.x+1)*rect.width/2,y:(1-p.y)*rect.height/2};points[i?'probeCore':'probeSkin']=at;if(!depthGuide.hidden){var label=depthGuide.children[i];label.style.left=(at.x+16)+'px';label.style.top=(at.y-7)+'px';}});
       Object.keys(destinations).forEach(function(id){var p=destinations[id].clone().project(camera);points[id]={x:(p.x+1)*rect.width/2,y:(1-p.y)*rect.height/2};});
-      renderer.domElement.dataset.targets=JSON.stringify(points);
+      if(current==='heat'){
+        for(var stirStep=0;stirStep<16;stirStep++){
+          var stirAngle=Math.PI+stirStep*Math.PI/8;
+          var stirPoint=new T.Vector3(.1+Math.cos(stirAngle)*.23,1.65,-.85+Math.sin(stirAngle)*.23).project(camera);
+          points['stirPoint'+stirStep]={x:(stirPoint.x+1)*rect.width/2,y:(1-stirPoint.y)*rect.height/2};
+        }
+        points.stirStart=points.stirPoint0;
+        for(var i=0;i<16;i++){
+          var angle=i*Math.PI/8,rim=dialCap.clone();
+          rim.x+=Math.sin(angle)*dialRadius*.8;rim.z-=Math.cos(angle)*dialRadius*.8;rim.project(camera);
+          points['dialRim'+i]={x:(rim.x+1)*rect.width/2,y:(1-rim.y)*rect.height/2};
+        }
+      }
+      renderer.domElement.dataset.targetWidth=String(rect.width);renderer.domElement.dataset.targetHeight=String(rect.height);renderer.domElement.dataset.targets=JSON.stringify(points);
     }
-    function draw(){renderer.render(scene,camera);projectTargets();}
-    function resize(){if(host.hidden)return;var w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;if(touch&&lastSize&&(lastSize.w!==w||lastSize.h!==h))touch.cancel('View resized. No action recorded.');lastSize={w:w,h:h};renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();draw();}
-    function reset(){if(touch)touch.cancel('View reset. No action recorded.');focused=false;focusedStation=null;stationLabels.concat(stationBadges).forEach(function(s){s.visible=true;});$('focusView').setAttribute('aria-pressed','false');camera.position.set(7.4,6.6,9.7);controls.target.set(0,1,0);controls.update();resize();}
+    function renderDiscovery(){
+      if(!discoveryView)return;
+      if(!discovered||textView||document.hidden||renderer.domElement.dataset.held){discoveryView.clear();return;}
+      var info=inputTool(discovered.info);
+      var visible=info&&info.kind&&info.station===current&&info.anchor&&Array.isArray(info.objects)&&info.objects.some(function(object){for(var p=object;p;p=p.parent)if(p.visible===false)return false;return true;});
+      if(!visible){discoveryView.clear();return;}
+      info.anchor.updateWorldMatrix(true,false);var p=info.anchor.getWorldPosition(new T.Vector3()).project(camera);
+      var at=JSON.parse(renderer.domElement.dataset.targets||'{}')[info.id];
+      if(!at||!Number.isFinite(p.z)||p.z< -1||p.z>1){discoveryView.clear();return;}
+      discoveryView.render({id:info.id,name:info.name||info.id,hint:discovered.hint,readOnly:discovered.readOnly,point:{x:at.x,y:at.y}});
+    }
+    function renderDropTargets(){
+      if(!dropView)return;
+      var g=dropGesture,info=g&&inputTool(g.hit),api=window.KitchenStudioDropTargets;
+      var markerObjects=info&&Array.isArray(info.objects)?info.objects.slice():[];if(info&&info.kind==='mat')markerObjects.push(matBoard);
+      var visible=markerObjects.some(function(object){for(var parent=object;parent;parent=parent.parent)if(parent.visible===false)return false;return true;});
+      if(!g||!g.interactive||g.source!==state()||textView||document.hidden||sceneLocked()||!renderer.domElement.getClientRects().length||!info||info.viewOnly||info.station!==current||!visible||!api.supports(info.kind)||renderer.domElement.dataset.held!==g.hit.id){dropView.clear();return;}
+      var points=JSON.parse(renderer.domElement.dataset.targets||'{}'),targets=[];
+      keyboardTargets(info,g).forEach(function(target){var position=destinations[target.id],at=points[target.id];if(!position||!at)return;var projected=position.clone().project(camera);if(!Number.isFinite(projected.z)||projected.z< -1||projected.z>1)return;targets.push({id:target.id,label:target.label,point:{x:at.x,y:at.y}});});
+      dropView.render({targets:targets,active:g.moved>=8?api.activeTarget(info.kind,g.destination):null});
+    }
+    function draw(){renderer.render(scene,camera);renderer.domElement.dataset.platingFoodColors=mushrooms.map(function(m){return m.material.color.getHexString();}).join(',');projectTargets();renderDiscovery();renderDropTargets();}
+    function setMeasureInspection(opened){
+      measureInspection=opened;
+      if(opened){
+        stopFeedback();hoverRing.visible=false;
+        var decorations=stationLabels.concat(stationBadges,[selection,stockCarton,measureCheck]);
+        Object.keys(groups).forEach(function(id){if(id!=='measure')decorations.push(groups[id]);});
+        inspectionDecorations=decorations.map(function(object){var saved={object:object,visible:object.visible};object.visible=false;return saved;});
+      }else{
+        inspectionDecorations.forEach(function(saved){saved.object.visible=saved.visible;});inspectionDecorations=[];
+      }
+      $('stationLens').hidden=textView||opened||panInspection||boardInspection||containerInspection||probeDepthInspection||ovenInspection;
+      if(touch)touch.update();
+    }
+    function setPanInspection(opened){
+      panInspection=opened;
+      if(opened){
+        if(touch)touch.handsOn();
+        stopFeedback();hoverRing.visible=false;
+        var decorations=stationLabels.concat(stationBadges,[selection]);
+        Object.keys(groups).forEach(function(id){if(id!=='heat')decorations.push(groups[id]);});
+        panDecorations=decorations.map(function(object){var saved={object:object,visible:object.visible};object.visible=false;return saved;});
+      }else{panDecorations.forEach(function(saved){saved.object.visible=saved.visible;});panDecorations=[];}
+      $('stationLens').hidden=textView||measureInspection||opened||boardInspection||containerInspection||probeDepthInspection||ovenInspection;
+      refreshDialContext();if(!opened)$('sceneStatus').textContent='Drag empty space to orbit · Scroll to zoom · Tap a station';
+      if(touch)touch.update();
+    }
+    function setBoardInspection(opened){
+      boardInspection=opened;
+      if(opened){
+        if(touch)touch.handsOn();
+        stopFeedback();hoverRing.visible=false;
+        var decorations=stationLabels.concat(stationBadges,[selection]);
+        Object.keys(groups).forEach(function(id){if(id!=='knife')decorations.push(groups[id]);});
+        boardDecorations=decorations.map(function(object){var saved={object:object,visible:object.visible};object.visible=false;return saved;});
+      }else{boardDecorations.forEach(function(saved){saved.object.visible=saved.visible;});boardDecorations=[];}
+      $('stationLens').hidden=textView||measureInspection||panInspection||containerInspection||opened||probeDepthInspection||ovenInspection;
+      $('sceneStatus').textContent=opened?'Board working view · use the tools or adjust the viewing angle':'Drag empty space to orbit · Scroll to zoom · Tap a station';
+      if(touch)touch.update();
+      if(opened)renderer.domElement.scrollIntoView({block:'center',behavior:'auto'});
+    }
+    function setContainerInspection(opened){
+      containerInspection=opened;lidPreference=false;
+      if(opened){
+        containerRevision=shownContainerRevision;containerDoorPreference=doorPreference;
+        if(touch)touch.handsOn();stopFeedback();hoverRing.visible=false;
+        var decorations=stationLabels.concat(stationBadges,[selection]);Object.keys(groups).forEach(function(id){if(id!=='chill')decorations.push(groups[id]);});
+        containerDecorations=decorations.map(function(object){var saved={object:object,visible:object.visible};object.visible=false;return saved;});
+        if(storageShownValues.chilled)doorPreference=true;
+      }else{containerDecorations.forEach(function(saved){saved.object.visible=saved.visible;});containerDecorations=[];doorPreference=containerDoorPreference;containerRevision=null;}
+      poseFridge(fridgeIsOpen()?1:0);poseLids(0,false);
+      $('stationLens').hidden=textView||measureInspection||panInspection||boardInspection||opened||probeDepthInspection||ovenInspection;
+      $('sceneStatus').textContent=opened?'Container inspection · tap or lift the lids':'Drag empty space to orbit · Scroll to zoom · Tap a station';
+      if(touch)touch.update();if(opened)renderer.domElement.scrollIntoView({block:'center',behavior:'auto'});
+    }
+    function containerFrame(){
+      groups.chill.updateWorldMatrix(true,true);var points=[],centres=[];
+      [tub,dividedTub].forEach(function(body,index){if(!body.visible)return;var halfX=index?.21:.32,halfY=index?.0425:.06;
+        [-halfX,halfX].forEach(function(x){[-halfY,halfY+.29/body.scale.y].forEach(function(y){[-.34,.22].forEach(function(z){points.push(body.localToWorld(new T.Vector3(x,y,z)));});});});
+        centres.push(body.getWorldPosition(new T.Vector3()));
+      });
+      var target=new T.Vector3();centres.forEach(function(c){target.add(c);});target.multiplyScalar(1/Math.max(1,centres.length));target.y+=.09;target.z-=.04;
+      return {target:target,points:points};
+    }
+    function ovenFrame(){
+      groups.probe.updateWorldMatrix(true,true);var points=[];
+      [-.62,.62].forEach(function(x){[.30,1.24].forEach(function(y){[.40,1.60].forEach(function(z){points.push(groups.probe.localToWorld(new T.Vector3(x,y,z)));});});});
+      return {target:groups.probe.localToWorld(new T.Vector3(0,.78,.96)),points:points};
+    }
+    function setOvenInspection(opened){
+      ovenInspection=opened;
+      if(opened){
+        if(touch)touch.handsOn();stopFeedback();hoverRing.visible=false;
+        var decorations=stationLabels.concat(stationBadges,[selection]);Object.keys(groups).forEach(function(id){if(id!=='probe')decorations.push(groups[id]);});
+        groups.probe.children.forEach(function(object){if(ovenParts.indexOf(object)===-1)decorations.push(object);});
+        ovenDecorations=decorations.map(function(object){var saved={object:object,visible:object.visible};object.visible=false;return saved;});
+      }else{ovenDecorations.forEach(function(saved){saved.object.visible=saved.visible;});ovenDecorations=[];}
+      $('stationLens').hidden=textView||measureInspection||panInspection||boardInspection||containerInspection||probeDepthInspection||opened;
+      $('sceneStatus').textContent=opened?'Oven inspection · pull the handle down to open, or push up to close':'Drag empty space to orbit · Scroll to zoom · Tap a station';
+      refreshProbeConsole();
+      if(touch)touch.update();if(opened)renderer.domElement.scrollIntoView({block:'center',behavior:'auto'});
+    }
+    function setProbeDepthInspection(opened){
+      probeDepthInspection=opened;
+      if(opened){
+        if(touch)touch.handsOn();stopFeedback();hoverRing.visible=false;
+        var decorations=stationLabels.concat(stationBadges.filter(function(sprite){return sprite!==probeBadge.sprite;}),[selection]);Object.keys(groups).forEach(function(id){if(id!=='probe')decorations.push(groups[id]);});
+        probeDepthDecorations=decorations.map(function(object){var saved={object:object,visible:object.visible};object.visible=false;return saved;});
+        probeTool.hint='Drag the display down to insert the sensing tip, or up to withdraw. Release at a marker, then take a fresh reading.';
+      }else{probeDepthDecorations.forEach(function(saved){saved.object.visible=saved.visible;});probeDepthDecorations=[];probeTool.hint='Drag to place the thermometer; tap the display to take a fresh reading.';}
+      poseProbe(probeShownValues.probe,probeServed);writeProbeBadge();refreshProbeConsole();poseOven(ovenPreference?1:0,false);
+      $('stationLens').hidden=textView||measureInspection||panInspection||boardInspection||containerInspection||opened||ovenInspection;
+      $('sceneStatus').textContent=opened?'Probe insertion view · move the sensing tip between the markers':'Drag empty space to orbit · Scroll to zoom · Tap a station';
+      if(touch)touch.update();if(opened)renderer.domElement.scrollIntoView({block:'center',behavior:'auto'});
+    }
+    function resize(){if(host.hidden)return;var w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;var changed=!lastSize||lastSize.w!==w||lastSize.h!==h;if(touch&&lastSize&&changed)touch.cancel('View resized. No action recorded.');lastSize={w:w,h:h};renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(panView&&changed)panView.resize();if(boardView&&changed)boardView.resize();if(containerView&&changed)containerView.resize();if(probeView&&changed)probeView.resize();if(ovenView&&changed)ovenView.resize();draw();}
+    function reset(){if(ovenView)ovenView.close();if(probeView)probeView.close();if(containerView)containerView.close();if(boardView)boardView.close();if(panView)panView.close();if(measureView)measureView.close();if(touch)touch.cancel('View reset. No action recorded.');focused=false;focusedStation=null;stationLabels.concat(stationBadges).forEach(function(s){s.visible=true;});$('focusView').setAttribute('aria-pressed','false');camera.position.set(7.4,6.6,9.7);controls.target.set(0,1,0);controls.update();resize();}
     controls.addEventListener('change',draw);
     var ray=new T.Raycaster(),pointer=new T.Vector2(),workPlane=new T.Plane(new T.Vector3(0,1,0),-1.65);
     function cast(e){var rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);}
-    function pick(e){cast(e);var hits=ray.intersectObjects(pickable).filter(function(h){var o=h.object;while(o){if(!o.visible)return false;o=o.parent;}return true;});var hit=hits.find(function(h){return h.object.isSprite&&h.object.userData.touch&&h.object.userData.mission===current;})||hits[0];return hit?(hit.object.userData.touch||{station:hit.object.userData.mission,objects:[]}):null;}
+    function pick(e){cast(e);var hits=ray.intersectObjects(pickable).filter(function(h){var o=h.object;while(o){if(!o.visible)return false;o=o.parent;}return true;});var hit=hits.find(function(h){return h.object.isSprite&&h.object.userData.touch&&h.object.userData.mission===current;})||(probeCutaway&&current==='probe'?hits.find(function(h){return h.object.userData.touch&&h.object.userData.touch.id==='probe';}):null)||hits[0];var info=hit?(hit.object.userData.touch||{station:hit.object.userData.mission,objects:[]}):null;return inputTool(info);}
+    function inputTool(info){if(panView&&panView.isDialFocused())return info&&info.id==='dial'?info:null;if(ovenInspection)return info&&info.id==='ovenHandle'?info:null;if(probeDepthInspection)return info&&info.id==='probe'?Object.assign({},info,{kind:'insertProbe',tapAction:null}):null;if(containerInspection)return info&&info.id==='tub'?Object.assign({},info,{kind:'lid',viewOnly:true,viewTap:true,moving:[lid,dividedLid]}):null;if(info&&info.id==='pan'&&platingMode()==='controlled')return Object.assign({},info,{kind:'tipPlate'});if(info&&info.id==='stockCarton'&&pourMode()==='controlled')return Object.assign({},info,{kind:'tipPour'});return info&&info.id==='spatula'&&panMode()==='stir'?Object.assign({},info,{kind:'stir'}):info;}
+    function keyboardPoint(id){
+      var targets=JSON.parse(renderer.domElement.dataset.targets||'{}'),at=targets[id],b=renderer.domElement.getBoundingClientRect();
+      return at?{x:b.left+at.x,y:b.top+at.y}:null;
+    }
+    function keyboardTargets(info,g){
+      if(g&&(g.trace&&g.trace.invalid||g.insertion&&g.insertion.invalid||g.ovenDoor&&g.ovenDoor.invalid||g.lid&&g.lid.invalid||g.pour&&g.pour.invalid||g.plating&&g.plating.invalid||g.wash&&g.wash.invalid||g.stir&&g.stir.invalid))return [];
+      var choices={prepare:['prepBoardTarget'],mat:['boardMat'],spatula:['panCenter','panEdge'],spread:['panEdge'],plate:['servingPlate'],tipPlate:['servingPlate'],stock:['jugFill'],tipPour:['jugFill'],probe:['probeCenter','probeSurface'],chicken:['ovenDrop','serveDrop'],store:['shallowTray','fridge','wasteBin'],label:['containerTarget']},ids=choices[info.kind]||[];
+      if(info.kind==='stir'&&g.stir&&g.stir.phase==='carry')ids=['stirStart'];
+      if(info.kind==='handwash'&&g.wash&&g.wash.passes===3)ids=['washWater'];
+      var names={prepBoardTarget:'Preparation board',boardMat:'Under the board',panCenter:'Pan centre',panEdge:'Outer pan ring',servingPlate:'Serving plate',jugFill:'Jug opening',probeCenter:'Chicken centre',probeSurface:'Chicken surface',ovenDrop:'Oven',serveDrop:'Serving place',shallowTray:'Shallow tray',fridge:'Refrigerator shelf',wasteBin:'Waste bin',containerTarget:'Leftovers container',stirStart:'Stirring start ring',washWater:'Running water'};
+      return ids.map(function(id){return {id:id,label:names[id]};});
+    }
     function point(e){cast(e);return ray.ray.intersectPlane(workPlane,new T.Vector3());}
+    function platingTarget(e){
+      var hit=point(e),rect=renderer.domElement.getBoundingClientRect(),anchor=destinations.servingPlate.clone().project(camera);
+      return {overPlate:!!hit&&Math.hypot(hit.x-.1,hit.z+.02)<=.38,anchor:{x:rect.left+(anchor.x+1)*rect.width/2,y:rect.top+(1-anchor.y)*rect.height/2}};
+    }
+    function washWater(e){
+      cast(e);var hit=ray.ray.intersectPlane(new T.Plane(new T.Vector3(0,1,0),-1.67),new T.Vector3());
+      return {overWater:!!hit&&Math.hypot(hit.x+3,hit.z+1.04)<=.17};
+    }
+    function pourMouth(e){
+      cast(e);var hit=ray.ray.intersectPlane(new T.Plane(new T.Vector3(0,1,0),-2.04),new T.Vector3()),rect=renderer.domElement.getBoundingClientRect(),anchor=destinations.jugFill.clone().project(camera);
+      return {over:!!hit&&Math.hypot(hit.x-2.4,hit.z-1.05)<=.28,anchor:{x:rect.left+(anchor.x+1)*rect.width/2,y:rect.top+(1-anchor.y)*rect.height/2}};
+    }
+    function stirPoint(e){var hit=point(e);return hit?{x:hit.x-.1,z:hit.z+.85}:null;}
+    var dialPlane=new T.Plane(new T.Vector3(0,1,0),-dialCap.y);
+    function dialPoint(e){
+      cast(e);
+      var hit=ray.ray.intersectPlane(dialPlane,new T.Vector3());
+      return hit?{x:(hit.x-dialCap.x)/dialRadius,z:(hit.z-dialCap.z)/dialRadius}:null;
+    }
     function platterTarget(at){
       cast({clientX:at.x,clientY:at.y});
       var oven=ray.ray.intersectPlane(new T.Plane(new T.Vector3(0,0,1),.03),new T.Vector3()),serve=ray.ray.intersectPlane(new T.Plane(new T.Vector3(0,1,0),-1.45),new T.Vector3());
@@ -362,10 +801,10 @@
       return inOven?'oven':inServe?'serve':null;
     }
     function highlight(info){
-      highlighted.forEach(function(entry){entry.material.emissive.copy(entry.color);entry.material.emissiveIntensity=entry.intensity;});highlighted=[];hoverRing.visible=!!info;
+      highlighted.forEach(function(entry){entry.material.emissive.copy(entry.color);entry.material.emissiveIntensity=entry.intensity;});highlighted=[];hoverRing.visible=!!info&&!measureInspection;
       if(info){info.objects.forEach(function(o){var m=o.material;if(!m.emissive)return;highlighted.push({material:m,color:m.emissive.clone(),intensity:m.emissiveIntensity});m.emissive.set('#8c632c');m.emissiveIntensity=.3;});info.anchor.getWorldPosition(hoverRing.position);hoverRing.position.y=1.36;}
     }
-    function restorePose(g){if(!g)return;g.original.forEach(function(o){o.object.position.copy(o.position);o.object.rotation.copy(o.rotation);o.object.scale.copy(o.scale);o.object.visible=o.visible;});if(g.hit.kind==='grip')renderer.domElement.dataset.gripCurl=String(Math.round(Math.max(0,Math.min(1,-fingerJoints[0].rotation.x/1.35))*100));if(g.hit.kind==='stock'||g.hit.kind==='pour')showMeasureAmount(measureShownMl,false);renderer.domElement.dataset.cutPreview='0';renderer.domElement.dataset.matPreview='false';renderer.domElement.dataset.spatulaPreview='';fridgeDoor.rotation.y=fridgeDoor.userData.restAngle||0;ovenDoor.rotation.x=0;renderer.domElement.dataset.ovenOpen='false';renderer.domElement.dataset.platterTarget='';}
+    function restorePose(g){if(!g)return;g.original.forEach(function(o){o.object.position.copy(o.position);o.object.rotation.copy(o.rotation);o.object.scale.copy(o.scale);o.object.visible=o.visible;});if(g.hit.kind==='grip')renderer.domElement.dataset.gripCurl=String(Math.round(Math.max(0,Math.min(1,-fingerJoints[0].rotation.x/1.35))*100));if(g.hit.kind==='stock'||g.hit.kind==='tipPour'||g.hit.kind==='pour')showMeasureAmount(measureShownMl,false);renderer.domElement.dataset.washPhase='idle';renderer.domElement.dataset.washPasses='0';renderer.domElement.dataset.washPreview='false';renderer.domElement.dataset.handLather='0';renderer.domElement.dataset.waterFlow='false';renderer.domElement.dataset.platingPreview='false';renderer.domElement.dataset.platingTransfer='0';renderer.domElement.dataset.platingFoodCount='0';renderer.domElement.dataset.panPreviewAngle='0';renderer.domElement.dataset.cutPreview='0';renderer.domElement.dataset.matPreview='false';renderer.domElement.dataset.spatulaPreview='';poseFridge(fridgeIsOpen()?1:0);poseLids(lidPreference?1:0,false);renderer.domElement.dataset.storagePreview='';poseOven(ovenPreference?1:0,false);renderer.domElement.dataset.platterTarget='';}
     function destination(g){
       if(g.hit.kind==='mat'||g.hit.kind==='spatula')return window.KitchenStudioPlacement.destination(g.hit.kind,g.current,g.point);
       if(g.hit.kind==='chicken')return window.KitchenStudioPlatter.destination(g.last,g.start,platterTarget(g.last));
@@ -382,9 +821,36 @@
       var radius=Math.hypot(p.x-.1,p.z+.85);return {action:dist>.12&&radius>=.22&&radius<=.53?'spread':null,message:radius>=.22&&radius<=.53?'Release to spread the mushrooms.':'Carry outward, keeping the mushroom inside the pan.'};
     }
     function preview(g,old){
-      restorePose(g||old);matOutline.visible=false;spacingRings.forEach(function(ring){ring.visible=false;});targetRing.visible=false;ovenOutline.visible=false;stockStream.visible=false;renderer.domElement.dataset.stockStream='false';Object.keys(storageRings).forEach(function(id){storageRings[id].visible=false;});$('stationLens').hidden=textView||!!(g&&g.interactive&&g.hit.kind==='chicken');var placementHint=$('studioPlacementHint');placementHint.hidden=true;if(!g)return;
+      dropGesture=g&&g.interactive?g:null;if(!dropGesture&&dropView)dropView.clear();
+      renderer.domElement.dataset.dialPreview='';
+      $('studioDialScale').hidden=true;
+      restorePose(g||old);if(!g&&old&&old.hit.kind==='insertProbe'&&probeView)probeView.preview(null);if(!g&&old&&(old.hit.kind==='probe'||old.hit.kind==='insertProbe'||old.hit.kind==='chicken')){writeProbeBadge();refreshProbeConsole();updateProbeTip();renderer.domElement.dataset.probePlacement=probeServed?'resting':probeShownValues.probe||'unplaced';renderer.domElement.dataset.probePreview='';}matOutline.visible=false;spacingRings.forEach(function(ring){ring.visible=false;});targetRing.visible=false;targetRing.scale.setScalar(1);ovenOutline.visible=false;resetStockStream();Object.keys(storageRings).forEach(function(id){storageRings[id].visible=false;});$('stationLens').hidden=textView||measureInspection||panInspection||boardInspection||containerInspection||!!(g&&g.interactive&&(g.hit.kind==='tipPlate'||g.hit.kind==='handwash'||g.hit.kind==='chicken'||g.hit.kind==='tipPour'||g.hit.kind==='probe'&&g.moved>=8))||probeDepthInspection||ovenInspection;var placementHint=$('studioPlacementHint');placementHint.hidden=true;placementHint.dataset.tool=g?g.hit.kind:'';renderStirGuide(g&&g.stir);renderPourGuide(g&&g.pour);renderPlatingGuide(g&&g.plating);renderCutGuide(g);renderRubGuide(g);if(!g)return;
       var kind=g.hit.kind,trace=g.trace,delta=g.current&&g.point?g.current.clone().sub(g.point):new T.Vector3();
+      if(kind==='handwash'&&g.wash){
+        hoverRing.visible=false;
+        var wash=g.wash,washResult=window.KitchenStudioWash.finish(wash),rinsing=wash.phase==='rinse'||wash.phase==='ready',ready=wash.phase==='ready';
+        renderer.domElement.dataset.washPhase=wash.phase;renderer.domElement.dataset.washPasses=String(wash.passes);renderer.domElement.dataset.washPreview='true';
+        placementHint.hidden=false;placementHint.dataset.ready=String(ready);
+        $('studioPlacementTitle').textContent=wash.invalid?'Handwash preview · start again':ready?'Handwash preview · release under water':rinsing?'Handwash preview · rinse':'Handwash preview · scrub '+wash.passes+' of 3';
+        $('studioPlacementDetail').textContent=washResult.message;
+        if(!wash.invalid){
+          var sway=Math.max(-1,Math.min(1,(wash.current.x-wash.start.x)/wash.unit/30));
+          if(rinsing){washingHands.position.add(delta);if(ready)washingHands.position.set(0,1.67,-.19);}
+          else{washingHands.rotation.y=sway*.18;washPalms[0].position.x+=sway*.045;washPalms[1].position.x-=sway*.045;soapPump.scale.y=.65;}
+          var foamCount=rinsing?ready?3:7:Math.min(12,3+wash.passes*3);washLather.forEach(function(o,i){o.visible=i<foamCount;});
+          renderer.domElement.dataset.handLather=String(foamCount);
+          waterStream.visible=rinsing;renderer.domElement.dataset.waterFlow=String(rinsing);
+          if(rinsing){targetRing.visible=true;targetRing.scale.setScalar(.6);targetRing.position.copy(destinations.washWater);targetRing.material.color.set(ready?'#246b57':'#537d85');}
+        }
+      }
       if((kind==='mat'||kind==='spatula')&&g.interactive){placementHint.hidden=false;var ready=!!(g.destination&&g.destination.action);placementHint.dataset.ready=String(ready);$('studioPlacementTitle').textContent=ready?'Preview · ready to place':'Preview · choose a position';$('studioPlacementDetail').textContent=g.destination?g.destination.message:kind==='mat'?'Move the folded mat under the board.':'Outer ring: spread · centre: gather';}
+      if((kind==='store'||kind==='label')&&g.interactive){
+        var storageReady=!!(g.destination&&g.destination.action);
+        placementHint.hidden=false;placementHint.dataset.ready=String(storageReady);
+        $('studioPlacementTitle').textContent=storageReady?'Storage preview · release to place':'Storage preview · choose a destination';
+        $('studioPlacementDetail').textContent=g.destination?g.destination.message:g.hit.hint;
+        if(kind==='label')renderer.domElement.dataset.storagePreview=storageReady?'container':'';
+      }
       if(kind==='mat'){
         var under=!!(g.destination&&g.destination.action==='secure');matOutline.visible=true;matOutline.material.color.set(under?'#246b57':'#956017');
         if(under){foldedMat.visible=false;matBoard.visible=true;[cutBoard,whole,knife,knifeHandle,hand].concat(dice).forEach(function(o){o.position.y+=.13;});}
@@ -397,61 +863,246 @@
         if(placement&&g.current){spatula.position.set(g.current.x-groups.heat.position.x,1.7,g.current.z-groups.heat.position.z);spatula.rotation.x=-.12;var radius=placement==='spread'?.29:.14;mushrooms.forEach(function(m,i){m.position.x=Math.cos(mushroomAngle(i))*radius;m.position.z=Math.sin(mushroomAngle(i))*radius;stems[i].position.x=droplets[i].position.x=m.position.x;stems[i].position.z=droplets[i].position.z=m.position.z;});}
         renderer.domElement.dataset.spatulaPreview=placement||'';
       }
-      if(kind==='cut'){var depth=trace?trace.depth:0;g.hit.objects.forEach(function(o){o.position.y+=.13-depth*.19;o.position.z+=Math.min(1,depth*1.8)*.24;});if(g.source.values.secure&&g.source.values.claw&&trace){var count=trace.cutReached?12:Math.max(0,Math.floor((depth-.45)/.55*12));renderer.domElement.dataset.cutPreview=String(count);if(count){whole.visible=count<12;whole.scale.y=Math.max(.05,1-count/12);whole.position.x=-.31*count/12;dice.forEach(function(d,i){d.visible=i<count;d.scale.setScalar(trace.action==='largeDice'?1.65:1);});}}}
+      if(kind==='stir'&&g.stir){
+        highlight(null);spatula.position.add(delta);spatula.position.y+=.15;
+        var stirResult=window.KitchenStudioStir.finish(g.stir),stirProgress=window.KitchenStudioStir.progress(g.stir);
+        placementHint.hidden=false;placementHint.dataset.ready=String(stirResult.complete);
+        $('studioPlacementTitle').textContent=stirResult.complete?'Stir preview · ready':'Stir preview · '+Math.round(stirProgress*100)+'%';
+        $('studioPlacementDetail').textContent=stirResult.message;
+        if(g.stir.phase!=='carry'&&!g.stir.invalid&&g.current){
+          var localX=g.current.x-.1,localZ=g.current.z+.85;
+          spatula.position.set(g.current.x-groups.heat.position.x,1.72,g.current.z-groups.heat.position.z);
+          spatula.rotation.set(-.18,Math.atan2(localX,localZ),0);
+          var stirBase=mushrooms.map(function(m,i){var angle=mushroomAngle(i)+g.stir.travel*.2,radius=g.source.values.spread?.29:.14;return {x:Math.cos(angle)*radius,z:Math.sin(angle)*radius};});
+          var stirFood=window.KitchenStudioStirContact.layout(stirBase,g.stir.current,g.stir.travel);
+          mushrooms.forEach(function(m,i){
+            var contact=stirFood[i]||stirBase[i];m.position.x=contact.x;m.position.z=contact.z;
+            stems[i].position.x=droplets[i].position.x=m.position.x;stems[i].position.z=droplets[i].position.z=m.position.z;
+          });
+        }
+      }
+      if(kind==='cut'&&trace){
+        hoverRing.visible=false;
+        var cutResult=window.KitchenStudioGestures.finish(trace);placementHint.hidden=false;placementHint.dataset.ready=String(cutResult.complete);
+        $('studioPlacementTitle').textContent=trace.invalid?'Knife preview · start again':trace.phase==='ready'?'Knife preview · release to cut':trace.phase==='up'?'Knife preview · lift back':'Knife preview · move down';
+        $('studioPlacementDetail').textContent=cutResult.complete?'Release to record one '+(trace.action==='largeDice'?'large':'small')+' dice decision.':cutResult.message;
+      }
+      if(kind==='cut'){
+        var depth=trace?trace.depth:0,rockAngle=window.KitchenStudioKnifeRock.angle(depth);
+        if(rockAngle>0){
+          var knifePivot=new T.Vector3(-.22,-.0175,0).multiply(knife.scale).applyQuaternion(knife.quaternion).add(knife.position),knifeAxis=new T.Vector3(0,0,1).applyQuaternion(knife.quaternion),knifeRock=new T.Quaternion().setFromAxisAngle(knifeAxis,rockAngle);
+          g.hit.objects.forEach(function(o){o.position.sub(knifePivot).applyQuaternion(knifeRock).add(knifePivot);o.quaternion.premultiply(knifeRock);});
+        }
+        g.hit.objects.forEach(function(o){o.position.y+=.13-depth*.19;o.position.z+=Math.min(1,depth*1.8)*.24;});if(g.source.values.secure&&g.source.values.claw&&trace){var count=trace.cutReached?12:Math.max(0,Math.floor((depth-.45)/.55*12));renderer.domElement.dataset.cutPreview=String(count);if(count){whole.visible=count<12;whole.scale.y=Math.max(.05,1-count/12);whole.position.x=-.31*count/12;dice.forEach(function(d,i){d.visible=i<count;d.scale.setScalar(trace.action==='largeDice'?1.65:1);});}}}
       if(kind==='grip'&&trace)poseHand(trace.curl);
-      if(kind==='pour'&&trace){var amount=Math.max(0,Math.min(1000,(g.source.values.ml||0)+trace.delta)),lift=.06*Math.min(1,trace.travel/30);showMeasureAmount(amount,true);g.hit.objects.forEach(function(o){o.position.y+=lift;});}
+      if(kind==='pour'&&trace){var amount=Math.max(0,Math.min(1000,(g.source.values.ml||0)+trace.delta)),lift=.06*Math.min(1,trace.travel/30);showMeasureAmount(amount,true);if(!measureInspection)g.hit.objects.forEach(function(o){o.position.y+=lift;});}
       if(kind==='stock'){
         var pouring=!!(g.destination&&g.destination.action),amount=Math.min(1000,(g.source.values.ml||0)+(pouring?150:0));
         if(pouring){stockCarton.position.set(-.38,2.24,0);stockCarton.rotation.z=-.95;}else{stockCarton.position.add(delta);stockCarton.position.y+=.20;}
         showMeasureAmount(amount,true);targetRing.visible=true;targetRing.position.copy(destinations.jugFill);targetRing.material.color.set(pouring?'#246b57':'#956017');
-        if(pouring&&amount>(g.source.values.ml||0)){var streamTop=2.24+Math.cos(.95)*.38,streamBottom=1.35+.6*amount/1000;stockStream.visible=true;stockStream.scale.y=streamTop-streamBottom;stockStream.position.set(-.38+Math.sin(.95)*.38,(streamTop+streamBottom)/2,0);}
-        renderer.domElement.dataset.stockStream=String(stockStream.visible);
+        drawStockStream(amount,pouring&&amount>(g.source.values.ml||0));
       }
-      if(kind==='dial'&&trace){var angle=(trace.level-2)*.8;dialMark.position.set(-.39+Math.sin(angle)*.05,1.511,.43-Math.cos(angle)*.05);dialMark.rotation.y=-angle;}
+      if(kind==='tipPour'&&g.pour){
+        var pour=g.pour,base=g.source.values.ml||0,amount=Math.min(1000,base+(pour.tipped&&!pour.invalid?50:0)),anchored=!!pour.anchor&&!pour.invalid;
+        if(anchored){stockCarton.position.set(-.38,2.24,0);stockCarton.rotation.z=-.95*pour.tilt;}else{stockCarton.position.add(delta);stockCarton.position.y+=.2;}
+        showMeasureAmount(amount,true);targetRing.visible=true;targetRing.position.copy(destinations.jugFill);targetRing.material.color.set(anchored?'#246b57':'#956017');hoverRing.visible=false;
+        drawStockStream(amount,anchored&&pour.tilt>.4&&base<1000,pour.tilt);
+        placementHint.hidden=false;placementHint.dataset.ready=String(pour.phase==='ready');
+        $('studioPlacementTitle').textContent=pour.invalid?'Pour preview · start again':pour.phase==='ready'?'Pour preview · upright':pour.tipped?'Pour preview · return upright':anchored?'Pour preview · tip the carton':'Pour preview · aim over the jug';
+        var instruction=pourInstruction(pour,base);
+        $('studioPlacementDetail').textContent=instruction;
+      }
+      if(kind==='dial'&&trace){
+        hoverRing.visible=false;
+        var readyToSet=trace.phase==='ready'&&!trace.invalid;
+        var initial=['low','medium','high'].indexOf(g.source.values.heat)+1;
+        var position=trace.turn&&!trace.invalid?trace.turn.position:readyToSet?trace.level:initial;
+        var selectedLevel=readyToSet?trace.level:initial,candidate=dials.levels[selectedLevel];
+        dialGrip.rotation.y=-dials.angle(position);
+        renderer.domElement.dataset.dialPreview=candidate.toLowerCase();
+        placementHint.hidden=false;placementHint.dataset.ready=String(readyToSet);
+        $('studioPlacementTitle').textContent='Burner dial · '+candidate;
+        $('studioPlacementDetail').textContent=window.KitchenStudioGestures.finish(trace).message;
+        var scale=$('studioDialScale');scale.hidden=false;
+        Array.from(scale.children).forEach(function(mark,index){mark.classList.toggle('selected',index===selectedLevel);});
+      }
       if(kind==='dry'&&trace){var offset=Math.max(-.25,Math.min(.25,(trace.current.x-trace.start.x)/trace.unit/160));[towel,towelFold].forEach(function(o,i){o.position.set(offset,1.74+i*.024,i*.035);o.rotation.y=offset*.4;});droplets.forEach(function(d,i){d.visible=!g.source.values.dry&&i>=Math.floor(trace.passes*8/3);});}
+      if(kind==='tipPlate'&&g.plating){
+        timerBadge.sprite.visible=false;
+        var transferTrace=g.plating,anchored=!!transferTrace.anchor&&!transferTrace.invalid,angle=anchored?transferTrace.tilt*.95:0;
+        var result=window.KitchenStudioPlating.finish(transferTrace),transfer=anchored?(transferTrace.tipped?1:Math.max(0,Math.min(1,(transferTrace.tilt-.35)/.65))):0;
+        placementHint.hidden=false;placementHint.dataset.ready=String(result.complete);$('studioPlacementTitle').textContent=transferTrace.invalid?'Pan preview · start again':result.complete?'Pan preview · release to plate':transferTrace.tipped?'Pan preview · return level':'Pan preview · aim and tip';$('studioPlacementDetail').textContent=result.message;
+        highlight(null);renderer.domElement.dataset.platingPreview='true';renderer.domElement.dataset.platingTransfer=String(transfer);renderer.domElement.dataset.panPreviewAngle=String(angle);
+        targetRing.visible=true;targetRing.position.copy(destinations.servingPlate);targetRing.material.color.set(result.complete?'#246b57':'#956017');
+        if(!anchored){if(!transferTrace.invalid)g.original.forEach(function(saved){saved.object.position.add(delta);saved.object.position.y+=.16;});}
+        else{
+          var pivot=new T.Vector3(0,1.53,0),base=new T.Vector3(0,1.93,.63),axis=new T.Vector3(1,0,0),rotation=new T.Quaternion().setFromAxisAngle(axis,angle),landed=0;
+          function source(object){return g.original.find(function(saved){return saved.object===object;});}
+          [panBowl,panHandle].forEach(function(object){var saved=source(object);object.position.copy(saved.position).sub(pivot).applyQuaternion(rotation).add(base);object.quaternion.copy(rotation).multiply(new T.Quaternion().setFromEuler(saved.rotation));});
+          mushrooms.forEach(function(cap,i){
+            var fraction=transferTrace.tipped?1:Math.max(0,Math.min(1,transfer*1.45-i*.45/7));if(fraction===1)landed++;
+            [cap,stems[i],droplets[i]].forEach(function(object,index){
+              var saved=source(object),start=saved.position.clone().sub(pivot).applyQuaternion(rotation).add(base);
+              var rim=new T.Vector3(saved.position.x*.65,index===0?.10:index===1?.045:.145,.40).applyQuaternion(rotation).add(base);
+              var destination=new T.Vector3(saved.position.x,index===0?1.49:index===1?1.435:1.535,saved.position.z+.83);
+              object.position.copy(fraction<.5?start.lerp(rim,fraction*2):rim.lerp(destination,(fraction-.5)*2));
+              object.quaternion.setFromAxisAngle(axis,angle*(1-fraction)).multiply(new T.Quaternion().setFromEuler(saved.rotation));
+              if(index===2)object.visible=saved.visible&&fraction<.8;
+            });
+          });renderer.domElement.dataset.platingFoodCount=String(landed);
+        }
+      }
       if(kind==='plate'){g.original.forEach(function(o){o.object.position.add(delta);o.object.position.y+=.16;});targetRing.visible=true;targetRing.position.copy(destinations.servingPlate);targetRing.material.color.set(g.destination&&g.destination.action?'#246b57':'#956017');}
       if(kind==='chicken'){
         var target=g.destination&&g.destination.target;
         if(target==='oven')delta.set(0,-.57,.82);else if(target==='serve')delta.set(.34,.005,1.02);else delta.y+=.12;
-        [chickenPlate,chicken].forEach(function(o){o.position.add(delta);});probe.position.set(.46,1.76,.24);display.position.set(.46,1.99,.24);probe.rotation.z=0;
-        ovenDoor.rotation.x=target==='oven'?1.1:0;renderer.domElement.dataset.ovenOpen=String(target==='oven');renderer.domElement.dataset.platterTarget=target||'';
+        [chickenPlate,chicken].forEach(function(o){o.position.add(delta);});poseProbe(null,true);if(g.interactive&&g.moved>=8){probeBadge.write('PREVIEW','PLACE THEN READ');renderer.domElement.dataset.probeBadge='preview';showProbeTargets(null,false);var chickenPreview='Chicken movement preview. Release over the oven or serving board. Take a fresh reading after cooking.';if($('studioProbeReadout').textContent!==chickenPreview)$('studioProbeReadout').textContent=chickenPreview;$('studioProbeRead').disabled=true;}
+        poseOven(target==='oven'?1:ovenPreference?1:0,target==='oven');renderer.domElement.dataset.platterTarget=target||'';
         ovenOutline.visible=true;ovenOutline.material.color.set(target==='oven'?'#246b57':'#956017');targetRing.visible=true;targetRing.position.copy(destinations.serveDrop);targetRing.material.color.set(target==='serve'?'#246b57':'#956017');
       }
-      if(kind==='probe'||kind==='label'){g.hit.objects.forEach(function(o){o.position.add(delta);o.position.y+=.08;});targetRing.visible=true;targetRing.position.copy(destinations[kind==='probe'?'probeCenter':'containerTarget']);targetRing.material.color.set(g.destination&&g.destination.action?'#246b57':'#956017');}
+      if(kind==='insertProbe'&&g.insertion&&g.interactive){
+        hoverRing.visible=false;probeView.preview(g.insertion.invalid?(probeShownValues.probe==='thick'?1:0):g.insertion.depth);
+        var insertionResult=window.KitchenStudioProbeDepth.finish(g.insertion);placementHint.hidden=false;placementHint.dataset.ready=String(insertionResult.complete);
+        $('studioPlacementTitle').textContent=g.insertion.invalid?'Probe preview · start again':insertionResult.complete?'Probe preview · release to place':'Probe preview · choose a marker';$('studioPlacementDetail').textContent=insertionResult.message;
+      }
+      if(kind==='probe'&&g.interactive){
+        var candidate=g.destination&&g.destination.action,moving=g.moved>=8;
+        if(candidate)poseProbe(candidate,false);else{[probe,display].forEach(function(o){o.position.add(delta);o.position.y+=.08;});updateProbeTip();}
+        showProbeTargets(candidate,true);hoverRing.visible=false;applyProbeCutaway(moving);
+        placementHint.hidden=false;placementHint.dataset.ready=String(!!candidate);
+        $('studioPlacementTitle').textContent=candidate==='thick'?'Probe preview · centre':candidate==='surface'?'Probe preview · surface':'Probe preview · choose a position';
+        $('studioPlacementDetail').textContent=(g.destination?g.destination.message:'Carry the thermometer over the chicken.')+' Take a fresh reading after placing.';
+        if(moving){
+          probeBadge.write('PREVIEW','PLACE THEN READ');renderer.domElement.dataset.probeBadge='preview';renderer.domElement.dataset.probePreview=candidate||'carry';
+          var previewText='Placement preview. '+(candidate==='thick'?'Tip at the centre.':candidate==='surface'?'Tip at the surface.':'Carry the probe over the chicken.')+(candidate?' Release to place, then take a fresh reading.':' Move onto a target, or press Escape to cancel.');
+          if($('studioProbeReadout').textContent!==previewText)$('studioProbeReadout').textContent=previewText;$('studioProbeRead').disabled=true;
+        }
+      }
+      if(kind==='label'){g.hit.objects.forEach(function(o){o.position.add(delta);o.position.y+=.08;});targetRing.visible=true;targetRing.position.copy(destinations.containerTarget);targetRing.material.color.set(g.destination&&g.destination.action?'#246b57':'#956017');}
       if(kind==='prepare'){g.hit.objects.forEach(function(o){o.position.add(delta);o.position.y+=.08;});targetRing.visible=true;targetRing.position.copy(destinations.prepBoardTarget);targetRing.material.color.set(g.destination&&g.destination.action?'#246b57':'#956017');}
-      if(kind==='store'){g.hit.objects.forEach(function(o){o.position.add(delta);o.position.y+=.08;});Object.keys(storageRings).forEach(function(id){var ring=storageRings[id];ring.visible=true;ring.material.color.set(g.destination&&g.destination.target===id?'#246b57':'#956017');});fridgeDoor.rotation.y=g.destination&&g.destination.target==='fridge'?-.85:fridgeDoor.userData.restAngle||0;}
+      if(kind==='store'){
+        var target=g.destination&&g.destination.target,ready=!!(g.destination&&g.destination.action);
+        if(ready)highlight(null);
+        if(ready&&target==='fridge')placeContainers(g.source.values,true);
+        else if(ready&&target==='shallowTray')placeContainers(Object.assign({},g.source.values,{shallow:true}),false);
+        else g.hit.objects.forEach(function(o){o.position.add(delta);o.position.y+=.08;});
+        Object.keys(storageRings).forEach(function(id){var ring=storageRings[id];ring.visible=true;ring.material.color.set(ready&&target===id?'#246b57':'#956017');});
+        poseFridge(ready&&target==='fridge'?1:fridgeIsOpen()?1:0);
+        renderer.domElement.dataset.storagePreview=ready?target:'';
+      }
+      if(kind==='lid'&&g.lid){hoverRing.visible=false;poseLids(g.lid.invalid?(lidPreference?1:0):g.lid.opening,true);placementHint.hidden=false;placementHint.dataset.ready=String(window.KitchenStudioLid.finish(g.lid).complete);$('studioPlacementTitle').textContent='Lid preview';$('studioPlacementDetail').textContent=window.KitchenStudioLid.finish(g.lid).message;}
+      if(kind==='ovenDoor'&&g.ovenDoor){hoverRing.visible=false;poseOven(g.ovenDoor.invalid?(ovenPreference?1:0):g.ovenDoor.opening,true);}
+      if(kind==='door'&&trace){poseFridge(trace.opening);hoverRing.visible=false;}
+
       if(kind==='spread'){mushrooms.forEach(function(o,i){var radius=Math.min(.3,.14+delta.length()*.45);o.position.x=Math.cos(mushroomAngle(i))*radius;o.position.z=Math.sin(mushroomAngle(i))*radius;stems[i].position.x=droplets[i].position.x=o.position.x;stems[i].position.z=droplets[i].position.z=o.position.z;});}
-      if(kind==='tap'){g.hit.objects.forEach(function(o){o.scale.y*=.92;});if(g.hit.id==='faucet')waterStream.visible=true;}
+      if(kind==='tap'){g.hit.objects.forEach(function(o){o.scale.y*=.92;});if(g.hit.id==='faucet'){waterStream.visible=true;renderer.domElement.dataset.waterFlow='true';}}
     }
-    touch=window.KitchenStudioTouch.mount({canvas:renderer.domElement,orbit:controls,getState:state,hidden:function(){return textView;},locked:function(){var s=state();return textView||!!replayState||s.done||s.submitted||s.log.length>=500;},pick:pick,point:point,draw:draw,highlight:highlight,preview:preview,destination:destination,
-      capture:function(hit){stopFeedback();var moving=hit.moving||hit.objects||[];if(hit.kind==='dry')moving=moving.concat(droplets);return moving.map(function(o){return {object:o,position:o.position.clone(),rotation:o.rotation.clone(),scale:o.scale.clone(),visible:o.visible};});},
+    function sceneLocked(){var s=state();return textView||!!replayState||s.done||s.submitted||s.log.length>=500;}
+    touch=window.KitchenStudioTouch.mount({canvas:renderer.domElement,orbit:controls,discover:function(info,hint,readOnly){discovered=info?{info:info,hint:hint,readOnly:readOnly}:null;if(!info&&discoveryView)discoveryView.clear();},feedback:function(signal){if(feedbackView)feedbackView.cue(signal);},getState:state,hidden:function(){return textView;},locked:sceneLocked,pick:pick,inputTool:inputTool,keyboardPoint:keyboardPoint,keyboardTargets:keyboardTargets,point:point,dialPoint:dialPoint,panMode:panMode,stirPoint:stirPoint,platingMode:platingMode,platingTarget:platingTarget,pourMode:pourMode,pourMouth:pourMouth,pourInstruction:pourInstruction,washWater:washWater,measureInspecting:function(){return measureInspection;},probeCloseup:function(){return probeDepthInspection;},ovenCloseup:function(){return ovenInspection;},ovenOpen:function(){return ovenPreference;},probeDepth:function(){return probeView.getDepth();},draw:draw,highlight:highlight,preview:preview,destination:destination,
+      capture:function(hit){stopFeedback();var moving=hit.moving||hit.objects||[];if(hit.kind==='dry')moving=moving.concat(droplets);if(hit.kind==='tipPlate')moving=moving.concat(timerBadge.sprite);return moving.map(function(o){return {object:o,position:o.position.clone(),rotation:o.rotation.clone(),scale:o.scale.clone(),visible:o.visible};});},
       tools:function(id){return Object.keys(touchTargets).map(function(key){return touchTargets[key];}).filter(function(info){return info.station===id;});},
-      available:function(id){return !!touchTargets[id]&&touchTargets[id].objects.some(function(o){return o.visible;});},
-      reveal:function(id){var info=touchTargets[id];if(!info||!info.objects.some(function(o){return o.visible;}))return false;focus();highlight(info);pulse(id,true);draw();return true;},
+      available:function(id){if(panView&&panView.isDialFocused()&&id!=='dial')return false;if(ovenInspection&&id!=='ovenHandle')return false;if(probeDepthInspection&&id!=='probe')return false;if(containerInspection&&id!=='tub')return false;return !!touchTargets[id]&&touchTargets[id].objects.some(function(o){return o.visible;});},
+      reveal:function(id){if(panView&&panView.isDialFocused()&&id!=='dial')return false;var info=touchTargets[id];if(!info||!info.objects.some(function(o){return o.visible;}))return false;if(!measureInspection&&!panInspection&&!boardInspection&&!containerInspection&&!probeDepthInspection&&!ovenInspection)focus();if(id==='tub'&&storageShownValues.chilled)setFridgeView(true);highlight(info);pulse(id,true);draw();return true;},
+      inspect:function(){measureView.open();},dialCloseup:function(){return !!(panView&&panView.isDialFocused());},panCloseup:function(){return panInspection;},boardCloseup:function(){return boardInspection;},containerCloseup:function(){return containerInspection;},lidsOpen:function(){return lidPreference;},interactionMode:function(enabled){if(!enabled){if(ovenView)ovenView.close();if(panView)panView.close();if(boardView)boardView.close();if(containerView)containerView.close();if(probeView)probeView.close();}},fridgeOpen:fridgeIsOpen,view:function(result){if(result.view==='oven')setOvenView(result.open);if(result.view==='fridge')setFridgeView(result.open);if(result.view==='lids'){lidPreference=!!result.open;poseLids(lidPreference?1:0,false);draw();}},
       select:function(id){if(serviceActive){$('studioTouchStatus').textContent='Pause the meal rehearsal before exploring another station.';return;}select(id,false);},act:function(action){act(action,true);}
     });
+    measureView=window.KitchenStudioMeasureView.mount({
+      THREE:T,camera:camera,controls:controls,canvas:renderer.domElement,guide:measureGuide,
+      origin:{x:2.4,z:1.05},getAmount:function(){return measureShownMl;},getLocked:sceneLocked,
+      cancel:function(){touch.cancel('Movement cancelled for jug inspection.');},draw:draw,onViewChange:setMeasureInspection,
+      check:function(){act('check',true);}
+    });
+    panView=window.KitchenStudioPanView.mount({
+      THREE:T,camera:camera,controls:controls,canvas:renderer.domElement,
+      getDialFrame:function(){var points=[];[dialCap.y-.12,dialCap.y+.075].forEach(function(y){for(var i=0;i<16;i++){var angle=i*Math.PI/8;points.push(new T.Vector3(dialCap.x+Math.sin(angle)*.31,y,dialCap.z+Math.cos(angle)*.31));}});return {target:dialCap.clone(),points:points};},
+      cancel:function(){touch.cancel('Movement cancelled for a pan view change.');},draw:draw,onViewChange:setPanInspection,onModeChange:function(){refreshDialContext();touch.update();draw();}
+    });
+    boardView=window.KitchenStudioBoardView.mount({
+      THREE:T,camera:camera,controls:controls,canvas:renderer.domElement,
+      cancel:function(){touch.cancel('Movement cancelled for a board view change.');},draw:draw,onViewChange:setBoardInspection
+    });
+    containerView=window.KitchenStudioContainerView.mount({
+      THREE:T,camera:camera,controls:controls,canvas:renderer.domElement,getFrame:containerFrame,
+      cancel:function(){touch.cancel('Movement cancelled for container inspection.');},draw:draw,onViewChange:setContainerInspection
+    });
+    probeView=window.KitchenStudioProbeView.mount({
+      THREE:T,camera:camera,controls:controls,canvas:renderer.domElement,
+      cancel:function(){if(ovenView)ovenView.close();touch.cancel('Movement cancelled for probe inspection.');},draw:draw,onViewChange:setProbeDepthInspection,onDepthPreview:showProbeDepth,
+      place:function(action){if(current!=='probe'||sceneLocked()||!probeDepthInspection||(action!=='thick'&&action!=='surface'))return;touch.cancel('Depth preview placed.');act(action,true);}
+    });
+    ovenView=window.KitchenStudioOvenView.mount({
+      THREE:T,camera:camera,controls:controls,canvas:renderer.domElement,getFrame:ovenFrame,
+      beforeOpen:function(){probeView.close();containerView.close();boardView.close();panView.close();measureView.close();},
+      cancel:function(){touch.cancel('Movement cancelled for oven inspection.');},draw:draw,onViewChange:setOvenInspection
+    });
+    $('studioOvenToggle').addEventListener('click',function(){if(current!=='probe'||textView||probeDepthInspection)return;touch.cancel('Oven movement cancelled.');setOvenView(!ovenPreference);$('studioTouchStatus').textContent=ovenPreference?'Oven opened. Explore the shelf.':'Oven closed.';});
+    keyboardView=window.KitchenStudioKeyboard.mount({canvas:renderer.domElement,adapter:touch,onPrecisionChange:renderDropTargets});
+    feedbackView=window.KitchenStudioFeedback.mount({canvas:renderer.domElement});
+    rubGuide=window.KitchenStudioRubGuide.mount({canvas:renderer.domElement});
+    discoveryView=window.KitchenStudioDiscovery.mount({canvas:renderer.domElement});
+    dropView=window.KitchenStudioDropTargets.mount({canvas:renderer.domElement,avoidElements:[$('studioPlacementHint'),$('studioCarryNotice'),$('studioKeyboardLabel'),$('studioKeyboardCursor'),$('stationLens')]});
+    stopDropUpdates=touch.subscribeKeyboard(renderDropTargets);
+    $('studioLidToggle').addEventListener('click',function(){if(!containerInspection||textView||storageShownValues.discarded)return;touch.cancel('Lid movement cancelled.');lidPreference=!lidPreference;poseLids(lidPreference?1:0,false);draw();});
+    $('studioWashStep').addEventListener('click',function(){if(current!=='prep'||sceneLocked())return;touch.cancel('Movement cancelled for a full handwashing rehearsal.');act('wash',true);});
+    $('studioPortionPour').addEventListener('click',function(){setPourMode('portion');});
+    $('studioControlledPour').addEventListener('click',function(){setPourMode('controlled');});
+    $('studioPourStep').addEventListener('click',function(){if(current!=='measure'||sceneLocked()||pourMode()!=='controlled')return;touch.cancel('Movement cancelled for a measured pour.');act('add50',true);});
+    $('studioProbeCutaway').addEventListener('click',function(){if(current!=='probe'||textView||probeDepthInspection)return;touch.cancel('Movement cancelled to inspect probe placement.');probeCutaway=!probeCutaway;refreshProbeConsole();draw();renderer.domElement.scrollIntoView({block:'center',behavior:'auto'});});
+    $('studioProbeRead').addEventListener('click',function(){if(current!=='probe'||sceneLocked()||!probeShownValues.probe||probeServed||(probeView&&probeView.isPreviewing()))return;touch.cancel('Movement cancelled for a fresh thermometer reading.');act('read',true);});
+    $('studioQuickPlate').addEventListener('click',function(){setPlatingMode('quick');});
+    $('studioControlledPlate').addEventListener('click',function(){setPlatingMode('controlled');});
+    $('studioPlatingStep').addEventListener('click',function(){if(current!=='heat'||sceneLocked()||platingMode()!=='controlled')return;touch.cancel('Pan transfer cancelled for the plating step.');act('plate',true);});
+    $('studioArrangeMode').addEventListener('click',function(){setPanMode('arrange');});
+    $('studioStirMode').addEventListener('click',function(){setPanMode('stir');});
+    $('studioStirStep').addEventListener('click',function(){
+      if(sceneLocked()||current!=='heat'||panMode()!=='stir')return;
+      touch.cancel('Movement cancelled for a stirring step.');act('advance',true);
+    });
+    $('studioFridgeToggle').addEventListener('click',function(){
+      if(containerInspection)return;
+      touch.cancel('Movement cancelled to use the refrigerator door.');
+      setFridgeView(!fridgeIsOpen());
+      $('studioTouchStatus').textContent=fridgeIsOpen()?'Refrigerator opened. Inspect the shelves.':'Refrigerator closed.';
+    });
     renderer.domElement.addEventListener('webglcontextlost',function(e){e.preventDefault();touch.cancel();textView=true;$('sceneStatus').textContent='3D interrupted. Continue using the text controls.';applyView();});
-    function update(s){stopFeedback();if(touch)touch.update();var picture=Object.assign({},sceneStates());picture[s.id]=s;if(focused&&focusedStation!==s.id)focus();var v=s.values,g=groups[s.id];selection.position.set(g.position.x,1.355,g.position.z);var prep=picture.prep?picture.prep.values:{},kv=picture.knife?picture.knife.values:{};bubbles.forEach(function(b){b.visible=!!prep.washed;});water.material.color.set(prep.washed?'#9fdbc8':'#83b8c2');cleanBoard.material.color.set(prep.clean?'#79a47f':'#b77e58');matBoard.material.color.set('#436e58');matBoard.visible=!!kv.secure;foldedMat.visible=!kv.secure;matParts.forEach(function(part){part.visible=!kv.secure;});renderer.domElement.dataset.matSecured=String(!!kv.secure);renderer.domElement.dataset.matPreview='false';renderer.domElement.dataset.spatulaPreview='';whole.visible=!kv.cut;whole.scale.set(1,1,1);whole.position.x=0;dice.forEach(function(d,i){d.visible=!!kv.cut;d.scale.setScalar(kv.cut==='large'?1.65:kv.cut==='uneven'?(i%3+1)*.65:1);});knife.rotation.y=kv.claw?.18:0;poseHand(kv.claw?1:0);renderer.domElement.dataset.cutPreview='0';
-      sanitizer.visible=sanitizerPump.visible=!!(picture.prep&&picture.prep.scenario==='shared-board');waterStream.visible=false;var prepared=!!(picture.prep&&picture.prep.done);prepVegetables.forEach(function(v,i){v.position.set(prepared?-.65+(i%2)*.14:.23+(i%2)*.14,1.53,prepared?.18+Math.floor(i/2)*.12:.57+Math.floor(i/2)*.12);});touchTargets.vegetableBasket.anchor=prepared?prepVegetables[0]:vegetableBasket;
+    function update(s){stopFeedback();if(feedbackView)feedbackView.update({visible:!textView});if(touch)touch.update();if(ovenView)ovenView.update({active:s.id==='probe',visible:!textView,revision:s});if(s!==ovenRevision){ovenPreference=false;ovenRevision=s;}if(containerView&&containerInspection&&s!==containerRevision)containerView.close();shownContainerRevision=s;if(boardView)boardView.update({active:s.id==='knife',visible:!textView,values:s.id==='knife'?s.values:{},historical:!!replayState,revision:s});if(panView)panView.update({active:s.id==='heat',visible:!textView,locked:sceneLocked(),values:s.id==='heat'?s.values:{},historical:!!replayState,plated:!!s.done,plating:platingMode()==='controlled'&&!sceneLocked(),revision:s});var picture=Object.assign({},sceneStates());picture[s.id]=s;if(focused&&focusedStation!==s.id)focus();var v=s.values,g=groups[s.id];selection.position.set(g.position.x,1.355,g.position.z);var prep=picture.prep?picture.prep.values:{},kv=picture.knife?picture.knife.values:{};bubbles.forEach(function(b){b.visible=!!prep.washed;});water.material.color.set(prep.washed?'#9fdbc8':'#83b8c2');cleanBoard.material.color.set(prep.clean?'#79a47f':'#b77e58');matBoard.material.color.set('#436e58');matBoard.visible=!!kv.secure;foldedMat.visible=!kv.secure;matParts.forEach(function(part){part.visible=!kv.secure;});renderer.domElement.dataset.matSecured=String(!!kv.secure);renderer.domElement.dataset.matPreview='false';renderer.domElement.dataset.spatulaPreview='';whole.visible=!kv.cut;whole.scale.set(1,1,1);whole.position.x=0;dice.forEach(function(d,i){d.visible=!!kv.cut;d.scale.setScalar(kv.cut==='large'?1.65:kv.cut==='uneven'?(i%3+1)*.65:1);});knife.rotation.y=kv.claw?.18:0;poseHand(kv.claw?1:0);renderer.domElement.dataset.cutPreview='0';
+      washLather.forEach(function(o){o.visible=false;});renderer.domElement.dataset.washPhase='idle';renderer.domElement.dataset.washPasses='0';renderer.domElement.dataset.washPreview='false';renderer.domElement.dataset.handLather='0';renderer.domElement.dataset.waterFlow='false';sanitizer.visible=sanitizerPump.visible=!!(picture.prep&&picture.prep.scenario==='shared-board');waterStream.visible=false;var prepared=!!(picture.prep&&picture.prep.done);prepVegetables.forEach(function(v,i){v.position.set(prepared?-.65+(i%2)*.14:.23+(i%2)*.14,1.53,prepared?.18+Math.floor(i/2)*.12:.57+Math.floor(i/2)*.12);});touchTargets.vegetableBasket.anchor=prepared?prepVegetables[0]:vegetableBasket;
       var heat=picture.heat?picture.heat.values:{},plated=!!(picture.heat&&picture.heat.done);burner.material.color.set(heat.heat==='high'?'#e67c33':heat.heat==='medium'?'#b8864b':'#5c665b');mushrooms.forEach(function(m,i){m.material.color.set(heat.brown>4?'#4a3429':heat.brown>=3?'#a66a2c':heat.brown>0?'#c79854':'#e6cfa7');m.position.x=Math.cos(mushroomAngle(i))*(heat.spread?.29:.14);m.position.z=Math.sin(mushroomAngle(i))*(heat.spread?.29:.14)+(plated?.83:0);m.position.y=plated?1.49:1.645;stems[i].position.y=plated?1.435:1.59;stems[i].position.x=droplets[i].position.x=m.position.x;stems[i].position.z=droplets[i].position.z=m.position.z;droplets[i].visible=!heat.dry&&!plated;});
       timerBadge.write('+30 s','SIM · '+(heat.seconds||0)+'s');
-      var dialAngle=(['low','medium','high'].indexOf(heat.heat)-1)*.8;dialMark.position.set(-.39+Math.sin(dialAngle)*.05,1.511,.43-Math.cos(dialAngle)*.05);dialMark.rotation.y=-dialAngle;
+      var heatLevel=['low','medium','high'].indexOf(heat.heat)+1;
+      dialGrip.rotation.y=-dials.angle(heatLevel);
+      renderer.domElement.dataset.dialHeat=dials.levels[heatLevel].toLowerCase();
+      renderer.domElement.dataset.dialPreview='';
       var pv=picture.probe?picture.probe.values:{},served=!!(picture.probe&&picture.probe.done),placed=!!pv.probe&&!served;
       chickenPlate.position.set(served?.34:0,served?1.395:1.39,served?1.02:0);chicken.position.set(served?.34:0,served?1.565:1.56,served?1.02:0);
-      probe.visible=display.visible=true;probe.position.set(placed?(pv.probe==='surface'?.25:0):.46,placed?1.85:1.76,placed?0:.24);display.position.set(probe.position.x,placed?2.08:1.99,probe.position.z);probe.rotation.z=placed&&pv.probe==='surface'?-.6:0;
-      ovenDoor.rotation.x=0;renderer.domElement.dataset.ovenOpen='false';renderer.domElement.dataset.platterTarget='';ovenOutline.visible=false;
-      renderer.domElement.dataset.probeReading=pv.reading==null?'—':String(pv.reading);probeBadge.write(pv.reading==null?'—':pv.reading+'°F',pv.reading==null?'Tap to read':served?'RECORDED':pv.probe==='surface'?'SURFACE':'INTERNAL');
-      measureShownMl=picture.measure?(picture.measure.values.ml||0):0;showMeasureAmount(measureShownMl,false);renderer.domElement.dataset.measureMl=String(measureShownMl);stockStream.visible=false;renderer.domElement.dataset.stockStream='false';
-      var cv=picture.chill?picture.chill.values:{};fridgeDoor.userData.restAngle=fridgeDoor.rotation.y=cv.chilled?-.35:0;tub.visible=lid.visible=!cv.discarded;labelMesh.visible=!!cv.label&&!cv.discarded;labelCard.visible=!cv.label&&!cv.discarded;dividedTub.visible=dividedLid.visible=!!cv.shallow&&!cv.discarded;[tub,lid,labelMesh,dividedTub,dividedLid].forEach(function(o){o.position.z=(o===labelMesh?1.198:o===dividedTub||o===dividedLid?1.04:1.03)-(cv.chilled?.36:0);});tub.scale.y=cv.shallow?1:2;lid.position.y=cv.shallow?1.535:1.595;labelMesh.position.y=cv.shallow?1.46:1.5;[water,cleanBoard,matBoard,burner].concat(mushrooms).forEach(function(o){o.material.color.convertSRGBToLinear();});
-      if(touch)touch.update();draw();}
+      probeShownValues=pv;probeServed=served;probeHistorical=!!replayState;if(s.id!=='probe')probeCutaway=false;probe.visible=display.visible=true;poseProbe(pv.probe,served);
+      poseOven(ovenPreference?1:0,false);renderer.domElement.dataset.platterTarget='';ovenOutline.visible=false;
+      if(probeView)probeView.update({active:s.id==='probe',visible:!textView,available:!served,locked:sceneLocked(),historical:!!replayState,values:pv,revision:s});
+      renderer.domElement.dataset.probeReading=pv.reading==null?'—':String(pv.reading);writeProbeBadge();renderer.domElement.dataset.probePreview='';refreshProbeConsole();
+      measureShownMl=picture.measure?(picture.measure.values.ml||0):0;showMeasureAmount(measureShownMl,false);renderer.domElement.dataset.measureMl=String(measureShownMl);resetStockStream();
+      var cv=picture.chill?picture.chill.values:{},storagePicture=picture.chill;
+      var nextStorageKey=[storagePicture&&storagePicture.scenario,!!cv.chilled,!!cv.discarded,s.id==='chill',replayState?'replay-'+s.log.length:'live'].join('|');
+      var nextStorageLog=storagePicture?storagePicture.log.length:0;
+      if(nextStorageKey!==storageViewKey||nextStorageLog<storageLogLength){
+        if(touch)touch.cancel('Storage view changed. Movement cancelled.');
+        doorPreference=null;
+      }
+      storageViewKey=nextStorageKey;storageLogLength=nextStorageLog;storageShownValues=cv;
+      placeContainers(cv,!!cv.chilled);poseFridge(fridgeIsOpen()?1:0);poseLids(lidPreference?1:0,false);if(containerView)containerView.update({active:s.id==='chill',visible:!textView,available:!cv.discarded,revision:s});
+      renderer.domElement.dataset.storageLocation=cv.discarded?'discarded':cv.chilled?'fridge':'counter';
+      renderer.domElement.dataset.storagePreview='';
+      [water,cleanBoard,matBoard,burner].concat(mushrooms).forEach(function(o){o.material.color.convertSRGBToLinear();});
+      if(measureView)measureView.update({active:s.id==='measure',visible:!textView,locked:sceneLocked(),historical:!!replayState});
+      selection.visible=s.id!=='chill'&&!measureInspection&&!panInspection&&!boardInspection&&!containerInspection&&!probeDepthInspection&&!ovenInspection;renderStirGuide(null);renderPourGuide(null);renderPlatingGuide(null);renderCutGuide(null);renderRubGuide(null);
+      if(ovenInspection)ovenDecorations.forEach(function(saved){saved.object.visible=false;});if(touch)touch.update();draw();}
     var observer=new ResizeObserver(resize);observer.observe(host);reset();focus();
     function quietFeedback(){stopFeedback();draw();}
     function visibilityFeedback(){if(document.hidden)quietFeedback();}
     window.addEventListener('blur',quietFeedback);document.addEventListener('visibilitychange',visibilityFeedback);if(motionPreference.addEventListener)motionPreference.addEventListener('change',quietFeedback);
-    window.addEventListener('pagehide',function(e){stopFeedback();if(e.persisted)return;touch.dispose();window.removeEventListener('blur',quietFeedback);document.removeEventListener('visibilitychange',visibilityFeedback);if(motionPreference.removeEventListener)motionPreference.removeEventListener('change',quietFeedback);observer.disconnect();controls.dispose();meshes.forEach(function(m){m.geometry.dispose();});materials.forEach(function(m){if(m.map)m.map.dispose();m.dispose();});selection.material.dispose();renderer.dispose();});
-    function focus(){if(touch)touch.cancel('View changed. No action recorded.');focused=true;focusedStation=current;stationLabels.forEach(function(s){s.visible=false;});stationBadges.forEach(function(s){s.visible=s.userData.mission===current;});$('focusView').setAttribute('aria-pressed','true');var g=groups[current],isProbe=current==='probe',z=g.position.z+(current==='chill'?.9:isProbe?.35:0);controls.target.set(g.position.x,isProbe?1.25:1.45,z);camera.position.set(g.position.x+(isProbe?-.7:1.7),isProbe?3.4:3.65,z+(isProbe?3.8:3.1));controls.update();draw();}
-    function rotate(angle){if(touch)touch.cancel('View changed. No action recorded.');var offset=camera.position.clone().sub(controls.target);offset.applyAxisAngle(new T.Vector3(0,1,0),angle);camera.position.copy(controls.target).add(offset);controls.update();draw();}
-    return {update:update,resize:resize,reset:reset,focus:focus,rotate:rotate,respond:respond,interactionView:function(){if(textView)stopFeedback();touch.update();}};
+    window.addEventListener('pagehide',function(e){stopFeedback();if(e.persisted)return;if(stopDropUpdates)stopDropUpdates();dropView.dispose();discoveryView.dispose();rubGuide.dispose();feedbackView.dispose();keyboardView.dispose();ovenView.dispose();probeView.dispose();containerView.dispose();boardView.dispose();panView.dispose();measureView.dispose();touch.dispose();window.removeEventListener('blur',quietFeedback);document.removeEventListener('visibilitychange',visibilityFeedback);if(motionPreference.removeEventListener)motionPreference.removeEventListener('change',quietFeedback);observer.disconnect();controls.dispose();meshes.forEach(function(m){m.geometry.dispose();});materials.forEach(function(m){if(m.map)m.map.dispose();m.dispose();});selection.material.dispose();renderer.dispose();});
+    function focus(){if(ovenView)ovenView.close();if(probeView)probeView.close();if(containerView)containerView.close();if(boardView)boardView.close();if(panView)panView.close();if(measureView)measureView.close();if(touch)touch.cancel('View changed. No action recorded.');focused=true;focusedStation=current;stationLabels.forEach(function(s){s.visible=false;});stationBadges.forEach(function(s){s.visible=s.userData.mission===current;});$('focusView').setAttribute('aria-pressed','true');var g=groups[current],isProbe=current==='probe',isPrep=current==='prep',isPour=current==='measure'&&pourMode()==='controlled',z=g.position.z+(current==='chill'?.9:isProbe?.35:isPrep?.08:0);controls.target.set(g.position.x,isProbe?1.25:isPrep?1.6:isPour?1.75:1.45,z);camera.position.set(g.position.x+(isProbe?-.7:isPrep?.65:current==='chill'?.7:1.7),isProbe?3.4:isPrep?3.1:isPour?3.95:3.65,z+(isProbe?3.8:isPrep?2.3:3.1));controls.update();draw();}
+    function rotate(angle){if(ovenView)ovenView.close();if(probeView)probeView.close();if(containerView)containerView.close();if(boardView)boardView.close();if(panView)panView.close();if(measureView)measureView.close();if(touch)touch.cancel('View changed. No action recorded.');var offset=camera.position.clone().sub(controls.target);offset.applyAxisAngle(new T.Vector3(0,1,0),angle);camera.position.copy(controls.target).add(offset);controls.update();draw();}
+    return {update:update,resize:resize,reset:reset,focus:focus,rotate:rotate,respond:respond,interactionView:function(){if(textView)stopFeedback();feedbackView.update({visible:!textView});ovenView.update({visible:!textView});measureView.update({visible:!textView});panView.update({visible:!textView});boardView.update({visible:!textView});containerView.update({visible:!textView});probeView.update({visible:!textView});if(textView)probeCutaway=false;refreshProbeConsole();renderStirGuide(null);renderPourGuide(null);renderPlatingGuide(null);renderCutGuide(null);renderRubGuide(null);$('stationLens').hidden=textView||measureInspection||panInspection||boardInspection||containerInspection||probeDepthInspection||ovenInspection;touch.update();}};
   }
   try { sceneAPI=initScene(); } catch(e) { console.warn('Kitchen Studio 3D unavailable:',e);$('sceneStatus').textContent='3D is unavailable on this device. All practice actions work in text view.'; $('viewToggle').disabled=true; }
   if(serviceActive)$('serviceCard').open=true;

@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import { JSDOM } from 'jsdom';
 const require = createRequire(import.meta.url);
 const links = require('../dev-tools/build_allopack_links.cjs');
+const { legacyAliases } = require('../catalog/allopack_aliases.js');
 const manifest = JSON.parse(fs.readFileSync('catalog/index.json', 'utf8'));
 const html = fs.readFileSync('library.html', 'utf8');
 const script = fs.readFileSync('allopack-library.js', 'utf8');
@@ -41,12 +42,24 @@ describe('separate review and reuse presentation', () => {
 });
 
 describe('complete, generated AlloPack library', () => {
-  it('covers every repository pack and every version imports through the native boundary', () => {
-    const files = ['', 'illustrated/'].flatMap(dir => fs.readdirSync('allopacks/' + dir).filter(f => f.endsWith('.allopack.json')).map(f => 'allopacks/' + dir + f));
-    expect(entries.map(e => e.path).sort()).toEqual(files.sort());
+  it('accounts for every current or legacy file and preserves native importability', () => {
+    const files = ['', 'illustrated/', 'current/'].filter(dir => fs.existsSync('allopacks/' + dir)).flatMap(dir => fs.readdirSync('allopacks/' + dir).filter(f => f.endsWith('.allopack.json')).map(f => 'allopacks/' + dir + f));
+    // One current pack per topic in allopacks/current/; older editions stay on disk, unlisted (catalog/superseded_allopacks.json).
+    expect(entries.every(e => e.path.startsWith('allopacks/current/'))).toBe(true);
+    const unlisted = JSON.parse(fs.readFileSync('catalog/superseded_allopacks.json', 'utf8')), superseded = unlisted.entries;
+    const withheld = unlisted.withheld.map(w => w.path), listed = new Set(entries.map(e => e.path));
+    for (const p of withheld) { expect(fs.existsSync(p), p).toBe(true); expect(listed.has(p), p).toBe(false); }
+    for (const s of superseded) { expect(listed.has(s.superseded_by) || withheld.includes(s.superseded_by), s.path).toBe(true); expect(listed.has(s.path), s.path).toBe(false); }
+    expect(new Set(entries.map(e => e.slug)).size).toBe(entries.length);
+    expect(entries.every(e => !e.slug.endsWith('_illustrated')), 'no edition-suffixed catalog ids').toBe(true);
+    expect([...entries.flatMap(e => [e.path, ...legacyAliases(e).map(alias => alias.path)]), ...superseded.map(s => s.path), ...withheld].sort()).toEqual(files.sort());
     for (const entry of entries) {
       const pack = JSON.parse(fs.readFileSync(entry.path, 'utf8').replace(/^\uFEFF/, ''));
       expect(catalog._parseCatalogLesson(pack, entry)).toBe(pack);
+      for (const alias of legacyAliases(entry)) {
+        const historical = JSON.parse(fs.readFileSync(alias.path, 'utf8').replace(/^\uFEFF/, ''));
+        expect(catalog._parseCatalogLesson(historical, alias)).toBe(historical);
+      }
     }
   });
   it('is current and identical on both deployment surfaces', () => {
@@ -55,17 +68,25 @@ describe('complete, generated AlloPack library', () => {
   });
   it('gives every version a distinct static redirect without changing catalog ids', () => {
     const rules = fs.readFileSync('_redirects', 'utf8');
-    for (const entry of entries) expect(rules).toContain('/p/' + entry.share_slug + ' /app/?lesson=' + entry.slug + ' 302');
+    for (const entry of entries) {
+      expect(rules).toContain('/p/' + entry.share_slug + ' /app/?lesson=' + entry.slug + ' 302');
+      for (const alias of legacyAliases(entry)) expect(rules).toContain('/p/' + alias.share_slug + ' /app/?lesson=' + entry.slug + ' 302');
+    }
     expect(rules).toContain('/packs /library.html 302');
     expect(rules).toContain('/water-cycle /app/?tool=waterCycle 302');
-    const katie = entries.find(e => e.share_slug === 'reading-space');
-    expect(katie.slug).toBe('academic-discourse-reading-space-grade6');
-    expect(catalog._catalogLessonPermalink(katie.slug, katie.share_slug)).toBe('https://alloflow.dev/p/reading-space');
-    expect(catalog._catalogLessonPermalink(katie.slug)).toContain('/app/?lesson=academic-discourse-reading-space-grade6');
-    expect(catalog._catalogLessonPermalink(katie.slug, '../unsafe')).toContain('/app/?lesson=');
+    const water = entries.find(e => e.share_slug === 'water-cycle-grade6');
+    expect(water.slug).toBe('water_cycle_grade6');
+    expect(catalog._catalogLessonPermalink(water.slug, water.share_slug)).toBe('https://alloflow.dev/p/water-cycle-grade6');
+    expect(catalog._catalogLessonPermalink(water.slug)).toContain('/app/?lesson=water_cycle_grade6');
+    expect(catalog._catalogLessonPermalink(water.slug, '../unsafe')).toContain('/app/?lesson=');
+    // Novak-informed packs are unlisted until the author approves (2026-11-02): no entry, no short link.
+    for (const share of ['reading-space', 'reading-space-practice', 'reading-decisions']) {
+      expect(entries.some(e => e.share_slug === share)).toBe(false);
+      expect(rules).not.toContain('/p/' + share + ' ');
+    }
   });
   it('fails instead of silently omitting files or publishing ambiguous aliases', () => {
-    expect(() => links.packEntries({entries: entries.slice(1)})).toThrow(/missing from catalog/);
+    expect(() => links.packEntries({entries: entries.slice(1)})).toThrow(/missing from catalog|points to an unlisted pack/);
     const duplicate = structuredClone(manifest); duplicate.entries[1].share_slug = duplicate.entries[0].share_slug;
     expect(() => links.packEntries(duplicate)).toThrow(/Duplicate share alias/);
     const unsafe = structuredClone(manifest); unsafe.entries[0].share_slug = '../bad';
@@ -79,7 +100,7 @@ describe('complete, generated AlloPack library', () => {
       expect(link.getAttribute('href')).toBe('./' + link.dataset.packDownload);
       expect(fs.existsSync(link.dataset.packDownload)).toBe(true);
     }
-    expect(d.querySelector('[data-pack-id="academic-discourse-reading-space-grade6"] h4').textContent).toBe('Illustrated pack');
+    expect(d.querySelector('[data-pack-id="water_cycle_grade6"] h4').textContent).toBe('Illustrated pack');
     expect(d.querySelectorAll('#cards-container .lesson-card').length).toBe(3);
     expect(d.querySelector('link[rel="canonical"]').href).toBe('https://alloflow.dev/packs');
     dom.window.close();
@@ -99,10 +120,10 @@ describe('complete, generated AlloPack library', () => {
       const card = [...d.querySelectorAll('[data-pack-id]')].find(card => card.dataset.packId === e.slug);
       expect(card.querySelector('.pack-resource-count').textContent).toContain(e.resource_count + ' resources');
     }
-    const katie = d.querySelector('[data-pack-id="academic-discourse-reading-space-grade6"]');
-    expect(katie.querySelector('.pack-core-route').textContent).toBe('Start with 5 core resources; supports included.');
-    expect(katie.querySelector('.pack-sources a').href).toBe('https://www.novakeducation.com/blog/how-to-teach-academic-discourse-and-collaboration');
-    expect(katie.querySelector('.pack-date').textContent).toContain('Pack updated');
+    // The core-route example (Katie's pack) is unlisted pending author review; use a listed pack.
+    const water = d.querySelector('[data-pack-id="water_cycle_grade6"]');
+    expect(water.querySelector('.pack-sources a').href).toBe('https://www.usgs.gov/water-science-school/science/infiltration-and-water-cycle');
+    expect(water.querySelector('.pack-date').textContent).toContain('Pack created');
     expect(html).not.toContain('data:image/');
     dom.window.close();
   });
@@ -111,6 +132,10 @@ describe('complete, generated AlloPack library', () => {
       expect(links.previewForPack({history:[{type:'image',data:{imageUrl}}]})).toBeNull();
     }
     expect(links.renderProvenance({submitted_at:'2026-01-01',source_links:[{url:'javascript:alert(1)',title:'Bad'},{url:'https://example.test/',title:'<script>bad</script>'}]})).toContain('&lt;script&gt;');
+    const background=links.renderProvenance({source_links:[{url:'https://example.test/',title:'Method guide',context:'Teacher background; <original> activities are separate.'}]});
+    expect(background).toContain('Sources and background');
+    expect(background).toContain('Teacher background; &lt;original&gt; activities are separate.');
+    expect(background).not.toContain('Original source');
     expect(links.renderProvenance({submitted_at:'2026-01-01'})).toBe('');
     for (const core_resource_count of [undefined, 0, -1, 3, '1']) {
       expect(links.renderResourceDetails({resource_count:2,resource_types:[{type:'quiz',count:2}],core_resource_count})).not.toContain('pack-core-route');
@@ -131,18 +156,18 @@ describe('complete, generated AlloPack library', () => {
   });
   it('preserves existing Pages app storage origin while copying canonical links', async () => {
     const dom = render('https://alloflow-cdn.pages.dev/library'), d = dom.window.document;
-    expect(d.querySelector('[data-pack-alias="reading-space"]').href).toBe('https://alloflow-cdn.pages.dev/p/reading-space');
+    expect(d.querySelector('[data-pack-alias="water-cycle-grade6"]').href).toBe('https://alloflow-cdn.pages.dev/p/water-cycle-grade6');
     let copied;
     dom.window.navigator.clipboard = { writeText: async text => { copied = text; } };
-    d.querySelector('[data-copy-pack="https://alloflow.dev/p/reading-space"]').click();
+    d.querySelector('[data-copy-pack="https://alloflow.dev/p/water-cycle-grade6"]').click();
     await new Promise(resolve => setTimeout(resolve, 10));
-    expect(copied).toBe('https://alloflow.dev/p/reading-space');
+    expect(copied).toBe('https://alloflow.dev/p/water-cycle-grade6');
     expect(d.getElementById('pack-copy-status').textContent).toBe('Pack link copied.');
     dom.window.close();
   });
   it('offers a focused, selectable link when clipboard permission is unavailable', async () => {
     const dom = render(), d = dom.window.document;
-    const button = d.querySelector('[data-copy-pack="https://alloflow.dev/p/reading-space"]');
+    const button = d.querySelector('[data-copy-pack="https://alloflow.dev/p/water-cycle-grade6"]');
     button.click(); await new Promise(resolve => setTimeout(resolve, 10));
     const field = button.closest('.pack-version').querySelector('.pack-copy-fallback input');
     expect(field.parentElement.hidden).toBe(false); expect(d.activeElement).toBe(field);

@@ -216,7 +216,7 @@ describe('space station tool', () => {
       expect(source).toIncludeText('iss-quiz-answer-state');
       expect(source).toIncludeText("role: 'application'");
       expect(source).toIncludeText("'aria-describedby': 'iss-map-instructions iss-map-status iss-map-orientation'");
-      expect(source).toIncludeText("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight + - Home F'");
+      expect(source).toIncludeText("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight + - Home F'");
       expect(source).toIncludeText("id: 'iss-map-status'");
       expect(source).toIncludeText("upd({ mapView: 'overview' })");
       expect(source).toIncludeText('cv._issCleanup = cleanup');
@@ -230,7 +230,7 @@ describe('space station tool', () => {
       expect(source).toIncludeText('focusDistance');
       expect(source).toIncludeText('data-iss-orientation-widget');
       expect(source).toIncludeText("data-iss-axis': 'x'");
-      expect(source).toIncludeText('_axisOrigin');
+      expect(source).toIncludeText('issMapAxisProjection(_axisEnd.toArray())');
       expect(source).toIncludeText("cv.addEventListener('keydown', onKey)");
       // Touch parity: without touchAction the browser steals the drag for page
       // scrolling and camera orbit is unavailable on touchscreens. Cancellation
@@ -2483,6 +2483,220 @@ describe('space station tool', () => {
       } finally { live.cleanup(); }
     });
 
+    describe('guided eclipse investigation', () => {
+      function click(live, selector) { act(() => { live.host.querySelector(selector).click(); }); }
+      function enter(live, selector, value) {
+        act(() => {
+          const field = live.host.querySelector(selector);
+          const prototype = field.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+          Object.getOwnPropertyDescriptor(prototype, 'value').set.call(field, value);
+          field.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      }
+      function step(live) { return live.host.querySelector('[data-eclipse-guide]').dataset.step; }
+      function savedState(live) { return JSON.parse(JSON.stringify(live.getData())); }
+
+      it('records the predicted 35- and 45-minute orbits as a controlled pair and saves the explanation to B', () => {
+        const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsEclipse: 25, opsWaterDay: 13, opsPressureMinute: 4.5,
+          opsDebrisTime: 42, opsPrediction: 'Existing trial prediction.' });
+        const prediction = 'A longer eclipse should leave less reserve because the battery supplies the station for longer.';
+        const explanation = 'The longer eclipse lowered the minimum battery reserve with the same starting conditions.';
+        try {
+          click(live, '[data-ops-record-trial]');
+          enter(live, '[data-ops-reflection]', 'Preserve the earlier observation.');
+          enter(live, '[data-ops-prediction]', 'Separate unfinished notebook prediction.');
+          const oldRecord = savedState(live).opsTrials[0];
+          act(() => { [...live.host.querySelectorAll('.iss-ops-mode')].find(button => button.textContent.includes('Power')).click(); });
+          enter(live, '#iss-power-time', '22.5');
+          click(live, '[data-iss-playback-toggle="power"]');
+          click(live, '[data-eclipse-guide-start]');
+          expect(step(live)).toBe('baseline');
+          expect(live.getData().opsMode).toBe('power');
+          expect(live.getData().opsOrbitMinute).toBe(0);
+          expect(live.host.querySelector('[data-iss-playback-toggle="power"]').getAttribute('aria-pressed')).toBe('false');
+          expect(live.host.querySelector('[data-eclipse-guide-record-a]').disabled).toBe(true);
+          enter(live, '[data-eclipse-guide-prediction]', prediction);
+          click(live, '[data-eclipse-guide-record-a]');
+          expect(step(live)).toBe('change');
+          const baseline = savedState(live).opsTrials[1];
+          expect(baseline.setup).toEqual({ ...oldRecord.setup, opsEclipse: 35 });
+          expect(baseline.prediction).toBe(prediction);
+          expect(live.getData().opsTrialSelected).toBe(baseline.id);
+          click(live, '[data-eclipse-guide-change]');
+          expect(step(live)).toBe('comparison');
+          expect(live.getData().opsEclipse).toBe(45);
+          expect(live.getData().opsOrbitMinute).toBe(0);
+          click(live, '[data-eclipse-guide-record-b]');
+          expect(step(live)).toBe('reflect');
+          expect(live.getData().opsMode).toBe('integrated');
+          const compared = savedState(live).opsTrials[2];
+          expect(compared.setup).toEqual({ ...baseline.setup, opsEclipse: 45 });
+          expect(compared.prediction).toBe(prediction);
+          expect(Number(live.host.querySelector('[data-ops-trial-select]').value)).toBe(baseline.id);
+          expect(Number(live.host.querySelector('[data-ops-trial-compare]').value)).toBe(compared.id);
+          expect(Number(live.host.querySelector('[data-eclipse-guide-minimum="baseline"]').dataset.value)).toBe(baseline.results.batteryMin);
+          expect(Number(live.host.querySelector('[data-eclipse-guide-minimum="comparison"]').dataset.value)).toBe(compared.results.batteryMin);
+          expect(compared.results.batteryMin).toBeLessThan(baseline.results.batteryMin);
+          click(live, '[data-eclipse-guide-chart]');
+          expect(live.host.querySelector('[data-ops-trajectory-metric]').value).toBe('battery');
+          expect(Number(live.host.querySelector('[data-ops-trajectory-reading="comparison"]').dataset.value)).toBe(compared.results.batteryMin);
+          expect(live.host.querySelector('[data-eclipse-guide-finish]').disabled).toBe(true);
+          click(live, '[data-ops-observation-capture]');
+          const captured = live.host.querySelector('[data-ops-observation-text]').textContent;
+          expect(live.host.querySelector('[data-ops-observation-target]').value).toBe(String(compared.id));
+          click(live, '[data-ops-observation-append]');
+          expect(live.getData().opsTrials).toEqual([oldRecord, baseline, { ...compared, reflection: captured }]);
+          expect(live.host.querySelector('[data-eclipse-guide-reflection]').value).toBe(captured);
+          expect(live.host.querySelector('[data-eclipse-guide-finish]').disabled).toBe(true);
+          const baselineNote = 'A uses the shorter eclipse.';
+          enter(live, '[data-ops-reflection]', baselineNote);
+          expect(live.host.querySelector('[data-eclipse-guide-finish]').disabled).toBe(true);
+          click(live, '[data-eclipse-guide-finish]');
+          expect(step(live)).toBe('reflect');
+          const finalNote = captured + '\n' + explanation;
+          enter(live, '[data-eclipse-guide-reflection]', finalNote);
+          expect(live.host.querySelector('[data-eclipse-guide-finish]').disabled).toBe(false);
+          click(live, '[data-eclipse-guide-finish]');
+          expect(step(live)).toBe('done');
+          expect(live.getData().opsTrials).toEqual([oldRecord, { ...baseline, reflection: baselineNote }, { ...compared, reflection: finalNote }]);
+          expect(live.getData().opsPrediction).toBe('Separate unfinished notebook prediction.');
+          expect(live.getData().opsWaterDay).toBe(13);
+          expect(live.getData().opsPressureMinute).toBe(4.5);
+          expect(live.getData().opsDebrisTime).toBe(42);
+          click(live, '[data-eclipse-guide-exit]');
+          expect(live.getData().opsTrials[2].reflection).toBe(finalNote);
+        } finally { live.cleanup(); }
+      });
+
+      it('resumes the comparison step and requires restoration after another working control changes', () => {
+        const first = mountLiveWithSeed({ ...BASE, tab: 'operations', opsPrediction: 'My unrelated draft.' });
+        let resumed;
+        try {
+          click(first, '[data-eclipse-guide-start]');
+          enter(first, '[data-eclipse-guide-prediction]', 'A longer eclipse uses more stored energy.');
+          click(first, '[data-eclipse-guide-record-a]');
+          click(first, '[data-eclipse-guide-change]');
+          enter(first, '#iss-power-angle', '20');
+          resumed = savedState(first);
+        } finally { first.cleanup(); }
+        const live = mountLiveWithSeed(resumed);
+        try {
+          expect(step(live)).toBe('comparison');
+          expect(live.host.querySelector('[data-eclipse-guide-record-b]').disabled).toBe(true);
+          click(live, '[data-eclipse-guide-record-b]');
+          expect(live.getData().opsTrials).toEqual(resumed.opsTrials);
+          click(live, '[data-eclipse-guide-restore]');
+          expect(live.getData().opsEclipse).toBe(45);
+          expect(live.getData().opsArrayAngle).toBe(resumed.opsTrials[0].setup.opsArrayAngle);
+          expect(live.getData().opsOrbitMinute).toBe(0);
+          expect(live.host.querySelector('[data-eclipse-guide-record-b]').disabled).toBe(false);
+          click(live, '[data-eclipse-guide-record-b]');
+          expect(step(live)).toBe('reflect');
+          const records = live.getData().opsTrials;
+          expect(records[1].setup).toEqual({ ...records[0].setup, opsEclipse: 45 });
+          expect(live.getData().opsPrediction).toBe('My unrelated draft.');
+        } finally { live.cleanup(); }
+      });
+
+      it('compares the saved eclipse-entry window and opens its midpoint independently of the working orbit', () => {
+        const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsWaterDay: 13, opsPressureMinute: 4.5, opsDebrisTime: 42 });
+        function select(selector, value) {
+          act(() => { const field = live.host.querySelector(selector); field.value = value; field.dispatchEvent(new Event('change', { bubbles: true })); });
+        }
+        function budget(side) {
+          const panel = live.host.querySelector('[data-eclipse-window-side="' + side + '"]');
+          return Object.fromEntries(['startReserve', 'endReserve', 'solarToLoadsKWh', 'batteryDeliveredKWh', 'unservedKWh', 'requestedKWh'].map(key => {
+            const amount = Number(panel.querySelector('[data-eclipse-window-value="' + key + '"]').dataset.value);
+            expect(Number.isFinite(amount)).toBe(true);
+            return [key, amount];
+          }));
+        }
+        try {
+          click(live, '[data-eclipse-guide-start]');
+          enter(live, '[data-eclipse-guide-prediction]', 'The longer eclipse should draw on the battery sooner.');
+          click(live, '[data-eclipse-guide-record-a]');
+          expect(live.host.querySelector('[data-eclipse-window]')).toBeNull();
+          click(live, '[data-eclipse-guide-change]');
+          click(live, '[data-eclipse-guide-record-b]');
+          const details = live.host.querySelector('[data-eclipse-window]');
+          expect(details.tagName).toBe('DETAILS');
+          expect(details.open).toBe(false);
+          click(live, '[data-eclipse-window] summary');
+          const a = budget('baseline'), b = budget('comparison');
+          expect(live.host.querySelector('[data-eclipse-window-side="baseline"]').dataset.lit).toBe('true');
+          expect(live.host.querySelector('[data-eclipse-window-side="comparison"]').dataset.lit).toBe('false');
+          expect(a.solarToLoadsKWh).toBeGreaterThan(0);
+          expect(b.solarToLoadsKWh).toBe(0);
+          expect(b.batteryDeliveredKWh).toBeGreaterThan(a.batteryDeliveredKWh);
+          const [first, second] = savedState(live).opsTrials;
+
+          click(live, '[data-eclipse-guide-chart]');
+          select('[data-ops-trial-select]', String(second.id));
+          select('[data-ops-trial-compare]', 'current');
+          select('[data-ops-trajectory-metric]', 'temp');
+          enter(live, '[data-ops-trajectory-time]', '8.125');
+          enter(live, '#iss-ops-angle', '0');
+          enter(live, '#iss-ops-battery', '0');
+          enter(live, '[data-ops-prediction]', 'Next trial draft.');
+          enter(live, '#iss-orbit-cursor', '63.75');
+          click(live, '[data-iss-playback-toggle="integrated"]');
+          expect(budget('baseline')).toEqual(a);
+          expect(budget('comparison')).toEqual(b);
+          const before = savedState(live);
+          click(live, '[data-eclipse-window-inspect]');
+          expect(live.getData()).toEqual({ ...before, opsTrialSelected: first.id, opsTrialCompare: second.id,
+            opsTrajectoryOpen: true, opsTrajectoryMetric: 'battery', opsTrajectoryMinute: 52 });
+          expect(live.host.querySelector('[data-iss-playback-toggle="integrated"]').getAttribute('aria-pressed')).toBe('true');
+          for (const [side, lit] of [['baseline', 'true'], ['comparison', 'false']]) {
+            const reading = live.host.querySelector('[data-ops-trajectory-reading="' + side + '"]');
+            expect(reading.dataset.minute).toBe('52');
+            expect(reading.dataset.lit).toBe(lit);
+          }
+          click(live, '[data-eclipse-guide-chart]');
+          const longerMinimum = live.host.querySelector('[data-ops-trajectory-reading="comparison"]');
+          expect(longerMinimum.dataset.minute).toBe('92');
+          expect(Number(longerMinimum.dataset.value)).toBe(second.results.batteryMin);
+          enter(live, '[data-eclipse-guide-reflection]', 'B uses stored energy during the extra shadow interval.');
+          click(live, '[data-eclipse-guide-finish]');
+          expect(step(live)).toBe('done');
+          expect(budget('baseline')).toEqual(a);
+          expect(budget('comparison')).toEqual(b);
+          click(live, '[data-eclipse-window-inspect]');
+          expect(live.getData().opsTrajectoryMinute).toBe(52);
+          expect(live.getData().opsOrbitMinute).toBe(63.75);
+        } finally { live.cleanup(); }
+      });
+
+      it('keeps the saved notebook intact when there is no room for two trials or when the baseline disappears', () => {
+        const first = mountLiveWithSeed({ ...BASE, tab: 'operations', opsMode: 'power' });
+        let recorded;
+        try {
+          click(first, '[data-eclipse-guide-start]');
+          enter(first, '[data-eclipse-guide-prediction]', 'I expect lower reserve.');
+          click(first, '[data-eclipse-guide-record-a]');
+          recorded = savedState(first);
+        } finally { first.cleanup(); }
+        const record = recorded.opsTrials[0];
+        const priorTrials = Array.from({ length: 5 }, (_, i) => ({ ...record, id: i + 1, reflection: 'Existing evidence ' + i }));
+        const crowded = mountLiveWithSeed({ ...recorded, opsEclipseGuide: null, opsTrials: priorTrials, opsRuns: 5 });
+        try {
+          const start = crowded.host.querySelector('[data-eclipse-guide-start]');
+          if (start) { act(() => { start.click(); }); }
+          expect(crowded.getData().opsEclipseGuide).toBeNull();
+          expect(crowded.getData().opsTrials).toEqual(priorTrials);
+        } finally { crowded.cleanup(); }
+        const lost = mountLiveWithSeed({ ...recorded, opsTrials: [{ ...record, id: record.id + 1, reflection: 'Other saved trial.' }] });
+        try {
+          expect(lost.host.querySelector('[data-eclipse-guide-unavailable]')).toBeTruthy();
+          expect(lost.host.querySelector('[data-eclipse-guide-change]')).toBeNull();
+          expect(lost.host.querySelector('[data-eclipse-guide-record-b]')).toBeNull();
+          const evidence = savedState(lost).opsTrials;
+          click(lost, '[data-eclipse-guide-exit]');
+          expect(lost.getData().opsTrials).toEqual(evidence);
+        } finally { lost.cleanup(); }
+      });
+    });
+
     describe('paired trajectory explorer', () => {
       const copy = value => JSON.parse(JSON.stringify(value));
       const withoutView = state => Object.fromEntries(Object.entries(copy(state)).filter(([key]) => !['opsTrajectoryOpen', 'opsTrajectoryMetric', 'opsTrajectoryMinute'].includes(key)));
@@ -2645,6 +2859,84 @@ describe('space station tool', () => {
           expect(reloaded.getData().opsTrials).toEqual(seed.opsTrials);
           expect(reloaded.host.querySelector('[data-ops-prediction]').value).toBe('Keep this draft.');
         } finally { reloaded.cleanup(); }
+      });
+
+      describe('captured comparison observations', () => {
+        function observationSeed() {
+          const first = mountLiveWithSeed({ ...BASE, tab: 'operations', opsCmg: 100, opsAttitudeTorque: 0, opsAttitudeDump: true,
+            opsAttitudeBurnMinute: 10, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5 });
+          try {
+            click(first, '[data-ops-record-trial]');
+            const seed = copy(first.getData());
+            seed.opsTrials[0].reflection = 'Earlier baseline evidence.';
+            seed.opsTrials.push({ ...copy(seed.opsTrials[0]), id: 2, setup: { ...seed.opsTrials[0].setup, opsAttitudeBurnMinute: 70 }, reflection: 'Earlier comparison evidence.' });
+            return { ...seed, opsTrialCompare: 2, opsRuns: 2, opsTrajectoryOpen: true, opsTrajectoryMetric: 'cmg', opsTrajectoryMinute: 40,
+              opsOrbitMinute: 37.25, opsWaterDay: 13, opsPressureMinute: 4.5, opsDebrisTime: 42, opsPrediction: 'Unfinished next-trial prediction.' };
+          } finally { first.cleanup(); }
+        }
+
+        it('appends the captured readings to the latest comparison reflection while retaining the full experiment state', () => {
+          const live = mountLiveWithSeed(observationSeed());
+          try {
+            click(live, '[data-iss-playback-toggle="integrated"]');
+            const beforeCapture = copy(live.getData());
+            click(live, '[data-ops-observation-capture]');
+            const note = live.host.querySelector('[data-ops-observation-text]').textContent;
+            expect(note).toContain('T+40 min');
+            expect(note).toContain('8.0 %');
+            expect(note).toContain('100.0 %');
+            expect(note).toContain('+92.0 pp');
+            expect(live.host.querySelector('[data-ops-observation-target]').value).toBe('2');
+            expect(live.getData()).toEqual(beforeCapture);
+            fill(live, '[data-ops-compared-reflection]', 'Updated comparison evidence.');
+            expect(live.host.querySelector('[data-ops-observation-text]').textContent).toBe(note);
+            const expected = copy(live.getData());
+            expected.opsTrials[1].reflection += '\n' + note;
+            click(live, '[data-ops-observation-append]');
+            expect(live.getData()).toEqual(expected);
+            expect(live.host.querySelector('[data-ops-observation-preview]')).toBeNull();
+            expect(live.host.querySelector('[data-ops-observation-append]')).toBeNull();
+            expect(live.host.querySelector('[data-ops-observation-status]').getAttribute('role')).toBe('status');
+            expect(live.host.querySelector('[data-iss-playback-toggle="integrated"]').getAttribute('aria-pressed')).toBe('true');
+          } finally { live.cleanup(); }
+        });
+
+        it('retains a stale preview until recaptured and rejects overflow while accepting the exact reflection limit', () => {
+          const live = mountLiveWithSeed(observationSeed());
+          try {
+            click(live, '[data-ops-observation-capture]');
+            const original = live.host.querySelector('[data-ops-observation-text]').textContent;
+            fill(live, '[data-ops-trajectory-time]', '41');
+            expect(live.host.querySelector('[data-ops-observation-text]').textContent).toBe(original);
+            expect(live.host.querySelector('[data-ops-observation-target]').disabled).toBe(true);
+            expect(live.host.querySelector('[data-ops-observation-append]').disabled).toBe(true);
+            const staleState = copy(live.getData());
+            click(live, '[data-ops-observation-append]');
+            expect(live.getData()).toEqual(staleState);
+            click(live, '[data-ops-observation-capture]');
+            const note = live.host.querySelector('[data-ops-observation-text]').textContent;
+            expect(note).toContain('T+41 min');
+            expect(live.host.querySelector('[data-ops-observation-target]').disabled).toBe(false);
+            fill(live, '[data-ops-compared-reflection]', 'x'.repeat(1200 - note.length));
+            expect(live.host.querySelector('[data-ops-observation-capacity]')).toBeTruthy();
+            expect(live.host.querySelector('[data-ops-observation-append]').disabled).toBe(true);
+            const overLimit = copy(live.getData());
+            click(live, '[data-ops-observation-append]');
+            expect(live.getData()).toEqual(overLimit);
+            fill(live, '[data-ops-compared-reflection]', 'x'.repeat(1199 - note.length));
+            expect(live.host.querySelector('[data-ops-observation-append]').disabled).toBe(false);
+            const beforeAppend = copy(live.getData());
+            const expected = copy(beforeAppend);
+            expected.opsTrials[1].reflection += '\n' + note;
+            click(live, '[data-ops-observation-append]');
+            expect(live.getData()).toEqual(expected);
+            expect(live.getData().opsTrials[1].reflection).toHaveLength(1200);
+            click(live, '[data-ops-observation-capture]');
+            click(live, '[data-ops-observation-cancel]');
+            expect(live.host.querySelector('[data-ops-observation-preview]')).toBeNull();
+            expect(live.getData()).toEqual(expected);
+          } finally { live.cleanup(); }
+        });
       });
 
       describe('paired comparison CSV export', () => {
@@ -3816,7 +4108,9 @@ describe('space station tool', () => {
       const source = readFileSync(TOOL_PATHS[0], 'utf8');
       const esc = (s) => s.replace(/&/g, '&amp;');
 
-      const modules = [...source.matchAll(/^ {4}\{ id: '([a-z0-9]+)', name: '([^']+)'/gm)]
+      const moduleSource = source.match(/  var MODULES = \[([\s\S]*?)\n  \];/);
+      expect(moduleSource, 'the module database should be present').toBeTruthy();
+      const modules = [...moduleSource[1].matchAll(/^ {4}\{ id: '([a-z0-9]+)', name: '([^']+)'/gm)]
         .map((m) => ({ id: m[1], name: m[2] }));
       expect(modules.length).toBe(13);
       // The map's motion help uses "undefined" as a math word in fixed English
@@ -3901,7 +4195,7 @@ describe('space station tool', () => {
       const alt = Math.round((rGeo - Re) / 100) * 100;
       expect(alt).toBe(35800);                         // published 35,786 km
       expect(html).toIncludeText(alt.toLocaleString() + ' km');
-      expect(html).toIncludeText(Math.round((rGeo - Re) / ref) + '× higher');
+      expect(html).toIncludeText(Math.round((rGeo - Re) / ref) + '× station altitude');
 
       // ...and the delay is that path length over c, using the SHORT geometry
       // so the number quoted is a floor.

@@ -16,7 +16,7 @@
     "defaultMode": "desktop-host",
     "defaultProjectName": "alloflow-schoolbox",
     "defaultWebUrl": "http://127.0.0.1:32174",
-    "stack": "Uses ALLOFLOW_SCHOOLBOX_ROOT when set, then packaged resources/schoolbox when installed, then the checkout root docker-compose.yml during development. This stack is for optional School Box server/appliance scenarios, not ordinary Desktop LAN classroom hosting.",
+    "stack": "Uses ALLOFLOW_SCHOOLBOX_ROOT when set, then packaged resources/schoolbox when installed, then the checkout. Prefers maintained docker/docker-compose.yml within a checkout; root-only packaged layouts remain supported. GPU text mode adds the adjacent GPU override when present. This stack is for optional School Box server/appliance scenarios, not ordinary Desktop LAN classroom hosting.",
     "modes": {
       "desktop-host": "Prepare and run the optional local Docker-based School Box server stack from AlloFlow Desktop.",
       "district-server": "Reserved for the future district/server command center; it does not start local Docker services yet.",
@@ -27,6 +27,16 @@
     "statusValues": ["disabled", "district-planned", "missing-stack", "missing-app-build", "needs-setup", "needs-docker", "ready", "partial", "running"],
     "statusResponseAdds": ["nextActions"]
   },
+  "localImages": {
+    "status": "source-implemented-gpu-and-packaged-activation-pending",
+    "stack": "Packaged resources/local-images or the maintained checkout Docker image stack; source allowlist excludes credentials and model caches.",
+    "controls": "AI / Local Images: Prepare, Install, Repair, Start, Stop and Refresh. Explicit terms acceptance precedes preparation or downloads. Normal Start verifies cached model files and cannot download or build.",
+    "requirements": "Local Linux x86_64 Docker, NVIDIA GPU access, disk space and a native Desktop launch token. No automatic driver/Docker installation or model setup.",
+    "ownership": "A stable data-directory-derived Compose project isolates each installation; another installation's image container is never stopped or replaced.",
+    "secrets": "Dedicated private local-images.env in the Desktop data directory. The image token stays in the native process and is never included in status or app content.",
+    "readiness": "Requires the selected model and exact revision, offline mode, CUDA and txt2img support. A real GPU generation test and coherent packaged activation remain pending.",
+    "appConnection": "Explicit session switch defaults off. The exact current app frame uses a per-document/session bridge to request bounded generation/editing through the protected command center; no image or launch credential enters app content. Navigation revokes access. Cancellation discards results while retaining the native lease until upstream completion; unconfirmed work requires owned-service Stop."
+  },
   "appDelivery": {
     "defaultMode": "auto",
     "bundledRoute": "/app/",
@@ -35,7 +45,7 @@
     "staticTransport": "Files are streamed from disk with MIME hardening, ETag and Last-Modified validators, HEAD support, cache policy, and single byte-range responses for seekable classroom media."
   },
     "previewOrigin": "The packaged command center uses 127.0.0.1 while its bundled app iframe uses localhost on the same private port. The different hostnames create distinct browser origins without exposing another network listener.",
-    "previewBridge": "A versioned postMessage bridge accepts only configuration sync, capability status, Kokoro download/test, and SD-Turbo download. Both sides verify frame identity, loopback origin, protocol version, request identifiers, and response correlation.",
+    "previewBridge": "A versioned postMessage bridge accepts only configuration sync, capability status, Kokoro download/test, SD-Turbo download and image-session configuration. An explicit enabled image session adds reverse generation/edit/cancel requests with exact frame, origin, document/session and request-ID checks. App content has no private API exemption or lifecycle/secret access.",
   "updates": {
     "defaultChannel": "latest",
     "channels": ["latest", "beta"],
@@ -171,6 +181,8 @@
     { "method": "GET", "path": "/api/lan-docs/{key}", "purpose": "Read a chunked session asset doc (public LAN share: scoped participant-token gated)" },
     { "method": "PUT", "path": "/api/lan-docs/{key}", "purpose": "Create or replace a session asset doc (private runtime only; POST accepted as alias)" },
     { "method": "DELETE", "path": "/api/lan-docs/{key}", "purpose": "Delete a session asset doc (private runtime only; TTL cleans up otherwise)" },
+    { "method": "GET", "path": "/api/local-images/{action}", "purpose": "Only status/app-status: secret-free setup/service/session state; launch token and loopback required" },
+    { "method": "POST", "path": "/api/local-images/{action}", "purpose": "Only prepare/install/repair/start/stop/app-access/generate/edit/cancel: protected native controls; same-origin and loopback required; no app or LAN exemption. Bounded generation/edit intake and explicit ephemeral session required." },
     { "method": "GET", "path": "/api/schoolbox/status", "purpose": "Optional School Box Docker server stack readiness and service status" },
     { "method": "POST", "path": "/api/schoolbox/setup", "purpose": "Create or update docker/.env for the optional desktop-managed School Box server stack" },
     { "method": "POST", "path": "/api/schoolbox/start", "purpose": "Start the optional desktop-managed School Box Docker server stack" },

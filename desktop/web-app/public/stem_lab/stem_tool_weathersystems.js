@@ -2130,7 +2130,7 @@ var GEOGRAPHY_PROFILES = {
     options = options || {};
     var timeoutMs = typeof options.timeoutMs === 'number' && isFinite(options.timeoutMs) ? Math.max(1000, Math.min(60000, options.timeoutMs)) : 30000;
     var Controller = Object.prototype.hasOwnProperty.call(options, 'AbortController') ? options.AbortController : (typeof AbortController === 'function' ? AbortController : null);
-    var active = null, serial = 0, disposed = false;
+    var active = null, serial = 0, disposed = false, latestToken = null;
     function isCurrent(token) { return !!token && !disposed && !!active && active.token === token && token.state === 'pending'; }
     function close(state, abort, notify) {
       var request = active;
@@ -2150,6 +2150,7 @@ var GEOGRAPHY_PROFILES = {
         var controller = null;
         if (typeof Controller === 'function') { try { controller = new Controller(); } catch (ignored) {} }
         var token = { id: ++serial, signal: controller ? controller.signal : undefined, state: 'pending' };
+        latestToken = token;
         close('superseded', true);
         if (disposed || token.id !== serial) {
           token.state = disposed ? 'disposed' : 'superseded';
@@ -2165,6 +2166,7 @@ var GEOGRAPHY_PROFILES = {
         return token;
       },
       isCurrent: isCurrent,
+      isLatestCompletion: function (token) { return !!token && !disposed && latestToken === token && token.state === 'complete' && token.id === serial; },
       finish: function (token) { return isCurrent(token) ? close('complete', false) : false; },
       cancel: function () { return close('cancelled', true); },
       dispose: function () { disposed = true; close('disposed', true); }
@@ -2175,15 +2177,12 @@ var GEOGRAPHY_PROFILES = {
     var live = liveWeather || {};
     var observedAt = String(live.observedAt || '').trim();
     if (!observedAt) return { code: 'unknown', current: false, stale: true, ageMinutes: null, badge: 'SAVED', label: 'Saved model estimate', detail: 'Model valid time is unavailable.' };
-    var timestamp;
-    if (!/(?:Z|[+-]\d{2}:?\d{2})$/i.test(observedAt) && isFinite(Number(live.utcOffsetSeconds))) {
-      timestamp = Date.parse(observedAt + 'Z') - Number(live.utcOffsetSeconds) * 1000;
-    } else {
-      timestamp = Date.parse(observedAt);
-    }
+    var timestamp = liveReviewTimestamp(observedAt, live.utcOffsetSeconds);
     if (!isFinite(timestamp)) return { code: 'unknown', current: false, stale: true, ageMinutes: null, badge: 'SAVED', label: 'Saved model estimate', detail: 'Model valid time could not be interpreted.' };
-    var reference = isFinite(Number(nowMs)) ? Number(nowMs) : Date.now();
-    var ageMinutes = Math.max(0, Math.round((reference - timestamp) / 60000));
+    var reference = liveWeatherNumber(nowMs);
+    if (reference == null) reference = Date.now();
+    if (timestamp > reference) return { code: 'future', current: false, stale: true, ageMinutes: null, badge: 'SAVED', label: 'Saved model estimate', detail: 'Model valid time is later than the current device time. Refresh weather or check the device clock.' };
+    var ageMinutes = Math.round((reference - timestamp) / 60000);
     var ageLabel = ageMinutes < 60 ? ageMinutes + ' min ago' : ageMinutes < 1440 ? Math.round(ageMinutes / 60) + ' h ago' : Math.round(ageMinutes / 1440) + ' d ago';
     if (ageMinutes <= 90) return { code: 'current', current: true, stale: false, ageMinutes: ageMinutes, badge: 'LIVE', label: 'Current model estimate', detail: 'Model valid ' + ageLabel + '.' };
     if (ageMinutes <= 360) return { code: 'recent', current: false, stale: false, ageMinutes: ageMinutes, badge: 'RECENT', label: 'Recent model estimate', detail: 'Model valid ' + ageLabel + '; refresh before treating this as current.' };
@@ -2373,6 +2372,85 @@ var GEOGRAPHY_PROFILES = {
     })[0];
   }
 
+  function normalizeLiveLocationChoices(results, fields) {
+    if (!Array.isArray(results)) return [];
+    function text(value, limit) {
+      return typeof value === 'string' ? value.replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, limit) : '';
+    }
+    var places = [];
+    results.slice(0, 20).forEach(function (record) {
+      if (!record || typeof record !== 'object' || Array.isArray(record)) return;
+      var coordinates = liveReviewCoordinates(record);
+      var name = text(record.name, 120);
+      if (!coordinates || !name) return;
+      var place = { name: name, latitude: coordinates.latitude, longitude: coordinates.longitude };
+      ['admin1', 'admin2', 'country', 'country_code', 'feature_code', 'timezone'].forEach(function (key) {
+        var value = text(record[key], 120);
+        if (value) place[key] = value;
+      });
+      var elevation = liveWeatherNumber(record.elevation);
+      if (elevation != null) place.elevation = elevation;
+      var postcodes = Array.isArray(record.postcodes) ? record.postcodes : [record.postcode];
+      place.postcodes = postcodes.slice(0, 10).map(function (value) { return text(value, 30); }).filter(Boolean);
+      place.label = [place.name, place.admin1, place.country].filter(Boolean).join(', ');
+      places.push(place);
+    });
+    var preferred = chooseLocationResult(places, fields);
+    if (!preferred) return [];
+    var ranked = [preferred].concat(places.filter(function (place) { return place !== preferred; }));
+    var distinct = [];
+    ranked.forEach(function (place) {
+      if (!distinct.some(function (existing) { return liveReviewSameLocation(existing, place); })) distinct.push(place);
+    });
+    return distinct.slice(0, 10);
+  }
+
+  function normalizeSavedLivePlaces(entries) {
+    if (!Array.isArray(entries)) return [];
+    function text(value, limit) {
+      return typeof value === 'string' ? value.replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, limit) : '';
+    }
+    var saved = [];
+    entries.slice(0, 48).forEach(function (entry) {
+      if (!entry || entry.schema !== 'weather-saved-place-v1') return;
+      var coordinates = liveReviewCoordinates(entry);
+      var name = text(entry.name, 80);
+      if (!coordinates || !name || saved.some(function (place) { return liveReviewSameLocation(place, coordinates); })) return;
+      var latitude = Math.round(coordinates.latitude * 10000) / 10000;
+      var longitude = Math.round(coordinates.longitude * 10000) / 10000;
+      if (longitude === 180) longitude = -180;
+      var place = {
+        schema: 'weather-saved-place-v1', id: latitude + '|' + longitude,
+        name: name, label: text(entry.label, 200) || name, latitude: latitude, longitude: longitude
+      };
+      var geography = entry.place;
+      if (geography && typeof geography === 'object' && !Array.isArray(geography)) {
+        var safeGeography = {};
+        ['name', 'admin1', 'admin2', 'country', 'country_code'].forEach(function (key) {
+          var value = text(geography[key], 120);
+          if (value) safeGeography[key] = value;
+        });
+        var elevation = liveWeatherNumber(geography.elevation);
+        if (elevation != null && elevation >= -500 && elevation <= 9000) safeGeography.elevation = elevation;
+        if (Object.keys(safeGeography).length) place.place = safeGeography;
+      }
+      saved.push(place);
+    });
+    return saved.slice(0, 6);
+  }
+
+  function savedLivePlaceFromWeather(live, geography, name) {
+    if (!live || typeof live !== 'object' || Array.isArray(live) || !liveReviewCoordinates(live)) return null;
+    var source = geography && liveReviewSameLocation(geography, live) ? geography : {};
+    var entry = {
+      schema: 'weather-saved-place-v1', name: typeof name === 'string' && name.trim() ? name : live.label || 'Saved place',
+      label: live.label, latitude: live.latitude, longitude: live.longitude,
+      place: { name: source.locality, admin1: source.admin1, admin2: source.admin2, country: source.country, country_code: source.countryCode, elevation: source.elevation }
+    };
+    return normalizeSavedLivePlaces([entry])[0] || null;
+  }
+
+
   function weatherCodeLabel(code) {
     var value = liveWeatherNumber(code);
     if (value === 0) return 'Clear sky';
@@ -2411,7 +2489,7 @@ var GEOGRAPHY_PROFILES = {
     return Date.parse(value + 'Z') - (liveWeatherNumber(utcOffsetSeconds) || 0) * 1000;
   }
 
-  function liveWeatherMeasurements(record) {
+  function liveWeatherMeasurements(record, includePartial) {
     var values = {
       temperature: liveWeatherNumber(record.temperature_2m),
       humidity: liveWeatherNumber(record.relative_humidity_2m),
@@ -2426,9 +2504,16 @@ var GEOGRAPHY_PROFILES = {
     // These measurements all drive the scene and its numeric evidence. A missing
     // value must not silently become calm wind, clear skies, dry air, or zero rain.
     var required = ['temperature', 'humidity', 'precipitation', 'cloudCover', 'pressure', 'windSpeed', 'windDir'];
-    if (required.some(function (key) { return values[key] == null; })) return null;
-    if (values.humidity < 0 || values.humidity > 100 || values.cloudCover < 0 || values.cloudCover > 100
-      || values.pressure <= 0 || values.precipitation < 0 || values.windSpeed < 0 || values.windDir < 0 || values.windDir > 360) return null;
+    var incomplete = required.some(function (key) { return values[key] == null; })
+      || values.humidity < 0 || values.humidity > 100 || values.cloudCover < 0 || values.cloudCover > 100
+      || values.pressure <= 0 || values.precipitation < 0 || values.windSpeed < 0 || values.windDir < 0 || values.windDir > 360;
+    if (incomplete) {
+      if (!includePartial) return null;
+      var valid = liveReviewMeasurements(values);
+      if (!required.some(function (key) { return valid[key] != null; }) && valid.weatherCode == null && !(values.visibility != null && values.visibility >= 0)) return null;
+      required.forEach(function (key) { values[key] = valid[key] == null ? null : valid[key]; });
+      values.partial = true;
+    }
     if (values.visibility != null && values.visibility < 0) values.visibility = null;
     values.condition = weatherCodeLabel(values.weatherCode);
     if (values.condition === 'Variable conditions') values.weatherCode = null;
@@ -2459,32 +2544,37 @@ var GEOGRAPHY_PROFILES = {
     });
   }
 
-  function normalizeHourlyWeatherTimeline(payload, liveWeather) {
+  function normalizeHourlyWeatherTimeline(payload, liveWeather, options) {
     var hourly = payload && payload.hourly;
     var times = hourly && Array.isArray(hourly.time) ? hourly.time : [];
     if (!times.length || !liveWeather) return [];
     var currentTime = liveWeatherTimestamp(liveWeather.observedAt, liveWeather.utcOffsetSeconds);
     if (!isFinite(currentTime)) return [];
     var fields = ['temperature_2m', 'relative_humidity_2m', 'precipitation', 'weather_code', 'cloud_cover', 'surface_pressure', 'wind_speed_10m', 'wind_direction_10m', 'visibility'];
-    var seen = {};
-    var points = [];
+    var byTime = Object.create(null);
     times.forEach(function (time, index) {
       var timestamp = liveWeatherTimestamp(time, liveWeather.utcOffsetSeconds);
-      if (!isFinite(timestamp) || seen[timestamp] || timestamp === currentTime) return;
+      if (!isFinite(timestamp) || timestamp === currentTime) return;
+      var previous = byTime[timestamp];
+      if (previous && !previous.partial) return;
       var record = {};
       fields.forEach(function (key) { record[key] = Array.isArray(hourly[key]) ? hourly[key][index] : null; });
-      var measurements = liveWeatherMeasurements(record);
-      if (!measurements) return;
-      seen[timestamp] = true;
-      points.push(Object.assign({}, measurements, {
+      var measurements = liveWeatherMeasurements(record, options && options.includePartial);
+      if (!measurements || (previous && measurements.partial)) return;
+      byTime[timestamp] = Object.assign({}, measurements, {
         time: time,
         source: 'Open-Meteo', sourceKind: 'model', retrievedAt: liveWeather.retrievedAt || '',
         utcOffsetSeconds: liveWeather.utcOffsetSeconds, pressureType: 'surface', precipitationIntervalSeconds: 3600,
         role: timestamp < currentTime ? 'earlier' : 'forecast',
         offsetHours: round((timestamp - currentTime) / 3600000, 2),
         _timestamp: timestamp
-      }));
+      });
+      if (measurements.partial) {
+        byTime[timestamp].latitude = liveWeather.latitude;
+        byTime[timestamp].longitude = liveWeather.longitude;
+      }
     });
+    var points = Object.keys(byTime).map(function (key) { return byTime[key]; });
     // Preserve the actual current conditions (often a 15-minute value). Never
     // promote the first forecast or an old hour to "current" when the series has gaps.
     points.push({
@@ -2510,14 +2600,109 @@ var GEOGRAPHY_PROFILES = {
     return currentIndex < 0 ? 0 : currentIndex;
   }
 
+  function liveWeatherTimelineSnapshot(data) {
+    var d = data || {}, live = d.liveWeather || {};
+    var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+    var contextKey = buildLiveTimelineExploration([], live).contextKey;
+    var timestamps = timeline.map(function (point) {
+      if (!point || typeof point !== 'object' || Array.isArray(point) || liveEvidenceSourceIssue(point, live, liveReviewTimestamp(live.retrievedAt))) return null;
+      var offset = Object.prototype.hasOwnProperty.call(point, 'utcOffsetSeconds') ? point.utcOffsetSeconds : live.utcOffsetSeconds;
+      var timestamp = liveReviewTimestamp(point.time || point.validAt, offset);
+      return isFinite(timestamp) ? timestamp : null;
+    });
+    var currentIndex = weatherTimelineCurrentIndex(timeline);
+    var requestedIndex = liveWeatherNumber(d.liveWeatherTimelineIndex);
+    var selectedIndex = timeline.length ? clamp(requestedIndex == null ? currentIndex : Math.round(requestedIndex), 0, timeline.length - 1) : 0;
+    var selectedTimestamp = timestamps[selectedIndex] == null ? null : timestamps[selectedIndex];
+    var inventory = timeline.map(function (point, index) {
+      if (!point || typeof point !== 'object' || Array.isArray(point)) return null;
+      return [timestamps[index], point.role || point.timelineRole || '', liveReviewMeasurements(point), point.source || '', point.sourceKind || '',
+        point.retrievedAt || '', point.pressureType || '', point.precipitationIntervalSeconds == null ? null : point.precipitationIntervalSeconds];
+    });
+    var comparisonIndex = '', comparisonTimestamp = null, comparison = d.immersiveTimelineComparison;
+    if (contextKey && comparison && comparison.schema === 'weather-live-timeline-comparison-v1'
+      && comparison.contextKey === contextKey && typeof comparison.validTimestamp === 'number' && isFinite(comparison.validTimestamp)) {
+      var matches = timestamps.reduce(function (indices, timestamp, index) { if (timestamp === comparison.validTimestamp) indices.push(index); return indices; }, []);
+      if (matches.length === 1) { comparisonIndex = matches[0]; comparisonTimestamp = comparison.validTimestamp; }
+    }
+    return { contextKey: contextKey, timelineKey: JSON.stringify([contextKey, inventory]), timeline: timeline, timestamps: timestamps,
+      selectedIndex: selectedIndex, selectedTimestamp: selectedTimestamp, currentIndex: currentIndex,
+      comparisonIndex: comparisonIndex, comparisonTimestamp: comparisonTimestamp, playing: d.liveWeatherTimelinePlaying === true };
+  }
+
+  function liveWeatherTimelineAction(latest, action) {
+    var d = latest || {}, view = liveWeatherTimelineSnapshot(d);
+    function result(ok, code, patch, message) {
+      var changed = Object.keys(patch).some(function (key) { return JSON.stringify(d[key]) !== JSON.stringify(patch[key]); });
+      return { ok: ok, changed: changed, code: code, patch: patch, message: message };
+    }
+    function invalid() { return result(false, 'invalid', {}, 'Choose a valid hour from the loaded timeline.'); }
+    function indexAt(timestamp) {
+      if (typeof timestamp !== 'number' || !isFinite(timestamp)) return -1;
+      var matches = view.timestamps.reduce(function (indices, value, index) { if (value === timestamp) indices.push(index); return indices; }, []);
+      return matches.length === 1 ? matches[0] : -1;
+    }
+    function selection(index, playing, code) {
+      if (view.timestamps[index] == null || indexAt(view.timestamps[index]) !== index) return invalid();
+      return result(true, code, { liveWeatherTimelineIndex: index, liveWeatherTimelinePlaying: playing,
+        geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the selected weather hour...' },
+        weatherTimelineLabel(view.timeline[index], d.liveWeather && d.liveWeather.timezone));
+    }
+    if (!view.contextKey || !view.timeline.length) return result(false, 'unavailable', {}, 'Refresh weather with a recorded location and retrieval before using the timeline controls.');
+    if (!action || typeof action !== 'object' || Array.isArray(action)) return invalid();
+    if (action.expectedContextKey !== view.contextKey) return result(false, 'stale', {}, 'The loaded weather changed. Choose an hour from the current retrieval.');
+    if (action.type === 'select') {
+      var selected = indexAt(action.validTimestamp);
+      return selected < 0 ? invalid() : selection(selected, false, 'selected');
+    }
+    if (action.type === 'step') {
+      if (typeof action.delta !== 'number' || !Number.isInteger(action.delta)) return invalid();
+      return selection(clamp(view.selectedIndex + action.delta, 0, view.timeline.length - 1), false, 'stepped');
+    }
+    if (action.type === 'current') return selection(view.currentIndex, false, 'current');
+    if (action.type === 'compare') {
+      var baseline = action.validTimestamp === null ? -1 : indexAt(action.validTimestamp);
+      if (action.validTimestamp !== null && (baseline < 0 || view.selectedTimestamp == null)) return invalid();
+      if (baseline < 0 || action.validTimestamp === view.selectedTimestamp) {
+        return result(true, 'comparison-cleared', { immersiveTimelineComparison: null, immersiveTimelineCompareIndex: '' }, 'Timeline comparison cleared.');
+      }
+      return result(true, 'compared', { immersiveTimelineComparison: { schema: 'weather-live-timeline-comparison-v1',
+        contextKey: view.contextKey, validTimestamp: action.validTimestamp }, immersiveTimelineCompareIndex: baseline }, 'Timeline comparison baseline selected.');
+    }
+    if (action.type === 'toggle-play') {
+      if (view.playing) return result(true, 'paused', { liveWeatherTimelinePlaying: false }, 'Weather timeline paused.');
+      if (view.timeline.length < 2) return result(false, 'unavailable', {}, 'Load at least two timeline hours before starting playback.');
+      if (action.reducedMotion === true) return result(false, 'reduced-motion', {}, 'Automatic playback is paused by your reduced-motion preference. Use the step buttons or timeline slider.');
+      return selection(view.selectedIndex >= view.timeline.length - 1 ? view.currentIndex : view.selectedIndex, true, 'playing');
+    }
+    if (action.type === 'tick') {
+      if (!view.playing || typeof action.expectedSelectedTimestamp !== 'number' || !isFinite(action.expectedSelectedTimestamp)
+        || action.expectedSelectedTimestamp !== view.selectedTimestamp || action.expectedTimelineKey !== view.timelineKey) {
+        return result(false, 'stale', {}, 'This playback step belongs to an earlier timeline view.');
+      }
+      if (view.selectedIndex >= view.timeline.length - 1) return result(true, 'ended', { liveWeatherTimelinePlaying: false }, 'Weather timeline playback reached the final loaded hour.');
+      return selection(view.selectedIndex + 1, true, 'ticked');
+    }
+    return invalid();
+  }
+
+  function resetLiveWeatherTimelineSnapshot(data, requestedTimestamp) {
+    var view = liveWeatherTimelineSnapshot(data);
+    var index = requestedTimestamp === undefined ? view.selectedIndex : view.currentIndex;
+    if (typeof requestedTimestamp === 'number' && isFinite(requestedTimestamp)) {
+      var matches = view.timestamps.reduce(function (indices, value, at) { if (value === requestedTimestamp) indices.push(at); return indices; }, []);
+      if (matches.length === 1) index = matches[0];
+    }
+    return { liveWeatherTimelineIndex: index, liveWeatherTimelinePlaying: false, immersiveTimelineComparison: null, immersiveTimelineCompareIndex: '' };
+  }
+
   function activeLiveWeather(data) {
     var d = data || {};
     var base = d.liveWeather || null;
     var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
     if (!base || !timeline.length) return base;
     var fallbackIndex = weatherTimelineCurrentIndex(timeline);
-    var index = d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : fallbackIndex;
-    index = clamp(isFinite(index) ? index : fallbackIndex, 0, timeline.length - 1);
+    var index = liveWeatherTimelineSnapshot(d).selectedIndex;
     var point = timeline[index] || timeline[fallbackIndex];
     return Object.assign({}, base, point, {
       observedAt: base.observedAt,
@@ -2528,18 +2713,102 @@ var GEOGRAPHY_PROFILES = {
     });
   }
 
+  function weatherValidTimeLabel(value, timezone) {
+    var raw = typeof value === 'string' ? value : '';
+    var hasOffset = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw);
+    return raw + (raw && timezone && !hasOffset ? ' ' + timezone : '');
+  }
+
   function weatherTimelineLabel(point, timezone) {
     if (!point) return 'No hourly weather selected';
     var raw = String(point.time || point.validAt || point.observedAt || '');
     var role = point.role || point.timelineRole || 'current';
     var offsetHours = point.offsetHours != null ? point.offsetHours : point.timelineOffsetHours;
-    var localTime = raw.indexOf('T') >= 0 ? raw.replace('T', ' ') : raw;
-    var zone = timezone ? ' ' + timezone : '';
-    if (role === 'current') return 'Current model estimate | ' + localTime + zone;
-    if (role === 'earlier') return Math.abs(Number(offsetHours) || 0) + ' h before current | ' + localTime + zone;
-    return '+' + Math.max(0, Number(offsetHours) || 1) + ' h forecast | ' + localTime + zone;
+    var labeledTime = weatherValidTimeLabel(raw, timezone).replace('T', ' ');
+    if (role === 'current') return 'Current model estimate | ' + labeledTime;
+    if (role === 'earlier') return Math.abs(Number(offsetHours) || 0) + ' h before current | ' + labeledTime;
+    return '+' + Math.max(0, Number(offsetHours) || 1) + ' h forecast | ' + labeledTime;
   }
 
+
+  function liveEvidenceSourceIssue(record, live, retrievalTimestamp) {
+    var has = Object.prototype.hasOwnProperty;
+    if ((has.call(record, 'source') && record.source !== live.source) || (has.call(record, 'sourceKind') && record.sourceKind !== 'model')) {
+      return 'This point identifies a different weather source.';
+    }
+    if (has.call(record, 'retrievedAt') && liveReviewTimestamp(record.retrievedAt) !== retrievalTimestamp) {
+      return 'This point belongs to a different or unknown retrieval.';
+    }
+    if ((has.call(record, 'latitude') || has.call(record, 'longitude')) && !liveReviewSameLocation(record, live)) {
+      return 'This point belongs to a different or unknown location.';
+    }
+    return '';
+  }
+
+  // Only location and retrieval metadata may carry over from the current
+  // model estimate. Every saved measurement comes from the selected hour.
+  function liveForecastPointWeather(live, point) {
+    if (!live || !point || liveEvidenceSourceIssue(point, live, liveReviewTimestamp(live.retrievedAt))) return null;
+    return Object.assign(liveReviewMeasurements(point), {
+      label: live.label, latitude: live.latitude, longitude: live.longitude,
+      source: live.source, sourceKind: live.sourceKind, retrievedAt: live.retrievedAt,
+      observedAt: live.observedAt, validAt: point.time || point.validAt, timezone: live.timezone,
+      utcOffsetSeconds: Object.prototype.hasOwnProperty.call(point, 'utcOffsetSeconds') ? point.utcOffsetSeconds : live.utcOffsetSeconds,
+      timelineRole: point.role || point.timelineRole,
+      pressureType: Object.prototype.hasOwnProperty.call(point, 'pressureType') ? point.pressureType : live.pressureType,
+      precipitationIntervalSeconds: liveReviewInterval(point.precipitationIntervalSeconds)
+    });
+  }
+
+  function validatedLivePartialHours(live) {
+    if (!Array.isArray(live.partialHours) || live.source !== 'Open-Meteo' || live.sourceKind !== 'model') return [];
+    var current = liveReviewTimestamp(live.observedAt, live.utcOffsetSeconds);
+    var retrieved = liveReviewTimestamp(live.retrievedAt);
+    if (!isFinite(current) || !isFinite(retrieved) || !liveReviewCoordinates(live)) return [];
+    var seen = Object.create(null);
+    return live.partialHours.slice(0, 48).reduce(function (hours, point) {
+      if (!point || point.partial !== true || point.source !== live.source || point.sourceKind !== 'model' || !liveReviewSameLocation(point, live)
+        || liveReviewTimestamp(point.retrievedAt) !== retrieved || liveEvidenceSourceIssue(point, live, retrieved)) return hours;
+      var offset = Object.prototype.hasOwnProperty.call(point, 'utcOffsetSeconds') ? point.utcOffsetSeconds : live.utcOffsetSeconds;
+      var timestamp = liveReviewTimestamp(point.time, offset);
+      if (!isFinite(timestamp) || seen[timestamp] || timestamp === current || point.role !== (timestamp < current ? 'earlier' : 'forecast')) return hours;
+      var measured = liveReviewMeasurements(point);
+      var visibility = liveWeatherNumber(point.visibility);
+      measured.visibility = visibility != null && visibility >= 0 ? visibility : null;
+      if (!['temperature', 'humidity', 'precipitation', 'cloudCover', 'pressure', 'windSpeed', 'windDir', 'weatherCode', 'visibility'].some(function (key) { return measured[key] != null; })) return hours;
+      ['temperature', 'humidity', 'precipitation', 'cloudCover', 'pressure', 'windSpeed', 'windDir', 'weatherCode'].forEach(function (key) {
+        if (measured[key] == null) measured[key] = null;
+      });
+      seen[timestamp] = true;
+      hours.push(Object.assign(measured, {
+        partial: true, time: point.time, role: point.role, offsetHours: round((timestamp - current) / 3600000, 2),
+        latitude: live.latitude, longitude: live.longitude,
+        source: live.source, sourceKind: live.sourceKind, retrievedAt: live.retrievedAt, utcOffsetSeconds: liveWeatherNumber(offset),
+        pressureType: ['surface', 'seaLevel'].indexOf(point.pressureType) >= 0 ? point.pressureType : null,
+        precipitationIntervalSeconds: liveReviewInterval(point.precipitationIntervalSeconds)
+      }));
+      return hours;
+    }, []);
+  }
+
+  function liveWeatherForSession(live) {
+    if (!Object.prototype.hasOwnProperty.call(live, 'partialHours')) return live;
+    return Object.assign({}, live, { partialHours: validatedLivePartialHours(live) });
+  }
+
+  function liveForecastEvidenceTimeline(data) {
+    var timeline = Array.isArray(data.liveWeatherTimeline) ? data.liveWeatherTimeline : [];
+    var live = data.liveWeather;
+    var partial = live ? validatedLivePartialHours(live) : [];
+    if (!partial.length) return timeline;
+    function timestamp(point) {
+      return liveReviewTimestamp(point.time || point.validAt, Object.prototype.hasOwnProperty.call(point, 'utcOffsetSeconds') ? point.utcOffsetSeconds : live.utcOffsetSeconds);
+    }
+    var complete = timeline.filter(function (point) { return point && typeof point === 'object' && isFinite(timestamp(point)); });
+    var completeTimes = new Set(complete.map(timestamp));
+    return complete.concat(partial.filter(function (point) { return !completeTimes.has(timestamp(point)); }))
+      .sort(function (first, second) { return timestamp(first) - timestamp(second); });
+  }
 
   function buildLiveTimelineExploration(timeline, liveWeather, options) {
     options = options || {};
@@ -2604,14 +2873,8 @@ var GEOGRAPHY_PROFILES = {
       var role = entry.timestamp < currentTimestamp ? 'earlier' : entry.timestamp > currentTimestamp ? 'forecast' : 'current';
       var pressureType = Object.prototype.hasOwnProperty.call(record, 'pressureType') ? record.pressureType : live.pressureType;
       var interval = liveReviewInterval(record.precipitationIntervalSeconds);
-      var reason = '';
-      if (Object.prototype.hasOwnProperty.call(record, 'source') && record.source !== live.source || Object.prototype.hasOwnProperty.call(record, 'sourceKind') && record.sourceKind !== 'model') {
-        reason = 'This point identifies a different weather source.';
-      } else if (Object.prototype.hasOwnProperty.call(record, 'retrievedAt') && liveReviewTimestamp(record.retrievedAt) !== retrievedTimestamp) {
-        reason = 'This point belongs to a different or unknown retrieval.';
-      } else if ((Object.prototype.hasOwnProperty.call(record, 'latitude') || Object.prototype.hasOwnProperty.call(record, 'longitude')) && !liveReviewSameLocation(record, live)) {
-        reason = 'This point belongs to a different or unknown location.';
-      } else if (!entry.anchor && (record.role || record.timelineRole) && (record.role || record.timelineRole) !== role) {
+      var reason = liveEvidenceSourceIssue(record, live, retrievedTimestamp);
+      if (!reason && !entry.anchor && (record.role || record.timelineRole) && (record.role || record.timelineRole) !== role) {
         reason = 'This point’s time and current/forecast label disagree.';
       }
       var value = liveReviewMeasurements(record)[metric.id];
@@ -2663,6 +2926,130 @@ var GEOGRAPHY_PROFILES = {
     result.code = result.available ? 'ready' : 'empty';
     result.message = result.available ? 'Explore the values actually loaded for this location and retrieval. Gaps and excluded measurements are not filled.' : 'No comparable values are available for this metric in the selected window. Choose another metric or refresh the data.';
     return result;
+  }
+
+  function liveHourDraftSource(live) {
+    var exploration = buildLiveTimelineExploration([], live);
+    if (!exploration.contextKey) return null;
+    var coordinates = liveReviewCoordinates(live);
+    var offset = liveWeatherNumber(live.utcOffsetSeconds);
+    return {
+      contextKey: exploration.contextKey,
+      location: exploration.location.replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 200) || 'Loaded location',
+      latitude: coordinates.latitude, longitude: coordinates.longitude,
+      retrievedAt: new Date(liveReviewTimestamp(live.retrievedAt)).toISOString(),
+      currentDataAt: new Date(exploration.currentTimestamp).toISOString(),
+      utcOffsetSeconds: offset != null && offset >= -50400 && offset <= 50400 ? offset : null,
+      source: 'Open-Meteo', sourceKind: 'model'
+    };
+  }
+
+  function normalizeLiveHourDraft(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    function text(prose, limit) { return typeof prose === 'string' ? prose.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').slice(0, limit) : ''; }
+    function pin(timestamp) { return typeof timestamp === 'number' && isFinite(timestamp) && timestamp >= 0 && timestamp <= 8640000000000000 ? timestamp : null; }
+    var key = text(value.contextKey, 500).trim();
+    if (!key) return null;
+    var draft = { contextKey: key, reasoning: text(value.reasoning, 1500), attachment: text(value.attachment, 1500), hourA: pin(value.hourA), hourB: pin(value.hourB) };
+    if (value.schema != null) {
+      if (value.schema !== 'weather-live-hour-draft-v1') return null;
+      var source = value.sourceContext;
+      if (!source || typeof source !== 'object' || Array.isArray(source) || source.source !== 'Open-Meteo' || source.sourceKind !== 'model') return null;
+      var safeSource = liveHourDraftSource({
+        source: source.source, sourceKind: source.sourceKind, latitude: source.latitude, longitude: source.longitude,
+        label: source.location, retrievedAt: source.retrievedAt, observedAt: source.currentDataAt, utcOffsetSeconds: source.utcOffsetSeconds
+      });
+      if (!safeSource || safeSource.contextKey !== key || source.contextKey !== key) return null;
+      draft.schema = 'weather-live-hour-draft-v1';
+      draft.sourceContext = safeSource;
+    }
+    if (!draft.reasoning.trim() && !draft.attachment.trim() && draft.hourA == null && draft.hourB == null) return null;
+    return draft;
+  }
+
+  function changeLiveHourDraftForContext(raw, live, fields) {
+    var draft = normalizeLiveHourDraft(raw);
+    function result(ok, code, message, next) { return { ok: ok, changed: JSON.stringify(draft) !== JSON.stringify(next), code: code, draft: next, message: message }; }
+    var source = liveHourDraftSource(live);
+    if (!source) return result(false, 'unavailable', 'Load weather with a recorded location and retrieval before editing an explanation.', draft);
+    if (draft && draft.contextKey !== source.contextKey) return result(false, 'recovery', 'Your prior explanation is kept below. Download it, discard it, or explicitly use its text for this retrieval before writing another.', draft);
+    if (!fields || typeof fields !== 'object' || Array.isArray(fields)) return result(false, 'invalid', 'The explanation change is not valid.', draft);
+    var next = Object.assign({ contextKey: source.contextKey, reasoning: '', attachment: '', hourA: null, hourB: null }, draft || {}, {
+      schema: 'weather-live-hour-draft-v1', sourceContext: source
+    });
+    var invalid = false;
+    ['reasoning', 'attachment', 'hourA', 'hourB'].forEach(function (key) {
+      if (!Object.prototype.hasOwnProperty.call(fields, key)) return;
+      var value = fields[key];
+      if (key === 'reasoning' || key === 'attachment') {
+        if (typeof value !== 'string') invalid = true;
+      } else if (value !== null && (typeof value !== 'number' || !isFinite(value) || value < 0 || value > 8640000000000000)) invalid = true;
+      next[key] = value;
+    });
+    if (invalid) return result(false, 'invalid', 'The explanation change is not valid.', draft);
+    next = normalizeLiveHourDraft(next);
+    return result(true, JSON.stringify(draft) === JSON.stringify(next) ? 'unchanged' : 'changed', 'Explanation draft updated.', next);
+  }
+
+  function resolveLiveHourDraftForContext(raw, live, expectedDraft, action) {
+    var draft = normalizeLiveHourDraft(raw);
+    function result(ok, changed, code, message, next) { return { ok: ok, changed: changed, code: code, draft: next, message: message }; }
+    if (!draft || JSON.stringify(draft) !== JSON.stringify(normalizeLiveHourDraft(expectedDraft))) {
+      return result(false, false, 'stale', 'The explanation changed. Review the current draft before choosing an action.', draft);
+    }
+    if (action === 'discard') return result(true, true, 'discarded', 'Prior explanation discarded.', null);
+    if (action !== 'use-text') return result(false, false, 'invalid', 'Choose how to resolve the prior explanation.', draft);
+    var source = liveHourDraftSource(live);
+    if (!source) return result(false, false, 'unavailable', 'Load weather with a recorded location and retrieval before using this explanation text.', draft);
+    if (!draft.reasoning.trim()) return result(false, false, 'invalid', 'There is no explanation text to use. Download or discard the prior evidence instead.', draft);
+    var next = normalizeLiveHourDraft({ schema: 'weather-live-hour-draft-v1', contextKey: source.contextKey,
+      sourceContext: source, reasoning: draft.reasoning, attachment: '', hourA: null, hourB: null });
+    return result(true, JSON.stringify(draft) !== JSON.stringify(next), 'used-text', 'Explanation text copied for this retrieval. Prior comparison evidence and pins were not copied.', next);
+  }
+
+  function liveHourDraftText(raw) {
+    var draft = normalizeLiveHourDraft(raw);
+    if (!draft) return '';
+    var source = draft.sourceContext;
+    var lines = ['Weather Systems — Unsaved Forecast Explanation', 'This draft is not attached to a saved forecast snapshot.'];
+    if (source) lines.push('Source: ' + source.source + ' model values', 'Location: ' + source.location + ' (' + source.latitude + ', ' + source.longitude + ')',
+      'Retrieved: ' + source.retrievedAt, 'Current model valid time: ' + source.currentDataAt);
+    else lines.push('Original retrieval details unavailable for this legacy draft.');
+    if (draft.reasoning) lines.push('', 'Explanation', draft.reasoning);
+    if (draft.attachment) lines.push('', 'Attached comparison from the original retrieval', draft.attachment);
+    if (draft.hourA != null) lines.push('Pinned hour A: ' + new Date(draft.hourA).toISOString());
+    if (draft.hourB != null) lines.push('Pinned hour B: ' + new Date(draft.hourB).toISOString());
+    return lines.join('\n');
+  }
+
+  function compareLiveTimelineHours(timeline, liveWeather, hourA, hourB) {
+    if (!Number.isFinite(hourA) || !Number.isFinite(hourB) || hourA === hourB) return null;
+    var start = Math.min(hourA, hourB);
+    var end = Math.max(hourA, hourB);
+    var metrics = [];
+    var times = [];
+    ['temperature', 'windSpeed'].forEach(function (metricId) {
+      var series = buildLiveTimelineExploration(timeline, liveWeather, { metric: metricId, hours: 'all' });
+      var interval = series.points.filter(function (point) { return point.timestamp >= start && point.timestamp <= end; });
+      if (!interval.length || interval[0].timestamp !== start || interval[interval.length - 1].timestamp !== end) return;
+      if (!times.length) times = interval.map(function (point) { return point.timestamp; });
+      var first = interval[0].value;
+      var last = interval[interval.length - 1].value;
+      var delta = first != null && last != null ? round(last - first, 1) : null;
+      function format(value) { return value == null ? 'unavailable' : value + ' ' + series.metric.unit; }
+      var description = series.metric.label + ' went from ' + format(first) + ' to ' + format(last) + '.';
+      if (delta != null) description += ' Change ' + signedNumber(delta, ' ' + series.metric.unit) + '.';
+      var missingCount = interval.filter(function (point) { return point.value == null; }).length;
+      if (missingCount) description += ' Missing at ' + missingCount + ' of ' + interval.length + ' loaded times.';
+      metrics.push({ id: metricId, first: first, last: last, delta: delta, missingCount: missingCount, description: description });
+    });
+    if (!times.length) return null;
+    var gaps = times.filter(function (time, index) { return index > 0 && time - times[index - 1] > 3600000; }).length;
+    var coverage = times.length + ' loaded times, ' + gaps + (gaps === 1 ? ' gap' : ' gaps') + ' longer than one hour.';
+    var citation = ['Open-Meteo model values for ' + (liveWeather.label || 'the loaded location') + ' from ' + new Date(start).toISOString() + ' to ' + new Date(end).toISOString() + '.'];
+    metrics.forEach(function (metric) { citation.push(metric.description); });
+    citation.push(coverage, 'Retrieved ' + liveWeather.retrievedAt + '.');
+    return { start: start, end: end, metrics: metrics, gaps: gaps, coverage: coverage, citation: citation.join(' '), canAttach: metrics.some(function (metric) { return metric.delta != null; }) };
   }
 
   function liveTimelineExplorerCsv(exploration) {
@@ -2858,6 +3245,27 @@ var GEOGRAPHY_PROFILES = {
     return civil - offset * 1000;
   }
 
+  function liveForecastCheckpointControlContext(checkpoint, displayPosition, total) {
+    var saved = checkpoint && typeof checkpoint === 'object' && !Array.isArray(checkpoint) ? checkpoint : {};
+    var location = typeof saved.location === 'string' ? saved.location.replace(/[\s\u0000-\u001f\u007f]+/g, ' ').trim() : '';
+    var locationCharacters = Array.from(location);
+    if (locationCharacters.length > 120) location = locationCharacters.slice(0, 117).join('').replace(/\s+$/, '') + '...';
+    if (!location) location = 'location not recorded';
+    var position = Number.isInteger(displayPosition) && Number.isInteger(total) && displayPosition > 0 && displayPosition <= total && total <= LIVE_FORECAST_CHECKPOINT_LIMIT ? ' ' + displayPosition + ' of ' + total : '';
+    function recorded(value) {
+      return value != null && (typeof value !== 'string' || value.trim() !== '');
+    }
+    function utcLabel(timestamp) {
+      return new Date(timestamp).toISOString().replace('T', ' ').replace(/:00\.000Z$/, ' UTC').replace(/\.000Z$/, ' UTC').replace(/Z$/, ' UTC');
+    }
+    var valid = liveReviewTimestamp(saved.validAt, saved.utcOffsetSeconds);
+    var validMatches = !Object.prototype.hasOwnProperty.call(saved, 'validTimestamp') || liveWeatherNumber(saved.validTimestamp) === valid;
+    var validLabel = isFinite(valid) && validMatches ? 'valid ' + utcLabel(valid) : recorded(saved.validAt) || Object.prototype.hasOwnProperty.call(saved, 'validTimestamp') ? 'valid time unverified' : 'valid time not recorded';
+    var retrieved = liveReviewTimestamp(saved.retrievedAt);
+    var retrievalLabel = isFinite(retrieved) ? 'original retrieval ' + utcLabel(retrieved) : recorded(saved.retrievedAt) ? 'original retrieval unverified' : 'original retrieval not recorded';
+    return 'saved forecast' + position + ' for ' + location + ', ' + validLabel + ', ' + retrievalLabel;
+  }
+
   function liveReviewCoordinates(record) {
     if (!record || typeof record !== 'object') return null;
     var latitude = liveWeatherNumber(record.latitude), longitude = liveWeatherNumber(record.longitude);
@@ -2929,18 +3337,178 @@ var GEOGRAPHY_PROFILES = {
     };
   }
 
+  var LIVE_FORECAST_CHECKPOINT_LIMIT = 8;
+
+  function appendLiveForecastCheckpoint(checkpoints, candidate) {
+    var saved = normalizeLiveForecastCheckpoints(checkpoints);
+    var incoming = normalizeLiveForecastCheckpoints([candidate])[0];
+    function unchanged(ok, code, message) { return { ok: ok, changed: false, code: code, checkpoints: saved, message: message }; }
+    if (!incoming) return unchanged(false, 'invalid', 'Choose a supported future model hour to save a forecast snapshot.');
+    if (saved.some(function (checkpoint) { return checkpoint.id === incoming.id; })) {
+      return unchanged(true, 'duplicate', 'This forecast snapshot is already saved. The original snapshot was kept.');
+    }
+    if (!liveCheckpointTimes(incoming) || incoming.source !== 'Open-Meteo' || incoming.sourceKind !== 'model'
+      || !['temperature', 'precipitation', 'pressure', 'windSpeed', 'windDir'].some(function (key) { return incoming.predicted[key] != null; })) {
+      return unchanged(false, 'invalid', 'Choose a supported future model hour to save a forecast snapshot.');
+    }
+    if (saved.length >= LIVE_FORECAST_CHECKPOINT_LIMIT) {
+      return unchanged(false, 'capacity', 'All 8 forecast snapshot spaces are in use. Remove a snapshot before saving another; no saved snapshot was changed.');
+    }
+    return { ok: true, changed: true, code: 'saved', checkpoints: saved.concat([incoming]), message: 'Forecast snapshot saved for later review.' };
+  }
+
+  function restoreLiveForecastCheckpoint(checkpoints, removed) {
+    var saved = normalizeLiveForecastCheckpoints(checkpoints);
+    var incoming = normalizeLiveForecastCheckpoints([removed])[0];
+    function unchanged(ok, code, message) { return { ok: ok, changed: false, code: code, checkpoints: saved, message: message }; }
+    if (!incoming) return unchanged(false, 'invalid', 'This removed forecast snapshot cannot be restored.');
+    if (saved.some(function (checkpoint) { return checkpoint.id === incoming.id; })) {
+      return unchanged(true, 'duplicate', 'A snapshot with this ID is already saved. The current snapshot was kept.');
+    }
+    if (saved.length >= LIVE_FORECAST_CHECKPOINT_LIMIT) {
+      return unchanged(false, 'capacity', 'The journal is full, so Undo cannot restore this removal. All saved snapshots were kept.');
+    }
+    return { ok: true, changed: true, code: 'restored', checkpoints: saved.concat([incoming]), message: 'Forecast snapshot restored.' };
+  }
+
+  function liveCheckpointTimes(checkpoint) {
+    if (!checkpoint || checkpoint.schema !== 'weather-live-checkpoint-v2') return null;
+    var valid = liveReviewTimestamp(checkpoint.validAt, checkpoint.utcOffsetSeconds);
+    var current = liveReviewTimestamp(checkpoint.currentDataAt, checkpoint.utcOffsetSeconds);
+    var retrieved = liveReviewTimestamp(checkpoint.retrievedAt);
+    var saved = liveReviewTimestamp(checkpoint.capturedAt);
+    if (![valid, current, retrieved, saved].every(isFinite) || liveWeatherNumber(checkpoint.validTimestamp) !== valid) return null;
+    if (saved < retrieved || current > saved || valid <= saved) return null;
+    return { valid: valid, retrieved: retrieved, saved: saved };
+  }
+
+  function classroomThermometerTarget(checkpoint) {
+    var times = liveCheckpointTimes(checkpoint);
+    if (!times || checkpoint.source !== 'Open-Meteo' || checkpoint.sourceKind !== 'model' || !liveReviewCoordinates(checkpoint)) return null;
+    var forecastC = liveReviewMeasurements(checkpoint.predicted).temperature;
+    return forecastC == null ? null : { timestamp: times.valid, forecastC: forecastC };
+  }
+
+  function classroomThermometerCheck(checkpoint, input, recordedAtIso) {
+    var target = classroomThermometerTarget(checkpoint);
+    if (!target) return { ok: false, field: null, message: 'This check needs a saved future temperature forecast with a recorded site and valid time.' };
+    if (!input || input.sameSite !== true) return { ok: false, field: 'sameSite', message: 'Confirm you took the outdoor thermometer reading at the saved forecast site.' };
+    var hasEnteredValue = Object.prototype.hasOwnProperty.call(input, 'enteredValue');
+    var hasEnteredUnit = Object.prototype.hasOwnProperty.call(input, 'enteredUnit');
+    var withUnit = input.schema === 'weather-classroom-temperature-v2' || hasEnteredValue || hasEnteredUnit;
+    if ((input.schema != null && input.schema !== 'weather-classroom-temperature-v1' && input.schema !== 'weather-classroom-temperature-v2')
+      || (input.schema === 'weather-classroom-temperature-v1' && withUnit)
+      || (withUnit && (!hasEnteredValue || !hasEnteredUnit || ['C', 'F'].indexOf(input.enteredUnit) < 0))) {
+      return { ok: false, field: 'enteredUnit', message: 'Choose Celsius or Fahrenheit and enter the thermometer value in that unit.' };
+    }
+    var enteredValue = liveWeatherNumber(withUnit ? input.enteredValue : input.temperatureC);
+    var enteredUnit = withUnit ? input.enteredUnit : 'C';
+    var minimum = enteredUnit === 'F' ? -148 : -100, maximum = enteredUnit === 'F' ? 158 : 70;
+    if (enteredValue == null || enteredValue < minimum || enteredValue > maximum || round(enteredValue, 1) !== enteredValue) {
+      return { ok: false, field: 'enteredValue', message: 'Enter a temperature from ' + (minimum === -100 ? '−100' : '−148') + ' to ' + maximum + ' °' + enteredUnit + ', to one decimal place.' };
+    }
+    var temperatureC = enteredUnit === 'F' ? (enteredValue - 32) * 5 / 9 : enteredValue;
+    if (withUnit && Object.prototype.hasOwnProperty.call(input, 'temperatureC')) {
+      var persistedC = liveWeatherNumber(input.temperatureC);
+      // Canonical Celsius is recomputed; only floating-point serialization noise is tolerated.
+      if (persistedC == null || Math.abs(persistedC - temperatureC) > 1e-9) {
+        return { ok: false, field: 'enteredValue', message: 'The saved Celsius value does not match the entered thermometer value and unit.' };
+      }
+    }
+    var measured = liveReviewTimestamp(input.measuredAt);
+    if (measured !== target.timestamp) return { ok: false, field: 'measuredAt', message: 'The thermometer time must match the target time shown in UTC.' };
+    var recorded = liveReviewTimestamp(recordedAtIso);
+    if (!isFinite(recorded) || recorded < measured) return { ok: false, field: null, message: 'Record the reading after you take it at the forecast valid time.' };
+    var result = {
+      ok: true,
+      reading: {
+        schema: withUnit ? 'weather-classroom-temperature-v2' : 'weather-classroom-temperature-v1', temperatureC: temperatureC, sameSite: true,
+        measuredAt: new Date(measured).toISOString(), recordedAt: new Date(recorded).toISOString()
+      },
+      differenceC: round(target.forecastC - temperatureC, 1)
+    };
+    if (withUnit) {
+      result.reading.enteredValue = enteredValue;
+      result.reading.enteredUnit = enteredUnit;
+      result.differenceF = round((target.forecastC - temperatureC) * 9 / 5, 1);
+    }
+    return result;
+  }
+
+  function classroomThermometerChange(checkpoints, id, input, recordedAtIso) {
+    var saved = normalizeLiveForecastCheckpoints(checkpoints);
+    var index = saved.findIndex(function (checkpoint) { return checkpoint.id === id; });
+    function unchanged(ok, message, field) {
+      var result = { ok: ok, changed: false, checkpoints: saved, undo: null, message: message };
+      if (!ok) result.field = field == null ? null : field;
+      return result;
+    }
+    if (index < 0) return unchanged(false, 'The saved forecast is no longer available.');
+    var checkpoint = saved[index];
+    var before = checkpoint.classroomReading ? Object.assign({}, checkpoint.classroomReading) : null;
+    var after = null;
+    if (input !== null) {
+      var checked = classroomThermometerCheck(checkpoint, input, recordedAtIso);
+      if (!checked.ok) return unchanged(false, checked.message, checked.field);
+      after = checked.reading;
+    }
+    var sameReading = before === null && after === null;
+    if (before && after) {
+      var readingFields = Object.keys(before);
+      sameReading = readingFields.length === Object.keys(after).length && readingFields.every(function (key) {
+        return key === 'recordedAt' || before[key] === after[key];
+      });
+    }
+    if (sameReading) {
+      return unchanged(true, after ? 'Thermometer reading is unchanged.' : 'No thermometer reading to clear.');
+    }
+    var next = Object.assign({}, checkpoint);
+    if (after) next.classroomReading = after;
+    else delete next.classroomReading;
+    saved[index] = next;
+    return {
+      ok: true, changed: true, checkpoints: saved,
+      undo: { schema: 'weather-classroom-thermometer-undo-v1', checkpointId: checkpoint.id,
+        beforeReading: before, afterCheckpointKey: JSON.stringify(next) },
+      message: after ? 'Thermometer reading saved.' : 'Thermometer reading cleared.'
+    };
+  }
+
+  function classroomThermometerUndo(checkpoints, receipt) {
+    var saved = normalizeLiveForecastCheckpoints(checkpoints);
+    function unavailable() { return { ok: false, checkpoints: saved, message: 'This thermometer change can no longer be undone because its saved forecast or reading changed.' }; }
+    if (!receipt || receipt.schema !== 'weather-classroom-thermometer-undo-v1'
+      || typeof receipt.checkpointId !== 'string' || typeof receipt.afterCheckpointKey !== 'string'
+      || !Object.prototype.hasOwnProperty.call(receipt, 'beforeReading')) return unavailable();
+    var index = saved.findIndex(function (checkpoint) { return checkpoint.id === receipt.checkpointId; });
+    if (index < 0 || JSON.stringify(saved[index]) !== receipt.afterCheckpointKey) return unavailable();
+    var before = receipt.beforeReading;
+    if (before !== null) {
+      if (!before || typeof before !== 'object' || Array.isArray(before)
+        || ['weather-classroom-temperature-v1', 'weather-classroom-temperature-v2'].indexOf(before.schema) < 0) return unavailable();
+      var checked = classroomThermometerCheck(saved[index], before, before.recordedAt);
+      if (!checked.ok) return unavailable();
+      var fields = Object.keys(checked.reading);
+      if (Object.keys(before).length !== fields.length
+        || fields.some(function (key) { return before[key] !== checked.reading[key]; })) return unavailable();
+      before = checked.reading;
+    }
+    var next = Object.assign({}, saved[index]);
+    if (before) next.classroomReading = before;
+    else delete next.classroomReading;
+    saved[index] = next;
+    return { ok: true, checkpoints: saved, message: 'Thermometer change undone.' };
+  }
+
   function forecastCheckpointStatus(checkpoint, timeline, liveWeather) {
     function unavailable(code, label, detail) { return { code: code, ready: false, label: label, detail: detail, comparisonKind: 'model-revision' }; }
     if (!checkpoint) return unavailable('missing', 'No forecast checkpoint', 'Save a future model hour to begin a comparison.');
     var checkpointCoordinates = liveReviewCoordinates(checkpoint);
-    var checkpointTime = liveReviewTimestamp(checkpoint.validAt, checkpoint.utcOffsetSeconds);
-    var originalRetrieval = liveReviewTimestamp(checkpoint.retrievedAt);
-    var capturedTime = liveReviewTimestamp(checkpoint.capturedAt);
-    var originalCurrent = liveReviewTimestamp(checkpoint.currentDataAt, checkpoint.utcOffsetSeconds);
-    if (checkpoint.schema !== 'weather-live-checkpoint-v2' || ![checkpointTime, originalRetrieval, capturedTime, originalCurrent].every(isFinite)
-      || liveWeatherNumber(checkpoint.validTimestamp) !== checkpointTime || capturedTime < originalRetrieval || originalCurrent > capturedTime || checkpointTime <= originalCurrent || checkpointTime <= capturedTime) {
+    var times = liveCheckpointTimes(checkpoint);
+    if (!times) {
       return unavailable('legacy', 'Time provenance incomplete', 'This saved snapshot lacks a valid absolute time or retrieval history. Keep it as a record; save a new future checkpoint to make a supported comparison.');
     }
+    var checkpointTime = times.valid, originalRetrieval = times.retrieved, capturedTime = times.saved;
     var loadedCoordinates = liveReviewCoordinates(liveWeather);
     if (!checkpointCoordinates || !loadedCoordinates) return unavailable('location', 'Location unavailable', 'Both snapshots need valid coordinates before their values can be compared.');
     if (!liveReviewSameLocation(checkpoint, liveWeather)) {
@@ -2962,14 +3530,19 @@ var GEOGRAPHY_PROFILES = {
       return liveReviewTimestamp(point.time || point.validAt, offset) === checkpointTime;
     });
     if (!matched.length) return unavailable('unavailable', 'Valid hour not in the loaded window', 'Refresh near the saved valid time. Only a matching absolute timestamp can be compared; nearby hours are not substituted.');
+    if (matched.length > 1) return unavailable('ambiguous', 'Matching hour is ambiguous', 'More than one loaded point identifies this saved valid instant. Refresh the timeline before comparing; no matching hour was selected.');
     var comparablePoints = matched.filter(function (point) { return ['earlier', 'current'].indexOf(point.role || point.timelineRole) >= 0; });
     if (!comparablePoints.length) return unavailable('pending', 'Awaiting a later model value', 'The matching hour is still labeled as forecast, so it cannot be used as the later comparison value.');
     var comparison = comparablePoints[0];
     if (Object.prototype.hasOwnProperty.call(comparison, 'source') && comparison.source !== checkpoint.source || Object.prototype.hasOwnProperty.call(comparison, 'sourceKind') && comparison.sourceKind !== 'model') {
       return unavailable('source', 'Source provenance differs', 'The matching hour does not identify the same model-data provider.');
     }
-    if (comparison.retrievedAt != null && liveReviewTimestamp(comparison.retrievedAt) !== newRetrieval) {
+    if (Object.prototype.hasOwnProperty.call(comparison, 'retrievedAt') && liveReviewTimestamp(comparison.retrievedAt) !== newRetrieval) {
       return unavailable('refresh', 'Hourly response provenance differs', 'The matching hourly value is not from the currently loaded response. Refresh the timeline before comparing it.');
+    }
+    if ((Object.prototype.hasOwnProperty.call(comparison, 'latitude') || Object.prototype.hasOwnProperty.call(comparison, 'longitude'))
+      && !liveReviewSameLocation(comparison, liveWeather)) {
+      return unavailable('location', 'Hourly location provenance differs', 'The matching hourly value does not identify the loaded forecast location. Refresh the timeline before comparing it.');
     }
     var predicted = liveReviewMeasurements(checkpoint.predicted);
     var newer = liveReviewMeasurements(comparison);
@@ -3137,13 +3710,28 @@ var GEOGRAPHY_PROFILES = {
     parseLocationCoordinates: parseLocationCoordinates,
     locationSearchCandidates: locationSearchCandidates,
     chooseLocationResult: chooseLocationResult,
+    normalizeLiveLocationChoices: normalizeLiveLocationChoices,
+    normalizeSavedLivePlaces: normalizeSavedLivePlaces,
+    savedLivePlaceFromWeather: savedLivePlaceFromWeather,
     weatherCodeLabel: weatherCodeLabel,
     normalizeLiveWeatherResponse: normalizeLiveWeatherResponse,
     normalizeHourlyWeatherTimeline: normalizeHourlyWeatherTimeline,
     weatherTimelineCurrentIndex: weatherTimelineCurrentIndex,
     activeLiveWeather: activeLiveWeather,
+    liveWeatherTimelineSnapshot: liveWeatherTimelineSnapshot,
+    liveWeatherTimelineAction: liveWeatherTimelineAction,
+    resetLiveWeatherTimelineSnapshot: resetLiveWeatherTimelineSnapshot,
     weatherTimelineLabel: weatherTimelineLabel,
+    weatherValidTimeLabel: weatherValidTimeLabel,
     buildLiveTimelineExploration: buildLiveTimelineExploration,
+    liveForecastEvidenceTimeline: liveForecastEvidenceTimeline,
+    liveForecastPointWeather: liveForecastPointWeather,
+    compareLiveTimelineHours: compareLiveTimelineHours,
+    liveHourDraftSource: liveHourDraftSource,
+    normalizeLiveHourDraft: normalizeLiveHourDraft,
+    changeLiveHourDraftForContext: changeLiveHourDraftForContext,
+    resolveLiveHourDraftForContext: resolveLiveHourDraftForContext,
+    liveHourDraftText: liveHourDraftText,
     liveTimelineExplorerCsv: liveTimelineExplorerCsv,
     regionalWeatherLayerDefinition: regionalWeatherLayerDefinition,
     regionalWeatherGridCoordinates: regionalWeatherGridCoordinates,
@@ -3152,8 +3740,15 @@ var GEOGRAPHY_PROFILES = {
     regionalWeatherFieldStatus: regionalWeatherFieldStatus,
     createLiveWeatherRequestCoordinator: createLiveWeatherRequestCoordinator,
     liveReviewTimestamp: liveReviewTimestamp,
+    liveForecastCheckpointControlContext: liveForecastCheckpointControlContext,
     liveReviewSameLocation: liveReviewSameLocation,
     createLiveForecastCheckpoint: createLiveForecastCheckpoint,
+    liveForecastCheckpointLimit: LIVE_FORECAST_CHECKPOINT_LIMIT,
+    appendLiveForecastCheckpoint: appendLiveForecastCheckpoint,
+    restoreLiveForecastCheckpoint: restoreLiveForecastCheckpoint,
+    classroomThermometerCheck: classroomThermometerCheck,
+    classroomThermometerChange: classroomThermometerChange,
+    classroomThermometerUndo: classroomThermometerUndo,
     forecastCheckpointStatus: forecastCheckpointStatus,
     mixColor: mixColor,
     windBarbSpec: windBarbSpec,
@@ -3378,6 +3973,7 @@ var GEOGRAPHY_PROFILES = {
     if (typeof d.ensembleNote === 'string') patch.ensembleNote = d.ensembleNote.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').slice(0, 1500);
     if (typeof d.ensembleNoteContext === 'string') patch.ensembleNoteContext = d.ensembleNoteContext.slice(0, 1000);
     // Checkpoints contain coordinates and must not leak into location-redacted shares.
+    if (includeLocation && Array.isArray(d.savedLivePlaces)) patch.savedLivePlaces = normalizeSavedLivePlaces(d.savedLivePlaces);
     if (includeLocation && Array.isArray(d.liveForecastCheckpoints)) patch.liveForecastCheckpoints = normalizeLiveForecastCheckpoints(d.liveForecastCheckpoints);
     if (patch.immersiveTourStep != null) patch.immersiveTourStep = immersiveTourStep(patch.immersiveTourStep).id;
     if (Array.isArray(patch.immersiveTourCompletedSteps)) patch.immersiveTourCompletedSteps = immersiveTourCompletedStepList(patch.immersiveTourCompletedSteps);
@@ -3396,7 +3992,9 @@ var GEOGRAPHY_PROFILES = {
   function immersiveSessionDownloadPayload(data) {
     var payload = immersiveSessionSharePayload(data, { includeLocation: true });
     var d = data || {};
-    if (d.liveWeather && typeof d.liveWeather === 'object') payload.weatherSystems.liveWeather = d.liveWeather;
+    var draft = normalizeLiveHourDraft(d.liveHourDraft);
+    if (draft) payload.weatherSystems.liveHourDraft = draft;
+    if (d.liveWeather && typeof d.liveWeather === 'object') payload.weatherSystems.liveWeather = liveWeatherForSession(d.liveWeather);
     if (Array.isArray(d.liveWeatherTimeline)) payload.weatherSystems.liveWeatherTimeline = d.liveWeatherTimeline.slice(-48);
     if (d.liveWeatherTimelineIndex != null) payload.weatherSystems.liveWeatherTimelineIndex = d.liveWeatherTimelineIndex;
     if (d.liveGeography && typeof d.liveGeography === 'object') payload.weatherSystems.liveGeography = d.liveGeography;
@@ -3407,7 +4005,11 @@ var GEOGRAPHY_PROFILES = {
   function validateImmersiveSessionPayload(payload) {
     if (!payload || payload.schema !== 'weather-immersive-session-v1' || !payload.weatherSystems || typeof payload.weatherSystems !== 'object') return null;
     var patch = immersiveSessionSharePayload(payload.weatherSystems, { includeLocation: true }).weatherSystems;
-    if (payload.weatherSystems.liveWeather && typeof payload.weatherSystems.liveWeather === 'object') patch.liveWeather = payload.weatherSystems.liveWeather;
+    var draft = normalizeLiveHourDraft(payload.weatherSystems.liveHourDraft);
+    if (draft) patch.liveHourDraft = draft;
+    if (payload.weatherSystems.liveWeather && typeof payload.weatherSystems.liveWeather === 'object') {
+      patch.liveWeather = liveWeatherForSession(payload.weatherSystems.liveWeather);
+    }
     if (Array.isArray(payload.weatherSystems.liveWeatherTimeline)) patch.liveWeatherTimeline = payload.weatherSystems.liveWeatherTimeline.slice(0, 48);
     if (payload.weatherSystems.liveWeatherTimelineIndex != null && isFinite(Number(payload.weatherSystems.liveWeatherTimelineIndex))) patch.liveWeatherTimelineIndex = Math.max(0, Math.round(Number(payload.weatherSystems.liveWeatherTimelineIndex)));
     if (payload.weatherSystems.liveGeography && typeof payload.weatherSystems.liveGeography === 'object') patch.liveGeography = payload.weatherSystems.liveGeography;
@@ -4373,16 +4975,83 @@ var GEOGRAPHY_PROFILES = {
     });
   }
 
+  var FORECAST_REVISION_CHOICES = {
+    precip: { none: 'No precipitation', rain: 'Rain', snow: 'Snow', mixed: 'Wintry mix', storms: 'Thunderstorms' },
+    timing: { '0-3': '0–3 hours', '4-6': 'more than 3 through 6 hours', '7-12': 'more than 6 through 12 hours', after12: 'No precipitation within the available window' },
+    hazard: { none: 'No major hazard', lightning: 'Lightning', flood: 'Flooding', ice: 'Ice / slippery travel', highWind: 'Strong wind' },
+    action: { normal: 'Continue normal activities', monitor: 'Monitor conditions', indoors: 'Move activities indoors', avoidTravel: 'Avoid flooded routes', delayTravel: 'Delay icy travel', shelter: 'Shelter away from windows' }
+  };
+
+  // The journal, learner progress and teacher reports all use this saved pair.
+  // Window metadata is required because older records may omit the target or
+  // timing horizon. Array order follows the persisted order of verified work.
+  function latestForecastRevision(entries) {
+    function hasContext(entry) {
+      return !!(entry.contextKey && entry.contextKey.trim() && entry.window && entry.window.hasFuture);
+    }
+    function sameContext(previous, revised) {
+      return hasContext(previous) && hasContext(revised)
+        && previous.attempt < revised.attempt
+        && previous.contextKey === revised.contextKey
+        && previous.window.startHour === revised.window.startHour
+        && previous.window.targetHour === revised.window.targetHour
+        && previous.window.endHour === revised.window.endHour;
+    }
+    for (var revisedIndex = entries.length - 1; revisedIndex > 0; revisedIndex -= 1) {
+      var revised = entries[revisedIndex];
+      for (var previousIndex = revisedIndex - 1; previousIndex >= 0; previousIndex -= 1) {
+        var previous = entries[previousIndex];
+        if (!sameContext(previous, revised)) continue;
+        var delta = round(revised.score - previous.score, 2);
+        var changes = [];
+        [['precip', 'Precipitation'], ['timing', 'Precipitation timing'], ['hazard', 'Hazard'], ['action', 'School decision']].forEach(function (definition) {
+          var choices = FORECAST_REVISION_CHOICES[definition[0]];
+          var before = choices[previous[definition[0]]];
+          var after = choices[revised[definition[0]]];
+          if (before && after && before !== after) changes.push(definition[1] + ' changed from ' + before + ' to ' + after + '.');
+        });
+        if (Array.isArray(previous.evidenceIds) && Array.isArray(revised.evidenceIds)) {
+          EVIDENCE.concat([TERRAIN_EVIDENCE]).forEach(function (item) {
+            var before = previous.evidenceIds.indexOf(item.id) >= 0;
+            var after = revised.evidenceIds.indexOf(item.id) >= 0;
+            if (before !== after) changes.push((after ? 'Added ' : 'Removed ') + item.label + ' as evidence.');
+          });
+        } else if (previous.evidenceCount != null && revised.evidenceCount != null && previous.evidenceCount !== revised.evidenceCount) {
+          changes.push('Evidence count changed from ' + previous.evidenceCount + ' to ' + revised.evidenceCount + '.');
+        }
+        if (previous.confidence != null && revised.confidence != null && previous.confidence !== revised.confidence) {
+          changes.push('Confidence changed from ' + previous.confidence + '% to ' + revised.confidence + '%.');
+        }
+        if (previous.reasoning && revised.reasoning && previous.reasoning.trim() !== revised.reasoning.trim()) changes.push('The written explanation was revised.');
+        return {
+          previousAttempt: previous.attempt,
+          revisedAttempt: revised.attempt,
+          delta: delta,
+          summary: 'Forecast #' + previous.attempt + ' → #' + revised.attempt + ', valid T+' + revised.window.targetHour + ' h. Model-match score ' + previous.score + ' → ' + revised.score + ' out of 100 (' + (delta > 0 ? '+' : '') + delta + ' ' + (Math.abs(delta) === 1 ? 'point' : 'points') + ').',
+          changes: changes
+        };
+      }
+    }
+    return null;
+  }
+
+
   function forecastJournalText(history) {
     var entries = normalizeForecastHistory(history);
-    var precipitation = { none: 'No precipitation', rain: 'Rain', snow: 'Snow', mixed: 'Wintry mix', storms: 'Thunderstorms' };
-    var hazards = { none: 'No major hazard', lightning: 'Lightning', flood: 'Flooding', ice: 'Ice / slippery travel', highWind: 'Strong wind' };
-    var timing = { '0-3': '0–3 hours', '4-6': 'more than 3 through 6 hours', '7-12': 'more than 6 through 12 hours', after12: 'No precipitation within the available window' };
-    var actions = { normal: 'Continue normal activities', monitor: 'Monitor conditions', indoors: 'Move activities indoors', avoidTravel: 'Avoid flooded routes', delayTravel: 'Delay icy travel', shelter: 'Shelter away from windows' };
+    var revision = latestForecastRevision(entries);
+    var precipitation = FORECAST_REVISION_CHOICES.precip;
+    var hazards = FORECAST_REVISION_CHOICES.hazard;
+    var timing = FORECAST_REVISION_CHOICES.timing;
+    var actions = FORECAST_REVISION_CHOICES.action;
     function label(map, value) { return map[value] || 'Not recorded'; }
     function hour(value) { return value == null ? 'not recorded' : 'T+' + value + ' h'; }
     var lines = ['Weather Systems — Forecast Revision Journal', 'Source: simplified teaching model. These are saved claims and outcomes, not live weather forecasts.', ''];
     if (!entries.length) lines.push('No verified forecasts have been saved yet.');
+    if (revision) {
+      lines.push(revision.summary);
+      revision.changes.forEach(function (change) { lines.push(change); });
+      lines.push('');
+    } else if (entries.length > 1) lines.push('A revision comparison needs two saved forecasts for the same model setup and forecast window.', '');
     entries.forEach(function (entry, index) {
       if (index) lines.push('', '----------------------------------------', '');
       lines.push('Forecast #' + entry.attempt + ' — ' + entry.score + '/100', 'Scenario: ' + (entry.scenarioName || 'Not recorded in this older attempt'));
@@ -4587,6 +5256,64 @@ var GEOGRAPHY_PROFILES = {
       saved.push(safe);
     });
     return saved.slice(-24);
+  }
+
+  var WEATHER_OBSERVATION_LOG_LIMIT = 24;
+
+  function appendWeatherObservationLog(log, candidates) {
+    var saved = normalizeWeatherObservationLog(log), additions = [];
+    function unchanged(ok, code, message) { return { ok: ok, changed: false, code: code, log: saved, added: 0, message: message }; }
+    if (!Array.isArray(candidates)) return unchanged(false, 'invalid', 'No valid observation was available to log.');
+    var seen = Object.create(null), valid = 0, invalid = false;
+    saved.forEach(function (entry) { seen[entry.id] = true; });
+    candidates.forEach(function (candidate) {
+      var entry = normalizeWeatherObservationLog([candidate])[0];
+      if (!entry) { invalid = true; return; }
+      valid += 1;
+      if (seen[entry.id]) return;
+      seen[entry.id] = true;
+      additions.push(entry);
+    });
+    if (invalid || !valid) return unchanged(false, 'invalid', 'The observation group was incomplete. No saved observation was changed.');
+    if (!additions.length) return unchanged(true, 'duplicate', 'These observations are already logged. Their original values, comparison and explanation were kept.');
+    if (saved.length + additions.length > WEATHER_OBSERVATION_LOG_LIMIT) {
+      return unchanged(false, 'capacity', 'The notebook holds 24 observations. Download or clear it before adding this whole group; no saved observation was changed.');
+    }
+    return { ok: true, changed: true, code: 'added', log: saved.concat(additions), added: additions.length,
+      message: additions.length + (additions.length === 1 ? ' observation logged.' : ' observations logged.') };
+  }
+
+  function weatherObservationNotebookBundle(data) {
+    var value = data && typeof data === 'object' ? data : {};
+    function text(prose, limit) { return typeof prose === 'string' ? prose.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').slice(0, limit) : ''; }
+    return { observationLog: normalizeWeatherObservationLog(value.observationLog),
+      observationCompareFrom: text(value.observationCompareFrom, 500), observationCompareTo: text(value.observationCompareTo, 500),
+      observationNote: text(value.observationNote, 1500) };
+  }
+
+  function clearWeatherObservationNotebook(data) {
+    var before = weatherObservationNotebookBundle(data), after = weatherObservationNotebookBundle({});
+    if (JSON.stringify(before) === JSON.stringify(after)) {
+      return { ok: true, changed: false, patch: {}, receipt: null, message: 'The observation notebook is already empty.' };
+    }
+    return { ok: true, changed: true, patch: after,
+      receipt: { schema: 'weather-observation-notebook-clear-v1', notebook: before, afterNotebookKey: JSON.stringify(after) },
+      message: 'Observation notebook cleared. You can undo this clear while the notebook remains empty.' };
+  }
+
+  function restoreClearedWeatherObservationNotebook(latest, receipt) {
+    function unavailable() { return { ok: false, changed: false, patch: {}, message: 'This clear can no longer be undone because the observation notebook changed.' }; }
+    var emptyKey = JSON.stringify(weatherObservationNotebookBundle({}));
+    if (!receipt || receipt.schema !== 'weather-observation-notebook-clear-v1' || receipt.afterNotebookKey !== emptyKey
+      || !receipt.notebook || typeof receipt.notebook !== 'object' || Array.isArray(receipt.notebook)
+      || JSON.stringify(weatherObservationNotebookBundle(latest)) !== emptyKey) return unavailable();
+    var before = weatherObservationNotebookBundle(receipt.notebook);
+    var keys = Object.keys(before);
+    if (Object.keys(receipt.notebook).length !== keys.length
+      || keys.some(function (key) { return !Object.prototype.hasOwnProperty.call(receipt.notebook, key)
+        || JSON.stringify(receipt.notebook[key]) !== JSON.stringify(before[key]); })
+      || JSON.stringify(before) === emptyKey) return unavailable();
+    return { ok: true, changed: true, patch: before, message: 'Observation notebook restored with its original comparison and explanation.' };
   }
 
   function observationJournalCsv(log) {
@@ -4855,6 +5582,10 @@ var GEOGRAPHY_PROFILES = {
       if (typeof entry.predicted.condition === 'string') predicted.condition = text(entry.predicted.condition, 150);
       var safe = { id: id, latitude: latitude, longitude: longitude, validAt: validAt, predicted: predicted };
       if (entry.schema === 'weather-live-checkpoint-v2') safe.schema = entry.schema;
+      ['learnerReasoning', 'timelineEvidence'].forEach(function (key) {
+        var prose = text(entry[key], 1500).trim();
+        if (prose) safe[key] = prose;
+      });
       [['location', 200], ['timezone', 100], ['capturedAt', 100], ['retrievedAt', 100], ['currentDataAt', 100], ['issuedAt', 100], ['source', 80], ['sourceKind', 80]].forEach(function (definition) {
         if (typeof entry[definition[0]] === 'string') safe[definition[0]] = text(entry[definition[0]], definition[1]);
       });
@@ -4863,6 +5594,12 @@ var GEOGRAPHY_PROFILES = {
         if (value != null) safe[definition[0]] = value;
       });
       if (['surface', 'seaLevel'].indexOf(entry.pressureType) !== -1) safe.pressureType = entry.pressureType;
+      var classroomReading = entry.classroomReading;
+      if (object(classroomReading) && (classroomReading.schema === 'weather-classroom-temperature-v1'
+        || (classroomReading.schema === 'weather-classroom-temperature-v2' && Object.prototype.hasOwnProperty.call(classroomReading, 'temperatureC')))) {
+        var checked = classroomThermometerCheck(safe, classroomReading, classroomReading.recordedAt);
+        if (checked.ok) safe.classroomReading = checked.reading;
+      }
       seen[id] = true;
       saved.push(safe);
     });
@@ -4887,7 +5624,9 @@ var GEOGRAPHY_PROFILES = {
       return [];
     }
     var lines = ['Weather Systems — Live Forecast Review',
-      'This report compares saved Open-Meteo model values with a later model retrieval for the same valid time and location. It does not compare forecasts with independent station observations or establish forecast accuracy.',
+      rows.some(function (row) { return !!row.checkpoint.classroomReading; })
+        ? 'This report shows later model revisions and separately identifies classroom thermometer readings taken at the saved forecast site and valid time.'
+        : 'This report compares saved Open-Meteo model values with a later model retrieval for the same valid time and location. It does not compare forecasts with independent station observations or establish forecast accuracy.',
       'Differences are saved forecast minus the newer model value. Pending, incomplete, or incompatible snapshots are not treated as zero error.',
       'Provider forecast issue time is not supplied by this workflow; retrieval, saving, current-data time and forecast valid time are separate.',
       'Loaded model provider: ' + text(liveWeather && liveWeather.source) + '.',
@@ -4907,6 +5646,8 @@ var GEOGRAPHY_PROFILES = {
         'Pressure basis: ' + text(checkpoint.pressureType) + '; precipitation interval: ' + numeric(checkpoint.precipitationIntervalSeconds, ' seconds'),
         'Status: ' + text(result.label || result.code), text(result.detail));
       if (checkpoint.issuedAt) lines.push('Legacy issuedAt field (unverified; not asserted as provider issue time): ' + checkpoint.issuedAt);
+      if (checkpoint.learnerReasoning) lines.push('Original forecast explanation', checkpoint.learnerReasoning);
+      if (checkpoint.timelineEvidence) lines.push('Attached timeline evidence', checkpoint.timelineEvidence);
       if (result.comparedRetrievedAt) lines.push('Comparison retrieval: ' + result.comparedRetrievedAt);
       lines.push('Saved prediction:');
       [['temperature', 'Temperature', '°C'], ['precipitation', 'Precipitation', ' mm'], ['pressure', 'Pressure', ' hPa'], ['windSpeed', 'Wind speed', ' km/h'], ['windDir', 'Wind-from direction', '°'], ['cloudCover', 'Cloud cover', '%'], ['weatherCode', 'WMO condition code', '']].forEach(function (definition) {
@@ -4926,6 +5667,18 @@ var GEOGRAPHY_PROFILES = {
         lines.push(result.conditionMatch == null ? 'Condition-code comparison: not available.' : 'Condition-code comparison: ' + (result.conditionMatch ? 'same code in both model values.' : 'different codes in the two model values.'));
       }
       exclusionText(result).forEach(function (reason) { lines.push('Not compared: ' + reason); });
+      if (checkpoint.classroomReading) {
+        var reading = checkpoint.classroomReading;
+        var rawDifferenceC = checkpoint.predicted.temperature - reading.temperatureC;
+        var differenceC = round(rawDifferenceC, 1);
+        var withUnit = reading.schema === 'weather-classroom-temperature-v2';
+        lines.push('Classroom thermometer check', 'Outdoor reading at the confirmed saved site was '
+          + (withUnit ? reading.enteredValue + ' °' + reading.enteredUnit : reading.temperatureC + ' °C') + '.',
+          'Measured at ' + reading.measuredAt, 'Reading last entered ' + reading.recordedAt,
+          'Saved forecast minus thermometer reading is ' + signedNumber(differenceC, ' °C')
+            + (withUnit ? ' (' + signedNumber(round(rawDifferenceC * 9 / 5, 1), ' °F') + ')' : '') + '.');
+        if (withUnit) lines.push('Canonical Celsius value: ' + reading.temperatureC + ' °C.');
+      }
     });
     lines.push('', 'Model differences may reflect revisions, different model runs, or other model processing. A small difference is not proof of accuracy. No aggregate score is calculated across different places or lead times.');
     return lines.join('\n');
@@ -4944,7 +5697,14 @@ var GEOGRAPHY_PROFILES = {
     [['temperature', 'Temperature (°C)'], ['precipitation', 'Precipitation (mm)'], ['pressure', 'Pressure (hPa)'], ['windSpeed', 'Wind speed (km/h)'], ['windDirection', 'Wind from direction (degrees)']].forEach(function (definition) {
       columns.push(['metric.' + definition[0] + '.comparison', 'Newer model ' + definition[1]], ['metric.' + definition[0] + '.error', 'Saved minus newer model ' + definition[1]], ['metric.' + definition[0] + '.absoluteError', 'Absolute difference ' + definition[1]], ['metric.' + definition[0] + '.ambiguous', 'Direction ambiguity: ' + definition[1]]);
     });
-    columns.push(['exclusions', 'Metrics excluded from comparison']);
+    columns.push(['exclusions', 'Metrics excluded from comparison'],
+      ['classroom.temperatureC', 'Classroom outdoor thermometer (°C)'], ['classroom.measuredAt', 'Classroom measurement time (UTC)'],
+      ['classroom.recordedAt', 'Classroom reading last entered (UTC)'], ['classroom.sameSite', 'Classroom measurement at saved forecast site'],
+      ['classroom.differenceC', 'Saved forecast minus classroom thermometer (°C)']);
+    columns.push(['learnerReasoning', 'Original forecast explanation'], ['timelineEvidence', 'Attached timeline evidence']);
+    columns.push(['classroom.schema', 'Classroom reading schema'],
+      ['classroom.enteredValue', 'Classroom entered thermometer value'], ['classroom.enteredUnit', 'Classroom entered thermometer unit'],
+      ['classroom.differenceF', 'Saved forecast minus classroom thermometer (°F)']);
     function cell(value) {
       if (value == null) return '""';
       var string = String(value);
@@ -4955,7 +5715,17 @@ var GEOGRAPHY_PROFILES = {
     rows.forEach(function (row) {
       csv.push(columns.map(function (column) {
         var key = column[0], checkpoint = row.checkpoint, result = row.result || {}, value;
-        if (key === 'sourceStatement') value = 'Model-to-model revision comparison; not independent observations or an accuracy score';
+        if (key === 'sourceStatement') value = checkpoint.classroomReading ? 'Model revision and separate classroom thermometer check' : 'Model-to-model revision comparison; not independent observations or an accuracy score';
+        else if (key.indexOf('classroom.') === 0) {
+          var reading = checkpoint.classroomReading;
+          if (reading) {
+            if (key === 'classroom.differenceC') value = round(checkpoint.predicted.temperature - reading.temperatureC, 1);
+            else if (key === 'classroom.differenceF') value = round((checkpoint.predicted.temperature - reading.temperatureC) * 9 / 5, 1);
+            else if (key === 'classroom.enteredValue') value = reading.schema === 'weather-classroom-temperature-v2' ? reading.enteredValue : reading.temperatureC;
+            else if (key === 'classroom.enteredUnit') value = reading.schema === 'weather-classroom-temperature-v2' ? reading.enteredUnit : 'C';
+            else value = reading[key.slice(10)];
+          }
+        }
         else if (key.indexOf('result.') === 0) value = result[key.slice(7)];
         else if (key.indexOf('loaded.') === 0) value = liveWeather && liveWeather[key.slice(7)];
         else if (key.indexOf('predicted.') === 0) value = checkpoint.predicted[key.slice(10)];
@@ -5007,6 +5777,10 @@ var GEOGRAPHY_PROFILES = {
   window.WeatherSystemsKernel.normalizeExperimentHistory = normalizeExperimentHistory;
   window.WeatherSystemsKernel.experimentJournalText = experimentJournalText;
   window.WeatherSystemsKernel.normalizeWeatherObservationLog = normalizeWeatherObservationLog;
+  window.WeatherSystemsKernel.weatherObservationLogLimit = WEATHER_OBSERVATION_LOG_LIMIT;
+  window.WeatherSystemsKernel.appendWeatherObservationLog = appendWeatherObservationLog;
+  window.WeatherSystemsKernel.clearWeatherObservationNotebook = clearWeatherObservationNotebook;
+  window.WeatherSystemsKernel.restoreClearedWeatherObservationNotebook = restoreClearedWeatherObservationNotebook;
   window.WeatherSystemsKernel.observationJournalCsv = observationJournalCsv;
   window.WeatherSystemsKernel.observationComparisonText = observationComparisonText;
 
@@ -5031,6 +5805,8 @@ var GEOGRAPHY_PROFILES = {
       var h = React.createElement;
       var dataRoot = ctx.toolData || {};
       var d = dataRoot.weatherSystems || {};
+      var savedForecastHistory = normalizeForecastHistory(d.forecastHistory);
+      var savedRevision = latestForecastRevision(savedForecastHistory);
       var setToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
@@ -5039,6 +5815,16 @@ var GEOGRAPHY_PROFILES = {
       var dark = !!ctx.isDark || contrast;
       var band = gradeBand(ctx.gradeLevel);
       var canvasRef = React.useRef(null);
+      var weatherSystemsRootRef = React.useRef(null);
+      var classroomThermometerUndoRef = React.useRef(null);
+      var classroomThermometerFocusRef = React.useRef(null);
+      var classroomThermometerErrorAttemptRef = React.useRef(null);
+      var liveForecastJournalActionRef = React.useRef(null);
+      var liveHourDraftActionRef = React.useRef(null);
+      var observationNotebookUndoRef = React.useRef(null);
+      var observationNotebookActionRef = React.useRef(null);
+      var liveTimelinePlaybackRef = React.useRef(null);
+      var liveTimelineActionRef = React.useRef(null);
       // Meteogram hover lives in component state, never in toolData: it is a pointer position,
       // not saved work. Declared here at the top of render because a hook inside a
       // tab-conditional panel would crash on navigation.
@@ -5063,6 +5849,13 @@ var GEOGRAPHY_PROFILES = {
       var immersiveLocalHydratedRef = React.useRef(false);
       var liveWeatherRequestRef = React.useRef(null);
       var liveWeatherRetryRef = React.useRef(null);
+      var immersiveSessionImportRef = React.useRef({ token: null, disposed: false });
+      var liveWeatherIntentRef = React.useRef(null);
+      var liveLocationChoicesRef = React.useRef(null);
+      var liveLocationChoicesState = React.useState(null);
+      var liveLocationChoices = liveLocationChoicesState[0];
+      var setLiveLocationChoices = liveLocationChoicesState[1];
+      var timelineControlSnapshot = liveWeatherTimelineSnapshot(d);
       var state = resolvedState(d);
       var scenario = scenarioById(state.scenario);
       var selectedStation = d.selectedStation || 'central';
@@ -5092,14 +5885,111 @@ var GEOGRAPHY_PROFILES = {
         });
       }
 
+      function ownsClassroomThermometerAttempt(attempt) {
+        return !!attempt && !immersiveSessionImportRef.current.disposed && classroomThermometerErrorAttemptRef.current === attempt;
+      }
+
       React.useEffect(function () {
+        var receipt = classroomThermometerUndoRef.current;
+        if (receipt && !classroomThermometerUndo(d.liveForecastCheckpoints, receipt).ok) classroomThermometerUndoRef.current = null;
+        var pending = classroomThermometerFocusRef.current;
+        classroomThermometerFocusRef.current = null;
+        var root = weatherSystemsRootRef.current;
+        if (!pending || !root || !ownsClassroomThermometerAttempt(pending.attempt) || !d.classroomThermometerNotice || d.classroomThermometerNotice.attempt !== pending.attempt) return;
+        var panels = root.querySelectorAll('[data-weather-classroom-thermometer]');
+        var panel = Array.prototype.find.call(panels, function (item) { return item.getAttribute('data-weather-classroom-id') === pending.id; });
+        var errorSelectors = { sameSite: 'input[name="sameSite"]', enteredUnit: 'select[name="enteredUnit"]', enteredValue: 'input[name="enteredValue"]', measuredAt: 'input[name="measuredAt"]' };
+        var selector = pending.invalid ? errorSelectors[pending.field] || '[data-weather-classroom-feedback]' : pending.undo ? '[data-weather-classroom-undo]' : 'input[name="enteredValue"]';
+        var field = panel && panel.querySelector(selector);
+        if (!field && panel) field = panel.querySelector('summary');
+        if (!field) field = root.querySelector('#weather-live-verification-title');
+        if (field) field.focus();
+      });
+
+      React.useEffect(function () {
+        var pending = liveForecastJournalActionRef.current;
+        liveForecastJournalActionRef.current = null;
+        if (!pending || pending.message !== d.liveReviewStatus) return;
+        if (pending.toast && addToast) addToast(pending.message, 'success');
+        if (announce) announce(pending.message);
+        var root = weatherSystemsRootRef.current;
+        var control = root && root.querySelector(pending.focus === 'undo' ? '[data-weather-forecast-undo]' : '[data-weather-forecast-capacity]');
+        if (control) control.focus();
+      });
+
+      React.useEffect(function () {
+        var pending = liveHourDraftActionRef.current;
+        liveHourDraftActionRef.current = null;
+        if (!pending || pending.message !== d.liveHourDraftStatus) return;
+        if (announce) announce(pending.message);
+        var root = weatherSystemsRootRef.current;
+        var control = root && root.querySelector('#weather-live-explanation:not(:disabled)');
+        if (!control && root) control = root.querySelector('[data-weather-explanation-recovery]') || root.querySelector('#weather-live-verification-title');
+        if (control && pending.focus) control.focus();
+      });
+
+      React.useEffect(function () {
+        var receipt = observationNotebookUndoRef.current;
+        if (receipt && !restoreClearedWeatherObservationNotebook(d, receipt).ok) observationNotebookUndoRef.current = null;
+        var pending = observationNotebookActionRef.current;
+        observationNotebookActionRef.current = null;
+        if (!pending || pending.message !== d.observationStatus) return;
+        if (announce) announce(pending.message);
+        var root = weatherSystemsRootRef.current;
+        var control = root && root.querySelector(pending.focus === 'undo' ? '[data-weather-observation-undo]' : pending.focus === 'note' ? '#weather-observation-note' : '[data-weather-observation-capacity]');
+        if (!control && root) control = root.querySelector('[data-weather-observation-capacity]') || root.querySelector('[data-weather-station-log-status]');
+        if (control) control.focus();
+      });
+
+      React.useEffect(function () {
+        var stamp = d.immersiveTimelineComparison;
+        var legacy = d.immersiveTimelineCompareIndex;
+        if ((!stamp || timelineControlSnapshot.comparisonIndex !== '') && (stamp || legacy === '' || legacy == null)) return;
+        update(function (latest) {
+          var view = liveWeatherTimelineSnapshot(latest);
+          if (latest.immersiveTimelineComparison && view.comparisonIndex !== '') return {};
+          if (!latest.immersiveTimelineComparison && (latest.immersiveTimelineCompareIndex === '' || latest.immersiveTimelineCompareIndex == null)) return {};
+          return { immersiveTimelineComparison: null, immersiveTimelineCompareIndex: '', liveTimelineControlStatus: 'Previous timeline comparison cleared. Choose a baseline from the current retrieval.' };
+        });
+      });
+
+      React.useEffect(function () {
+        var pending = liveTimelineActionRef.current;
+        liveTimelineActionRef.current = null;
+        if (pending && pending.message === d.liveTimelineControlStatus && announce) announce(pending.message);
+      });
+
+      (typeof React.useLayoutEffect === 'function' ? React.useLayoutEffect : React.useEffect)(function () {
+        var importOwner = immersiveSessionImportRef.current;
+        importOwner.disposed = false;
+        var initialIntent = liveWeatherIntentRef.current;
         // A host can retain toolData after leaving the lab; an old spinner is
         // not a running request. Requests themselves only live in this mount.
-        update(function (latest) { return latest.liveWeatherLoading ? { liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Previous weather request ended. Loaded weather and saved work are available.' } : {}; });
+        update(function (latest) { if (!ownsWeatherIntent(initialIntent)) return {}; return Object.assign({}, latest.liveWeatherTimelinePlaying ? { liveWeatherTimelinePlaying: false, liveTimelineControlStatus: 'Weather timeline paused after reopening the workspace.' } : {}, latest.liveWeatherLoading ? { liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Previous weather request ended. Loaded weather and saved work are available.' } : {}); });
         return function () {
-          if (liveWeatherRequestRef.current) liveWeatherRequestRef.current.dispose();
+          importOwner.disposed = true;
+          liveWeatherIntentRef.current = null;
+          var pendingImport = importOwner.token;
+          importOwner.token = null;
+          var pendingWeather = liveWeatherRequestRef.current;
           liveWeatherRequestRef.current = null;
           liveWeatherRetryRef.current = null;
+          if (pendingImport && pendingImport.reader) {
+            var pendingReader = pendingImport.reader;
+            pendingImport.reader = null;
+            try { pendingReader.abort(); } catch (ignored) {}
+          }
+          if (pendingWeather) pendingWeather.dispose();
+          liveLocationChoicesRef.current = null;
+          liveForecastJournalActionRef.current = null;
+          liveTimelinePlaybackRef.current = null;
+          liveTimelineActionRef.current = null;
+          observationNotebookUndoRef.current = null;
+          observationNotebookActionRef.current = null;
+          liveHourDraftActionRef.current = null;
+          classroomThermometerUndoRef.current = null;
+          classroomThermometerFocusRef.current = null;
+          classroomThermometerErrorAttemptRef.current = null;
         };
       }, []);
 
@@ -5109,7 +5999,15 @@ var GEOGRAPHY_PROFILES = {
         var payload = decodeWeatherSession(window.location.hash);
         var restoredPatch = validateImmersiveSessionPayload(payload);
         if (!restoredPatch) return;
-        update(Object.assign({}, restoredPatch, { immersiveSessionStatus: 'Shared immersive session restored from this link.' }));
+        classroomThermometerUndoRef.current = null;
+        classroomThermometerFocusRef.current = null;
+        classroomThermometerErrorAttemptRef.current = null;
+        liveForecastJournalActionRef.current = null;
+        liveTimelinePlaybackRef.current = null;
+        liveTimelineActionRef.current = null;
+        observationNotebookUndoRef.current = null;
+        observationNotebookActionRef.current = null;
+        update(function (latest) { return Object.assign({}, restoredPatch, resetLiveWeatherTimelineSnapshot(Object.assign({}, latest, restoredPatch)), { liveTimelineControlStatus: 'Session restored. Timeline paused and comparison cleared.', immersiveSessionStatus: 'Shared immersive session restored from this link.' }); });
         if (announce) announce(__alloT('stem.weathersystems.sr_shared_immersive_weather_session_restored', 'Shared immersive weather session restored.'));
       }, []);
 
@@ -5121,7 +6019,19 @@ var GEOGRAPHY_PROFILES = {
           var raw = window.localStorage && window.localStorage.getItem(IMMERSIVE_LOCAL_WORKSPACE_KEY);
           var restoredPatch = raw ? validateImmersiveLocalWorkspacePayload(JSON.parse(raw)) : null;
           if (!restoredPatch) return;
-          update(Object.assign({}, restoredPatch, { immersiveLocalSaveStatus: 'Restored this immersive workspace from local device storage.' }));
+          classroomThermometerUndoRef.current = null;
+          classroomThermometerFocusRef.current = null;
+          classroomThermometerErrorAttemptRef.current = null;
+          liveForecastJournalActionRef.current = null;
+          liveTimelinePlaybackRef.current = null;
+          liveTimelineActionRef.current = null;
+          observationNotebookUndoRef.current = null;
+          observationNotebookActionRef.current = null;
+          update(function (latest) {
+            var restored = Object.assign({}, restoredPatch);
+            Object.keys(latest).forEach(function (key) { if (latest[key] !== undefined) restored[key] = latest[key]; });
+            return Object.assign({}, restored, resetLiveWeatherTimelineSnapshot(restored), { liveTimelineControlStatus: 'Workspace restored. Timeline paused and comparison cleared.', immersiveLocalSaveStatus: 'Restored this immersive workspace from local device storage.' });
+          });
           if (announce) announce(__alloT('stem.weathersystems.sr_immersive_workspace_restored_from_this_device', 'Immersive workspace restored from this device.'));
         } catch (error) {}
       }, []);
@@ -5250,34 +6160,103 @@ var GEOGRAPHY_PROFILES = {
         if (announce) announce(status);
       }
 
+      function ownsWeatherIntent(intent) {
+        return !immersiveSessionImportRef.current.disposed && liveWeatherIntentRef.current === intent;
+      }
+
+      function ownsImmersiveSessionImport(token) {
+        var owner = immersiveSessionImportRef.current;
+        return !owner.disposed && owner.token === token;
+      }
+
       function importImmersiveSessionFile(event) {
+        var owner = immersiveSessionImportRef.current;
+        if (owner.disposed) return;
         var input = event && event.target;
         var file = input && input.files && input.files[0];
         if (!file || typeof FileReader === 'undefined') return;
-        var reader = new FileReader();
-        reader.onload = function () {
-          try {
-            var payload = JSON.parse(String(reader.result || ''));
-            var importedPatch = validateImmersiveSessionPayload(payload);
-            if (!importedPatch) throw new Error('This file is not a supported Weather Systems session.');
-            if (liveWeatherRequestRef.current) liveWeatherRequestRef.current.cancel();
-            liveWeatherRetryRef.current = null;
-            update(Object.assign({}, importedPatch, { liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: '', immersiveAudienceMode: 'teacher', immersiveSessionStatus: 'Session JSON imported. Review the location and source labels before sharing it.' }));
-            if (addToast) addToast('Weather Systems session imported.', 'success');
-            if (announce) announce(__alloT('stem.weathersystems.sr_weather_systems_session_imported', 'Weather Systems session imported.'));
-          } catch (error) {
-            var message = error && error.message ? error.message : 'The session file could not be read.';
-            update({ immersiveSessionStatus: message });
-            if (addToast) addToast(message, 'error');
-            if (announce) announce(message);
-          }
-          if (input) input.value = '';
-        };
-        reader.onerror = function () {
-          update({ immersiveSessionStatus: 'The session file could not be read.' });
-          if (input) input.value = '';
-        };
-        reader.readAsText(file.slice(0, 5 * 1024 * 1024));
+        var previous = owner.token;
+        var token = { reader: null, finished: false };
+        owner.token = token;
+        if (previous && previous.reader) {
+          var previousReader = previous.reader;
+          previous.reader = null;
+          try { previousReader.abort(); } catch (ignored) {}
+        }
+        if (!ownsImmersiveSessionImport(token)) return;
+        var reader = null;
+        function releaseReader() {
+          if (token.reader === reader) token.reader = null;
+          if (ownsImmersiveSessionImport(token) && input) input.value = '';
+        }
+        function reportFailure(message, notify) {
+          if (!ownsImmersiveSessionImport(token)) return;
+          update(function () { return ownsImmersiveSessionImport(token) ? { immersiveSessionStatus: message } : {}; });
+          if (!notify || !ownsImmersiveSessionImport(token)) return;
+          if (addToast) addToast(message, 'error');
+          if (announce) announce(message);
+        }
+        try {
+          reader = new FileReader();
+          token.reader = reader;
+          reader.onload = function () {
+            if (!ownsImmersiveSessionImport(token) || token.finished) return;
+            token.finished = true;
+            try {
+              var payload = JSON.parse(String(reader.result || ''));
+              var importedPatch = validateImmersiveSessionPayload(payload);
+              if (!importedPatch) throw new Error('This file is not a supported Weather Systems session.');
+              if (!ownsImmersiveSessionImport(token)) return;
+              var intent = {};
+              liveWeatherIntentRef.current = intent;
+              var previousWeather = liveWeatherRequestRef.current;
+              liveWeatherRequestRef.current = null;
+              liveWeatherRetryRef.current = null;
+              if (previousWeather) previousWeather.dispose();
+              if (!ownsWeatherIntent(intent)) return;
+              if (ownsImmersiveSessionImport(token)) {
+                classroomThermometerUndoRef.current = null;
+                classroomThermometerFocusRef.current = null;
+                classroomThermometerErrorAttemptRef.current = null;
+                liveForecastJournalActionRef.current = null;
+                liveTimelinePlaybackRef.current = null;
+                liveTimelineActionRef.current = null;
+                observationNotebookUndoRef.current = null;
+                observationNotebookActionRef.current = null;
+                clearLiveLocationChoices();
+              }
+              update(function (latest) {
+                if (!ownsWeatherIntent(intent)) return {};
+                var settled = { liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: '', liveWeatherTimelinePlaying: false };
+                if (latest.liveReviewStatus === 'Loading the saved forecast location for comparison.') settled.liveReviewStatus = '';
+                if (!ownsImmersiveSessionImport(token)) return settled;
+                return Object.assign({}, importedPatch, resetLiveWeatherTimelineSnapshot(Object.assign({}, latest, importedPatch)), settled, {
+                  liveTimelineControlStatus: 'Session imported. Timeline paused and comparison cleared.',
+                  liveHourDraft: importedPatch.liveHourDraft || null, liveHourDraftStatus: '', classroomThermometerNotice: null, liveReviewUndo: null, livePlaceUndo: null, livePlaceStatus: '',
+                  immersiveAudienceMode: 'teacher', immersiveSessionStatus: 'Session JSON imported. Review the location and source labels before sharing it.'
+                });
+              });
+              if (ownsImmersiveSessionImport(token) && ownsWeatherIntent(intent)) {
+                if (addToast) addToast('Weather Systems session imported.', 'success');
+                if (announce) announce(__alloT('stem.weathersystems.sr_weather_systems_session_imported', 'Weather Systems session imported.'));
+              }
+            } catch (error) {
+              reportFailure(error && error.message ? error.message : 'The session file could not be read.', true);
+            } finally { releaseReader(); }
+          };
+          reader.onerror = function () {
+            if (!ownsImmersiveSessionImport(token) || token.finished) return;
+            token.finished = true;
+            reportFailure('The session file could not be read.', false);
+            releaseReader();
+          };
+          reader.readAsText(file.slice(0, 5 * 1024 * 1024));
+        } catch (error) {
+          if (!ownsImmersiveSessionImport(token) || token.finished) return;
+          token.finished = true;
+          reportFailure(error && error.message ? error.message : 'The session file could not be read.', true);
+          releaseReader();
+        }
       }
 
       function copyImmersiveEvidenceHandoff(capture) {
@@ -5446,7 +6425,15 @@ var GEOGRAPHY_PROFILES = {
       function applyImmersiveLessonPreset(preset) {
         var safe = validateImmersiveLessonPreset(preset);
         if (!safe) { update({ immersiveLessonPresetStatus: 'That lesson preset could not be applied.' }); return; }
-        update(Object.assign({}, safe.weatherSystems, { immersiveLessonPresetActiveId: safe.id, immersiveLessonPresetStatus: 'Applied preset “' + safe.name + '”.' }));
+        classroomThermometerUndoRef.current = null;
+        classroomThermometerFocusRef.current = null;
+        classroomThermometerErrorAttemptRef.current = null;
+        liveForecastJournalActionRef.current = null;
+        liveTimelinePlaybackRef.current = null;
+        liveTimelineActionRef.current = null;
+        observationNotebookUndoRef.current = null;
+        observationNotebookActionRef.current = null;
+        update(function (latest) { return Object.assign({}, safe.weatherSystems, resetLiveWeatherTimelineSnapshot(Object.assign({}, latest, safe.weatherSystems)), { liveTimelineControlStatus: 'Preset applied. Timeline paused and comparison cleared.', immersiveLessonPresetActiveId: safe.id, immersiveLessonPresetStatus: 'Applied preset “' + safe.name + '”.' }); });
         if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_lesson_preset_applied', 'Lesson preset {value1} applied.'), { value1: safe.name }));
       }
 
@@ -5459,6 +6446,10 @@ var GEOGRAPHY_PROFILES = {
 
       function liveWeatherConnectionPanel(placement) {
         var connectionDark = placement === 'immersive' || dark;
+        var connectionFreshness = d.liveWeather ? liveObservationFreshness(d.liveWeather) : null;
+        var savedPlaces = normalizeSavedLivePlaces(d.savedLivePlaces);
+        var loadedPlace = savedLivePlaceFromWeather(d.liveWeather, d.liveGeography);
+        var existingPlace = loadedPlace ? savedPlaces.find(function (place) { return liveReviewSameLocation(place, loadedPlace); }) : null;
         var copyClass = connectionDark ? 'text-slate-300' : 'text-slate-600';
         var labelClass = connectionDark ? 'text-emerald-100' : 'text-emerald-900';
         var fieldClass = 'min-h-11 w-full min-w-0 rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ' + (connectionDark ? 'border-slate-600 bg-slate-950 text-white placeholder:text-slate-400' : 'border-slate-400 bg-white text-slate-900 placeholder:text-slate-500');
@@ -5470,16 +6461,51 @@ var GEOGRAPHY_PROFILES = {
           h('form', { className: 'mt-3 space-y-2', onSubmit: function (event) { event.preventDefault(); searchLiveWeather('quick'); }, 'aria-describedby': 'weather-location-format-help' },
             h('label', { htmlFor: 'weather-location-quick', className: 'block text-xs font-bold ' + labelClass }, 'Quick location search'),
             h('div', { className: 'flex gap-2' },
-              h('input', { id: 'weather-location-quick', type: 'search', value: d.liveLocationQuery || '', onChange: function (event) { update({ liveLocationQuery: event.target.value }); }, placeholder: 'Boston, MA or 42.36, -71.06', autoComplete: 'off', inputMode: 'search', className: fieldClass + ' flex-1' }),
+              h('input', { id: 'weather-location-quick', type: 'search', value: d.liveLocationQuery || '', onChange: function (event) { editLiveLocationFields({ liveLocationQuery: event.target.value }); }, placeholder: 'Boston, MA or 42.36, -71.06', autoComplete: 'off', inputMode: 'search', className: fieldClass + ' flex-1' }),
               h('button', { type: 'submit', className: actionClass }, 'Search')
             ),
             h('p', { id: 'weather-location-format-help', className: 'text-[0.6875rem] leading-relaxed ' + copyClass }, 'Accepts city, region, country, postal or ZIP code, or decimal coordinates. Examples: Paris, France; 02108; Tokyo Japan; 42.36 N, 71.06 W.')
+          ),
+          liveLocationChoices && h('fieldset', { className: 'mt-3 min-w-0 rounded-lg border p-3 ' + (connectionDark ? 'border-emerald-300/40' : 'border-emerald-700'), 'data-weather-location-choices': true },
+            h('legend', { className: 'px-1 text-sm font-black' }, 'Choose a matching location'),
+            h('p', { className: 'break-words text-xs ' + copyClass }, 'Results for “' + liveLocationChoices.query + '”. Select a place to load its weather.'),
+            h('ul', { className: 'mt-2 space-y-2' }, liveLocationChoices.places.map(function (place, index) {
+              return h('li', { key: index }, h('button', { type: 'button', className: actionClass + ' w-full break-words text-left', 'data-weather-location-choice': index, onClick: function () { selectLiveLocationChoice(liveLocationChoices, index); } },
+                h('span', { className: 'block' }, place.label),
+                h('span', { className: 'block text-[0.6875rem] font-normal' }, '(' + place.latitude.toFixed(4) + ', ' + place.longitude.toFixed(4) + ')')
+              ));
+            })),
+            h('button', { type: 'button', className: actionClass + ' mt-2', onClick: dismissLiveLocationChoices }, 'Dismiss location choices')
           ),
           h('div', { className: 'mt-3 flex flex-wrap gap-2' },
             h('button', { type: 'button', onClick: requestDeviceWeather, className: actionClass }, '\uD83D\uDCCD Use my location'),
             placement === 'immersive' && d.liveWeather && h('button', { type: 'button', disabled: !!d.liveWeatherLoading, onClick: function () { fetchLiveWeather(d.liveWeather.latitude, d.liveWeather.longitude, d.liveWeather.label); }, className: actionClass + ' disabled:opacity-50' }, 'Refresh loaded weather'),
             d.liveWeatherLoading && h('button', { type: 'button', onClick: cancelLiveWeatherRequest, className: actionClass }, 'Cancel weather request'),
             !d.liveWeatherLoading && d.liveWeatherError && liveWeatherRetryRef.current && h('button', { type: 'button', onClick: retryLiveWeatherRequest, className: actionClass }, 'Retry weather request')
+          ),
+          h('section', { className: 'mt-3 min-w-0 rounded-lg border p-3 ' + (connectionDark ? 'border-slate-600' : 'border-emerald-200'), 'data-weather-saved-places': true, 'aria-label': 'Saved weather places' },
+            h('h4', { className: 'text-sm font-black' }, 'Saved places'),
+            h('p', { className: 'mt-1 text-xs ' + copyClass }, 'Save up to six places for this workspace. Saving the same site again updates its name. Undo applies to your latest removal until you save another place.'),
+            h('p', { className: 'mt-1 text-xs ' + copyClass }, 'This list is saved with the workspace and included in shares that include locations.'),
+            loadedPlace && h('form', { key: loadedPlace.id + '|' + (existingPlace ? existingPlace.name : loadedPlace.name), className: 'mt-3 grid gap-2', onSubmit: function (event) { event.preventDefault(); saveLoadedLivePlace(event.currentTarget.elements.namedItem('placeName').value); } },
+              h('label', { className: 'block text-xs font-bold ' + labelClass }, 'Saved place name', h('input', { name: 'placeName', type: 'text', maxLength: 80, defaultValue: existingPlace ? existingPlace.name : loadedPlace.name, className: fieldClass + ' mt-1' })),
+              h('button', { type: 'submit', disabled: !!d.liveWeatherLoading, className: actionClass + ' justify-self-start disabled:opacity-50' }, 'Save loaded place')
+            ),
+            !loadedPlace && h('p', { className: 'mt-2 text-xs ' + copyClass }, 'Load a weather location to save it here.'),
+            savedPlaces.length > 0 && h('ul', { className: 'mt-3 space-y-2' }, savedPlaces.map(function (place, index) {
+              var detailId = 'weather-saved-place-detail-' + index;
+              return h('li', { key: place.id, className: 'min-w-0 rounded-lg border p-2 ' + (connectionDark ? 'border-slate-700' : 'border-emerald-200') },
+                h('p', { className: 'break-words text-xs font-bold' }, place.name),
+                place.label !== place.name && h('p', { className: 'mt-1 break-words text-xs ' + copyClass }, place.label),
+                h('p', { id: detailId, className: 'mt-1 text-xs ' + copyClass }, place.latitude.toFixed(4) + ', ' + place.longitude.toFixed(4)),
+                h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                  h('button', { type: 'button', className: actionClass, 'aria-label': 'Load saved place ' + place.name, 'aria-describedby': detailId, onClick: function () { loadSavedLivePlace(place.id); } }, 'Load'),
+                  h('button', { type: 'button', className: actionClass, 'aria-label': 'Remove saved place ' + place.name, 'aria-describedby': detailId, onClick: function () { removeSavedLivePlace(place.id); } }, 'Remove')
+                )
+              );
+            })),
+            d.livePlaceStatus && h('p', { className: 'mt-2 text-xs font-bold ' + labelClass, role: 'status', 'aria-live': 'polite' }, d.livePlaceStatus),
+            d.livePlaceUndo && h('button', { type: 'button', className: actionClass + ' mt-2', onClick: undoRemoveSavedLivePlace }, 'Undo remove saved place')
           ),
           h('button', { type: 'button', onClick: function () { update({ liveLocationDetailsOpen: !d.liveLocationDetailsOpen }); }, 'aria-expanded': !!d.liveLocationDetailsOpen, 'aria-controls': 'weather-location-details', className: actionClass + ' mt-2 flex w-full items-center justify-between text-left' }, h('span', null, d.liveLocationDetailsOpen ? 'Hide location fields' : 'More location fields'), h('span', { 'aria-hidden': true }, d.liveLocationDetailsOpen ? '\u2212' : '+')),
           h('div', { id: 'weather-location-details', hidden: !d.liveLocationDetailsOpen },
@@ -5489,7 +6515,7 @@ var GEOGRAPHY_PROFILES = {
               h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
                 [{ key: 'liveLocationCity', id: 'city', label: 'City or locality', autoComplete: 'address-level2', wide: true }, { key: 'liveLocationRegion', id: 'region', label: 'State, province, or region', autoComplete: 'address-level1' }, { key: 'liveLocationPostalCode', id: 'postal', label: 'Postal or ZIP code', autoComplete: 'postal-code' }, { key: 'liveLocationCountry', id: 'country', label: 'Country', autoComplete: 'country-name', wide: true }].map(function (field) {
                   return h('label', { key: field.key, htmlFor: 'weather-location-' + field.id, className: 'block text-xs font-bold ' + labelClass + (field.wide ? ' col-span-2' : '') }, field.label,
-                    h('input', { id: 'weather-location-' + field.id, type: 'text', value: d[field.key] || '', onChange: function (event) { var patch = {}; patch[field.key] = event.target.value; update(patch); }, autoComplete: field.autoComplete, className: fieldClass + ' mt-1 font-normal' })
+                    h('input', { id: 'weather-location-' + field.id, type: 'text', value: d[field.key] || '', onChange: function (event) { var patch = {}; patch[field.key] = event.target.value; editLiveLocationFields(patch); }, autoComplete: field.autoComplete, className: fieldClass + ' mt-1 font-normal' })
                   );
                 })
               ),
@@ -5501,47 +6527,153 @@ var GEOGRAPHY_PROFILES = {
           d.liveWeatherError && d.liveWeather && h('p', { className: 'mt-2 text-xs ' + copyClass, 'data-weather-live-fallback': true }, 'Your last loaded model data remains available. Retry when the connection is available; saved forecast snapshots stay unchanged.'),
           d.terrainEvidenceInvalidatedMessage && h('p', { className: 'mt-2 text-xs ' + copyClass, role: 'status', 'aria-live': 'polite', 'data-weather-terrain-evidence-invalidated': true }, d.terrainEvidenceInvalidatedMessage),
           d.liveWeather && h('p', { className: 'mt-3 break-words text-xs ' + copyClass }, 'Loaded location: ' + (d.liveWeather.label || 'Selected location') + '. Retrieved: ' + (d.liveWeather.retrievedAt || 'time not recorded') + '.'),
+          connectionFreshness && h('p', { className: 'mt-1 text-xs ' + copyClass, 'data-weather-connection-freshness': connectionFreshness.code }, connectionFreshness.label + '. ' + connectionFreshness.detail),
           h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed ' + copyClass }, 'Source: ', h('a', { href: 'https://open-meteo.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold underline ' + labelClass }, 'Open-Meteo'), ' weather model data. Coordinates are rounded and stored only with this local lab state.'),
           h('p', { className: 'mt-2 text-[0.6875rem] ' + copyClass }, 'Educational visualization only; not a safety or operational forecast.')
         );
       }
 
 
+      function saveLoadedLivePlace(name) {
+        var candidate = savedLivePlaceFromWeather(d.liveWeather, d.liveGeography, name);
+        if (!candidate) return;
+        update(function (latest) {
+          if (latest.liveWeatherLoading || !liveReviewSameLocation(latest.liveWeather, candidate)) return {};
+          var places = normalizeSavedLivePlaces(latest.savedLivePlaces);
+          var index = places.findIndex(function (place) { return liveReviewSameLocation(place, candidate); });
+          if (index < 0 && places.length >= 6) return { livePlaceStatus: 'Six places are saved. Remove a saved place before adding another.' };
+          if (index >= 0) places[index] = candidate;
+          else places.push(candidate);
+          return { savedLivePlaces: places, livePlaceUndo: null, livePlaceStatus: index >= 0 ? 'Saved place name updated.' : 'Place saved. Select its load button to return here.' };
+        });
+      }
+
+      function loadSavedLivePlace(placeId) {
+        var place = normalizeSavedLivePlaces(d.savedLivePlaces).find(function (item) { return item.id === placeId; });
+        if (!place) return;
+        update({ livePlaceStatus: '' });
+        fetchLiveWeather(place.latitude, place.longitude, place.name, place.place);
+      }
+
+      function removeSavedLivePlace(placeId) {
+        update(function (latest) {
+          var places = normalizeSavedLivePlaces(latest.savedLivePlaces);
+          var removed = places.find(function (place) { return place.id === placeId; });
+          if (!removed) return {};
+          return { savedLivePlaces: places.filter(function (place) { return place.id !== placeId; }), livePlaceUndo: removed, livePlaceStatus: 'Saved place removed. You can undo this removal.' };
+        });
+      }
+
+      function undoRemoveSavedLivePlace() {
+        update(function (latest) {
+          var removed = normalizeSavedLivePlaces([latest.livePlaceUndo])[0];
+          if (!removed) return {};
+          var places = normalizeSavedLivePlaces(latest.savedLivePlaces);
+          if (places.some(function (place) { return liveReviewSameLocation(place, removed); })) return { livePlaceUndo: null, livePlaceStatus: 'This location is already saved with its current name.' };
+          if (places.length >= 6) return { livePlaceStatus: 'Six places are saved. Remove a saved place before restoring this one.' };
+          return { savedLivePlaces: places.concat([removed]), livePlaceUndo: null, livePlaceStatus: 'Saved place restored.' };
+        });
+      }
+
+
+      function editLiveLocationFields(patch) {
+        clearLiveLocationChoices();
+        var request = liveWeatherRetryRef.current;
+        if (request && request.kind === 'search' && liveWeatherRequestRef.current && liveWeatherRequestRef.current.cancel()) {
+          liveWeatherRetryRef.current = null;
+          patch = Object.assign({}, patch, { liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Search text changed. Submit the updated location.' });
+        }
+        update(patch);
+      }
+
+      function clearLiveLocationChoices() {
+        var hadChoices = !!liveLocationChoicesRef.current;
+        liveLocationChoicesRef.current = null;
+        setLiveLocationChoices(null);
+        if (hadChoices) update({ liveWeatherStatus: '' });
+      }
+
+      function dismissLiveLocationChoices() {
+        clearLiveLocationChoices();
+        var searchInput = document.getElementById('weather-location-quick');
+        if (searchInput) searchInput.focus();
+        if (announce) announce('Location choices dismissed. Search for another place.');
+      }
+
+      function selectLiveLocationChoice(choiceSet, index) {
+        if (liveLocationChoicesRef.current !== choiceSet) return;
+        var place = choiceSet.places[index];
+        if (!place) return;
+        clearLiveLocationChoices();
+        fetchLiveWeather(place.latitude, place.longitude, place.label, place);
+      }
+
       function liveWeatherRequestManager() {
+        if (immersiveSessionImportRef.current.disposed) return null;
         if (!liveWeatherRequestRef.current) liveWeatherRequestRef.current = createLiveWeatherRequestCoordinator({ timeoutMs: 30000 });
         return liveWeatherRequestRef.current;
       }
 
-      function showLiveWeatherFailure(message) {
+      function showLiveWeatherFailure(message, intent) {
+        if (!ownsWeatherIntent(intent)) return;
+        var openingCheckpoint = intent.descriptor && intent.descriptor.openCheckpointOnLoad === true;
         update(function (latest) {
-          return { liveWeatherLoading: false, liveWeatherError: message, liveWeatherStatus: latest.liveWeather ? 'Showing the last loaded weather. Its original retrieval time and saved forecasts are unchanged.' : '', immersiveLiveFallbackAvailable: !!latest.liveWeather };
+          if (!ownsWeatherIntent(intent)) return {};
+          return Object.assign({ liveWeatherLoading: false, liveWeatherError: message, liveWeatherStatus: latest.liveWeather ? 'Showing the last loaded weather. Its original retrieval time and saved forecasts are unchanged.' : '', immersiveLiveFallbackAvailable: !!latest.liveWeather }, openingCheckpoint ? { liveReviewStatus: 'The saved forecast location could not be loaded. Retry to open its hour. Saved forecasts were kept.' } : {});
         });
+        if (!ownsWeatherIntent(intent)) return;
         if (addToast) addToast(message, 'error');
         if (announce) announce(message);
       }
 
       function beginLiveWeatherRequest(descriptor, status) {
+        if (immersiveSessionImportRef.current.disposed) return null;
         liveWeatherRetryRef.current = descriptor;
-        var token = liveWeatherRequestManager().begin(function () {
-          showLiveWeatherFailure('Weather request timed out after 30 seconds. Retry or search for another place.');
+        var manager = liveWeatherRequestManager();
+        var intent = null;
+        var token = manager.begin(function () {
+          showLiveWeatherFailure('Weather request timed out after 30 seconds. Retry or search for another place.', intent);
         });
-        if (!token || !liveWeatherRequestManager().isCurrent(token)) return null;
-        update({ liveWeatherLoading: true, liveWeatherError: '', liveWeatherStatus: status, liveWeatherTimelinePlaying: false });
-        if (announce) announce(status);
+        if (!token || !manager.isCurrent(token) || liveWeatherRequestRef.current !== manager || immersiveSessionImportRef.current.disposed) return null;
+        intent = { manager: manager, token: token, descriptor: descriptor };
+        liveWeatherIntentRef.current = intent;
+        clearLiveLocationChoices();
+        liveTimelinePlaybackRef.current = null;
+        update(function (latest) {
+          if (!ownsWeatherIntent(intent)) return {};
+          return Object.assign({ liveWeatherLoading: true, liveWeatherError: '', liveWeatherStatus: status, liveWeatherTimelinePlaying: false }, descriptor.openCheckpointOnLoad === true ? { liveReviewStatus: 'Loading the saved forecast location for comparison.' } : latest.liveReviewStatus === 'Loading the saved forecast location for comparison.' ? { liveReviewStatus: 'Saved forecast opening was replaced by a newer location request. Saved forecasts were kept.' } : {});
+        });
+        if (announce && ownsWeatherIntent(intent)) announce(status);
         return token;
       }
 
       function failLiveWeatherRequest(manager, token, error) {
         if (!manager.finish(token)) return null;
-        showLiveWeatherFailure(error && error.message ? error.message : 'Weather could not be loaded. Check your connection and retry.');
+        var intent = liveWeatherIntentRef.current;
+        if (!intent || intent.manager !== manager || intent.token !== token) return null;
+        showLiveWeatherFailure(error && error.message ? error.message : 'Weather could not be loaded. Check your connection and retry.', intent);
         return null;
       }
 
       function cancelLiveWeatherRequest() {
-        if (!liveWeatherRequestRef.current || !liveWeatherRequestRef.current.cancel()) return;
+        if (immersiveSessionImportRef.current.disposed) return;
+        clearLiveLocationChoices();
+        var manager = liveWeatherRequestRef.current;
+        var requestIntent = liveWeatherIntentRef.current;
+        if (!manager || (!d.liveWeatherLoading && !(requestIntent && requestIntent.manager === manager && manager.isCurrent(requestIntent.token)))) return;
+        var descriptor = requestIntent && requestIntent.manager === manager ? requestIntent.descriptor : liveWeatherRetryRef.current;
+        var openingCheckpoint = descriptor && descriptor.openCheckpointOnLoad === true;
+        var intent = {};
+        liveWeatherIntentRef.current = intent;
+        liveWeatherRequestRef.current = null;
+        manager.cancel();
+        manager.dispose();
+        if (!ownsWeatherIntent(intent)) return;
         update(function (latest) {
-          return { liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: latest.liveWeather ? 'Weather request canceled. Loaded weather and saved forecasts were kept.' : 'Weather request canceled. Your saved work was kept.' };
+          if (!ownsWeatherIntent(intent)) return {};
+          return Object.assign({ liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: latest.liveWeather ? 'Weather request canceled. Loaded weather and saved forecasts were kept.' : 'Weather request canceled. Your saved work was kept.' }, openingCheckpoint ? { liveReviewStatus: 'Opening the saved forecast location was canceled. Loaded weather and saved forecasts were kept.' } : {});
         });
+        if (!ownsWeatherIntent(intent)) return;
         var searchInput = document.getElementById('weather-location-quick');
         if (searchInput) searchInput.focus();
         if (announce) announce('Weather request canceled. Saved work was kept.');
@@ -5554,16 +6686,19 @@ var GEOGRAPHY_PROFILES = {
         if (searchInput) searchInput.focus();
         if (retry.kind === 'device') requestDeviceWeather();
         else if (retry.kind === 'search') searchLiveWeather(retry.mode, retry);
-        else fetchLiveWeather(retry.latitude, retry.longitude, retry.label, retry.place, retry.selectedValidTimestamp);
+        else fetchLiveWeather(retry.latitude, retry.longitude, retry.label, retry.place, retry.selectedValidTimestamp, null, retry.openCheckpointOnLoad === true);
       }
 
-      function fetchLiveWeather(latitude, longitude, label, place, selectedValidTimestamp, requestToken) {
+      function fetchLiveWeather(latitude, longitude, label, place, selectedValidTimestamp, requestToken, openCheckpointOnLoad) {
+        if (immersiveSessionImportRef.current.disposed) return Promise.resolve(null);
         var manager = liveWeatherRequestManager();
         var descriptor = { kind: 'coordinates', latitude: latitude, longitude: longitude, label: label, place: place, selectedValidTimestamp: selectedValidTimestamp };
+        if (openCheckpointOnLoad === true) descriptor.openCheckpointOnLoad = true;
         var token = requestToken || beginLiveWeatherRequest(descriptor, 'Loading weather model data for ' + (label || 'the selected location') + '…');
         if (!token || !manager.isCurrent(token)) return Promise.resolve(null);
+        var requestIntent = liveWeatherIntentRef.current;
         liveWeatherRetryRef.current = descriptor;
-        if (requestToken) update({ liveWeatherStatus: 'Loading weather model data for ' + (label || 'the selected location') + '…' });
+        if (requestToken) update(function () { return ownsWeatherIntent(requestIntent) && manager.isCurrent(token) ? { liveWeatherStatus: 'Loading weather model data for ' + (label || 'the selected location') + '…' } : {}; });
         var fields = 'temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,visibility';
         var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(latitude) + '&longitude=' + encodeURIComponent(longitude) + '&current=' + fields + '&hourly=' + fields + '&past_hours=6&forecast_hours=25&timezone=auto';
         return Promise.resolve().then(function () {
@@ -5578,7 +6713,9 @@ var GEOGRAPHY_PROFILES = {
           var live = normalizeLiveWeatherResponse(payload, label, latitude, longitude);
           live.retrievedAt = new Date().toISOString();
           var geography = geographicMetadata(latitude, longitude, label, place);
-          var timeline = normalizeHourlyWeatherTimeline(payload, live);
+          var loadedHours = normalizeHourlyWeatherTimeline(payload, live, { includePartial: true });
+          var timeline = loadedHours.filter(function (point) { return !point.partial; });
+          live.partialHours = loadedHours.filter(function (point) { return point.partial; });
           var timelineIndex = weatherTimelineCurrentIndex(timeline);
           if (selectedValidTimestamp != null) {
             var savedHourIndex = timeline.findIndex(function (point) { return liveReviewTimestamp(point.time || point.validAt, point.utcOffsetSeconds != null ? point.utcOffsetSeconds : live.utcOffsetSeconds) === selectedValidTimestamp; });
@@ -5586,19 +6723,34 @@ var GEOGRAPHY_PROFILES = {
           }
           if (!manager.finish(token)) return null;
           liveWeatherRetryRef.current = null;
+          liveTimelinePlaybackRef.current = null;
           update(function (latest) {
+            if (!ownsWeatherIntent(requestIntent) || !manager.isLatestCompletion(token)) return {};
             var terrainStatus = geographicTerrainEvidenceStatus(latest.geographicTerrainEvidence, live);
             var hadTerrainEvidence = !!latest.geographicTerrainEvidence || (Array.isArray(latest.evidence) ? latest.evidence : []).indexOf(TERRAIN_EVIDENCE.id) !== -1;
-            var livePatch = { liveWeather: live, liveWeatherTimeline: timeline, liveWeatherTimelineIndex: timelineIndex, liveWeatherTimelinePlaying: false, liveGeography: geography, liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Model data and ' + timeline.length + ' timeline points loaded for ' + live.label + '.', immersiveDataSource: 'live', immersiveLiveFallbackAvailable: false, terrainEvidenceInvalidatedMessage: '', geographicTerrainProbe: null };
+            var livePatch = { liveWeather: live, liveWeatherTimeline: timeline, liveWeatherTimelineIndex: timelineIndex, liveWeatherTimelinePlaying: false, liveGeography: geography, liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Model data and ' + loadedHours.length + ' timeline points loaded for ' + live.label + '.', immersiveDataSource: 'live', immersiveLiveFallbackAvailable: false, terrainEvidenceInvalidatedMessage: '', geographicTerrainProbe: null };
+            Object.assign(livePatch, resetLiveWeatherTimelineSnapshot(livePatch, selectedValidTimestamp == null ? null : selectedValidTimestamp), { liveTimelineControlStatus: 'New weather loaded. Timeline paused and comparison cleared.' });
             if (hadTerrainEvidence && !terrainStatus.current) {
               livePatch.evidence = (Array.isArray(latest.evidence) ? latest.evidence : []).filter(function (id) { return id !== TERRAIN_EVIDENCE.id; });
               livePatch.geographicTerrainEvidence = null;
               livePatch.terrainEvidenceInvalidatedMessage = 'Previous terrain evidence was removed because the live location or weather hour changed. Sample and save the new profile before forecasting.';
             }
-            return livePatch;
+            var checkpointView = openCheckpointOnLoad === true ? liveForecastCheckpointViewPatch() : null;
+            var intendedView = checkpointView ? Object.assign({}, latest, checkpointView) : latest;
+            var viewingSavedLocation = intendedView.tab === 'immersive' && intendedView.immersiveSceneMode === 'geographic';
+            var partialView = viewingSavedLocation ? partialHourView(live, timeline, selectedValidTimestamp) : null;
+            if (checkpointView) {
+              var openedTimeline = liveWeatherTimelineSnapshot(livePatch);
+              var savedHourOpened = typeof selectedValidTimestamp === 'number' && isFinite(selectedValidTimestamp) && openedTimeline.selectedTimestamp === selectedValidTimestamp
+                && openedTimeline.timestamps.filter(function (timestamp) { return timestamp === selectedValidTimestamp; }).length === 1;
+              Object.assign(livePatch, checkpointView, { liveReviewStatus: savedHourOpened ? 'Opened the checkpoint weather hour at its saved location in geographic 3D.' : 'Opened the saved forecast location in geographic 3D. The saved hour is not available in the loaded timeline.' });
+            }
+            return partialView ? Object.assign(livePatch, partialView) : livePatch;
           });
-          if (addToast) addToast('Weather loaded for ' + live.label + '.', 'success');
-          if (announce) announce('Weather model data loaded for ' + live.label + '. Current estimate: ' + live.condition + '.');
+          if (ownsWeatherIntent(requestIntent)) {
+            if (addToast) addToast('Weather loaded for ' + live.label + '.', 'success');
+            if (announce) announce('Weather model data loaded for ' + live.label + '. Current estimate: ' + live.condition + '.');
+          }
           return live;
         }).catch(function (error) { return failLiveWeatherRequest(manager, token, error); });
       }
@@ -5624,6 +6776,7 @@ var GEOGRAPHY_PROFILES = {
       }
 
       function searchLiveWeather(mode, savedSearch) {
+        clearLiveLocationChoices();
         var structured = mode === 'structured';
         var fields = savedSearch ? savedSearch.fields : structured ? {
           city: d.liveLocationCity, region: d.liveLocationRegion,
@@ -5645,6 +6798,7 @@ var GEOGRAPHY_PROFILES = {
         var manager = liveWeatherRequestManager();
         var token = beginLiveWeatherRequest({ kind: 'search', mode: mode, query: query, fields: fields }, 'Searching for ' + query + '…');
         if (!token) return Promise.resolve(null);
+        var requestIntent = liveWeatherIntentRef.current;
         function searchCandidate(index) {
           if (!manager.isCurrent(token) || index >= candidates.length) return Promise.resolve(null);
           var url = 'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(candidates[index]) + '&count=10&language=en&format=json';
@@ -5657,17 +6811,26 @@ var GEOGRAPHY_PROFILES = {
             return response.json();
           }).then(function (payload) {
             if (!manager.isCurrent(token)) return null;
-            if (payload && Array.isArray(payload.results) && payload.results.length) return payload.results;
+            var choices = normalizeLiveLocationChoices(payload && payload.results, fields);
+            if (choices.length) return choices;
             return searchCandidate(index + 1);
           });
         }
         return searchCandidate(0).then(function (results) {
           if (!manager.isCurrent(token)) return null;
           if (!results || !results.length) throw new Error('No matching location was found. Try a city, postal code, country, or coordinates.');
-          var place = chooseLocationResult(results, fields);
-          if (!place || !liveReviewCoordinates(place)) throw new Error('The location service returned invalid coordinates. Try another place.');
-          var parts = [place.name, place.admin1, place.country].filter(Boolean);
-          return fetchLiveWeather(place.latitude, place.longitude, parts.join(', '), place, null, token);
+          if (results.length === 1) {
+            var place = results[0];
+            return fetchLiveWeather(place.latitude, place.longitude, place.label, place, null, token);
+          }
+          if (!manager.finish(token)) return null;
+          liveWeatherRetryRef.current = null;
+          var choices = { query: query, places: results };
+          liveLocationChoicesRef.current = choices;
+          setLiveLocationChoices(choices);
+          update(function () { return ownsWeatherIntent(requestIntent) ? { liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Choose a matching location for ' + query + '.' } : {}; });
+          if (announce && ownsWeatherIntent(requestIntent)) announce(results.length + ' matching locations found. Choose a place to load its weather.');
+          return null;
         }).catch(function (error) { return failLiveWeatherRequest(manager, token, error); });
       }
 
@@ -5933,99 +7096,174 @@ var GEOGRAPHY_PROFILES = {
         if (announce) announce('Real 3D buildings ' + (nextVisible ? 'shown.' : 'hidden.') + ' Analysis view is now custom and the guided investigation is paused.');
       }
 
+      function liveTimelineViewAvailable(data) {
+        return data.tab === 'immersive' && data.immersiveDataSource === 'live' && !data.liveWeatherLoading;
+      }
+
+      function timelineReducedMotion() {
+        try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (error) { return false; }
+      }
+
+      function dispatchLiveTimelineAction(action) {
+        var expectedContextKey = timelineControlSnapshot.contextKey;
+        update(function (latest) {
+          if (!liveTimelineViewAvailable(latest)) {
+            return { liveTimelineControlStatus: 'Open the live weather view after loading has finished to use these controls.' };
+          }
+          var result = liveWeatherTimelineAction(latest, Object.assign({}, action, { expectedContextKey: expectedContextKey }));
+          var message = result.code === 'playing' ? 'Weather timeline playback started.' : result.message;
+          if (result.ok && result.patch.liveWeatherTimelinePlaying === false) liveTimelinePlaybackRef.current = null;
+          if (result.ok && result.code === 'playing') {
+            var current = liveWeatherTimelineSnapshot(Object.assign({}, latest, result.patch));
+            liveTimelinePlaybackRef.current = { contextKey: current.contextKey, timelineKey: current.timelineKey };
+          }
+          liveTimelineActionRef.current = { message: message };
+          return Object.assign({}, result.patch, { liveTimelineControlStatus: message });
+        });
+      }
+
       function setLiveWeatherTimelineIndex(index) {
-        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
-        if (!timeline.length) return;
-        var nextIndex = clamp(Math.round(Number(index)), 0, timeline.length - 1);
-        update({ liveWeatherTimelineIndex: nextIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the selected weather hour...' });
-        if (announce) announce(weatherTimelineLabel(timeline[nextIndex], d.liveWeather && d.liveWeather.timezone));
+        var numeric = typeof index === 'string' && !index.trim() ? NaN : Number(index);
+        var timestamp = Number.isInteger(numeric) && numeric >= 0 ? timelineControlSnapshot.timestamps[numeric] : undefined;
+        dispatchLiveTimelineAction({ type: 'select', validTimestamp: timestamp });
       }
 
       function stepLiveWeatherTimeline(delta) {
-        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
-        if (!timeline.length) return;
-        var currentIndex = d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : weatherTimelineCurrentIndex(timeline);
-        var nextIndex = clamp(currentIndex + Number(delta || 0), 0, timeline.length - 1);
-        update({ liveWeatherTimelineIndex: nextIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the selected weather hour...' });
-        if (announce) announce(weatherTimelineLabel(timeline[nextIndex], d.liveWeather && d.liveWeather.timezone));
+        dispatchLiveTimelineAction({ type: 'step', delta: delta });
       }
 
       function returnLiveWeatherTimelineToCurrent() {
-        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
-        if (!timeline.length) return;
-        var currentIndex = weatherTimelineCurrentIndex(timeline);
-        update({ liveWeatherTimelineIndex: currentIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the current weather hour...' });
-        if (announce) announce(__alloT('stem.weathersystems.sr_weather_timeline_returned_to_the_current_observat', 'Weather timeline returned to the current observation.'));
+        dispatchLiveTimelineAction({ type: 'current' });
       }
 
       function setImmersiveTimelineComparison(index) {
-        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
-        var next = index === '' || index == null ? '' : clamp(Math.round(Number(index)), 0, Math.max(0, timeline.length - 1));
-        var currentIndex = weatherTimelineCurrentIndex(timeline);
-        if (next === currentIndex) next = '';
-        update({ immersiveTimelineCompareIndex: next });
-        if (announce) announce(next === '' ? 'Timeline comparison cleared.' : 'Timeline comparison baseline selected.');
+        var numeric = Number(index);
+        var timestamp = index === '' || index == null ? null : Number.isInteger(numeric) && numeric >= 0 ? timelineControlSnapshot.timestamps[numeric] : undefined;
+        dispatchLiveTimelineAction({ type: 'compare', validTimestamp: timestamp });
       }
 
       function toggleLiveWeatherTimelinePlayback() {
-        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
-        if (timeline.length < 2) return;
-        var reduceMotion = false;
-        try { reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
-        if (reduceMotion && !d.liveWeatherTimelinePlaying) {
-          if (addToast) addToast('Automatic playback is paused by your reduced-motion preference. Use the step buttons or timeline slider.', 'info');
-          if (announce) announce(__alloT('stem.weathersystems.sr_automatic_playback_is_unavailable_with_reduced_mo', 'Automatic playback is unavailable with reduced motion. Use step controls.'));
-          return;
-        }
-        var index = d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : weatherTimelineCurrentIndex(timeline);
-        var patch = { liveWeatherTimelinePlaying: !d.liveWeatherTimelinePlaying };
-        if (!d.liveWeatherTimelinePlaying && index >= timeline.length - 1) patch.liveWeatherTimelineIndex = weatherTimelineCurrentIndex(timeline);
-        update(patch);
-        if (announce) announce(d.liveWeatherTimelinePlaying ? 'Weather timeline paused.' : 'Weather timeline playback started.');
+        dispatchLiveTimelineAction({ type: 'toggle-play', reducedMotion: timelineReducedMotion() });
       }
 
-
       function saveLiveForecastCheckpoint(weatherOverride) {
-        var weather = weatherOverride && weatherOverride.timelineRole ? weatherOverride : activeLiveWeather(d);
+        var weather = weatherOverride;
+        if (!weather || !weather.timelineRole) {
+          var selection = activeLiveWeather(d);
+          var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+          weather = selection && liveForecastPointWeather(d.liveWeather, timeline[selection.timelineIndex]);
+        }
         var checkpoint = createLiveForecastCheckpoint(weather, new Date().toISOString());
         if (!checkpoint) {
-          update({ liveReviewStatus: 'Choose a future hour from freshly loaded weather data with complete source and time information.' });
-          if (announce) announce('A future weather hour with complete source information is required. Refresh weather data and try again.');
+          var unavailable = 'Choose a future hour from freshly loaded weather data with complete source and time information.';
+          liveForecastJournalActionRef.current = { message: unavailable, focus: 'capacity' };
+          update({ liveReviewStatus: unavailable });
           return;
         }
-        var checkpoints = normalizeLiveForecastCheckpoints(d.liveForecastCheckpoints);
-        if (checkpoints.some(function (item) { return item.id === checkpoint.id; })) {
-          update({ liveReviewStatus: 'This forecast hour from this retrieval is already saved. Its original values were kept.' });
-          if (announce) announce('This forecast snapshot is already saved.');
-          return;
+        var draft = d.liveHourDraft;
+        var savedDraft = draft && draft.contextKey && draft.contextKey === buildLiveTimelineExploration([], d.liveWeather).contextKey;
+        if (savedDraft) {
+          checkpoint.learnerReasoning = draft.reasoning;
+          checkpoint.timelineEvidence = draft.attachment;
         }
-        checkpoints = normalizeLiveForecastCheckpoints(checkpoints.concat([checkpoint]));
-        update({ liveForecastCheckpoints: checkpoints, liveReviewStatus: 'Forecast snapshot saved for ' + checkpoint.validAt + '. Original values are preserved for comparison with a later retrieval.' });
-        if (addToast) addToast('Forecast snapshot saved for ' + checkpoint.validAt + '.', 'success');
-        if (announce) announce('Forecast snapshot saved. Refresh weather data after the valid time to review the model update.');
+        update(function (latest) {
+          var result = appendLiveForecastCheckpoint(latest.liveForecastCheckpoints, checkpoint);
+          if (!result.changed) {
+            liveForecastJournalActionRef.current = { message: result.message, focus: 'capacity' };
+            return { liveReviewStatus: result.message };
+          }
+          var message = 'Forecast snapshot saved for ' + checkpoint.validAt + '. Original values are preserved for comparison with a later retrieval.';
+          if (latest.liveReviewUndo) message += ' Undo for the previous removal has ended.';
+          var patch = { liveForecastCheckpoints: result.checkpoints, liveReviewUndo: null, liveReviewStatus: message };
+          if (savedDraft && latest.liveHourDraft === draft) patch.liveHourDraft = Object.assign({}, draft, { reasoning: '', attachment: '', hourA: null, hourB: null });
+          liveForecastJournalActionRef.current = { message: message, focus: 'capacity', toast: true };
+          return patch;
+        });
       }
 
       function removeLiveForecastCheckpoint(checkpointId) {
-        var checkpoints = normalizeLiveForecastCheckpoints(d.liveForecastCheckpoints);
-        var removed = checkpoints.filter(function (item) { return item.id === checkpointId; })[0];
-        update({ liveForecastCheckpoints: checkpoints.filter(function (item) { return item.id !== checkpointId; }), liveReviewUndo: removed || null, liveReviewStatus: 'Forecast snapshot removed. You can undo this removal.' });
-        if (announce) announce('Forecast snapshot removed.');
+        update(function (latest) {
+          var checkpoints = normalizeLiveForecastCheckpoints(latest.liveForecastCheckpoints);
+          var removed = checkpoints.find(function (item) { return item.id === checkpointId; });
+          if (!removed) {
+            var missing = 'This forecast snapshot is no longer in the journal. Saved snapshots were kept.';
+            liveForecastJournalActionRef.current = { message: missing, focus: 'capacity' };
+            return { liveReviewStatus: missing };
+          }
+          if (classroomThermometerErrorAttemptRef.current && classroomThermometerErrorAttemptRef.current.id === checkpointId) classroomThermometerErrorAttemptRef.current = null;
+          if (classroomThermometerUndoRef.current && classroomThermometerUndoRef.current.checkpointId === checkpointId) {
+            classroomThermometerUndoRef.current = null;
+            classroomThermometerFocusRef.current = null;
+          }
+          var message = 'Forecast snapshot removed. You can undo this removal until another snapshot is saved or removed.';
+          liveForecastJournalActionRef.current = { message: message, focus: 'undo' };
+          return { liveForecastCheckpoints: checkpoints.filter(function (item) { return item.id !== checkpointId; }),
+            liveReviewUndo: removed, liveReviewStatus: message };
+        });
+      }
+
+      function undoRemoveLiveForecastCheckpoint() {
+        update(function (latest) {
+          var result = restoreLiveForecastCheckpoint(latest.liveForecastCheckpoints, latest.liveReviewUndo);
+          liveForecastJournalActionRef.current = { message: result.message, focus: 'capacity' };
+          if (!result.changed) return { liveReviewStatus: result.message };
+          return { liveForecastCheckpoints: result.checkpoints, liveReviewUndo: null, liveReviewStatus: result.message };
+        });
+      }
+
+      function partialHourView(live, timeline, timestamp) {
+        if (timestamp == null || !live || !Array.isArray(live.partialHours)) return null;
+        var evidence = liveForecastEvidenceTimeline({ liveWeather: live, liveWeatherTimeline: timeline });
+        var selected = evidence.find(function (point) {
+          return point.partial && liveReviewTimestamp(point.time, point.utcOffsetSeconds) === timestamp;
+        });
+        if (!selected) return null;
+        var metric = ['temperature', 'windSpeed', 'pressure', 'precipitation'].find(function (key) { return selected[key] != null; });
+        var exploration = buildLiveTimelineExploration(evidence, live, { metric: metric, hours: 'all' });
+        return {
+          tab: 'forecast', liveTimelineMetric: exploration.metric.id, liveTimelineWindow: 'all',
+          liveTimelineSelectedAt: timestamp, liveTimelineSelectionKey: exploration.contextKey,
+          liveReviewStatus: 'Opened the saved hour in the Live Timeline Explorer. Partial measurements are available for review.'
+        };
+      }
+
+      function liveForecastCheckpointViewPatch() {
+        return { tab: 'immersive', immersiveDataSource: 'live', immersiveSceneMode: 'geographic', liveWeatherTimelinePlaying: false, immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' };
       }
 
       function openLiveForecastCheckpoint(checkpoint) {
+        if (immersiveSessionImportRef.current.disposed) return;
         var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
         var live = d.liveWeather;
-        var patch = { tab: 'immersive', immersiveDataSource: 'live', immersiveSceneMode: 'geographic', liveWeatherTimelinePlaying: false, immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' };
+        var patch = liveForecastCheckpointViewPatch();
         if (!liveReviewSameLocation(checkpoint, live)) {
-          patch.liveReviewStatus = 'Loading the saved forecast location for comparison.';
-          update(patch);
-          fetchLiveWeather(checkpoint.latitude, checkpoint.longitude, checkpoint.location || 'Saved forecast location', null, checkpoint.validTimestamp);
+          fetchLiveWeather(checkpoint.latitude, checkpoint.longitude, checkpoint.location || 'Saved forecast location', null, checkpoint.validTimestamp, null, true);
           return;
         }
+        var intent = {};
+        liveWeatherIntentRef.current = intent;
+        var previousRequest = liveWeatherRequestRef.current;
+        liveWeatherRequestRef.current = null;
+        liveWeatherRetryRef.current = null;
+        if (previousRequest) previousRequest.dispose();
+        if (!ownsWeatherIntent(intent)) return;
+        clearLiveLocationChoices();
+        liveTimelinePlaybackRef.current = null;
+        var settledWeather = { liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Showing the already loaded weather. Its original retrieval time and saved forecasts are unchanged.', liveWeatherTimelinePlaying: false, immersiveLiveFallbackAvailable: false };
+        Object.assign(patch, settledWeather);
         var index = timeline.findIndex(function (point) { return checkpoint.validTimestamp != null && liveReviewTimestamp(point.time || point.validAt, point.utcOffsetSeconds != null ? point.utcOffsetSeconds : live.utcOffsetSeconds) === checkpoint.validTimestamp; });
         if (index >= 0) patch.liveWeatherTimelineIndex = index;
-        update(patch);
-        if (announce) announce(index >= 0 ? 'Opened the checkpoint weather hour in geographic 3D.' : 'Opened geographic 3D. Refresh live weather to bring the checkpoint hour into the timeline.');
+        else {
+          var partialView = partialHourView(live, timeline, checkpoint.validTimestamp);
+          if (partialView) {
+            update(function () { return ownsWeatherIntent(intent) ? Object.assign({}, settledWeather, partialView) : {}; });
+            if (announce && ownsWeatherIntent(intent)) announce(partialView.liveReviewStatus);
+            return;
+          }
+        }
+        patch.liveReviewStatus = index >= 0 ? 'Opened the checkpoint weather hour in geographic 3D.' : 'Opened geographic 3D. Refresh live weather to bring the checkpoint hour into the timeline.';
+        update(function () { return ownsWeatherIntent(intent) ? patch : {}; });
+        if (announce && ownsWeatherIntent(intent)) announce(patch.liveReviewStatus);
       }
 
       function setRegionalWeatherLayer(layerId) {
@@ -6307,29 +7545,68 @@ function openImmersiveTourStep(stepId) {
         if (announce && chosen) announce(__alloFill(__alloT('stem.weathersystems.sr_selected_observation_station', 'Selected observation station {value1}.'), { value1: chosen.name }));
       }
 
+      function logObservationGroup(records, network) {
+        update(function (latest) {
+          var before = normalizeWeatherObservationLog(latest.observationLog);
+          var result = appendWeatherObservationLog(before, records);
+          if (!result.changed) {
+            observationNotebookActionRef.current = { message: result.message, focus: 'capacity' };
+            return { observationStatus: result.message };
+          }
+          var keepComparison = String(latest.observationNote || '').trim()
+            || latest.observationCompareFrom !== d.observationCompareFrom || latest.observationCompareTo !== d.observationCompareTo;
+          var message = result.message;
+          var patch = { observationLog: result.log, playing: false };
+          if (keepComparison && before.length >= 2) {
+            var from = before.find(function (item) { return item.id === latest.observationCompareFrom; }) || before[before.length - 2];
+            var to = before.find(function (item) { return item.id === latest.observationCompareTo; }) || before[before.length - 1];
+            patch.observationCompareFrom = from.id;
+            patch.observationCompareTo = to.id;
+            message += ' Your current comparison and explanation were kept.';
+          } else if (!keepComparison) {
+            var last = records[0];
+            var previous = before.slice().reverse().find(function (item) { return item.stationId === last.stationId && item.contextKey === last.contextKey; }) || before[before.length - 1];
+            patch.observationCompareFrom = network ? records[0].id : previous ? previous.id : last.id;
+            patch.observationCompareTo = network ? records[1].id : last.id;
+          }
+          if (observationNotebookUndoRef.current) message += ' Undo clear log has ended.';
+          patch.observationStatus = message;
+          observationNotebookActionRef.current = { message: message, focus: 'capacity' };
+          return patch;
+        });
+      }
+
       function logObservation() {
-        var log = normalizeWeatherObservationLog(d.observationLog);
         var record = weatherObservationSnapshot(state, station);
-        if (log.some(function (item) { return item.id === record.id; })) {
-          update({ observationStatus: 'This station and model hour are already logged for these starting conditions.' });
-          if (announce) announce('This observation is already in your notebook.');
-          return;
-        }
         record.createdAt = new Date().toISOString();
-        var previous = log.slice().reverse().filter(function (item) { return item.stationId === record.stationId && item.contextKey === record.contextKey; })[0] || log[log.length - 1];
-        update({ observationLog: normalizeWeatherObservationLog(log.concat([record])), observationCompareFrom: previous ? previous.id : record.id, observationCompareTo: record.id, observationNote: '', observationStatus: 'Observation logged at ' + record.station + ', T+' + record.hour + ' h.', playing: false });
-        if (addToast) addToast('Observation logged at ' + observation.name + '.', 'success');
-        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_logged_observation_at_for_model_hour', 'Logged observation at {value1} for model hour {value2}.'), { value1: observation.name, value2: state.simHour }));
+        logObservationGroup([record], false);
       }
 
       function logStationNetwork() {
-        var log = normalizeWeatherObservationLog(d.observationLog);
-        var network = STATIONS.map(function (item) { return weatherObservationSnapshot(state, item); });
-        var additions = network.filter(function (record) { return !log.some(function (item) { return item.id === record.id; }); });
         var recordedAt = new Date().toISOString();
-        additions.forEach(function (record) { record.createdAt = recordedAt; });
-        update({ observationLog: normalizeWeatherObservationLog(log.concat(additions)), observationCompareFrom: network[0].id, observationCompareTo: network[1].id, observationNote: '', observationStatus: additions.length ? additions.length + ' station readings logged at T+' + network[0].hour + ' h.' : 'All stations at this model hour are already in your notebook.', playing: false });
-        if (announce) announce(additions.length ? 'Station network readings saved for comparison.' : 'These network readings are already logged.');
+        var network = STATIONS.map(function (item) {
+          var record = weatherObservationSnapshot(state, item);
+          record.createdAt = recordedAt;
+          return record;
+        });
+        logObservationGroup(network, true);
+      }
+
+      function clearObservationNotebook() {
+        update(function (latest) {
+          var result = clearWeatherObservationNotebook(latest);
+          if (result.changed) observationNotebookUndoRef.current = result.receipt;
+          observationNotebookActionRef.current = { message: result.message, focus: result.changed ? 'undo' : 'capacity' };
+          return Object.assign({}, result.patch, { observationStatus: result.message });
+        });
+      }
+
+      function undoClearObservationNotebook() {
+        update(function (latest) {
+          var result = restoreClearedWeatherObservationNotebook(latest, observationNotebookUndoRef.current);
+          observationNotebookActionRef.current = { message: result.message, focus: result.ok ? 'note' : 'capacity' };
+          return Object.assign({}, result.patch, { observationStatus: result.message });
+        });
       }
 
       function advance(hours) {
@@ -6460,22 +7737,52 @@ function openImmersiveTourStep(stepId) {
       }, [state.scenario, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.frontSpeed, state.instability, state.terrain, state.simHour, state.radar, state.fronts, state.windLayer, state.motion, selectedStation, dark, contrast]);
 
       React.useEffect(function () {
-        if (!d.liveWeatherTimelinePlaying) return undefined;
-        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
-        if (timeline.length < 2) {
-          update({ liveWeatherTimelinePlaying: false });
+        if (!d.liveWeatherTimelinePlaying) { liveTimelinePlaybackRef.current = null; return undefined; }
+        var view = timelineControlSnapshot;
+        var owner = liveTimelinePlaybackRef.current;
+        function pause(message) {
+          if (liveTimelinePlaybackRef.current !== owner) return;
+          liveTimelinePlaybackRef.current = null;
+          update(function (latest) { return latest.liveWeatherTimelinePlaying ? { liveWeatherTimelinePlaying: false, liveTimelineControlStatus: message } : {}; });
+        }
+        if (!liveTimelineViewAvailable(d) || !owner || !view.contextKey || owner.contextKey !== view.contextKey || owner.timelineKey !== view.timelineKey) {
+          pause('Weather timeline paused because its live view or retrieval changed.');
           return undefined;
         }
-        var index = d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : weatherTimelineCurrentIndex(timeline);
-        if (index >= timeline.length - 1) {
-          update({ liveWeatherTimelinePlaying: false });
+        var motion = null;
+        try { motion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)'); } catch (error) {}
+        if (motion && motion.matches) {
+          pause('Weather timeline paused by your reduced-motion preference. Use the step controls.');
           return undefined;
         }
+        if (view.timeline.length < 2 || view.selectedIndex >= view.timeline.length - 1) {
+          pause('Weather timeline playback reached the final loaded hour.');
+          return undefined;
+        }
+        function motionChanged(event) { if (event.matches) pause('Weather timeline paused by your reduced-motion preference. Use the step controls.'); }
+        if (motion && motion.addEventListener) motion.addEventListener('change', motionChanged);
+        else if (motion && motion.addListener) motion.addListener(motionChanged);
         var timer = window.setTimeout(function () {
-          update({ liveWeatherTimelineIndex: index + 1, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the selected forecast hour...' });
+          if (liveTimelinePlaybackRef.current !== owner) return;
+          update(function (latest) {
+            if (liveTimelinePlaybackRef.current !== owner) return {};
+            if (!liveTimelineViewAvailable(latest) || timelineReducedMotion()) {
+              return { liveWeatherTimelinePlaying: false, liveTimelineControlStatus: 'Weather timeline paused after its view or motion preference changed.' };
+            }
+            var result = liveWeatherTimelineAction(latest, { type: 'tick', expectedContextKey: view.contextKey,
+              expectedTimelineKey: view.timelineKey, expectedSelectedTimestamp: view.selectedTimestamp });
+            if (!result.ok) {
+              return { liveWeatherTimelinePlaying: false, liveTimelineControlStatus: 'Weather timeline paused because its selected hour or retrieval changed.' };
+            }
+            return Object.assign({}, result.patch, { liveTimelineControlStatus: result.code === 'ended' ? result.message : 'Weather timeline playing.' });
+          });
         }, 1400);
-        return function () { window.clearTimeout(timer); };
-      }, [d.liveWeatherTimelinePlaying, d.liveWeatherTimelineIndex, d.liveWeatherTimeline && d.liveWeatherTimeline.length]);
+        return function () {
+          window.clearTimeout(timer);
+          if (motion && motion.removeEventListener) motion.removeEventListener('change', motionChanged);
+          else if (motion && motion.removeListener) motion.removeListener(motionChanged);
+        };
+      }, [d.liveWeatherTimelinePlaying, timelineControlSnapshot.selectedIndex, timelineControlSnapshot.timelineKey, d.tab, d.immersiveDataSource, d.liveWeatherLoading]);
 
       React.useEffect(function () {
         if ((d.tab || 'map') !== 'immersive' || geographicViewState(d).mode === 'geographic') return undefined;
@@ -8397,7 +9704,7 @@ var geographyGroup = new THREE.Group();
         var observationCount = (Array.isArray(d.observationLog) ? d.observationLog : []).length;
         var stationCount = Object.keys(d.stationsViewed || {}).length;
         var evidenceCount = (Array.isArray(d.evidence) ? d.evidence : []).length;
-        var revisionCount = (d.forecastHistory || []).length;
+        var revisionCount = savedRevision ? 2 : Math.min(1, savedForecastHistory.length);
         var communicationCount = [d.predictionPrecip, d.predictionTiming, d.predictionHazard, d.readinessAction].filter(Boolean).length;
         var badges = [
           { id: 'observer', icon: '\uD83D\uDD2D', title: 'Field Observer', detail: 'Log two station observations', complete: observationCount >= 2, progress: Math.min(2, observationCount) + '/2', tab: 'map', action: 'Log observations' },
@@ -8407,7 +9714,7 @@ var geographyGroup = new THREE.Group();
           { id: 'evidence', icon: '\uD83D\uDD0E', title: 'Evidence Builder', detail: 'Use three forecast evidence sources', complete: evidenceCount >= 3, progress: Math.min(3, evidenceCount) + '/3', tab: 'forecast', action: 'Gather evidence' },
           { id: 'safety', icon: '\uD83D\uDEE1\uFE0F', title: 'Safety Planner', detail: 'Match a hazard with a readiness action', complete: !!d.predictionHazard && !!d.readinessAction, progress: d.predictionHazard && d.readinessAction ? 'Planned' : 'Needed', tab: 'forecast', action: 'Plan for hazards' },
           { id: 'verifier', icon: '\uD83D\uDCE1', title: 'Forecast Verifier', detail: 'Issue and verify one forecast', complete: (d.forecastsIssued || 0) >= 1, progress: (d.forecastsIssued || 0) >= 1 ? 'Verified' : 'Needed', tab: 'forecast', action: 'Issue a forecast' },
-          { id: 'reviser', icon: '\uD83D\uDD01', title: 'Revision Scientist', detail: 'Compare two verified forecasts', complete: revisionCount >= 2, progress: Math.min(2, revisionCount) + '/2', tab: 'forecast', action: 'Revise a forecast' },
+          { id: 'reviser', icon: '\uD83D\uDD01', title: 'Revision Scientist', detail: 'Compare two forecasts for the same setup and target', complete: revisionCount >= 2, progress: Math.min(2, revisionCount) + '/2', tab: 'forecast', action: 'Revise a forecast' },
           { id: 'communicator', icon: '\uD83C\uDF99\uFE0F', title: 'Science Communicator', detail: 'Complete a public weather briefing', complete: communicationCount === 4, progress: communicationCount + '/4', tab: 'forecast', action: 'Build a briefing' }
         ];
         var earned = badges.filter(function (badge) { return badge.complete; }).length;
@@ -8473,8 +9780,8 @@ var geographyGroup = new THREE.Group();
           },
           {
             id: 'revise', icon: '\uD83D\uDD01', label: early ? 'Make it better' : 'Revise',
-            detail: early ? 'Try your forecast again.' : 'Compare two verified forecasts.', action: 'Revise and verify again', tab: 'forecast',
-            complete: (d.forecastHistory || []).length >= 2
+            detail: early ? 'Try your forecast again with the same weather setup.' : 'Compare two forecasts for the same setup and target.', action: 'Revise and verify again', tab: 'forecast',
+            complete: !!savedRevision
           }
         ];
         var completedCount = stages.filter(function (stage) { return stage.complete; }).length;
@@ -8676,6 +9983,7 @@ var geographyGroup = new THREE.Group();
       }
 
       function stationPanel() {
+        var logCheck = appendWeatherObservationLog(d.observationLog, [weatherObservationSnapshot(state, station)]);
         var spread = round(observation.temperature - observation.dewPoint, 1);
         var sky = observation.cloudCover < 20 ? 'Clear' : observation.cloudCover < 55 ? 'Partly cloudy' : observation.cloudCover < 85 ? 'Mostly cloudy' : 'Overcast';
         return h('div', { className: panelClass + ' p-4', 'data-weather-station-panel': true },
@@ -8709,7 +10017,9 @@ var geographyGroup = new THREE.Group();
               ? 'The air is ' + (spread < 3 ? 'nearly full of water vapor, so clouds are likely.' : 'not full yet, so fewer clouds may form.')
               : 'Temperature-dew point spread: ' + spread + '\u00B0C. ' + (spread < 3 ? 'Near saturation; cloud or fog formation is favored.' : 'A wider spread means the air is farther from saturation.')
           ),
-          h('button', { type: 'button', onClick: logObservation, className: buttonClass + ' mt-3 w-full' }, '\uD83D\uDCDD Log this observation'),
+          h('button', { type: 'button', onClick: logObservation, disabled: logCheck.code === 'capacity', 'aria-describedby': 'weather-station-log-status', className: buttonClass + ' mt-3 w-full disabled:opacity-50' }, '\uD83D\uDCDD Log this observation'),
+          h('p', { id: 'weather-station-log-status', 'data-weather-station-log-status': true, tabIndex: -1, className: 'mt-2 rounded p-1 text-xs ' + mutedClass + ' focus:outline-none focus:ring-2 focus:ring-sky-500' }, normalizeWeatherObservationLog(d.observationLog).length + ' of ' + WEATHER_OBSERVATION_LOG_LIMIT + ' observations saved. ' + (logCheck.code === 'capacity' ? 'Notebook full. Open Observation Desk to download your observations or clear the notebook before logging more.' : 'New readings keep your saved evidence.')) ,
+          d.tab === 'forecast' && d.observationStatus && h('p', { role: 'status', 'data-weather-station-log-notice': true, className: 'mt-2 text-xs font-bold' }, d.observationStatus),
           d.tab !== 'observations' && h('button', { type: 'button', className: buttonClass + ' mt-2 w-full', onClick: function () { update({ tab: 'observations', playing: false }); } }, 'Open Observation Desk')
         );
       }
@@ -9421,6 +10731,7 @@ var geographyGroup = new THREE.Group();
         var log = normalizeWeatherObservationLog(d.observationLog);
         if (!log.length && !d.observationStatus && d.tab !== 'observations') return null;
         var contextKey = weatherObservationContextKey(state);
+        var canUndo = !!observationNotebookUndoRef.current && restoreClearedWeatherObservationNotebook(d, observationNotebookUndoRef.current).ok;
         function measurement(value, unit) { return value == null ? 'Not recorded' : value + unit; }
         return h('div', { className: panelClass + ' overflow-hidden', 'data-weather-observation-log': true },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b p-3 ' + (dark ? 'border-slate-700' : 'border-sky-200') },
@@ -9430,13 +10741,15 @@ var geographyGroup = new THREE.Group();
             ),
             h('div', { className: 'flex flex-wrap gap-2' },
               h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: !log.length, onClick: function () { downloadWeatherText('weather-observations.csv', observationJournalCsv(log), 'text/csv;charset=utf-8'); } }, 'Download observations CSV'),
-              h('button', { type: 'button', disabled: !log.length, onClick: function () { update({ observationLogUndo: log, observationLog: [], observationCompareFrom: '', observationCompareTo: '', observationNote: '', observationStatus: 'Observation log cleared. You can undo this until you leave the workspace.' }); }, className: buttonClass + ' disabled:opacity-50' }, 'Clear log')
+              h('button', { type: 'button', disabled: !log.length, onClick: clearObservationNotebook, className: buttonClass + ' disabled:opacity-50' }, 'Clear log')
             )
           ),
-          h('p', { className: 'px-3 pt-3 text-xs leading-relaxed ' + mutedClass }, 'Up to 24 distinct readings from the teaching model. Saved values retain their original station, hour, and starting conditions; they are not live weather observations.'),
+          h('p', { className: 'px-3 pt-3 text-xs leading-relaxed ' + mutedClass }, 'Saved readings retain their original station, hour, and starting conditions; they are from the teaching model, not live weather observations.'),
+          h('p', { id: 'weather-observation-capacity', 'data-weather-observation-capacity': true, tabIndex: -1, 'aria-live': 'polite', className: 'm-3 rounded p-1 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500' }, log.length + ' of ' + WEATHER_OBSERVATION_LOG_LIMIT + ' observations saved. ' + (log.length >= WEATHER_OBSERVATION_LOG_LIMIT ? 'Notebook full. Download the CSV or session to keep a copy, then clear the log before adding readings.' : 'New readings never replace saved observations automatically. Station networks are saved as a whole group.')),
           !log.length && h('p', { className: 'p-3 text-sm ' + mutedClass }, 'Log a station at two model hours to study a change, or log the network to compare locations at one hour.'),
           d.observationStatus && h('p', { role: 'status', className: 'px-3 pt-3 text-sm font-bold' }, d.observationStatus),
-          Array.isArray(d.observationLogUndo) && d.observationLogUndo.length > 0 && h('button', { type: 'button', className: buttonClass + ' m-3', onClick: function () { update({ observationLog: normalizeWeatherObservationLog(d.observationLogUndo.concat(log)), observationLogUndo: null, observationStatus: 'Cleared observations restored.' }); } }, 'Undo clear log'),
+          canUndo && h('p', { className: 'px-3 pt-2 text-xs ' + mutedClass }, 'Logging a new reading ends Undo for the cleared notebook. Undo is available in this workspace until the notebook changes or a session is restored.'),
+          canUndo && h('button', { type: 'button', 'data-weather-observation-undo': true, 'aria-describedby': 'weather-observation-capacity', className: buttonClass + ' m-3', onClick: undoClearObservationNotebook }, 'Undo clear log'),
           log.length > 0 && h('div', { className: 'mt-3 overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': 'Saved observation table' },
             h('table', { className: 'w-full text-left text-xs', style: { minWidth: 780 } },
               h('caption', { className: 'sr-only' }, 'Student weather observations by station and model hour'),
@@ -9507,7 +10820,7 @@ var geographyGroup = new THREE.Group();
             comparison.kind === 'temporal' && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'Hourly rates are averages across the selected interval, not the rate at each moment.'),
             h('label', { htmlFor: 'weather-observation-note', className: 'mt-4 block text-xs font-bold' }, 'Observation explanation'),
             h('textarea', { id: 'weather-observation-note', rows: 3, maxLength: 1500, className: inputClass + ' mt-1', value: d.observationNote || '', onChange: function (event) { update({ observationNote: event.target.value }); }, placeholder: 'I notice… The evidence is… One limit is…' }),
-            h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'Your explanation and the comparison’s source details will be included when you add this evidence to a forecast.'),
+            h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'Logging more readings keeps this explanation with the selected comparison. Your explanation and its source details will be included when you add this evidence to a forecast.'),
             h('div', { className: 'mt-3 flex flex-wrap gap-2' },
               h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: used, onClick: function () { update({ reasoning: [String(d.reasoning || '').trim(), summary].filter(Boolean).join('\n\n'), forecastResult: null, observationStatus: 'Comparison added to your forecast explanation.' }); if (announce) announce('Observation comparison added to your forecast explanation.'); } }, used ? 'Comparison added to explanation' : 'Use comparison in forecast explanation'),
               h('button', { type: 'button', className: buttonClass, onClick: function () { downloadWeatherText('weather-observation-comparison.txt', summary, 'text/plain;charset=utf-8'); } }, 'Download comparison'),
@@ -9519,6 +10832,9 @@ var geographyGroup = new THREE.Group();
 
       function observationDesk() {
         var readings = STATIONS.map(function (item) { return weatherObservationSnapshot(state, item); });
+        var log = normalizeWeatherObservationLog(d.observationLog);
+        var networkCheck = appendWeatherObservationLog(log, readings);
+        var needed = readings.filter(function (row) { return !log.some(function (saved) { return saved.id === row.id; }); }).length;
         return h('div', { className: 'mx-auto max-w-6xl space-y-4 p-4', 'data-weather-observation-desk': true },
           h('section', { className: panelClass + ' p-4' },
             h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Read, record, compare'),
@@ -9533,8 +10849,9 @@ var geographyGroup = new THREE.Group();
           ),
           stationPanel(),
           h('section', { className: panelClass + ' min-w-0 p-4', 'data-weather-observation-network': true },
-            h('div', { className: 'flex flex-wrap items-center justify-between gap-3' }, h('h3', { className: 'text-lg font-black' }, 'The station network at T+' + state.simHour + ' h'), h('button', { type: 'button', className: buttonClass, onClick: logStationNetwork }, 'Log station network')),
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-3' }, h('h3', { className: 'text-lg font-black' }, 'The station network at T+' + state.simHour + ' h'), h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: networkCheck.code === 'capacity', 'aria-describedby': networkCheck.code === 'capacity' ? 'weather-network-capacity' : undefined, onClick: logStationNetwork }, 'Log station network')),
             h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'These simultaneous model readings show local differences. Station elevation and location can influence the readings.'),
+            networkCheck.code === 'capacity' && h('p', { id: 'weather-network-capacity', 'data-weather-network-capacity': true, className: 'mt-2 text-xs font-bold' }, 'This network needs ' + needed + ' new slots, but ' + (WEATHER_OBSERVATION_LOG_LIMIT - log.length) + ' remain. Download or clear the notebook first; the group will not replace older readings.'),
             h('div', { className: 'mt-3 overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': 'Current station network table' }, h('table', { className: 'w-full text-left text-xs', style: { minWidth: 560 } },
               h('caption', { className: 'sr-only' }, 'Simultaneous teaching-model station readings'),
               h('thead', null, h('tr', null, ['Station', 'Temperature', 'Dew point', 'Sea-level pressure', 'Wind'].map(function (title) { return h('th', { key: title, scope: 'col', className: 'px-2 py-2' }, title); }))),
@@ -11029,20 +12346,123 @@ var geographyGroup = new THREE.Group();
             ensembleExplorationDetails()
           );
         }
+        function changeLiveHourDraft(contextKey, fields) {
+          if (!contextKey) return;
+          update(function (latest) {
+            if (buildLiveTimelineExploration([], latest.liveWeather).contextKey !== contextKey) return {};
+            var result = changeLiveHourDraftForContext(latest.liveHourDraft, latest.liveWeather, fields);
+            return result.ok ? { liveHourDraft: result.draft, liveHourDraftStatus: '' } : { liveHourDraftStatus: result.message };
+          });
+        }
+
+        function resolveLiveHourDraft(draft, contextKey, action) {
+          update(function (latest) {
+            if (buildLiveTimelineExploration([], latest.liveWeather).contextKey !== contextKey) {
+              return { liveHourDraftStatus: 'Weather changed. Review the current retrieval before choosing an explanation action.' };
+            }
+            var result = resolveLiveHourDraftForContext(latest.liveHourDraft, latest.liveWeather, draft, action);
+            liveHourDraftActionRef.current = { message: result.message, focus: result.ok };
+            return result.ok ? { liveHourDraft: result.draft, liveHourDraftStatus: result.message } : { liveHourDraftStatus: result.message };
+          });
+        }
+
+        function liveForecastExplanation() {
+          var key = buildLiveTimelineExploration([], d.liveWeather).contextKey;
+          var savedDraft = normalizeLiveHourDraft(d.liveHourDraft);
+          var recovering = !!savedDraft && savedDraft.contextKey !== key;
+          var draft = savedDraft && !recovering ? savedDraft : {};
+          if (!key && !recovering) return null;
+          var source = recovering && savedDraft.sourceContext;
+          return h('div', { className: 'mt-3', 'data-weather-live-explanation': true },
+            recovering && h('section', { className: 'mb-3 rounded-lg border p-3 ' + (dark ? 'border-amber-600 bg-amber-950/20' : 'border-amber-400 bg-amber-50'), tabIndex: -1, 'data-weather-explanation-recovery': true, 'aria-labelledby': 'weather-live-explanation-recovery-title' },
+              h('h5', { id: 'weather-live-explanation-recovery-title', className: 'text-sm font-black' }, 'Unfinished explanation from earlier weather'),
+              h('p', { className: 'mt-1 text-xs' }, 'Your draft is kept with its original retrieval. It will not be attached to a snapshot from the loaded weather. Download it, discard it, or explicitly use its text before writing another explanation.'),
+              h('p', { className: 'mt-2 break-words text-xs font-bold' }, source ? source.location + ' | Retrieved: ' + source.retrievedAt + ' | Current model valid: ' + source.currentDataAt : 'Original retrieval details unavailable for this legacy draft.'),
+              savedDraft.reasoning && h('div', { className: 'mt-2 text-xs' }, h('p', { className: 'font-bold' }, 'Unfinished explanation'), h('p', { className: 'mt-1 whitespace-pre-wrap break-words', 'data-weather-recovered-reasoning': true }, savedDraft.reasoning)),
+              savedDraft.attachment && h('div', { className: 'mt-2 text-xs' }, h('p', { className: 'font-bold' }, 'Comparison from the original retrieval'), h('p', { className: 'mt-1 whitespace-pre-wrap break-words', 'data-weather-recovered-evidence': true }, savedDraft.attachment)),
+              (savedDraft.hourA != null || savedDraft.hourB != null) && h('p', { className: 'mt-2 break-words text-xs' }, 'Original pins: A ' + (savedDraft.hourA == null ? 'not chosen' : new Date(savedDraft.hourA).toISOString()) + ' | B ' + (savedDraft.hourB == null ? 'not chosen' : new Date(savedDraft.hourB).toISOString())),
+              h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                h('button', { type: 'button', className: buttonClass, onClick: function () {
+                  var ok = downloadWeatherText('weather-unfinished-explanation.txt', liveHourDraftText(savedDraft), 'text/plain;charset=utf-8');
+                  var message = ok ? 'Unfinished explanation downloaded. Your draft is still kept.' : 'The explanation download was blocked. Your draft is still kept.';
+                  update({ liveHourDraftStatus: message });
+                  if (announce) announce(message);
+                } }, 'Download unfinished explanation'),
+                h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: !key || !!d.liveWeatherLoading || !savedDraft.reasoning.trim(), onClick: function () { resolveLiveHourDraft(savedDraft, key, 'use-text'); } }, 'Use explanation text for this retrieval'),
+                h('button', { type: 'button', className: buttonClass, onClick: function () { resolveLiveHourDraft(savedDraft, key, 'discard'); } }, 'Discard unfinished explanation')
+              ),
+              h('p', { className: 'mt-2 text-xs' }, 'Using the text copies only your words. Prior comparison evidence and hour pins are cleared. Review the explanation against the loaded weather before saving.')
+            ),
+            d.liveHourDraftStatus && h('p', { role: 'status', className: 'my-2 text-xs font-bold' }, d.liveHourDraftStatus),
+            key && h('label', { htmlFor: 'weather-live-explanation', className: 'block text-sm font-bold' }, 'Explanation for the next forecast snapshot'),
+            key && h('p', { id: 'weather-live-explanation-help', className: 'my-1 text-xs ' + mutedClass }, recovering ? 'Resolve the unfinished explanation above to write for this retrieval.' : 'Describe what you expect and which readings support it. Your explanation and any attached evidence are saved with the next snapshot from this retrieval. Local device saves and session JSON keep unfinished drafts; share links omit them.'),
+            key && h('textarea', { id: 'weather-live-explanation', className: inputClass + ' mt-1 disabled:opacity-50', rows: 3, maxLength: 1500, disabled: recovering, value: draft.reasoning || '', 'aria-describedby': 'weather-live-explanation-help', onChange: function (event) { changeLiveHourDraft(key, { reasoning: event.target.value }); } }),
+            draft.attachment && h('div', { className: 'mt-2 rounded-lg border p-3 text-xs' },
+              h('p', { className: 'font-bold' }, 'Attached two-hour comparison'),
+              h('p', { className: 'mt-1 break-words' }, draft.attachment),
+              h('button', { type: 'button', className: buttonClass + ' mt-2', onClick: function () { changeLiveHourDraft(key, { attachment: '' }); } }, 'Remove attached comparison')
+            )
+          );
+        }
+
+        function liveHourComparison(exploration, selected) {
+          var key = exploration.contextKey;
+          var savedDraft = normalizeLiveHourDraft(d.liveHourDraft);
+          var recovering = !!savedDraft && savedDraft.contextKey !== key;
+          var draft = savedDraft && !recovering ? savedDraft : {};
+          var comparison = null;
+          if (Number.isFinite(draft.hourA) && Number.isFinite(draft.hourB)) {
+            comparison = compareLiveTimelineHours(liveForecastEvidenceTimeline(d), d.liveWeather, draft.hourA, draft.hourB);
+          }
+          function pinLabel(timestamp) {
+            return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : 'Choose an hour';
+          }
+          return h('section', { className: 'mt-4 rounded-lg border p-3', 'data-weather-live-hour-comparison': true, 'aria-labelledby': 'weather-live-comparison-title' },
+            h('h5', { id: 'weather-live-comparison-title', className: 'text-sm font-black' }, 'Compare two live hours'),
+            h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'Inspect an hour and pin it as A. Pin a different hour as B to see the change from the earlier time to the later one.'),
+            h('div', { className: 'mt-2 flex flex-wrap gap-2' }, ['A', 'B'].map(function (letter) {
+              var field = 'hour' + letter;
+              return h('button', { key: field, type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: !selected || recovering, 'aria-pressed': !!selected && draft[field] === selected.timestamp, onClick: function () {
+                if (!selected) return;
+                var patch = {}; patch[field] = selected.timestamp;
+                changeLiveHourDraft(key, patch);
+              } }, 'Pin inspected hour as ' + letter);
+            })),
+            h('div', { className: 'mt-2 space-y-1 break-words text-xs', role: 'status', 'aria-live': 'polite' },
+              h('p', null, 'A · ' + pinLabel(draft.hourA)), h('p', null, 'B · ' + pinLabel(draft.hourB)),
+              comparison && h('div', { className: 'mt-2 rounded-lg p-3 ' + (dark ? 'bg-slate-900' : 'bg-white') },
+                comparison.metrics.map(function (metric) { return h('p', { key: metric.id, className: 'mt-1' }, metric.description); }),
+                h('p', { className: 'mt-1 font-bold' }, comparison.coverage)
+              ),
+              Number.isFinite(draft.hourA) && draft.hourA === draft.hourB && h('p', null, 'Choose two different valid times.'),
+              comparison && draft.attachment === comparison.citation && h('p', { className: 'font-bold' }, 'Attached to the next snapshot explanation.')
+            ),
+            h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+              h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: recovering || !comparison || !comparison.canAttach, onClick: function () { if (comparison && comparison.canAttach) changeLiveHourDraft(key, { attachment: comparison.citation }); } }, 'Attach comparison to forecast explanation'),
+              (Number.isFinite(draft.hourA) || Number.isFinite(draft.hourB)) && h('button', { type: 'button', className: buttonClass, onClick: function () { changeLiveHourDraft(key, { hourA: null, hourB: null }); } }, 'Clear pins')
+            )
+          );
+        }
+
         function liveTimelineExplorer() {
-          var exploration = buildLiveTimelineExploration(d.liveWeatherTimeline, d.liveWeather, { metric: d.liveTimelineMetric, hours: d.liveTimelineWindow });
+          var evidenceTimeline = liveForecastEvidenceTimeline(d);
+          var exploration = buildLiveTimelineExploration(evidenceTimeline, d.liveWeather, { metric: d.liveTimelineMetric, hours: d.liveTimelineWindow });
           var points = exploration.points;
           var chosenTimestamp = d.liveTimelineSelectionKey === exploration.contextKey ? d.liveTimelineSelectedAt : exploration.selectedTimestamp;
           var selectedIndex = points.findIndex(function (point) { return point.timestamp === chosenTimestamp; });
           if (selectedIndex < 0) selectedIndex = Math.max(0, points.findIndex(function (point) { return point.timestamp === exploration.selectedTimestamp; }));
           var selected = points[selectedIndex] || null;
-          var snapshotWeather = selected ? (selected.index >= 0 ? activeLiveWeather(Object.assign({}, d, { liveWeatherTimelineIndex: selected.index })) : d.liveWeather) : null;
-          var canSave = !!(selected && selected.role === 'forecast' && !selected.reason && !d.liveWeatherLoading && createLiveForecastCheckpoint(snapshotWeather, new Date().toISOString()));
+          var snapshotWeather = selected ? liveForecastPointWeather(d.liveWeather, evidenceTimeline[selected.index]) : null;
+          var inspectedCheckpoint = createLiveForecastCheckpoint(snapshotWeather, new Date().toISOString());
+          var checkpoints = normalizeLiveForecastCheckpoints(d.liveForecastCheckpoints);
+          var journalFull = checkpoints.length >= LIVE_FORECAST_CHECKPOINT_LIMIT;
+          var alreadySaved = !!inspectedCheckpoint && checkpoints.some(function (item) { return item.id === inspectedCheckpoint.id; });
+          var canSave = !!(selected && selected.role === 'forecast' && !selected.reason && !d.liveWeatherLoading && inspectedCheckpoint);
           var metric = exploration.metric;
           var color = metric.id === 'temperature' ? (dark ? '#fb923c' : '#c2410c') : metric.id === 'precipitation' ? (dark ? '#60a5fa' : '#1d4ed8') : metric.id === 'pressure' ? (dark ? '#c4b5fd' : '#6d28d9') : (dark ? '#5eead4' : '#0f766e');
           function display(value) { return value == null || !isFinite(value) ? 'Not available' : Number(value).toFixed(metric.decimals) + (metric.unit === '°C' ? '' : ' ') + metric.unit; }
           function offsetLabel(value) { return (value > 0 ? '+' : '') + round(value, 2) + ' h'; }
-          function validTimeLabel(value) { return value + (exploration.timezone && !/(?:Z|[+-]\d{2}:?\d{2})$/i.test(value) ? ' ' + exploration.timezone : ''); }
+          function validTimeLabel(value) { return weatherValidTimeLabel(value, exploration.timezone); }
           function selectPoint(index) {
             var point = points[clamp(Math.round(Number(index) || 0), 0, Math.max(0, points.length - 1))];
             if (!point) return;
@@ -11082,6 +12502,7 @@ var geographyGroup = new THREE.Group();
               )
             ),
             !exploration.available && h('p', { className: 'mt-3 rounded-lg border p-3 text-xs ' + (dark ? 'border-amber-600 text-amber-100' : 'border-amber-300 text-amber-900'), role: 'status' }, exploration.message),
+            !points.length && liveForecastExplanation(),
             points.length > 0 && h('div', null,
               h('p', { className: 'mt-3 break-words text-xs ' + mutedClass }, (exploration.location || 'Loaded location') + ' | Current model valid: ' + validTimeLabel(exploration.currentDataAt) + ' | Retrieved: ' + exploration.retrievedAt),
               h('div', { className: 'mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4', 'data-weather-live-timeline-summary': true },
@@ -11121,7 +12542,10 @@ var geographyGroup = new THREE.Group();
                   h('p', { className: 'mt-1 font-bold' }, metric.label + ': ' + display(selected.value)),
                   selected.reason && h('p', { className: 'mt-1 text-xs ' + mutedClass }, selected.reason)
                 ),
-                h('button', { type: 'button', className: buttonClass + ' mt-3 disabled:opacity-50', disabled: !canSave, onClick: function () { saveLiveForecastCheckpoint(snapshotWeather); } }, 'Save inspected forecast snapshot'),
+                liveHourComparison(exploration, selected),
+                liveForecastExplanation(),
+                h('button', { type: 'button', className: buttonClass + ' mt-3 disabled:opacity-50', disabled: !canSave || journalFull || alreadySaved, 'aria-describedby': 'weather-live-inspected-save-status', onClick: function () { saveLiveForecastCheckpoint(snapshotWeather); } }, 'Save inspected forecast snapshot'),
+                h('p', { id: 'weather-live-inspected-save-status', 'data-weather-inspected-save-status': true, className: 'mt-2 text-xs ' + mutedClass }, checkpoints.length + ' of ' + LIVE_FORECAST_CHECKPOINT_LIMIT + ' forecast snapshots saved. ' + (alreadySaved ? 'This inspected forecast from this retrieval is already saved. Its original values are kept.' : journalFull ? 'Journal full. Download your report or session, then remove a snapshot before saving a new one.' : 'New snapshots never replace saved ones automatically.')),
                 !canSave && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'Choose a valid future forecast hour to save. Refresh old weather data first; saving pauses while new data is loading.')
               ),
               h('details', { className: 'mt-4 rounded-lg border p-3 ' + (dark ? 'border-slate-700' : 'border-slate-300') },
@@ -11146,16 +12570,168 @@ var geographyGroup = new THREE.Group();
         }
 
 
+        function classroomThermometerPanel(checkpoint, controlContext) {
+          var reading = checkpoint.classroomReading;
+          var readingUnit = reading && reading.schema === 'weather-classroom-temperature-v2' ? reading.enteredUnit : 'C';
+          var readingValue = reading && reading.schema === 'weather-classroom-temperature-v2' ? reading.enteredValue : reading ? reading.temperatureC : '';
+          var target = classroomThermometerTarget(checkpoint);
+          var notice = d.classroomThermometerNotice;
+          if (notice && notice.error && !ownsClassroomThermometerAttempt(notice.attempt)) notice = null;
+          var hasError = !!notice && notice.id === checkpoint.id && notice.error === true;
+          var noticeId = 'weather-classroom-feedback-' + checkpoint.id.split('').map(function (character) { return character.charCodeAt(0).toString(16); }).join('-');
+          function fieldFeedback(name, helpIds) {
+            var invalid = hasError && notice.field === name;
+            return { 'aria-invalid': invalid || undefined, 'aria-describedby': helpIds + (invalid ? ' ' + noticeId : '') };
+          }
+          function thermometerValueHelp(unit) {
+            return 'Enter the number shown on your thermometer, from ' + (unit === 'F' ? '−148 to 158 °F' : '−100 to 70 °C') + ', to one decimal place.';
+          }
+          function clearReadingError() {
+            var attempt = classroomThermometerErrorAttemptRef.current;
+            if (!attempt || attempt.id !== checkpoint.id) return;
+            classroomThermometerErrorAttemptRef.current = null;
+            var pending = classroomThermometerFocusRef.current;
+            if (pending && pending.attempt === attempt) classroomThermometerFocusRef.current = null;
+            update(function (latest) {
+              var current = latest.classroomThermometerNotice;
+              if (!current || current.id !== checkpoint.id || current.error !== true || current.attempt !== attempt) return {};
+              return { classroomThermometerNotice: null };
+            });
+          }
+          function syncThermometerUnit(form, message) {
+            var unit = form.elements.namedItem('enteredUnit').value;
+            var valueField = form.elements.namedItem('enteredValue');
+            valueField.min = unit === 'F' ? '-148' : '-100';
+            valueField.max = unit === 'F' ? '158' : '70';
+            form.querySelector('[data-weather-classroom-value-label]').textContent = 'Outdoor thermometer reading (°' + unit + ')';
+            form.querySelector('[data-weather-classroom-unit-notice]').textContent = message;
+            form.querySelector('[data-weather-classroom-value-help]').textContent = thermometerValueHelp(unit);
+          }
+          function resetReadingEntry(event) {
+            var form = event.currentTarget.form;
+            clearReadingError();
+            form.reset();
+            form.elements.namedItem('sameSite').checked = false;
+            syncThermometerUnit(form, reading ? 'Saved reading restored to the entry fields. Unsubmitted edits discarded; saved reading and Undo are unchanged.' : 'Entry reset. Unsubmitted edits discarded; saved forecasts and Undo are unchanged.');
+            form.elements.namedItem('enteredValue').focus();
+          }
+          var undoReceipt = classroomThermometerUndoRef.current;
+          var canUndo = !!undoReceipt && undoReceipt.checkpointId === checkpoint.id && classroomThermometerUndo(d.liveForecastCheckpoints, undoReceipt).ok;
+          function saveReading(input) {
+            var attempt = { id: checkpoint.id };
+            classroomThermometerErrorAttemptRef.current = attempt;
+            var recordedAt = new Date().toISOString();
+            update(function (latest) {
+              var change = classroomThermometerChange(latest.liveForecastCheckpoints, checkpoint.id, input, recordedAt);
+              if (!change.ok || !change.changed) {
+                if (!ownsClassroomThermometerAttempt(attempt)) return {};
+                var feedback = { id: checkpoint.id, error: !change.ok, message: change.message, attempt: attempt };
+                if (!change.ok) {
+                  feedback.field = change.field;
+                  classroomThermometerFocusRef.current = { id: checkpoint.id, invalid: true, field: change.field, attempt: attempt };
+                }
+                return { classroomThermometerNotice: feedback };
+              }
+              classroomThermometerUndoRef.current = change.undo;
+              if (!ownsClassroomThermometerAttempt(attempt)) return { liveForecastCheckpoints: change.checkpoints };
+              var feedback = { id: checkpoint.id, message: change.message + ' You can undo this change.', attempt: attempt };
+              classroomThermometerFocusRef.current = { id: checkpoint.id, undo: input === null, attempt: attempt };
+              return { liveForecastCheckpoints: change.checkpoints, classroomThermometerNotice: feedback };
+            });
+          }
+          function undoReading() {
+            var receipt = classroomThermometerUndoRef.current;
+            if (!receipt || receipt.checkpointId !== checkpoint.id) return;
+            var attempt = { id: checkpoint.id };
+            classroomThermometerErrorAttemptRef.current = attempt;
+            update(function (latest) {
+              var restored = classroomThermometerUndo(latest.liveForecastCheckpoints, receipt);
+              classroomThermometerUndoRef.current = null;
+              if (!ownsClassroomThermometerAttempt(attempt)) return restored.ok ? { liveForecastCheckpoints: restored.checkpoints } : {};
+              var feedback = { id: checkpoint.id, message: restored.message, attempt: attempt };
+              if (!restored.ok) feedback.error = true;
+              classroomThermometerFocusRef.current = { id: checkpoint.id, undo: false, attempt: attempt };
+              if (!restored.ok) return { classroomThermometerNotice: feedback };
+              return { liveForecastCheckpoints: restored.checkpoints, classroomThermometerNotice: feedback };
+            });
+          }
+          var summary = 'Classroom thermometer check';
+          return h('details', { className: 'mt-3 rounded-lg border p-3 ' + (dark ? 'border-sky-700' : 'border-sky-200'), 'data-weather-classroom-thermometer': true, 'data-weather-classroom-id': checkpoint.id },
+            h('summary', { className: 'min-h-11 cursor-pointer py-2 text-sm font-black', 'aria-label': summary + ', ' + controlContext }, summary),
+            !target && h('p', { className: 'text-xs ' + mutedClass }, 'Save a future temperature forecast with a recorded location and valid time to start a thermometer check.'),
+            target && h('div', null,
+              h('p', { id: noticeId + '-site', 'data-weather-classroom-site-help': true, className: 'break-words text-xs ' + mutedClass }, 'Take an outdoor thermometer reading at ' + (checkpoint.location || 'the saved site') + ' (' + checkpoint.latitude + ', ' + checkpoint.longitude + '). Target time in UTC is ' + new Date(target.timestamp).toISOString() + '.'),
+              reading && h('div', { className: 'mt-3 rounded-lg p-3 ' + (dark ? 'bg-sky-950/40' : 'bg-sky-50'), 'data-weather-classroom-result': true },
+                h('p', { className: 'text-sm font-black' }, 'Saved forecast ' + target.forecastC + ' °C · Thermometer ' + readingValue + ' °' + readingUnit + (readingUnit === 'F' ? ' (' + round(reading.temperatureC, 1) + ' °C)' : '')),
+                h('p', { className: 'mt-1 text-sm' }, 'Forecast minus thermometer is ' + signedNumber(round(target.forecastC - reading.temperatureC, 1), ' °C') + ' (' + signedNumber(round((target.forecastC - reading.temperatureC) * 9 / 5, 1), ' °F') + ')'),
+                h('p', { className: 'mt-1 break-words text-xs ' + mutedClass }, 'Measured ' + reading.measuredAt + ' · Last entered ' + reading.recordedAt)
+              ),
+              h('form', { key: JSON.stringify([checkpoint.id, reading && reading.schema, reading && reading.recordedAt, readingUnit, readingValue, reading && reading.temperatureC]), noValidate: true, className: 'mt-3 grid gap-2', 'aria-label': 'Thermometer reading, ' + controlContext,
+                'aria-describedby': hasError && !notice.field ? noticeId : undefined, onChange: clearReadingError,
+                onSubmit: function (event) {
+                  event.preventDefault();
+                  var fields = event.currentTarget.elements;
+                  var measurementTime = fields.namedItem('measuredAt').value;
+                  saveReading({ enteredValue: fields.namedItem('enteredValue').value, enteredUnit: fields.namedItem('enteredUnit').value,
+                    measuredAt: measurementTime ? measurementTime + 'Z' : '', sameSite: fields.namedItem('sameSite').checked });
+                } },
+                h('label', { className: 'block min-w-0 text-xs font-bold' }, 'Thermometer unit',
+                  h('select', Object.assign({ name: 'enteredUnit', defaultValue: readingUnit, className: inputClass + ' mt-1', onChange: function (event) {
+                    var form = event.currentTarget.form;
+                    form.elements.namedItem('enteredValue').value = '';
+                    syncThermometerUnit(form, 'Unit changed. Enter the thermometer reading again in °' + event.currentTarget.value + '.');
+                  } }, fieldFeedback('enteredUnit', noticeId + '-unit')), h('option', { value: 'C' }, 'Celsius (°C)'), h('option', { value: 'F' }, 'Fahrenheit (°F)'))),
+                h('p', { id: noticeId + '-unit', className: 'text-xs ' + mutedClass, 'aria-live': 'polite', 'data-weather-classroom-unit-notice': true }, 'Changing the unit clears the unsaved reading. Enter the number shown on your thermometer.'),
+                h('p', { id: noticeId + '-value', 'data-weather-classroom-value-help': true, className: 'text-xs ' + mutedClass }, thermometerValueHelp(readingUnit)),
+                h('div', { className: 'grid gap-2 sm:grid-cols-2' },
+                  h('label', { className: 'block min-w-0 text-xs font-bold' },
+                    h('span', { 'data-weather-classroom-value-label': true }, 'Outdoor thermometer reading (°' + readingUnit + ')'),
+                    h('input', Object.assign({ type: 'number', name: 'enteredValue', required: true, min: readingUnit === 'F' ? -148 : -100, max: readingUnit === 'F' ? 158 : 70, step: 0.1, inputMode: 'decimal', defaultValue: readingValue, className: inputClass + ' mt-1' }, fieldFeedback('enteredValue', noticeId + '-value ' + noticeId + '-unit')))),
+                  h('label', { className: 'block min-w-0 text-xs font-bold' }, 'Measurement time (UTC)',
+                    h('input', Object.assign({ type: 'datetime-local', name: 'measuredAt', required: true, step: 'any', defaultValue: reading ? reading.measuredAt.slice(0, -1) : '', className: inputClass + ' mt-1' }, fieldFeedback('measuredAt', noticeId + '-time'))))
+                ),
+                h('div', { className: 'text-xs ' + mutedClass },
+                  h('button', { type: 'button', className: buttonClass, onClick: function (event) {
+                    var field = event.currentTarget.form.elements.namedItem('measuredAt');
+                    field.value = new Date(target.timestamp).toISOString().slice(0, -1);
+                    clearReadingError();
+                    field.focus();
+                  } }, 'Use target time'),
+                  h('p', { id: noticeId + '-time', 'data-weather-classroom-time-help': true, className: 'mt-1 break-words' }, 'Target measurement time (UTC): ' + new Date(target.timestamp).toISOString() + '. Use this time only when you took the reading at the displayed forecast time.')
+                ),
+                h('label', { className: 'flex min-h-11 items-center gap-2 text-xs font-bold' },
+                  h('input', Object.assign({ name: 'sameSite', type: 'checkbox', required: true, defaultChecked: false }, fieldFeedback('sameSite', noticeId + '-site'))),
+                  'I took this outdoor reading at the saved forecast site.'),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { type: 'submit', className: buttonClass }, reading ? 'Update thermometer reading' : 'Save thermometer reading'),
+                  h('button', { type: 'button', className: buttonClass, 'aria-label': (reading ? 'Restore saved reading' : 'Reset entry') + ', ' + controlContext, onClick: resetReadingEntry }, reading ? 'Restore saved reading' : 'Reset entry'),
+                  reading && h('button', { type: 'button', className: buttonClass, onClick: function () { saveReading(null); } }, 'Clear thermometer reading')
+                ),
+                h('p', { className: 'text-xs ' + mutedClass }, reading ? 'Restore discards unsubmitted edits only; the saved reading and Undo are kept. Clear removes the saved reading.' : 'Reset discards the unsubmitted entry only; saved forecasts and Undo are kept.')
+              ),
+              canUndo && h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+                h('button', { type: 'button', className: buttonClass, 'data-weather-classroom-undo': true, onClick: undoReading }, 'Undo thermometer change'),
+                h('p', { className: 'text-xs ' + mutedClass }, 'Undo is available for the most recent thermometer change in this session.')),
+              notice && notice.id === checkpoint.id && h('p', { id: noticeId, role: notice.error ? 'alert' : 'status', tabIndex: notice.error && !notice.field ? -1 : undefined, 'data-weather-classroom-feedback': true, className: 'mt-2 text-xs font-bold' }, notice.message)
+            )
+          );
+        }
+
         function forecastVerificationStudio() {
           var checkpoints = normalizeLiveForecastCheckpoints(d.liveForecastCheckpoints);
-          var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+          var timeline = liveForecastEvidenceTimeline(d);
           var statuses = checkpoints.map(function (checkpoint) { return { checkpoint: checkpoint, result: forecastCheckpointStatus(checkpoint, timeline, d.liveWeather) }; });
           var verifiedCount = statuses.filter(function (item) { return item.result.ready; }).length;
           var pendingCount = statuses.filter(function (item) { return item.result.code === 'pending'; }).length;
           var futurePoints = timeline.map(function (point, index) { return { point: point, index: index }; }).filter(function (item) { return item.point && item.point.role === 'forecast'; });
           var selected = futurePoints.filter(function (item) { return item.point.time === d.liveReviewTarget; })[0] || futurePoints[0];
-          var selectedWeather = selected ? activeLiveWeather(Object.assign({}, d, { liveWeatherTimelineIndex: selected.index })) : null;
-          var canSave = !!createLiveForecastCheckpoint(selectedWeather, new Date().toISOString());
+          var selectedWeather = selected ? liveForecastPointWeather(d.liveWeather, selected.point) : null;
+          var selectedCheckpoint = createLiveForecastCheckpoint(selectedWeather, new Date().toISOString());
+          var canSave = !d.liveWeatherLoading && !!selectedCheckpoint;
+          var journalFull = checkpoints.length >= LIVE_FORECAST_CHECKPOINT_LIMIT;
+          var alreadySaved = !!selectedCheckpoint && checkpoints.some(function (item) { return item.id === selectedCheckpoint.id; });
+          var removedCheckpoint = normalizeLiveForecastCheckpoints([d.liveReviewUndo])[0];
+          var removedAlreadySaved = !!removedCheckpoint && checkpoints.some(function (item) { return item.id === removedCheckpoint.id; });
           function shown(value, unit) { return liveWeatherNumber(value) == null ? 'Not recorded' : value + unit; }
           function signedMetric(metric) {
             return metric && metric.ambiguous ? '180°; direction ambiguous' : metric && metric.error != null ? signedNumber(metric.error, metric.unit) : 'Not comparable';
@@ -11189,7 +12765,8 @@ var geographyGroup = new THREE.Group();
               h('div', { className: 'max-w-2xl' },
                 h('p', { className: 'text-xs font-black uppercase tracking-widest ' + fuchsiaAccentClass }, 'Save, compare, explain'),
                 h('h3', { id: 'weather-live-verification-title', tabIndex: -1, className: 'mt-1 text-base font-black focus:outline-none focus:ring-2 focus:ring-fuchsia-500' }, 'Live Forecast Review'),
-                h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, 'Preserve a future forecast, then compare it with a later Open-Meteo retrieval for the exact same location and valid time. Both datasets are model-derived; this does not measure accuracy against independent observations.')
+                h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, 'Preserve a future forecast, then compare it with a later Open-Meteo retrieval for the exact same location and valid time. Both datasets are model-derived; this does not measure accuracy against independent observations.'),
+                h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'For a classroom temperature check, enter an outdoor thermometer reading on the saved snapshot.')
               ),
               h('div', { className: 'flex gap-2 text-center' },
                 h('div', { className: 'rounded-lg px-3 py-2 ' + (dark ? 'bg-emerald-950/40' : 'bg-emerald-50') }, h('p', { className: 'text-lg font-black ' + emeraldAccentClass }, verifiedCount), h('p', { className: 'text-[0.625rem] font-bold ' + mutedClass }, 'compared')),
@@ -11208,35 +12785,43 @@ var geographyGroup = new THREE.Group();
                   futurePoints.map(function (item) { return h('option', { key: item.point.time, value: item.point.time }, weatherTimelineLabel(item.point, d.liveWeather && d.liveWeather.timezone)); })
                 ),
                 h('div', { className: 'mt-3 flex flex-wrap gap-2' },
-                  h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: !canSave, onClick: function () { saveLiveForecastCheckpoint(selectedWeather); } }, 'Save live forecast snapshot'),
+                  h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: !canSave || journalFull || alreadySaved, 'aria-describedby': 'weather-live-forecast-capacity', onClick: function () { saveLiveForecastCheckpoint(selectedWeather); } }, 'Save live forecast snapshot'),
                   d.liveWeather && h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: !!d.liveWeatherLoading, onClick: function () { fetchLiveWeather(d.liveWeather.latitude, d.liveWeather.longitude, d.liveWeather.label); } }, d.liveWeatherLoading ? 'Refreshing weather…' : 'Refresh loaded weather'),
                   h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: !checkpoints.length, onClick: function () { downloadWeatherText('weather-live-forecast-review.txt', liveForecastReviewText(checkpoints, timeline, d.liveWeather), 'text/plain;charset=utf-8'); } }, 'Download live forecast report'),
                   h('button', { type: 'button', className: buttonClass + ' disabled:opacity-50', disabled: !checkpoints.length, onClick: function () { downloadWeatherText('weather-live-forecast-review.csv', liveForecastReviewCsv(checkpoints, timeline, d.liveWeather), 'text/csv;charset=utf-8'); } }, 'Download live forecast CSV')
                 ),
                 !canSave && futurePoints.length > 0 && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'Refresh weather data or choose a later hour to save a snapshot with complete time and source information.'),
-                h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'The last eight distinct snapshots are retained. Saving the same hour from the same retrieval keeps the original; a newer retrieval can be saved separately.'),
+                h('p', { id: 'weather-live-forecast-capacity', 'data-weather-forecast-capacity': true, tabIndex: -1, 'aria-live': 'polite', className: 'mt-2 rounded p-1 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500' },
+                  checkpoints.length + ' of ' + LIVE_FORECAST_CHECKPOINT_LIMIT + ' forecast snapshots saved. ' + (journalFull ? 'Journal full. Download your report or session to keep a copy, then remove a snapshot before saving a new one.' : 'New snapshots never replace saved ones automatically.')),
+                alreadySaved && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'This forecast hour from this retrieval is already saved. Its original values are kept.'),
+                removedCheckpoint && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'Saving a new snapshot ends Undo for the removed snapshot.'),
                 d.liveReviewStatus && h('p', { role: 'status', className: 'mt-2 text-xs font-bold' }, d.liveReviewStatus),
-                d.liveReviewUndo && h('button', { type: 'button', className: buttonClass + ' mt-3', onClick: function () { update({ liveForecastCheckpoints: normalizeLiveForecastCheckpoints(checkpoints.concat([d.liveReviewUndo])), liveReviewUndo: null, liveReviewStatus: 'Forecast snapshot restored with its original values.' }); } }, 'Undo remove forecast snapshot')
+                removedCheckpoint && h('button', { type: 'button', className: buttonClass + ' mt-3 disabled:opacity-50', 'data-weather-forecast-undo': true, disabled: journalFull || removedAlreadySaved, 'aria-describedby': 'weather-live-forecast-capacity', onClick: undoRemoveLiveForecastCheckpoint }, 'Undo remove forecast snapshot'),
+                removedCheckpoint && journalFull && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'The journal is full, so Undo cannot restore this removal. All saved snapshots are kept.'),
+                removedAlreadySaved && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'A snapshot with the removed ID is already saved. Undo will not overwrite it.')
               ),
               !checkpoints.length && h('div', { className: 'rounded-xl border border-dashed p-4 text-center ' + (dark ? 'border-slate-600 bg-slate-950/35' : 'border-slate-300 bg-slate-50') },
                 h('p', { className: 'text-sm font-black' }, 'No live forecast snapshots yet'),
                 h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, 'Load a location above, then choose and save a future hour here. Your original forecast values will remain unchanged when you refresh.'),
                 h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveDataSource: 'live' }); }, className: 'mt-3 min-h-11 rounded-lg bg-fuchsia-700 px-4 py-2 text-xs font-black text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, 'Open 3D forecast timeline')
               ),
-              statuses.length > 0 && h('ol', { className: 'space-y-3', 'aria-label': __alloT('stem.weathersystems.a11y_saved_live_forecast_checkpoints', 'Saved live forecast checkpoints') }, statuses.slice().reverse().map(function (item) {
+              statuses.length > 0 && h('ol', { className: 'space-y-3', 'aria-label': __alloT('stem.weathersystems.a11y_saved_live_forecast_checkpoints', 'Saved live forecast checkpoints') }, statuses.slice().reverse().map(function (item, displayIndex) {
                 var checkpoint = item.checkpoint;
+                var controlContext = liveForecastCheckpointControlContext(checkpoint, displayIndex + 1, statuses.length);
                 var result = item.result;
                 var predicted = checkpoint.predicted || {};
                 return h('li', { key: checkpoint.id, className: 'rounded-xl border p-3 ' + (result.ready ? (dark ? 'border-emerald-700 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60') : result.code === 'pending' ? (dark ? 'border-violet-700 bg-violet-950/20' : 'border-violet-200 bg-violet-50/60') : (dark ? 'border-amber-700 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60')) },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                     h('div', { className: 'min-w-0' },
                       h('p', { className: 'text-xs font-black' }, checkpoint.location || 'Saved location'),
-                      h('p', { className: 'mt-0.5 text-[0.6875rem] ' + mutedClass }, 'Saved ' + (checkpoint.capturedAt || 'time not recorded') + ' | Valid ' + checkpoint.validAt + (checkpoint.timezone ? ' ' + checkpoint.timezone : '')),
+                      h('p', { className: 'mt-0.5 text-[0.6875rem] ' + mutedClass }, 'Saved ' + (checkpoint.capturedAt || 'time not recorded') + ' | Valid ' + weatherValidTimeLabel(checkpoint.validAt, checkpoint.timezone)),
                       h('p', { className: 'mt-1 text-[0.6875rem] ' + mutedClass }, 'Original retrieval: ' + (checkpoint.retrievedAt || 'not recorded') + '. Provider issue time is not supplied.'),
                       h('p', { className: 'mt-1 text-xs font-bold' }, (predicted.condition || 'Condition not recorded') + ' | ' + shown(predicted.temperature, '\u00B0C') + ' | wind ' + shown(predicted.windSpeed, ' km/h'))
                     ),
                     h('span', { className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-black ' + (result.ready ? 'bg-emerald-700 text-white' : result.code === 'pending' ? 'bg-violet-700 text-white' : 'bg-amber-400 text-amber-950'), 'data-weather-checkpoint-status': result.code }, result.label)
                   ),
+                  checkpoint.learnerReasoning && h('div', { className: 'mt-3 text-xs' }, h('p', { className: 'font-bold' }, 'Original forecast explanation'), h('p', { className: 'mt-1 whitespace-pre-wrap break-words' }, checkpoint.learnerReasoning)),
+                  checkpoint.timelineEvidence && h('div', { className: 'mt-2 text-xs' }, h('p', { className: 'font-bold' }, 'Attached timeline evidence'), h('p', { className: 'mt-1 break-words' }, checkpoint.timelineEvidence)),
                   result.ready && h('div', { className: 'mt-3', 'data-weather-forecast-error': true },
                     h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + emeraldAccentClass }, 'Model difference = saved forecast minus later model value'),
                     h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'Compared retrieval: ' + (result.comparedRetrievedAt || 'not recorded') + '. Matching valid time: ' + checkpoint.validAt + '.'),
@@ -11265,9 +12850,10 @@ var geographyGroup = new THREE.Group();
                     h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, 'Positive means the saved forecast was higher than the later model value. Differences between two model values do not establish which was closer to actual weather.')
                   ),
                   !result.ready && h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, result.detail),
+                  classroomThermometerPanel(checkpoint, controlContext),
                   h('div', { className: 'mt-3 flex flex-wrap gap-2' },
-                    h('button', { type: 'button', onClick: function () { openLiveForecastCheckpoint(checkpoint); }, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black ' + (dark ? 'border-slate-600 bg-slate-950/50' : 'border-slate-300 bg-white') }, 'Open checkpoint hour'),
-                    h('button', { type: 'button', onClick: function () { removeLiveForecastCheckpoint(checkpoint.id); }, className: 'min-h-11 rounded-lg border border-rose-300/50 px-3 py-2 text-xs font-black ' + (dark ? 'bg-rose-950/20 text-rose-100' : 'bg-rose-50 text-rose-800') }, 'Remove')
+                    h('button', { type: 'button', 'aria-label': 'Open checkpoint hour, ' + controlContext, onClick: function () { openLiveForecastCheckpoint(checkpoint); }, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black ' + (dark ? 'border-slate-600 bg-slate-950/50' : 'border-slate-300 bg-white') }, 'Open checkpoint hour'),
+                    h('button', { type: 'button', 'aria-label': 'Remove, ' + controlContext, onClick: function () { removeLiveForecastCheckpoint(checkpoint.id); }, className: 'min-h-11 rounded-lg border border-rose-300/50 px-3 py-2 text-xs font-black ' + (dark ? 'bg-rose-950/20 text-rose-100' : 'bg-rose-50 text-rose-800') }, 'Remove')
                   )
                 );
               })),
@@ -11277,15 +12863,15 @@ var geographyGroup = new THREE.Group();
         }
 
         function forecastJournalPanel() {
-          var history = normalizeForecastHistory(d.forecastHistory);
+          var history = savedForecastHistory;
           var latest = history.length ? history[history.length - 1] : null;
-          var previous = history.length > 1 ? history[history.length - 2] : null;
-          var comparable = previous && latest.contextKey && previous.contextKey && latest.contextKey === previous.contextKey;
-          var delta = previous && (comparable || !latest.contextKey && !previous.contextKey) ? latest.score - previous.score : null;
+          var delta = savedRevision ? savedRevision.delta : null;
           var precipLabels = { none: 'None', rain: 'Rain', snow: 'Snow', mixed: 'Wintry mix', storms: 'Thunderstorms' };
           var hazardLabels = { none: 'No major hazard', lightning: 'Lightning', flood: 'Flooding', ice: 'Ice / travel', highWind: 'Strong wind' };
-          var reflection = !latest ? 'Verify a forecast to begin your revision story.' : !previous ? 'First forecast logged. Study the feedback, then revise and verify again.' : delta > 0 ? 'Revision improved by ' + delta + ' points. Identify which evidence changed your thinking.' : delta === 0 ? 'Your score held steady. Try changing one claim and explain why.' : 'Score changed by ' + delta + ' points. Compare the model outcome before revising again.';
-          if (previous && delta == null) reflection = 'These forecasts used different model setups, or a saved setup is unavailable. Compare their evidence without treating the score difference as revision improvement.';
+          var reflection = 'Verify a forecast to begin your revision story.';
+          if (latest) reflection = 'First forecast logged. Study the feedback, then revise and verify again.';
+          if (history.length > 1) reflection = 'A revision comparison needs two saved forecasts for the same model setup and forecast window.';
+          if (savedRevision) reflection = savedRevision.summary;
           return h('section', { className: panelClass + ' overflow-hidden', 'data-weather-forecast-journal': true, 'aria-labelledby': 'weather-journal-title' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-slate-700' : 'border-sky-200') },
               h('div', null,
@@ -11311,7 +12897,8 @@ var geographyGroup = new THREE.Group();
             h('div', { className: 'p-4' },
               h('div', { className: 'rounded-xl border p-3 ' + (delta != null && delta > 0 ? (dark ? 'border-emerald-700 bg-emerald-950/30' : 'border-emerald-200 bg-emerald-50') : (dark ? 'border-fuchsia-800 bg-fuchsia-950/20' : 'border-fuchsia-200 bg-fuchsia-50')) },
                 h('p', { className: 'text-xs font-black uppercase tracking-wide ' + fuchsiaAccentClass }, latest ? (delta != null && delta > 0 ? 'Revision momentum' : 'Reflection prompt') : 'Journal ready'),
-                h('p', { className: 'mt-1 text-xs font-bold leading-relaxed' }, reflection)
+                h('p', { className: 'mt-1 text-xs font-bold leading-relaxed' }, reflection),
+                savedRevision && savedRevision.changes.length > 0 && h('ul', { className: 'mt-2 list-disc space-y-1 pl-4 text-xs ' + mutedClass, 'aria-label': 'Changes between revised forecasts' }, savedRevision.changes.map(function (change, index) { return h('li', { key: index }, change); }))
               ),
               history.length > 0 && h('ol', { className: 'mt-3 space-y-2', 'aria-label': __alloT('stem.weathersystems.a11y_verified_forecast_attempts', 'Verified forecast attempts') }, history.slice().reverse().map(function (entry, reverseIndex) {
                 var isLatest = reverseIndex === 0;
@@ -11804,7 +13391,7 @@ var geographyGroup = new THREE.Group();
               h('button', { type: 'button', onClick: issueForecast, disabled: !forecastWindow.hasFuture, className: 'mt-4 min-h-11 w-full rounded-lg bg-sky-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors motion-reduce:transition-none hover:bg-sky-800 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, '\uD83D\uDCE1 Verify forecast')
             ),
             forecastJournalPanel(),
-            h('details', { id: 'weather-live-review-disclosure', className: panelClass + ' p-3', open: !!d.liveWeather || normalizeLiveForecastCheckpoints(d.liveForecastCheckpoints).length > 0 }, h('summary', { className: 'cursor-pointer py-2 text-sm font-black' }, 'Live Forecast Review'), forecastVerificationStudio()),
+            h('details', { id: 'weather-live-review-disclosure', className: panelClass + ' p-3', open: !!d.liveWeather || !!normalizeLiveHourDraft(d.liveHourDraft) || normalizeLiveForecastCheckpoints(d.liveForecastCheckpoints).length > 0 || normalizeSavedLivePlaces(d.savedLivePlaces).length > 0 }, h('summary', { className: 'cursor-pointer py-2 text-sm font-black' }, 'Live Forecast Review'), forecastVerificationStudio()),
             ensemblePanel(),
             carriedEvidencePanel(),
             geographicTerrainEvidencePanel(),
@@ -12420,14 +14007,16 @@ var geographyGroup = new THREE.Group();
 
       function immersiveWeatherLab() {
         var baseLive = d.liveWeather || null;
-        var liveTimeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
-        var liveTimelineIndex = liveTimeline.length ? clamp(d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : weatherTimelineCurrentIndex(liveTimeline), 0, liveTimeline.length - 1) : 0;
+        var timelineView = timelineControlSnapshot;
+        var liveTimeline = timelineView.timeline;
+        var liveTimelineIndex = timelineView.selectedIndex;
+        var timelineControlsAvailable = !!timelineView.contextKey && !d.liveWeatherLoading;
         var liveTimelinePoint = liveTimeline[liveTimelineIndex] || null;
         var live = activeLiveWeather(d);
         var useLive = d.immersiveDataSource === 'live' && !!live;
         var observationFreshness = baseLive ? liveObservationFreshness(baseLive) : null;
         var timelineSelectionLabel = liveTimelinePoint ? weatherTimelineLabel(liveTimelinePoint, baseLive && baseLive.timezone) : observationFreshness ? observationFreshness.label : 'Saved weather';
-        var timelineValidTimeDetail = liveTimelinePoint ? timelineSelectionLabel : baseLive && baseLive.observedAt ? 'Model valid ' + baseLive.observedAt + (baseLive.timezone ? ' ' + baseLive.timezone : '') : timelineSelectionLabel;
+        var timelineValidTimeDetail = liveTimelinePoint ? timelineSelectionLabel : baseLive && baseLive.observedAt ? 'Model valid ' + weatherValidTimeLabel(baseLive.observedAt, baseLive.timezone) : timelineSelectionLabel;
         var timelineInstrumentLabel = liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast valid' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier hour' : 'Model valid';
         var timelineInstrumentTime = useLive ? (live.validAt || live.observedAt || 'Latest') : 'T+' + state.simHour + ' h';
         var timelineBadge = liveTimelinePoint ? (liveTimelinePoint.role === 'current' ? observationFreshness.badge : liveTimelinePoint.role === 'earlier' ? '-' + Math.abs(liveTimelinePoint.offsetHours) + 'H' : '+' + liveTimelinePoint.offsetHours + 'H') : observationFreshness ? observationFreshness.badge : 'SAVED';
@@ -12435,9 +14024,12 @@ var geographyGroup = new THREE.Group();
         var timelineStageContext = liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast hour — compare this projection with the current model estimate.' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier model hour — compare this archived forecast with the current estimate.' : liveTimelinePoint ? 'Current model estimate — use this as the baseline for comparison.' : 'Saved weather context.';
          var immersiveAudienceMode = d.immersiveAudienceMode === 'teacher' ? 'teacher' : 'student';
          var teacherMode = immersiveAudienceMode === 'teacher';
-         var timelineComparisonIndex = liveTimeline.length && d.immersiveTimelineCompareIndex !== '' && d.immersiveTimelineCompareIndex != null ? clamp(Math.round(Number(d.immersiveTimelineCompareIndex)), 0, liveTimeline.length - 1) : '';
+         var timelineComparisonIndex = timelineView.comparisonIndex;
          var timelineComparisonPoint = timelineComparisonIndex === '' ? null : liveTimeline[timelineComparisonIndex] || null;
          var timelineDelta = timelineComparisonPoint && liveTimelinePoint && timelineComparisonIndex !== liveTimelineIndex ? immersiveTimelineDelta(liveTimelinePoint, timelineComparisonPoint) : null;
+        function timelineControlsNotice(port) {
+          return h('p', { 'data-weather-timeline-control-status': port, role: 'status', className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-200' }, !timelineView.contextKey ? 'Refresh weather to record the location and retrieval before using these controls.' : d.liveTimelineControlStatus || 'Comparisons use exact hours from this retrieval. Refreshing or restoring a session clears the baseline and pauses playback.');
+        }
         var observationFreshnessClass = liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'border-violet-300/40 bg-violet-300/15 text-violet-100' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'border-slate-300/30 bg-slate-300/10 text-slate-100' : observationFreshness && observationFreshness.current ? 'border-emerald-300/40 bg-emerald-300/15 text-emerald-100' : observationFreshness && !observationFreshness.stale ? 'border-amber-300/40 bg-amber-300/15 text-amber-100' : 'border-rose-300/40 bg-rose-300/15 text-rose-100';
         var model = projectConditions(state, state.simHour);
         var windDir = useLive ? live.windDir : model.windDir;
@@ -13030,7 +14622,7 @@ var geographyGroup = new THREE.Group();
                       h('span', null, Number(regionalFieldLegend.min).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit),
                       h('span', null, Number(regionalFieldLegend.max).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit)
                     ),
-                    h('p', { className: 'mt-1 text-[0.625rem] text-slate-300' }, 'Valid ' + d.geographicWeatherField.validAt + (d.geographicWeatherField.timezone ? ' ' + d.geographicWeatherField.timezone : ''))
+                    h('p', { className: 'mt-1 text-[0.625rem] text-slate-300' }, 'Valid ' + weatherValidTimeLabel(d.geographicWeatherField.validAt, d.geographicWeatherField.timezone))
                   ),
                   h('div', { className: 'mt-2 flex items-center gap-2 border-t border-white/10 pt-1.5', 'data-weather-geographic-orientation': true, role: 'img', 'aria-label': geographicOrientation.label },
                     h('span', { className: 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/20 text-[0.6875rem] font-black text-slate-100', style: { transform: 'rotate(' + geographicOrientation.northRotation + 'deg)' }, 'aria-hidden': true }, '\u2191'),
@@ -13081,9 +14673,9 @@ var geographyGroup = new THREE.Group();
                       timelineComparisonPoint && h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[0.625rem] font-black text-fuchsia-100' }, 'Baseline pinned')
                     ),
                     h('label', { htmlFor: 'weather-stage-timeline-comparison', className: 'mt-2 block text-[0.625rem] font-black text-fuchsia-100' }, 'Compare selected hour with',
-                      h('select', { id: 'weather-stage-timeline-comparison', value: timelineComparisonIndex === '' ? '' : String(timelineComparisonIndex), onChange: function (event) { setImmersiveTimelineComparison(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-[0.6875rem] font-bold text-white focus:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/40' },
+                      h('select', { id: 'weather-stage-timeline-comparison', disabled: !timelineControlsAvailable, value: timelineComparisonIndex === '' ? '' : String(timelineComparisonIndex), onChange: function (event) { setImmersiveTimelineComparison(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-[0.6875rem] font-bold text-white focus:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/40' },
                         h('option', { value: '' }, 'Choose a baseline hour'),
-                        liveTimeline.map(function (point, index) { return h('option', { key: 'stage-compare-hour-' + index, value: String(index), disabled: index === liveTimelineIndex }, weatherTimelineLabel(point, baseLive && baseLive.timezone) + (index === liveTimelineIndex ? ' (selected)' : '')); })
+                        liveTimeline.map(function (point, index) { return h('option', { key: 'stage-compare-hour-' + index, value: String(index), disabled: index === liveTimelineIndex || timelineView.timestamps[index] == null || timelineView.timestamps.indexOf(timelineView.timestamps[index]) !== timelineView.timestamps.lastIndexOf(timelineView.timestamps[index]) }, weatherTimelineLabel(point, baseLive && baseLive.timezone) + (index === liveTimelineIndex ? ' (selected)' : '')); })
                       )
                     ),
                     timelineDelta ? h('div', { className: 'mt-2', role: 'status', 'aria-live': 'polite' },
@@ -13096,12 +14688,13 @@ var geographyGroup = new THREE.Group();
                     ) : h('p', { className: 'mt-2 text-[0.625rem] text-slate-300', role: 'status' }, 'Choose a different hour to reveal temperature, moisture, pressure, wind, and precipitation changes.')
                   ),
                   h('div', { className: 'mt-2 flex flex-wrap items-center gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_stage_timeline_playback_controls', 'Stage timeline playback controls') },
-                    h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Previous hour'),
-                    h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg bg-violet-300 px-3 py-2 text-[0.625rem] font-black text-violet-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, d.liveWeatherTimelinePlaying ? 'Pause timeline' : 'Play timeline'),
-                    h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Next hour'),
-                    h('button', { type: 'button', onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/35 bg-emerald-300/10 px-3 py-2 text-[0.625rem] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200' }, 'Return to now')
+                    h('button', { type: 'button', disabled: !timelineControlsAvailable || liveTimelineIndex <= 0, onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Previous hour'),
+                    h('button', { type: 'button', disabled: !timelineControlsAvailable, onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg bg-violet-300 px-3 py-2 text-[0.625rem] font-black text-violet-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, d.liveWeatherTimelinePlaying ? 'Pause timeline' : 'Play timeline'),
+                    h('button', { type: 'button', disabled: !timelineControlsAvailable || liveTimelineIndex >= liveTimeline.length - 1, onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Next hour'),
+                    h('button', { type: 'button', disabled: !timelineControlsAvailable || liveTimelineIndex === timelineView.currentIndex, onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/35 bg-emerald-300/10 px-3 py-2 text-[0.625rem] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200' }, 'Return to now')
                   ),
-                  h('label', { htmlFor: 'weather-stage-timeline-slider', className: 'mt-2 block text-[0.625rem] font-black text-violet-100' }, 'Selected hour', h('input', { id: 'weather-stage-timeline-slider', type: 'range', min: 0, max: liveTimeline.length - 1, step: 1, value: liveTimelineIndex, onChange: function (event) { setLiveWeatherTimelineIndex(event.target.value); }, 'aria-valuetext': timelineSelectionLabel + '. ' + timelineStageContext, className: 'mt-1 min-h-11 w-full accent-violet-300' }))
+                  h('label', { htmlFor: 'weather-stage-timeline-slider', className: 'mt-2 block text-[0.625rem] font-black text-violet-100' }, 'Selected hour', h('input', { id: 'weather-stage-timeline-slider', type: 'range', min: 0, max: liveTimeline.length - 1, step: 1, value: liveTimelineIndex, disabled: !timelineControlsAvailable, onChange: function (event) { setLiveWeatherTimelineIndex(event.target.value); }, 'aria-valuetext': timelineSelectionLabel + '. ' + timelineStageContext, className: 'mt-1 min-h-11 w-full accent-violet-300' })),
+                  timelineControlsNotice('stage')
                 ),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-cyan-950/10 via-transparent to-slate-950/50', 'data-weather-conceptual-vignette': true, 'aria-hidden': true }),
                 !geographicMode && immersiveGuideOpen && selectedGlossaryFeature && selectedGlossaryFeature.overlay && h('div', { ref: immersiveCalloutRef, 'data-weather-feature-callout-anchor': 'projected', className: 'pointer-events-none absolute z-20 max-w-[220px] rounded-xl border border-cyan-200/40 bg-slate-950/90 px-3 py-2 text-left shadow-2xl backdrop-blur-md', style: { top: selectedGlossaryFeature.overlay.top, left: selectedGlossaryFeature.overlay.left, transform: 'translate(-8%, -50%)' }, 'data-weather-feature-callout': selectedGlossaryFeature.id, role: 'note', 'aria-label': selectedGlossaryFeature.label + '. ' + selectedGlossaryFeature.lookFor },
@@ -13232,7 +14825,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                   geographicOverlays && h('div', { className: 'mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/10 pt-2 text-[0.6875rem]' },
                     h('span', { className: 'font-black text-sky-200' }, 'FROM ' + cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h'),
                     h('span', { className: 'font-black text-cyan-100' }, 'TO ' + cardinal(geographicOverlays.downwindBearing)),
-                    h('span', { className: 'text-slate-300' }, (live.timelineRole === 'forecast' ? 'Forecast valid ' : live.timelineRole === 'earlier' ? 'Earlier hour ' : 'Model valid ') + (live.validAt || live.observedAt || 'latest') + (live.timezone ? ' ' + live.timezone : '')),
+                    h('span', { className: 'text-slate-300' }, (live.timelineRole === 'forecast' ? 'Forecast valid ' : live.timelineRole === 'earlier' ? 'Earlier hour ' : 'Model valid ') + weatherValidTimeLabel(live.validAt || live.observedAt || 'latest', live.timezone)),
                     h('span', { className: observationFreshness.current ? 'text-emerald-200' : observationFreshness.stale ? 'text-rose-200' : 'text-amber-200' }, (liveTimelinePoint && liveTimelinePoint.role !== 'current' ? timelineSelectionLabel : observationFreshness.detail))
                   ),
                   geographicOverlays && h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300' }, geographicOverlays.windDistanceKm + ' km teaching vector scaled from the selected-hour wind speed; not a forecast footprint.'),
@@ -13597,19 +15190,17 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                         max: liveTimeline.length - 1,
                         step: 1,
                         value: liveTimelineIndex,
-                        onChange: function (event) {
-                          var nextIndex = clamp(Number(event.target.value), 0, liveTimeline.length - 1);
-                          update({ liveWeatherTimelineIndex: nextIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the selected weather hour...' });
-                        },
+                        onChange: function (event) { setLiveWeatherTimelineIndex(event.target.value); },
+                        disabled: !timelineControlsAvailable,
                         'aria-valuetext': timelineSelectionLabel,
                         className: 'mt-2 min-h-11 w-full accent-violet-300'
                       })
                     ),
                      h('div', { className: 'mt-3 rounded-xl border border-violet-300/25 bg-violet-300/10 p-3', 'data-weather-timeline-comparison': true },
                        h('label', { htmlFor: 'weather-timeline-comparison', className: 'block text-[0.6875rem] font-black text-violet-100' }, 'Compare selected hour with',
-                         h('select', { id: 'weather-timeline-comparison', value: timelineComparisonIndex === '' ? '' : String(timelineComparisonIndex), onChange: function (event) { setImmersiveTimelineComparison(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-white focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-300/40' },
+                         h('select', { id: 'weather-timeline-comparison', disabled: !timelineControlsAvailable, value: timelineComparisonIndex === '' ? '' : String(timelineComparisonIndex), onChange: function (event) { setImmersiveTimelineComparison(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-white focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-300/40' },
                            h('option', { value: '' }, 'Choose a baseline hour'),
-                           liveTimeline.map(function (point, index) { return h('option', { key: 'compare-hour-' + index, value: String(index), disabled: index === liveTimelineIndex }, weatherTimelineLabel(point, baseLive && baseLive.timezone) + (index === liveTimelineIndex ? ' (selected)' : '')); })
+                           liveTimeline.map(function (point, index) { return h('option', { key: 'compare-hour-' + index, value: String(index), disabled: index === liveTimelineIndex || timelineView.timestamps[index] == null || timelineView.timestamps.indexOf(timelineView.timestamps[index]) !== timelineView.timestamps.lastIndexOf(timelineView.timestamps[index]) }, weatherTimelineLabel(point, baseLive && baseLive.timezone) + (index === liveTimelineIndex ? ' (selected)' : '')); })
                          )
                        ),
                        timelineDelta && h('div', { className: 'mt-2', role: 'status', 'aria-live': 'polite' },
@@ -13627,11 +15218,12 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       h('span', null, '+' + liveTimeline[liveTimeline.length - 1].offsetHours + ' h')
                     ),
                     h('div', { className: 'mt-2 grid grid-cols-4 gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_hourly_weather_playback_controls', 'Hourly weather playback controls') },
-                      h('button', { type: 'button', disabled: liveTimelineIndex <= 0, onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': __alloT('stem.weathersystems.a11y_previous_weather_hour', 'Previous weather hour') }, '\u22121 h'),
-                      h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg border border-violet-300/40 bg-violet-300/15 px-2 py-2 text-[0.6875rem] font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, d.liveWeatherTimelinePlaying ? 'Pause' : 'Play'),
-                      h('button', { type: 'button', disabled: liveTimelineIndex >= liveTimeline.length - 1, onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': __alloT('stem.weathersystems.a11y_next_weather_hour', 'Next weather hour') }, '+1 h'),
-                      h('button', { type: 'button', disabled: !liveTimelinePoint || liveTimelinePoint.role === 'current', onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-2 py-2 text-[0.6875rem] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-40' }, 'Now')
+                      h('button', { type: 'button', disabled: !timelineControlsAvailable || liveTimelineIndex <= 0, onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': __alloT('stem.weathersystems.a11y_previous_weather_hour', 'Previous weather hour') }, '\u22121 h'),
+                      h('button', { type: 'button', disabled: !timelineControlsAvailable, onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg border border-violet-300/40 bg-violet-300/15 px-2 py-2 text-[0.6875rem] font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, d.liveWeatherTimelinePlaying ? 'Pause' : 'Play'),
+                      h('button', { type: 'button', disabled: !timelineControlsAvailable || liveTimelineIndex >= liveTimeline.length - 1, onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': __alloT('stem.weathersystems.a11y_next_weather_hour', 'Next weather hour') }, '+1 h'),
+                      h('button', { type: 'button', disabled: !timelineControlsAvailable || !liveTimelinePoint || liveTimelineIndex === timelineView.currentIndex, onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-2 py-2 text-[0.6875rem] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-40' }, 'Now')
                     ),
+                    timelineControlsNotice('inspector'),
                     h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast model hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier model hour' : 'Current conditions') + ' | ' + live.condition + ' | ' + live.temperature + '\u00B0C | ' + cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h | ' + live.precipitation + ' mm precipitation'),
                     liveTimelinePoint && liveTimelinePoint.role === 'forecast' && h('button', { type: 'button', onClick: saveLiveForecastCheckpoint, className: 'mt-2 min-h-11 w-full rounded-lg border border-fuchsia-300/50 bg-fuchsia-300/15 px-3 py-2 text-xs font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200', 'data-weather-save-forecast-checkpoint': true }, 'Save forecast checkpoint for verification')
                   ),
@@ -14339,12 +15931,11 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
           var comparisonComplete = !!d.patternCompared || selectedChangeCount >= 1 || !!d.carriedEvidence;
           var experimentCount = d.experimentsRun || 0;
           var forecastCount = d.forecastsIssued || 0;
-          var history = d.forecastHistory || [];
+          var history = savedForecastHistory;
           var latestForecast = history.length ? history[history.length - 1] : null;
           var reasoningLength = ((typeof d.reasoning === 'string' ? d.reasoning : '') || (latestForecast && latestForecast.reasoning) || '').trim().length;
           var evidenceCount = Math.max((Array.isArray(d.evidence) ? d.evidence : []).length, latestForecast && latestForecast.evidenceCount || 0);
           var reasoningTarget = band === 'K-2' ? 10 : 20;
-          var revisionDelta = history.length >= 2 ? Number(history[history.length - 1].score || 0) - Number(history[history.length - 2].score || 0) : null;
           var checkpoints = [
             {
               id: 'observe', icon: '🔭', title: band === 'K-2' ? 'Weather clues' : 'Observation evidence', tab: 'map', complete: observationCount >= 1, started: stationCount >= 1,
@@ -14367,9 +15958,9 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
               prompt: forecastCount ? (evidenceCount >= 2 && reasoningLength >= reasoningTarget ? 'Ask: How does each evidence source support the claim?' : 'Conference on connecting at least two measurements to the claim.') : band === 'K-2' ? 'Help the learner say what may happen and point to a clue.' : 'Have the learner issue a claim, cite measurements, and explain the mechanism.'
             },
             {
-              id: 'revise', icon: '🔁', title: band === 'K-2' ? 'Make it better' : 'Revision', tab: 'forecast', complete: history.length >= 2, started: history.length >= 1,
-              evidence: history.length >= 2 ? (revisionDelta > 0 ? 'Latest revision improved the model-match score by ' + revisionDelta + ' points.' : revisionDelta < 0 ? 'Latest revision changed the model-match score by ' + revisionDelta + ' points; compare the evidence choices.' : 'The two latest forecasts have the same model-match score; compare their evidence and reasoning.') : history.length === 1 ? 'One verified forecast is ready to revise and compare.' : 'No forecast revision recorded yet.',
-              prompt: history.length >= 2 ? 'Ask: What did you change, why, and what would you test next?' : 'Revisit the forecast after new evidence, then explain what changed in the reasoning.'
+              id: 'revise', icon: '🔁', title: band === 'K-2' ? 'Make it better' : 'Revision', tab: 'forecast', complete: !!savedRevision, started: history.length >= 1,
+              evidence: savedRevision ? savedRevision.summary + (savedRevision.changes.length ? ' ' + savedRevision.changes.join(' ') : '') : history.length > 1 ? 'A revision comparison needs two saved forecasts for the same model setup and forecast window.' : history.length === 1 ? 'One verified forecast is ready to revise and compare.' : 'No forecast revision recorded yet.',
+              prompt: savedRevision ? 'Ask: What did you change, why, and what would you test next?' : 'Revisit the forecast after new evidence, then explain what changed in the reasoning.'
             }
           ];
           var readyCount = checkpoints.filter(function (checkpoint) { return checkpoint.complete; }).length;
@@ -14495,11 +16086,9 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
             var comparisonReady = !!d.patternCompared || (d.lensEvidence || []).length >= 1 || !!d.carriedEvidence;
             var experimentCount = d.experimentsRun || 0;
             var forecastCount = d.forecastsIssued || 0;
-            var history = d.forecastHistory || [];
-            var checkpointCount = [observationCount >= 1, comparisonReady, experimentCount >= 1, forecastCount >= 1, history.length >= 2].filter(Boolean).length;
+            var history = savedForecastHistory;
+            var checkpointCount = [observationCount >= 1, comparisonReady, experimentCount >= 1, forecastCount >= 1, !!savedRevision].filter(Boolean).length;
             var latest = history.length ? history[history.length - 1] : null;
-            var previous = history.length >= 2 ? history[history.length - 2] : null;
-            var scoreChange = latest && previous ? Number(latest.score || 0) - Number(previous.score || 0) : null;
             var reflectionShiftLabels = { station: 'Station measurement', pattern: 'Pattern over time', experiment: 'Controlled test', verification: 'Forecast verification', discussion: 'Explaining to someone' };
             var reflectionReadinessLabels = { needHelp: 'Needs a conference', developing: 'Can explain with a prompt', explain: 'Can explain with evidence', transfer: 'Ready to apply to a new system' };
             var pulseQuestions = reasoningPulseQuestions();
@@ -14521,13 +16110,17 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
               '- Pattern comparison recorded: ' + (comparisonReady ? 'Yes' : 'Not yet'),
               '- Controlled tests recorded: ' + experimentCount,
               '- Verified forecasts: ' + forecastCount,
-              '- Forecast revisions available: ' + history.length,
+              '- Saved forecast attempts: ' + history.length,
+              '- Comparable revision available: ' + (savedRevision ? 'Yes' : 'Not yet'),
               '- Learner exit ticket: ' + (d.reflectionSubmitted ? 'Saved' : 'Not yet'),
               '- Reasoning pulse: ' + (pulseAnswered ? pulseSupported + '/' + pulseQuestions.length + ' explanations supported; ' + pulseAnswered + '/' + pulseQuestions.length + ' answered' : 'Not yet'),
               '- Peer review: ' + (d.peerReviewSubmitted ? 'Saved' : 'Not yet')
             ];
             if (latest) lines.push('- Latest model-match score: ' + latest.score + '/100 with ' + (latest.evidenceCount || 0) + ' evidence source' + ((latest.evidenceCount || 0) === 1 ? '' : 's'));
-            if (scoreChange != null) lines.push('- Latest score change: ' + (scoreChange > 0 ? '+' : '') + scoreChange + ' points');
+            if (savedRevision) {
+              lines.push('- ' + savedRevision.summary);
+              savedRevision.changes.forEach(function (change) { lines.push('- ' + change); });
+            } else if (history.length > 1) lines.push('- A revision comparison needs two saved forecasts for the same model setup and forecast window.');
             if (pulseReview.length) lines.push('- Reasoning review focus: ' + pulseReview.join(', '));
             if (d.peerReviewSubmitted) {
               lines.push('- Peer-identified strength: ' + (peerStrengthLabels[d.peerReviewStrength] || 'Not recorded'));
@@ -14734,7 +16327,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
       // Stage mode is a projection surface: the badge board and pathway would push the 3D view
       // below the fold on a classroom display, so they step aside until the learner leaves it.
       var stageOnly = tab === 'immersive' && d.immersiveStageMode === true;
-      return h('section', { className: rootClass, 'data-weather-systems-root': true, 'data-weather-stage-only': stageOnly ? 'on' : 'off' },
+      return h('section', { ref: weatherSystemsRootRef, className: rootClass, 'data-weather-systems-root': true, 'data-weather-stage-only': stageOnly ? 'on' : 'off' },
         header(),
         !stageOnly && meteorologistBadgeBoard(),
         !stageOnly && investigationNavigator(),

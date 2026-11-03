@@ -55,13 +55,15 @@ const FORM = '<!DOCTYPE html><html lang="en"><head><title>Accessible Document â€
   + '<table><caption>Dependents</caption><tr><th></th><th scope="col">Dependent 1</th></tr>'
   + '<tr><td>(1) First name</td><td>________</td></tr><tr><td>(2) Last name</td><td>________</td></tr></table>'
   + PARA + '</main></body></html>';
+// (2026-11-02) An empty corner th -> td is now an accepted repair (keyless 11-02 scan1913), so the refused
+// edit here demotes a header that names its column.
 const fixAll = (s) => s.replace('<title>Accessible Document â€” f1040</title>', '<title>Form 1040: U.S. Individual Income Tax Return 2025</title>')
-  .replace('<tr><th></th>', '<tr><td></td>')
+  .replace('<th scope="col">Dependent 1</th>', '<td>Dependent 1</td>')
   .replace('<td>(1) First name</td>', '<th scope="row">(1) First name</th>')
   .replace('<td>(2) Last name</td>', '<th scope="row">(2) Last name</th>');
 
 describe('a refused fix candidate keeps the edits that pass the gate on their own', () => {
-  it('the whole IRS-shaped candidate is refused by the real gate (corner th->td)', () => {
+  it('the whole IRS-shaped candidate is refused by the real gate (named column header th->td)', () => {
     const h = harness((s) => s);
     const d = h.acceptFixedHtmlDetailed(fixAll(FORM), FORM, { fragment: false, mode: 'faithful', strictContent: true });
     expect(d.accepted).toBe(false);
@@ -73,7 +75,7 @@ describe('a refused fix candidate keeps the edits that pass the gate on their ow
     expect(out).toContain('<title>Form 1040: U.S. Individual Income Tax Return 2025</title>');
     expect(out).toContain('<th scope="row">(1) First name</th>');
     expect(out).toContain('<th scope="row">(2) Last name</th>');
-    expect(out).toContain('<tr><th></th>');
+    expect(out).toContain('<th scope="col">Dependent 1</th>');
     // every kept state passed the same gate, and so does the result
     expect(h.acceptFixedHtmlDetailed(out, FORM, { fragment: false, mode: 'faithful', strictContent: true }).accepted).toBe(true);
     expect(h.evidence[0].candidateRejections).toContainEqual(expect.objectContaining({ reason: 'table-semantics-changed' }));
@@ -85,7 +87,7 @@ describe('a refused fix candidate keeps the edits that pass the gate on their ow
     expect(h.logs.some((l) => /splitting \d+ chars into \d+ chunks/.test(l))).toBe(true);
     expect(out).toContain('<title>Form 1040: U.S. Individual Income Tax Return 2025</title>');
     expect(out).toContain('<th scope="row">(1) First name</th>');
-    expect(out).toContain('<tr><th></th>');
+    expect(out).toContain('<th scope="col">Dependent 1</th>');
     expect(h.acceptFixedHtmlDetailed(out, FORM, { fragment: false, mode: 'faithful', strictContent: true }).accepted).toBe(true);
   });
   it('never half-applies a score transposition', async () => {

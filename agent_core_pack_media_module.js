@@ -309,12 +309,13 @@
           }
         });
       }
+      // Memory-card and challenge pictures are rendered app fields in both media profiles.
+      if (resource.type === 'memory-aid' && object(data) && Array.isArray(data.cards)) eachSlot(data.cards, function (row, i) {
+        add(row, 'memory', i, resource, ri, base + '.cards[' + i + ']', { altLimit: 800 });
+        if (native && object(row) && row.imageUrl) add(row, 'memory', i, resource, ri, base + '.cards[' + i + ']', { fields: Object.assign({}, IMAGE_FIELDS.memory, { image: 'imageUrl' }), altLimit: 800 });
+      });
+      if (resource.type === 'applied-challenge' && object(data) && object(data.visual)) add(data.visual, 'challenge', 0, resource, ri, base + '.visual', { altLimit: 1200 });
       if (native) {
-        if (resource.type === 'memory-aid' && object(data) && Array.isArray(data.cards)) eachSlot(data.cards, function (row, i) {
-          add(row, 'memory', i, resource, ri, base + '.cards[' + i + ']', { altLimit: 800 });
-          if (object(row) && row.imageUrl) add(row, 'memory', i, resource, ri, base + '.cards[' + i + ']', { fields: Object.assign({}, IMAGE_FIELDS.memory, { image: 'imageUrl' }), altLimit: 800 });
-        });
-        if (resource.type === 'applied-challenge' && object(data) && object(data.visual)) add(data.visual, 'challenge', 0, resource, ri, base + '.visual', { altLimit: 1200 });
         // These renderers use the adjacent name/title as their accessible text,
         // rather than the image-view alt metadata contract.
         function named(owner, key, label, kind, index, path, decorative) {
@@ -365,7 +366,7 @@
           }
         }
       });
-      if (resource.type !== 'image') return;
+      if (resource.type !== 'image' || (options && options.reviewStateOnly === true)) return;
       var panels = object(data.visualPlan) && Array.isArray(data.visualPlan.panels) ? data.visualPlan.panels : [];
       eachValidation(panels, errors, function (panel, pi) {
         if (!object(panel)) return;
@@ -447,7 +448,8 @@
       stats.complete = false;
       return { ok: false, errors: errors, warnings: warnings, stats: stats };
     }
-    if (native) errors = errors.concat(validateNativeImageState(pack, cap).errors);
+    // Illustrated packs share the memory/challenge review-flag checks, not the image-view annotation contract.
+    errors = errors.concat(validateNativeImageState(pack, native ? cap : Object.assign({}, cap, { reviewStateOnly: true })).errors);
     eachValidation(slots.slice(0, cap.maxPlacements), errors, function (slot) {
       paths.add(slot.path);
       var owner = slot.owner, f = slot.fields, value = owner[f.image], report = cache.get(value);

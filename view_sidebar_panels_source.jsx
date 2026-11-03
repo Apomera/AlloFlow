@@ -38,6 +38,135 @@ function useAiTextAvailable() {
   }, []);
   return available;
 }
+// "Two roads": the first non-passage start in a page session offers Guided Quick Start
+// instead. Only offered when the host registers Quick Start, so old hosts never see it.
+// One factory so the per-session "already answered" state lives in a single closure.
+function createPathFork() {
+  const SKIP_KEY = 'allo_path_fork_skip';
+  let settled = false;
+  const say = (t, key, fallback) => {
+    let value;
+    try { value = typeof t === 'function' ? t(key) : ''; } catch (_) {}
+    return typeof value === 'string' && value && value !== key ? value : fallback;
+  };
+  const toast = (t, key, fallback) => {
+    try { if (typeof window.__alloAddToast === 'function') window.__alloAddToast(say(t, key, fallback), 'info'); } catch (_) {}
+  };
+  const quickStart = () => (typeof window !== 'undefined' && typeof window.__alloOpenQuickStart === 'function' ? window.__alloOpenQuickStart : null);
+  const takeGuidedPath = (t) => {
+    const open = quickStart();
+    if (!open) return;
+    try { open(); } catch (_) {}
+    toast(t, 'sidebar.path_fork_toast_guided', 'Back on the guided path. There and back again.');
+  };
+  const wanted = () => {
+    if (settled || !quickStart()) return false;
+    try { return window.localStorage.getItem(SKIP_KEY) !== '1'; } catch (_) { return true; }
+  };
+
+  function Dialog({ t, onGuided, onLessTraveled, onCancel }) {
+    const [remember, setRemember] = React.useState(false);
+    const boxRef = React.useRef(null);
+    const restoreFocus = React.useRef(true);
+    const id = 'path-fork-' + (React.useId ? React.useId().replace(/[^\w-]/g, '') : 'dialog');
+    React.useEffect(() => {
+      const returnTo = document.activeElement;
+      const first = boxRef.current && boxRef.current.querySelector('button');
+      if (first) first.focus();
+      return () => {
+        // Quick Start opens its own wizard; pulling focus back here would steal it.
+        if (!restoreFocus.current) return;
+        try { if (returnTo && returnTo.isConnected && typeof returnTo.focus === 'function') returnTo.focus(); } catch (_) {}
+      };
+    }, []);
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onCancel(); return; }
+      if (event.key !== 'Tab' || !boxRef.current) return;
+      const items = [...boxRef.current.querySelectorAll('button, input')].filter((el) => !el.disabled);
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    const action = 'inline-flex min-h-11 w-full items-center justify-center rounded-lg border px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
+    const dialog = (
+      <div data-path-fork className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 p-4"
+        onKeyDown={onKeyDown} onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
+        <div ref={boxRef} role="dialog" aria-modal="true" aria-labelledby={id + '-title'} aria-describedby={id + '-body'}
+          className="w-full max-w-md rounded-2xl border border-slate-300 bg-white p-5 text-slate-900 shadow-xl">
+          <h2 id={id + '-title'} className="m-0 text-lg font-bold">{say(t, 'sidebar.path_fork_title', 'Two roads diverged in a wood')}</h2>
+          <p className="m-0 mt-0.5 text-xs italic text-slate-700">{say(t, 'sidebar.path_fork_attribution', 'Robert Frost, “The Road Not Taken”')}</p>
+          <p id={id + '-body'} className="mb-4 mt-3 text-sm leading-relaxed">
+            {say(t, 'sidebar.path_fork_body', 'Most lessons start from a passage, and Guided Quick Start walks you through it. You can also start from a topic, a word list, or a blank page. Those starts are experimental, so check the facts before you share.')}
+          </p>
+          <div className="space-y-2">
+            <button type="button" data-path-fork-guided onClick={() => { restoreFocus.current = false; onGuided(remember); }}
+              className={action + ' border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800'}>
+              {say(t, 'sidebar.path_fork_guided', 'Take the guided path (recommended)')}
+            </button>
+            <button type="button" data-path-fork-less-traveled onClick={() => onLessTraveled(remember)}
+              className={action + ' border-slate-400 bg-white text-slate-900 hover:bg-slate-100'}>
+              {say(t, 'sidebar.path_fork_less_traveled', 'Take the one less traveled by')}
+            </button>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="h-5 w-5" />
+              {say(t, 'sidebar.path_fork_remember', 'Don’t ask me again')}
+            </label>
+            <button type="button" onClick={onCancel}
+              className="min-h-11 rounded-lg px-3 text-sm font-semibold text-slate-800 underline underline-offset-2 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+              {say(t, 'sidebar.path_fork_not_now', 'Not now')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+    return window.ReactDOM && window.ReactDOM.createPortal ? window.ReactDOM.createPortal(dialog, document.body) : dialog;
+  }
+
+  // request(next) runs next() at once, or after "Take the one less traveled by".
+  // Cancelling runs nothing and asks again next time.
+  function useFork(t) {
+    const [pending, setPending] = React.useState(null);
+    const settle = (remember) => {
+      settled = true;
+      if (remember) { try { window.localStorage.setItem(SKIP_KEY, '1'); } catch (_) {} }
+      setPending(null);
+    };
+    const request = (next) => { if (wanted()) setPending(() => next); else next(); };
+    const dialog = pending ? (
+      <Dialog t={t} onCancel={() => setPending(null)}
+        onGuided={(remember) => { settle(remember); takeGuidedPath(t); }}
+        onLessTraveled={(remember) => {
+          const next = pending;
+          settle(remember);
+          next();
+          toast(t, 'sidebar.path_fork_toast_less_traveled', 'Experimental start is on. Not all those who wander are lost.');
+        }} />
+    ) : null;
+    return [request, dialog];
+  }
+
+  function Note({ t, onBack }) {
+    const canGoBack = !!quickStart();
+    return (
+      <p data-path-less-traveled className="m-0 text-xs text-slate-700">
+        <span className="font-semibold">{say(t, 'sidebar.path_fork_badge', 'The path less traveled · experimental')}</span>
+        {canGoBack && <>{' · '}
+          <button type="button" data-path-fork-back onClick={() => { if (onBack) onBack(); takeGuidedPath(t); }}
+            className="min-h-[24px] font-semibold text-sky-900 underline underline-offset-2 hover:text-sky-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500">
+            {say(t, 'sidebar.path_fork_back', 'Back to the guided path')}
+          </button>
+        </>}
+      </p>
+    );
+  }
+
+  return { useFork, Note };
+}
+const PathFork = createPathFork();
+
 // "Other ways to start": one collapsed line that lists only what this tool supports,
 // an experimental topic start (needs AI) and a blank resource the teacher fills in.
 // With no AI connected, Generate cannot run, so the blank start is shown directly.
@@ -48,13 +177,14 @@ function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
   const [topicOpen, setTopicOpen] = React.useState(false);
   const [topic, setTopic] = React.useState('');
   const topicId = 'start-topic-' + (React.useId ? React.useId().replace(/[^\w-]/g, '') : 'field');
+  const [requestFork, forkDialog] = PathFork.useFork(t);
   const canTopic = typeof onStartFromTopic === 'function' && aiTextAvailable;
   const canBlank = typeof onStartBlank === 'function';
   if (!canTopic && !canBlank) return null;
   const action = 'min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1';
   const link = 'min-h-[24px] text-xs font-semibold text-sky-900 underline underline-offset-2 hover:text-sky-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500';
   const blankButton = canBlank ? (
-    <button type="button" data-help-key="sidebar_start_blank" disabled={!!busy} onClick={() => onStartBlank()}
+    <button type="button" data-help-key="sidebar_start_blank" disabled={!!busy} onClick={() => (open ? onStartBlank() : requestFork(() => onStartBlank()))}
       className={action + ' border border-sky-300 bg-white text-sky-900 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60'}>
       {t('sidebar.start_blank') || 'Blank: fill it in yourself'}
     </button>
@@ -63,11 +193,12 @@ function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
     <div className="flex flex-wrap items-center gap-2">{blankButton}</div>
   ) : (
     <div>
-      <button type="button" data-help-key="sidebar_other_ways_toggle" aria-expanded={open} onClick={() => setOpen((v) => !v)} className={link}>
+      <button type="button" data-help-key="sidebar_other_ways_toggle" aria-expanded={open} onClick={() => (open ? setOpen(false) : requestFork(() => setOpen(true)))} className={link}>
         {(t('sidebar.other_ways_to_start') || 'Other ways to start') + (open ? ' ▴' : ' ▾')}
       </button>
       {open && (
         <div className="mt-2 space-y-2">
+          <PathFork.Note t={t} onBack={() => setOpen(false)} />
           {canTopic && (!topicOpen ? (
             <button type="button" data-help-key="sidebar_source_needed_topic_toggle" aria-expanded="false" onClick={() => setTopicOpen(true)} className={link}>
               {t('sidebar.needs_source_topic_toggle') || 'From a topic (experimental)'}
@@ -92,11 +223,165 @@ function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
     </div>
   );
   return framed ? (
-    <div data-help-key="sidebar_other_ways_to_start" className="border-b border-sky-200 bg-sky-50 px-3.5 py-2 text-xs text-sky-950">{body}</div>
+    <div data-help-key="sidebar_other_ways_to_start" className="border-b border-sky-200 bg-sky-50 px-3.5 py-2 text-xs text-sky-950">{body}{forkDialog}</div>
   ) : (
-    <div data-help-key="sidebar_other_ways_to_start" className="mt-2 border-t border-sky-200 pt-2">{body}</div>
+    <div data-help-key="sidebar_other_ways_to_start" className="mt-2 border-t border-sky-200 pt-2">{body}{forkDialog}</div>
   );
 }
+
+function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
+  const aiAvailable = useAiTextAvailable();
+  const [mode, setMode] = React.useState('');
+  const [topic, setTopic] = React.useState('');
+  const [topicType, setTopicType] = React.useState('anchor-chart');
+  const [wordList, setWordList] = React.useState('');
+  const [termLanguage, setTermLanguage] = React.useState('English');
+  const [blankType, setBlankType] = React.useState('quiz');
+  const [submitting, setSubmitting] = React.useState(false);
+  const [requestError, setRequestError] = React.useState('');
+  const pending = React.useRef(false);
+  const mounted = React.useRef(true);
+  const uid = React.useId();
+  const [requestFork, forkDialog] = PathFork.useFork(t);
+  const id = 'source-start-' + uid.replace(/[^\w-]/g, '');
+  const say = (key, fallback, values = {}) => {
+    const fullKey = 'source_start.' + key;
+    let value;
+    try { value = typeof t === 'function' ? t(fullKey, values) : ''; } catch (_) {}
+    const text = typeof value === 'string' && value && value !== fullKey ? value : fallback;
+    return text.replace(/\{(\w+)\}/g, (match, name) => values[name] == null ? match : String(values[name]));
+  };
+  React.useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+  const topicTypes = [
+    ['anchor-chart', say('anchor_chart', 'Anchor Chart')],
+    ['concept-sort', say('concept_sort', 'Concept Sort')],
+    ['persona', say('persona', 'Interview candidates')],
+  ];
+  const blankTypes = [
+    ['quiz', say('quiz', 'Assess')],
+    ['glossary', say('glossary', 'Glossary')],
+    ['timeline', say('timeline', 'Sequence Builder')],
+    ['concept-sort', say('concept_sort', 'Concept Sort')],
+    ['anchor-chart', say('anchor_chart', 'Anchor Chart')],
+  ].filter(([type]) => typeof window !== 'undefined' && Array.isArray(window.__alloBlankStartTypes)
+    && window.__alloBlankStartTypes.includes(type));
+  const selectedBlankType = blankTypes.some(([type]) => type === blankType) ? blankType : (blankTypes[0]?.[0] || '');
+  const terms = wordList.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
+  const duplicateTerms = new Set(terms).size !== terms.length;
+  let validation = '';
+  if (mode === 'topic') {
+    if (!topic.trim()) validation = say('topic_required', 'Enter a topic.');
+    else if (topic.length > 300) validation = say('topic_limit', 'Use no more than 300 characters for the topic.');
+    else if (!topicTypes.some(([type]) => type === topicType)) validation = say('choose_resource', 'Choose a supported resource.');
+  } else if (mode === 'word-list') {
+    if (!terms.length) validation = say('words_required', 'Enter at least one term or phrase.');
+    else if (wordList.length > 6000) validation = say('words_total_limit', 'Keep the complete list within 6,000 characters.');
+    else if (terms.length > 40) validation = say('words_count_limit', 'Use no more than 40 terms or phrases.');
+    else if (terms.some(term => term.length > 160)) validation = say('words_entry_limit', 'Keep each term or phrase within 160 characters.');
+    else if (duplicateTerms) validation = say('words_duplicate', 'Remove repeated entries. Each exact term or phrase should appear once.');
+    else if (!termLanguage.trim() || termLanguage.trim().length > 120) validation = say('words_language_required', 'Enter the language of this word list.');
+  } else if (mode === 'blank' && !selectedBlankType) {
+    validation = say('blank_unavailable', 'Blank resources are still loading. Try again shortly.');
+  }
+  const blocked = !!busy || submitting;
+  const needsAi = mode === 'topic' || mode === 'word-list';
+  const showValidation = !!validation && (mode === 'blank' || (mode === 'topic' ? !!topic.length : !!wordList.length));
+  const choose = value => {
+    if (blocked) return;
+    const apply = () => { setMode(value); setRequestError(''); };
+    if (value && !mode) requestFork(apply); else apply();
+  };
+  const submit = async event => {
+    event.preventDefault();
+    if (pending.current || blocked || !mode || validation || (needsAi && !aiAvailable) || typeof handleGenerate !== 'function') return;
+    const type = mode === 'topic' ? topicType : mode === 'word-list' ? 'glossary' : selectedBlankType;
+    const seed = mode === 'topic' ? { kind: 'topic', text: topic.trim() }
+      : mode === 'word-list' ? { kind: 'word-list', terms: [...terms], termLanguage: termLanguage.trim() } : { kind: 'blank' };
+    pending.current = true;
+    setSubmitting(true);
+    setRequestError('');
+    try {
+      await handleGenerate(type, null, false, null, { seed, rethrowErrors: true });
+    } catch (_) {
+      if (mounted.current) setRequestError(say('request_failed', 'The resource could not be created. Your entries are kept; try again.'));
+    } finally {
+      pending.current = false;
+      if (mounted.current) setSubmitting(false);
+    }
+  };
+  const actionClass = 'inline-flex min-h-11 min-w-0 items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+  const fieldClass = 'mt-1 w-full min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+  const helpIds = [id + '-help', showValidation && id + '-validation'].filter(Boolean).join(' ');
+  return <section data-source-start-chooser aria-labelledby={id + '-title'} className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-slate-900">
+    <h3 id={id + '-title'} className="m-0 text-sm font-bold">{say('title', 'Start without a passage')}</h3>
+    <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-700">{say('preserve_source', 'Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.')}</p>
+    <div role="group" aria-label={say('choose_start', 'Choose a starting point')} className="flex flex-wrap gap-2">
+      {[
+        ['topic', say('topic', 'Topic')],
+        ['word-list', say('word_list', 'Word list')],
+        ['blank', say('blank', 'Blank resource')],
+      ].map(([value, label]) => <button key={value} type="button" aria-pressed={mode === value} aria-expanded={mode === value}
+        aria-controls={id + '-panel'} disabled={blocked} onClick={() => choose(value)}
+        className={actionClass + (mode === value ? ' border-indigo-700 bg-indigo-700 text-white' : ' border-sky-300 bg-white text-sky-900 hover:bg-sky-100')}>{label}</button>)}
+    </div>
+    <div id={id + '-panel'}>
+      {mode && <form onSubmit={submit} className="mt-3 space-y-3 border-t border-sky-200 pt-3">
+        <PathFork.Note t={t} onBack={() => choose('')} />
+        {mode === 'topic' && <>
+          <label className="block text-xs font-bold" htmlFor={id + '-topic'}>{say('topic_label', 'Topic')}
+            <input id={id + '-topic'} type="text" value={topic} maxLength={300} disabled={blocked} aria-describedby={helpIds}
+              aria-invalid={showValidation || undefined} onChange={event => { setTopic(event.target.value); setRequestError(''); }} className={fieldClass} />
+          </label>
+          <label className="block text-xs font-bold" htmlFor={id + '-topic-resource'}>{say('resource_label', 'Resource to create')}
+            <select id={id + '-topic-resource'} value={topicType} disabled={blocked} onChange={event => setTopicType(event.target.value)} className={fieldClass}>
+              {topicTypes.map(([type, label]) => <option key={type} value={type}>{label}</option>)}
+            </select>
+          </label>
+          <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say('topic_help', 'Experimental: this uses the topic alone, without checking against your passage. Review the facts before sharing.')}</p>
+        </>}
+        {mode === 'word-list' && <>
+          <label className="block text-xs font-bold" htmlFor={id + '-word-language'}>{say('words_language', 'Language of this word list')}
+            <input id={id + '-word-language'} data-source-word-language type="text" value={termLanguage} maxLength={120} disabled={blocked}
+              aria-describedby={helpIds} aria-invalid={showValidation && !termLanguage.trim() || undefined}
+              onChange={event => { setTermLanguage(event.target.value); setRequestError(''); }} className={fieldClass} />
+          </label>
+          <label className="block text-xs font-bold" htmlFor={id + '-words'}>{say('words_label', 'Terms or phrases, one per line')}
+            <textarea id={id + '-words'} rows={5} value={wordList} disabled={blocked} aria-describedby={helpIds}
+              aria-invalid={showValidation || undefined} onChange={event => { setWordList(event.target.value); setRequestError(''); }} className={fieldClass + ' resize-y'} />
+          </label>
+          <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say('words_help', 'Use one language per list. Create a glossary from up to 40 exact terms or phrases, 160 characters each, and 6,000 characters total. Definitions follow glossary language settings and need your review.')}</p>
+          <p className="m-0 text-xs text-slate-700">{say('words_count', '{count}/40 entries · {characters}/6,000 characters', { count: terms.length, characters: wordList.length })}</p>
+        </>}
+        {mode === 'blank' && <>
+          <label className="block text-xs font-bold" htmlFor={id + '-blank-resource'}>{say('blank_resource_label', 'Resource to fill in yourself')}
+            <select id={id + '-blank-resource'} value={selectedBlankType} disabled={blocked || !blankTypes.length} aria-describedby={helpIds} onChange={event => setBlankType(event.target.value)} className={fieldClass}>
+              {!blankTypes.length && <option value="">{say('blank_loading', 'Blank resources are loading')}</option>}
+              {blankTypes.map(([type, label]) => <option key={type} value={type}>{label}</option>)}
+            </select>
+          </label>
+          <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say('blank_help', 'Open an empty draft and fill it in by hand. No AI is needed. Complete the draft before sharing.')}</p>
+        </>}
+        {needsAi && !aiAvailable && <p role="status" className="m-0 text-xs leading-relaxed text-amber-900">{say('ai_needed', 'Connect AI to create from a topic or word list. You can still start a blank resource.')}</p>}
+        {showValidation && <p id={id + '-validation'} role="status" className="m-0 text-xs leading-relaxed text-red-800">{validation}</p>}
+        {requestError && <p role="alert" className="m-0 text-xs leading-relaxed text-red-800">{requestError}</p>}
+        <div className="flex flex-wrap gap-2">
+          <button type="submit" disabled={blocked || !!validation || (needsAi && !aiAvailable) || typeof handleGenerate !== 'function'} aria-busy={submitting || undefined}
+            className={actionClass + ' border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800'}>
+            {submitting ? say('creating', 'Creating…') : mode === 'topic' ? say('create_topic', 'Create from topic')
+              : mode === 'word-list' ? say('create_glossary', 'Create glossary') : say('create_blank', 'Open blank draft')}
+          </button>
+          <button type="button" disabled={blocked} onClick={() => choose('')} className={actionClass + ' border-slate-400 bg-white text-slate-800 hover:bg-slate-100'}>{say('cancel', 'Cancel')}</button>
+        </div>
+        <p role="status" aria-live="polite" aria-atomic="true" className="m-0 text-xs text-slate-700">{submitting ? say('creating_status', 'Creating the resource. Your current source is kept.') : ''}</p>
+      </form>}
+    </div>
+    {forkDialog}
+  </section>;
+}
+
 
 // Shown inside a tool that builds from source material while there is none yet, so
 // a disabled Generate button explains itself and offers the way forward.
@@ -2062,16 +2347,27 @@ const SourceRecord = {
     const next = (Array.isArray(history) ? history : []).map((item) => {
       if (!item || item.id == null || seen.has(item.id)) return item;
       seen.add(item.id);
-      if (version == null || typeof item.sourceVersion === 'number') return item;
+      if (item.lessonPath?.seed || version == null || typeof item.sourceVersion === 'number') return item;
       changed = true;
       return { ...item, sourceVersion: version };
     });
     return changed ? next : history;
   },
+  incomplete(item) {
+    const predicate = typeof window !== 'undefined' && window.AlloModules?.GenerationMatrix?.isIncompleteSourceAnalysis;
+    if (typeof predicate === 'function') return predicate(item);
+    const data = item?.data;
+    return data?.analysisIncomplete === true || (data?.concepts?.length === 1 && data.concepts[0] === 'Analysis format issue'
+      && data.readingLevel?.range === 'N/A' && ['Local model returned unstructured analysis text.',
+        'AI returned unstructured text or invalid JSON. See verification section.'].includes(data.readingLevel.explanation));
+  },
   checkFor(history, text) {
     if (typeof text !== 'string' || !text.trim()) return null;
+    const finder = typeof window !== 'undefined' && window.AlloModules?.GenerationMatrix?.findExistingSourceAnalysis;
+    if (typeof finder === 'function') return finder(history, text);
     return (Array.isArray(history) ? history : []).slice().reverse()
-      .find((item) => item && item.type === 'analysis' && item.data && item.data.originalText === text) || null;
+      .find((item) => item && item.type === 'analysis' && !item.error && item.data?.analysisNeedsRecheck !== true && !SourceRecord.incomplete(item) && item.data?.originalText === text
+        && !/^(pending|running|incomplete|failed|interrupted|cancelled|canceled)$/i.test(item.status || '')) || null;
   },
   summary(item, say) {
     if (!item || !item.data) return '';
@@ -2095,7 +2391,7 @@ function SourceView(props) {
     t, inputText, setInputText, sourceRecord, setSourceRecord, sourceReplacement, setSourceReplacement,
     history, handleGenerate, isProcessing, isGeneratingSource, generationStep, isExtracting, setIsExtracting,
     setGenerationStep, callGeminiVision, addToast, checkAccuracyWithSearch, setCheckAccuracyWithSearch,
-    handleFormatText, refineSourceSuggestion, openAnalysis, aiTextAvailable, isDraftSaving, isCanvas,
+    handleFormatText, refineSourceSuggestion, openAnalysis, onRecheckAnalysis, aiTextAvailable, isDraftSaving, isCanvas,
     focusRequest, onShowResources, setSourceTopic, handleSpeak, isPlaying, playingContentId
   } = props;
   const say = (key, fallback) => { try { const value = t(key); return value && value !== key ? value : fallback; } catch (_) { return fallback; } };
@@ -2115,13 +2411,33 @@ function SourceView(props) {
   React.useEffect(() => { if (editing && editorRef.current) editorRef.current.focus(); }, [editing]);
   const aiReady = aiTextAvailable !== false;
   const check = SourceRecord.checkFor(history, text);
-  const checkState = check ? 'done' : checkRun && checkRun.text === text ? (checkRun.state === 'running' ? 'running' : 'failed') : (aiReady ? 'none' : 'unavailable');
-  const runCheck = (value) => {
+  const incomplete = !check && (Array.isArray(history) ? history : []).slice().reverse().find(item => item?.type === 'analysis'
+    && item.data?.originalText === text && SourceRecord.incomplete(item));
+  const partial = incomplete && window.AlloModules?.GenerationMatrix?.getSourceAnalysisCoverage?.(incomplete);
+  const runForText = checkRun?.text === text;
+  const checkState = check ? 'done' : runForText && checkRun.state === 'running' ? 'running'
+    : partial && !partial.complete ? 'partial' : incomplete || runForText ? 'failed' : (aiReady ? 'none' : 'unavailable');
+  const latestSource = React.useRef(text);
+  latestSource.current = text;
+  const checkRequest = React.useRef(null);
+  React.useEffect(() => () => { checkRequest.current = null; }, []);
+  const runCheck = async (value, openResult = false) => {
     const target = typeof value === 'string' ? value : text;
-    if (!target.trim() || typeof handleGenerate !== 'function') return;
+    if (!target.trim() || typeof handleGenerate !== 'function' || checkRequest.current?.text === target) return;
+    const request = { text: target };
+    checkRequest.current = request;
     setCheckRun({ text: target, state: 'running' });
-    const finish = () => setCheckRun((run) => run && run.text === target ? { ...run, state: 'finished' } : run);
-    Promise.resolve(handleGenerate('analysis', null, false, target, { selectedReadingSourceId: '__input__', stayOnView: true }, false)).then(finish, finish);
+    try {
+      const result = incomplete && typeof onRecheckAnalysis === 'function' ? await onRecheckAnalysis(incomplete)
+        : await handleGenerate('analysis', null, false, target, { selectedReadingSourceId: '__input__', stayOnView: true }, false);
+      if (openResult && checkRequest.current === request && latestSource.current === target && result?.type === 'analysis' && result.data?.originalText === target && typeof openAnalysis === 'function') openAnalysis(result);
+    } catch (_) { /* The dispatcher reports the failure; leave the source open for retry. */ }
+    finally {
+      if (checkRequest.current === request) {
+        checkRequest.current = null;
+        setCheckRun({ text: target, state: 'finished' });
+      }
+    }
   };
   const useSource = () => {
     if (!text.trim() || typeof setSourceRecord !== 'function') return;
@@ -2188,6 +2504,8 @@ function SourceView(props) {
     : fill(say('source_view.status_draft', 'Draft · {words} words. Resources use it once you press Use this source or make a resource.'), { words });
   const checkLine = checkState === 'done' ? (SourceRecord.summary(check, say) || say('source_view.check_done', 'Checked.'))
     : checkState === 'running' ? say('source_view.check_running', 'Checking your source…')
+    : checkState === 'partial' ? say('analysis.partial', 'Partial analysis')
+    : checkState === 'failed' && incomplete ? say('analysis.incomplete', 'Analysis incomplete')
     : checkState === 'failed' ? say('source_view.check_failed', 'The source check didn’t finish.')
     : checkState === 'unavailable' ? say('source_view.check_unavailable', 'The source check needs AI, which isn’t set up here.')
     : say('source_view.check_none', 'Not checked yet.');
@@ -2280,9 +2598,9 @@ function SourceView(props) {
         <p className="mt-1 text-xs text-slate-600">{say('source_view.check_desc', 'Reading level, key concepts and accuracy for this text. It runs when you use the source.')}</p>
         <p data-source-check-state={checkState} role="status" className="mt-2 text-slate-800">{checkLine}</p>
         {typeof setCheckAccuracyWithSearch === 'function' && <label className="mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700"><input type="checkbox" data-source-web-check checked={!!checkAccuracyWithSearch} onChange={(event) => setCheckAccuracyWithSearch(event.target.checked)} />{say('source_view.web_check', 'Check accuracy with a web search')}</label>}
-        <div className="mt-2 flex flex-wrap gap-2">
-          {aiReady && checkState !== 'running' && !!text.trim() && <button type="button" data-source-run-check disabled={!!isProcessing} onClick={() => runCheck(text)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60">{checkState === 'done' ? say('source_view.check_again', 'Run the check again') : checkState === 'failed' ? say('source_view.check_retry', 'Retry') : say('source_view.check_run', 'Run check')}</button>}
-          {check && typeof openAnalysis === 'function' && <button type="button" data-source-check-details onClick={() => openAnalysis(check)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100">{say('source_view.check_details', 'Details')}</button>}
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          {(check || partial) && typeof openAnalysis === 'function' && <button type="button" data-source-check-details onClick={() => openAnalysis(check || incomplete)} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-bold text-white hover:bg-indigo-800">{partial ? say('analysis.view_partial', 'View partial analysis') : say('source_view.check_details', 'View analyzed source material')}</button>}
+          {aiReady && checkState !== 'running' && !!text.trim() && <button type="button" data-source-run-check disabled={!!isProcessing} onClick={() => runCheck(text, true)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60">{checkState === 'done' ? say('source_view.check_again', 'Analyze again') : checkState === 'partial' ? (partial.legacy ? say('analysis.check_all_sections', 'Check all sections') : say('analysis.check_remaining', 'Check remaining sections')) : checkState === 'failed' ? say('source_view.check_retry', 'Retry') : say('source_view.check_run', 'Analyze source material')}</button>}
         </div>
       </section>
       {!readOnly && aiReady && typeof refineSourceSuggestion === 'function' && !!text.trim() && (
@@ -4913,18 +5231,20 @@ function SourceInputShellView(props) {
   const cancelChange = () => { if (changeOpen && typeof setSourceReplacement === 'function') setSourceReplacement(null); };
   const collapseSources = simplifySources;
   const MoreSources = collapseSources ? 'details' : React.Fragment;
-  const moreSourcesProps = collapseSources ? { className: 'min-w-0 max-w-full', 'data-help-key': 'source_more_options' } : {};
+  const SourceOptions = collapseSources ? 'div' : React.Fragment;
+  const sourceActionGrid = 'allo-source-action-grid';
+  const moreSourcesProps = collapseSources ? { className: 'col-span-full min-w-0', 'data-help-key': 'source_more_options' } : {};
   return (
 <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
-            <div
-                className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2 cursor-pointer hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
-                aria-expanded={expandedTools.includes('source-input')} onClick={() => toggleTool('source-input')}
-            >
-              <h2 id="source-ready-title" tabIndex={-1} className="font-semibold text-slate-700 flex items-center gap-2 text-sm">
-                <FileText size={16} /> {isParentMode ? (t('family_start.title') || "Start with your child's reading") : t('tools.source')}
+            <style>{'.allo-source-action-grid{display:grid;min-width:0;gap:.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr))}.allo-source-action-grid>button,.allo-source-action-grid>label{min-height:44px;justify-content:center;text-align:center}'}</style>
+            <div className="border-b border-slate-100 bg-slate-50 p-4">
+              <h2 id="source-ready-title" tabIndex={-1} className="m-0 text-sm font-semibold text-slate-700">
+                <button type="button" aria-expanded={expandedTools.includes('source-input')} onClick={() => toggleTool('source-input')} className="flex min-h-11 w-full items-center justify-between gap-2 rounded-lg text-start hover:bg-indigo-50 focus-visible:outline-indigo-600">
+                  <span className="flex items-center gap-2"><FileText size={16} /> {isParentMode ? (t('family_start.title') || "Start with your child's reading") : t('tools.source')}</span>
+                  {expandedTools.includes('source-input') ? <ChevronUp size={16} aria-hidden="true" className="shrink-0"/> : <ChevronDown size={16} aria-hidden="true" className="shrink-0"/>}
+                </button>
               </h2>
-              <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0">
-                 <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0" onClick={(e) => e.stopPropagation()}>
+                 <div className={'mt-2 ' + sourceActionGrid}>
                      <input aria-label={t('common.upload_file')}
                         type="file"
                         ref={fileInputRef}
@@ -4947,8 +5267,8 @@ function SourceInputShellView(props) {
                         {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}
                      </button>
                      <MoreSources {...moreSourcesProps}>
-                     {collapseSources && <summary className="cursor-pointer min-h-10 inline-flex items-center gap-1 px-2 text-xs font-medium text-slate-700"><ChevronDown size={12} aria-hidden="true" />{t('input.actions.more_sources') || 'More sources'}</summary>}
-                     <div className={collapseSources ? 'mt-2 flex flex-wrap items-center gap-2' : 'contents'}>
+                     {collapseSources && <summary className="flex min-h-11 cursor-pointer items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-700"><ChevronDown size={12} aria-hidden="true" />{t('input.actions.more_sources') || 'More sources'}</summary>}
+                     <SourceOptions {...(collapseSources ? { className: 'mt-2 ' + sourceActionGrid } : {})}>
                      <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer" title={t('input.load_project_tooltip') || 'Load a previously saved AlloFlow PDF project'}>
                         <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
@@ -5133,14 +5453,13 @@ function SourceInputShellView(props) {
                         <span aria-hidden="true">📖</span>
                         {t('input.actions.books_short') || 'Books'}
                      </button>
-                     </div>
+                     </SourceOptions>
                      </MoreSources>
                      {changeOpen && <button type="button" data-source-change-cancel onClick={cancelChange} className="text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium">{headerText('sidebar.source_change_cancel', 'Keep my source')}</button>}
                      </>}
                  </div>
-                 {expandedTools.includes('source-input') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-              </div>
             </div>
+            {expandedTools.includes('source-input') && isTeacherMode && <div className="m-3"><SourceStartingPointChooser t={t} handleGenerate={handleGenerate} busy={isProcessing || isExtracting || isGeneratingSource} /></div>}
             <SourceShellWatch inputText={inputText} sourceStatus={sourceStatus} sourceReplacement={sourceReplacement} setSourceReplacement={setSourceReplacement} openSourceView={openSourceView} />
             {/* ── SourceInputPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
             {expandedTools.includes('source-input') && videoTranscriptSourceContext && (

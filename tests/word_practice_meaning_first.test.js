@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { JSDOM } from 'jsdom';
+import JSZip from 'jszip';
 
 const coreSource = fs.readFileSync('word_practice_core.js', 'utf8');
 const uiSource = fs.readFileSync('word_practice_ui.js', 'utf8');
@@ -14,6 +15,10 @@ const u32 = n => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
 const PNG = 'data:image/png;base64,' + Buffer.from([0x89, 0x50, 0x4e, 0x47, 13, 10, 26, 10, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, ...u32(300), ...u32(300), 8, 6, 0, 0, 0, 0, 0, 0, 0, 0]).toString('base64');
 const LEAF = { word: 'leaf', definition: 'A leaf is the flat green part of a plant.', example: 'The leaves and one leaf fell.', image: PNG, imageAlt: 'A maple leaf', wordAudio: wav };
 const BARE = { word: 'zephyr' };
+const RADIO = { word: 'radio', definition: 'A radio receives broadcasts.', contextSentence: 'That RADIO plays music.',
+  translations: { Spanish: { term: 'radio', def: 'Aparato que recibe señales.' }, Arabic: 'مذياع: جهاز radio.' },
+  picture: { src: PNG, alt: 'A radio with two dials', credit: 'Radio Museum, CC BY' },
+  annotations: [{ id: 'solution', kind: 'note', content: 'The answer is radio.', x: 30, y: 30 }] };
 
 function loadCore() { const sandbox = { window: {}, atob, btoa }; vm.runInNewContext(coreSource, sandbox); return sandbox.window.AlloWordPracticeCore; }
 
@@ -35,6 +40,14 @@ describe('core', () => {
     expect(core.hasMeaning(bare, { includePictures: true })).toBe(false);
     expect(core.hasMeaning({ ...bare, picture: leaf.picture }, { includePictures: true })).toBe(true);
     expect(core.hasMeaning({ ...bare, picture: leaf.picture }, { includePictures: false })).toBe(false);
+  });
+  it('keeps script, language, decorative status and the original author data', () => {
+    const [item] = core.normalizeInput({ words: [{ ...RADIO, word: 'café', translations: { Arabic: 'مثال: cafe\u0301.' }, picture: { src: PNG, alt: 'cafe\u0301' } }] }).items;
+    const before = JSON.stringify(item), clue = core.recallClue(item, 'Picture clue');
+    expect(clue.picture.alt).toBe('Picture clue');
+    expect(clue.translations[0]).toMatchObject({ text: 'مثال: ____.', language: 'Arabic' });
+    expect(JSON.stringify(item)).toBe(before);
+    expect(core.recallClue({ ...item, picture: { ...item.picture, alt: '', decorative: true } }).picture.alt).toBe('');
   });
 });
 
@@ -67,7 +80,7 @@ describe('presenter', () => {
     expect(card().textContent).toContain('A ____ is the flat green part of a plant.');
     expect(card().textContent).toContain('The leaves and one ____ fell.');
     expect(card().querySelector('.awp-word')).toBeNull();
-    expect(card().querySelector('.awp-picture img').getAttribute('alt')).toBe('A maple leaf');
+    expect(card().querySelector('.awp-picture img').getAttribute('alt')).toBe('A maple ____');
     expect(announcement()).not.toMatch(/\bleaf\b/);
     expect(toolbarButton('Hear word').hidden).toBe(true);
     expect(toolbarButton('Show word')).toBeTruthy();
@@ -79,6 +92,37 @@ describe('presenter', () => {
     expect(card().querySelector('.awp-word').textContent).toBe('leaf');
     expect(card().textContent).toContain('A leaf is the flat green part of a plant.');
     expect(toolbarButton('Hear word').hidden).toBe(false);
+  });
+
+  it('masks visible and spoken picture/translation clues, then restores the exact originals', async () => {
+    await present([RADIO]);
+    expect(card().textContent).not.toMatch(/radio/i);
+    expect(announcement()).not.toMatch(/radio/i);
+    expect(announcement()).toContain('A ____ with two dials');
+    expect(card().querySelector('img').alt).toBe('A ____ with two dials');
+    expect(card().querySelector('figcaption').textContent).toBe('____ Museum, CC BY');
+    expect(card().querySelector('[lang=ar].awp-translation').textContent).toBe('مذياع: جهاز ____.');
+    toolbarButton('Show word').click();
+    expect(card().querySelector('img').alt).toBe(RADIO.picture.alt);
+    expect(card().querySelector('figcaption').textContent).toBe(RADIO.picture.credit);
+    expect(card().querySelector('[lang=es].awp-translation').textContent).toBe('radio: Aparato que recibe señales.');
+    expect(announcement()).toContain('That RADIO plays music.');
+  });
+
+  it('uses the same masking and reveal in setup preview', () => {
+    ui.open({ words: [RADIO, LEAF], options: { mode: 'vocabulary', vocabularyFirst: 'meaning' } });
+    const preview = win.document.querySelector('.awp-card-preview');
+    const picker = win.document.querySelector('.awp-preview-picker');
+    expect(picker.textContent).not.toMatch(/radio|leaf/i);
+    expect(preview.textContent).not.toMatch(/radio/i); expect(preview.querySelector('img').alt).toBe('A ____ with two dials');
+    [...win.document.querySelectorAll('button')].find(node => node.textContent === 'Show word' && node.closest('.awp-appearance')).click();
+    expect(preview.querySelector('img').alt).toBe(RADIO.picture.alt);
+    expect(preview.querySelector('.awp-preview-translation[lang=ar]').textContent).toBe('مذياع: جهاز radio.');
+    expect(preview.textContent).toContain(RADIO.picture.credit);
+    expect(picker.selectedOptions[0].textContent).toContain('radio');
+    field('Show first').value = 'word'; change(field('Show first'));
+    field('Show first').value = 'meaning'; change(field('Show first'));
+    expect(preview.textContent).not.toMatch(/radio/i); expect(picker.textContent).not.toMatch(/radio|leaf/i);
   });
 
   it('falls back to word first for a word with nothing to recall from', async () => {
@@ -102,6 +146,19 @@ describe('presenter', () => {
     await tick(1150);
     expect(win.document.querySelector('.awp-progress').textContent).toBe('Card 2 of 2');
   });
+
+  it('lets the timer reveal and finish a one-card automatic round', async () => {
+    await present([LEAF], { timed: true });
+    expect(toolbarButton('Next').disabled).toBe(true);
+    expect(toolbarButton('Finish round')).toBeUndefined();
+    toolbarButton('Start timer').click();
+    await tick(1150);
+    expect(card().querySelector('.awp-word').textContent).toBe('leaf');
+    await tick(1150);
+    expect(win.document.querySelector('.awp-player .awp-status').textContent).toContain('Round complete');
+    expect(toolbarButton('Start timer').getAttribute('aria-pressed')).toBe('false');
+    expect(win.document.querySelector('.awp-round-actions h2').hidden).toBe(true);
+  }, 15_000);
 
   it('offers the choice only for Word Meaning, remembers it, and previews the clue', () => {
     ui.open({ words: [LEAF] });
@@ -140,7 +197,8 @@ describe('PowerPoint', () => {
 
   it('puts the question and blanked clue first, and the word with its audio on the answer slide', async () => {
     const pptx = await build([LEAF]);
-    const answer = pptx.slides[pptx.slides.length - 1], clues = pptx.slides.slice(0, -1);
+    const firstAnswer = pptx.slides.findIndex(slide => texts(slide).includes('Answer'));
+    const answer = pptx.slides[firstAnswer], clues = pptx.slides.slice(0, firstAnswer);
     expect(clues.length).toBeGreaterThanOrEqual(2);
     expect(clues[0].images).toHaveLength(1);
     clues.forEach(slide => {
@@ -158,9 +216,26 @@ describe('PowerPoint', () => {
     const { image, ...noPicture } = LEAF;
     const pptx = await build([noPicture]);
     expect(pptx.slides.length).toBeGreaterThanOrEqual(2);
-    pptx.slides.slice(0, -1).forEach(slide => { expect(slide.sounds).toHaveLength(0); expect(slide.images).toHaveLength(0); });
-    expect(pptx.slides[pptx.slides.length - 1].sounds.length).toBeGreaterThan(0);
+    const firstAnswer = pptx.slides.findIndex(slide => texts(slide).includes('Answer'));
+    pptx.slides.slice(0, firstAnswer).forEach(slide => { expect(slide.sounds).toHaveLength(0); expect(slide.images).toHaveLength(0); });
+    expect(pptx.slides[firstAnswer].sounds.length).toBeGreaterThan(0);
   });
+  it('keeps the answer off all clue-slide text and image descriptions in a real pptx file', async () => {
+    const dom = new JSDOM('<html></html>', { runScripts: 'outside-only' });
+    try {
+      dom.window.eval(fs.readFileSync('desktop/web-app/public/vendor/pptxgenjs-3.12.0.bundle.js', 'utf8') + '\nwindow.practicePptx = PptxGenJS;');
+      const deck = await media.buildPptx({ words: [RADIO] }, { mode: 'vocabulary', vocabularyFirst: 'meaning', repetitions: 1, includeAudio: false }, undefined, { PptxGenJS: dom.window.practicePptx });
+      const zip = await JSZip.loadAsync(Buffer.from(await deck.write({ outputType: 'uint8array' })));
+      const paths = Object.keys(zip.files).filter(path => /^ppt\/slides\/slide\d+\.xml$/.test(path)).sort((a, b) => Number(a.match(/(\d+)\.xml/)[1]) - Number(b.match(/(\d+)\.xml/)[1]));
+      const slides = await Promise.all(paths.map(path => zip.file(path).async('string')));
+      const firstAnswer = slides.findIndex(text => text.includes('Answer'));
+      expect(firstAnswer).toBeGreaterThan(0);
+      const clues = slides.slice(0, firstAnswer).join(''), answers = slides.slice(firstAnswer).join('');
+      expect(clues).not.toMatch(/radio/i);
+      expect(clues).toContain('A ____ with two dials'); expect(clues).toContain('____ Museum, CC BY'); expect(clues).toContain('lang="ar"');
+      for (const original of [RADIO.picture.alt, RADIO.picture.credit, RADIO.contextSentence, 'radio: Aparato que recibe señales.', 'The answer is radio.']) expect(answers).toContain(original);
+    } finally { dom.window.close(); }
+  }, 30_000);
 
   it('keeps the word-first deck, and word-first for a word with no clue', async () => {
     const wordFirst = await build([LEAF], { vocabularyFirst: 'word' });

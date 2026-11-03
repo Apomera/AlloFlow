@@ -221,6 +221,65 @@ describe('leaving', () => {
 });
 
 describe('activities', () => {
+  const sentenceEntry = (word, sentence, board = {}) => {
+    const entry = makePackItem();
+    return { ...entry, term: word, targetWord: word, word, displayWord: word,
+      _ttsAssets: { [word.toLowerCase()]: entry._ttsAssets.cat },
+      activityItems: { read_sentence: { sentence, options: [word, 'other'], ...board } } };
+  };
+  const presentSentences = async entries => {
+    const { host } = await teacher({ activity: 'read_sentence', words: entries });
+    return present(host);
+  };
+
+  it('projects the prepared blank and restores the exact authored sentence on reveal', async () => {
+    const entries = [
+      sentenceEntry('cat', '  We see\nCat  sitting. ', { before: 'We see', after: 'sitting.' }),
+      sentenceEntry('猫', '私は「猫」が好き。', { before: '私は「', after: '」が好き。' }),
+    ];
+    const p = await presentSentences(entries);
+    const sentence = () => p.querySelector('.ws-present-sentence');
+    expect(itemLabel(p)).toBe('Item 1 of 2');
+    expect(sentence().textContent).toBe('  We see\n______  sitting. ');
+    expect(getComputedStyle(sentence()).whiteSpace).toBe('pre-wrap');
+    await key(p, 'r');
+    expect(sentence().textContent).toBe(entries[0].activityItems.read_sentence.sentence);
+    await key(p, 'ArrowRight');
+    expect(sentence().textContent).toBe('私は「______」が好き。');
+    await key(p, 'r');
+    expect(sentence().textContent).toBe(entries[1].activityItems.read_sentence.sentence);
+  });
+
+  it('recovers a unique whole target on older boards and skips ambiguous, partial-word and stale blanks', async () => {
+    const entries = [
+      sentenceEntry('cat', 'Look at “Cat”!'),
+      sentenceEntry('sun', 'Sun and sun shine.'),
+      sentenceEntry('bed', 'The bedroom is bright.'),
+      sentenceEntry('hat', 'A hat fell.', { before: 'His', after: 'fell.' }),
+    ];
+    const p = await presentSentences(entries);
+    expect(itemLabel(p)).toBe('Item 1 of 1');
+    expect(p.querySelector('.ws-present-sentence').textContent).toBe('Look at “______”!');
+    await key(p, 'r');
+    expect(p.querySelector('.ws-present-sentence').textContent).toBe('Look at “Cat”!');
+  });
+
+  it('keeps the first written choice and highlights it when equivalent spellings share an answer', async () => {
+    const firstChoice = 'CAFE\u0301  AU LAIT';
+    const entries = [
+      sentenceEntry('café au lait', 'Un café au lait.', { before: 'Un', after: '.', options: [firstChoice, 'café au lait', 'thé'] }),
+      sentenceEntry('tea', 'Tea.', { before: '', after: '.', options: ['tea', 'TEA'] }),
+    ];
+    const p = await presentSentences(entries);
+    expect(itemLabel(p)).toBe('Item 1 of 1');
+    const choices = [...p.querySelectorAll('[data-present-choice]')];
+    expect(choices.map(choice => choice.getAttribute('data-present-choice'))).toEqual([firstChoice, 'thé']);
+    await key(p, 'r');
+    expect(choices[0].textContent).toContain('✓');
+    expect(choices[1].textContent).not.toContain('✓');
+    expect(p.querySelector('.ws-present-sentence').textContent).toBe('Un café au lait.');
+  });
+
   it('offers only whole-class activities; the rest are marked unavailable', async () => {
     const { host } = await teacher();
     const drawer = await openDrawer(await present(host));

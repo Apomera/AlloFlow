@@ -105,15 +105,17 @@ describe('editable PowerPoint practice', () => {
   it('converts WebM word audio and concatenates complete sound sequences as WAV only once', async () => {
     const pack = core.normalizeInput({ words: [{ word: 'ship', wordAudio: webm, phonemes: [{ label: 'sh', audio: wav }, { label: 'i', audio: wav }] }] });
     const pptx = await media.buildPptx(pack, { mode: 'blend', repetitions: 2 });
-    expect(pptx.slides).toHaveLength(2);
-    expect(pptx.slides[0].sounds).toHaveLength(2);
+    expect(pptx.slides).toHaveLength(4);
+    for (const slide of pptx.slides) expect(slide.sounds).toHaveLength(1);
+    expect(pptx.slides[0].texts.map(item => flattenText(item.text))).toContain('Hear sounds');
+    expect(pptx.slides[1].texts.map(item => flattenText(item.text))).toContain('Hear word');
     for (const item of pptx.slides.flatMap(slide => slide.sounds)) {
       expect(item.data).toMatch(/^audio\/wav;base64,/);
       const bytes = Buffer.from(item.data.split(',')[1], 'base64');
       expect(bytes.subarray(0, 4).toString()).toBe('RIFF');
       expect(bytes.subarray(8, 12).toString()).toBe('WAVE');
     }
-    const joined = Buffer.from(pptx.slides[0].sounds[1].data.split(',')[1], 'base64');
+    const joined = Buffer.from(pptx.slides[0].sounds[0].data.split(',')[1], 'base64');
     expect(joined.readUInt32LE(40)).toBe((80 * 2 + 1600) * 2);
     expect(decodeAudio).toHaveBeenCalledTimes(2);
     expect(closeAudio).toHaveBeenCalledTimes(1);

@@ -23,7 +23,7 @@ function load(lane) {
 }
 async function save(context) {
   const before = context.blobs.length; button(context.doc, 'Save word set').click(); await tick();
-  expect(context.blobs.length).toBe(before + 1);
+  expect(context.blobs.length).toBe(before + 1); button(context.doc, 'I saved the file').click(); await tick();
   return JSON.parse(await new Promise((resolve, reject) => {
     const reader = new context.win.FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(context.blobs.at(-1));
   }));

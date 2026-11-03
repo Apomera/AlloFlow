@@ -120,7 +120,7 @@ describe('bounded AlloPack validation diagnostics', () => {
   });
 
   it('preserves Katie’s complete pack and its existing images', () => {
-    const source = readFileSync(resolve('allopacks/academic_discourse_reading_space_grade6.allopack.json'), 'utf8');
+    const source = readFileSync(resolve('allopacks/current/academic_discourse_reading_space_grade6.allopack.json'), 'utf8');
     const candidate = JSON.parse(source);
     const result = service.validatePack(candidate, { profile: 'native' });
     expect(result.ok, JSON.stringify(result.errors)).toBe(true);
@@ -128,7 +128,7 @@ describe('bounded AlloPack validation diagnostics', () => {
     expect(result.media.complete).toBe(true);
     expect(JSON.stringify(result.value)).toBe(JSON.stringify(candidate));
     expect(service.exportPack(candidate, { profile: 'native' }).ok).toBe(true);
-    expect(readFileSync(resolve('allopacks/academic_discourse_reading_space_grade6.allopack.json'), 'utf8')).toBe(source);
+    expect(readFileSync(resolve('allopacks/current/academic_discourse_reading_space_grade6.allopack.json'), 'utf8')).toBe(source);
   });
 
   it('returns bounded failures over actual stdio and keeps subsequent requests working', async () => {

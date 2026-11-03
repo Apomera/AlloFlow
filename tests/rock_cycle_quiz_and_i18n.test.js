@@ -45,7 +45,7 @@ function text(node) {
 // over the state the previous press produced.
 function nextQuestion(s) {
   const btn = findAll(s.render(), (n) =>
-    n.type === 'button' && n.props['aria-label'] === 'Start rock cycle quiz');
+    n.type === 'button' && n.props['data-rc-quiz']);
   expect(btn, 'quiz button not found').toHaveLength(1);
   btn[0].props.onClick();
   return s.store.rockCycle.rcQuiz;

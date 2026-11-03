@@ -167,13 +167,13 @@ describe('canonical remediation residual fixes', () => {
     expect(scripts).toHaveLength(2);
     expect(scripts[0].remove).toHaveBeenCalledTimes(1);
 
-    fakeWindow.XLSX = { read: vi.fn() };
+    fakeWindow.XLSX = { version: '0.20.3', read: vi.fn() };
     scripts[1].onload();
-    await expect(first).resolves.toBeUndefined();
+    await expect(first).resolves.toBe(fakeWindow.XLSX);
     expect(scripts[1].remove).toHaveBeenCalledTimes(1);
     expect(runtime.state()).toEqual({ pending: false, owner: 0 });
 
-    await expect(runtime.load()).resolves.toBeUndefined();
+    await expect(runtime.load()).resolves.toBe(fakeWindow.XLSX);
     expect(scripts).toHaveLength(2);
   });
 });

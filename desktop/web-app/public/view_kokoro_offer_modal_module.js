@@ -99,7 +99,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
       window.__kokoroTTSDownloading = false;
       if (ok && window._kokoroTTS?.ready) {
         addToast(tr("voice_engine.kokoro_ready", "Kokoro voice model ready. Sentence clips are prepared and saved separately."), "success");
-        setSelectedVoice("af_heart");
+        if (typeof setSelectedVoice === "function") setSelectedVoice("af_heart");
       } else addToast(tr("voice_engine.kokoro_prep_failed", "Voice model preparation did not finish. Check network access or browser storage, then try again."), "error");
     }).catch(() => {
       window.__kokoroTTSDownloading = false;

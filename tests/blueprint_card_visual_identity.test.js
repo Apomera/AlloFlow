@@ -85,6 +85,17 @@ const mount = (config = CONFIG) => {
 const rows = (el) => Array.from(el.querySelectorAll('[data-help-key="blueprint_resource_list_review"] > div'));
 
 describe('blueprint plan rows: visual identity', () => {
+  it('shows a reused source check without opening generation details', () => {
+    const el = mount({ resourcePlan: [{
+      tool: 'analysis', uiId: 'checked-analysis', directive: 'Retain the original source.',
+      generationAction: 'reuse', existingArtifactId: 'source-check',
+      generationVariants: [{ action: 'reuse', existingArtifactId: 'source-check', generationIdentity: 'checked-source' }],
+    }] });
+    const badge = el.querySelector('[data-testid="bp-source-check-reused"]');
+    expect(badge?.textContent).toBe('Already checked, reused');
+    expect(badge.closest('details')).toBeNull();
+  });
+
   it('gives each row its own glyph and accent colour', () => {
     installRegistry();
     const el = mount();

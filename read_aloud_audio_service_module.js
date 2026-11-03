@@ -1132,7 +1132,18 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
     function resourceSegments(resource, resourceType, suppliedSentences, occurrence) {
         const context = { resource, resourceType, operation: 'legacy-enumerate' };
         const canonical = canonicalResourceSegments(resource, resourceType, context);
-        return reconcileSuppliedSentences(canonical, suppliedSentences, context, occurrence);
+        const matches = reconcileSuppliedSentences(canonical, suppliedSentences, context, occurrence);
+        // A text-only recording cannot identify which occurrence was recorded.
+        // Use the store's legacy spelling rules (including case and punctuation).
+        const keyFor = (typeof window !== 'undefined' && window.AlloModules?.KaraokeAudioStore?.keyFor)
+            || (text => String(text).trim().toLowerCase());
+        const counts = new Map();
+        for (const segment of canonical.length ? canonical : matches) {
+            const key = keyFor(segment.spokenText);
+            counts.set(key, (counts.get(key) || 0) + 1);
+        }
+        return matches.map(segment => counts.get(keyFor(segment.spokenText)) > 1 || occurrence > 0
+            ? { ...segment, allowLegacyText: false } : segment);
     }
 
     function identityFor(resourceType, segment) {
@@ -1144,6 +1155,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             segmentId: segment.segmentId,
             spokenFingerprint: segment.fingerprint || textFingerprint(segment.spokenText),
             spokenText: segment.spokenText,
+            ...(segment.allowLegacyText === false ? { allowLegacyText: false } : {}),
         };
     }
 

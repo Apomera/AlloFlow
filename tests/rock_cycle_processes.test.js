@@ -60,7 +60,7 @@ function findAll(node, predicate, acc = []) {
 
 function processButtons(node) {
   return findAll(node, (n) =>
-    n.type === 'button' && typeof n.props['aria-label'] === 'string' && / by /.test(n.props['aria-label']));
+    n.type === 'button' && n.props['data-rc-process'] !== undefined);
 }
 
 beforeEach(() => {
@@ -85,7 +85,7 @@ describe('transformation process panel', () => {
       ['igneous', 'sedimentary', 'metamorphic'].forEach((to) => {
         if (from === to) return;
         const hit = labels.some((l) => {
-          const arrow = l.split(' by ')[0];
+          const arrow = l.split('. ')[1].toLowerCase();
           return arrow.startsWith(from) && arrow.includes('→') && arrow.trim().endsWith(to);
         });
         expect(hit, `${from} → ${to} missing from: ${joined}`).toBe(true);

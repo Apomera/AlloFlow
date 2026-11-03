@@ -19,6 +19,10 @@
   var Fragment = React.Fragment;
 
   function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+function _timelineReviewLabel(t, key, fallback) {
+  const value = typeof t === 'function' ? t(key) : '';
+  return typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+}
 // Companion language belongs to the saved artifact, independent of current app settings.
 function _timelineTranslationAttributes(artifact) {
   const api = window.AlloModules?.TextPipelineHelpers;
@@ -209,7 +213,44 @@ function TimelineView(props) {
   var handleTimelineDragEnd = props.handleTimelineDragEnd;
   var handleTimelineDragOver = props.handleTimelineDragOver;
   var handleTimelineDragStart = props.handleTimelineDragStart;
-  var handleTimelineMove = props.handleTimelineMove;
+  const timelineEditorRef = React.useRef(null),
+    timelineMoveFocus = React.useRef(null);
+  const timelineItems = Array.isArray(generatedContent?.data) ? generatedContent.data : generatedContent?.data?.items || [];
+  const timelinePositionLabel = index => _timelineReviewLabel(t, 'timeline.item_position_aria', 'Timeline item {position} of {total}').replace('{position}', String(index + 1)).replace('{total}', String(timelineItems.length));
+  const timelineFieldLabel = (key, fallback, index, companion = false) => _timelineReviewLabel(t, key, fallback) + (companion ? ' — ' + _timelineReviewLabel(t, 'translate.companion_label', 'Companion translation') : '') + ' — ' + timelinePositionLabel(index);
+  var handleTimelineMove = (from, to) => {
+    if (from < 0 || to < 0 || from >= timelineItems.length || to >= timelineItems.length || from === to || typeof props.handleTimelineMove !== 'function') return;
+    const active = document.activeElement,
+      row = timelineEditorRef.current?.querySelectorAll('[data-timeline-row]')[from];
+    const expected = timelineItems.slice(),
+      moved = expected.splice(from, 1)[0];
+    expected.splice(to, 0, moved);
+    timelineMoveFocus.current = row?.contains(active) ? {
+      resourceId: generatedContent?.id,
+      data: generatedContent?.data,
+      expected,
+      to,
+      active,
+      control: active.dataset.timelineMove
+    } : null;
+    props.handleTimelineMove(from, to);
+  };
+  React.useLayoutEffect(() => {
+    const request = timelineMoveFocus.current;
+    if (!request) return;
+    if (generatedContent?.id !== request.resourceId || !isEditingTimeline) {
+      timelineMoveFocus.current = null;
+      return;
+    }
+    if (generatedContent?.data === request.data) return;
+    timelineMoveFocus.current = null;
+    if (timelineItems.length !== request.expected.length || !timelineItems.every((item, index) => ['id', 'event', 'event_en', 'image'].every(key => item[key] === request.expected[index][key]))) return;
+    const active = document.activeElement;
+    if (active !== request.active && active !== document.body && active?.isConnected) return;
+    const row = timelineEditorRef.current?.querySelectorAll('[data-timeline-row]')[request.to];
+    const control = request.control && row?.querySelector('[data-timeline-move="' + request.control + '"]');
+    (control && !control.disabled ? control : row)?.focus();
+  }, [generatedContent?.id, generatedContent?.data, isEditingTimeline]);
   var handleTimelineRevision = props.handleTimelineRevision;
   var handleToggleIsEditingTimeline = props.handleToggleIsEditingTimeline;
   var handleVerifyTimelineAccuracy = props.handleVerifyTimelineAccuracy;
@@ -221,19 +262,20 @@ function TimelineView(props) {
   var playSound = props.playSound;
   var reducedMotion = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
   return /*#__PURE__*/React.createElement("div", {
+    ref: timelineEditorRef,
     className: "space-y-6"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("style", null, '[data-timeline-row]:focus-visible,[data-timeline-move]:focus-visible{outline:3px solid #4338ca;outline-offset:2px}@media(max-width:639px){[data-timeline-move-controls]{flex-direction:row;margin-top:0}[data-timeline-fields]{flex-basis:100%;order:1}}@media(forced-colors:active){[data-timeline-row]:focus-visible,[data-timeline-move]:focus-visible{outline-color:Highlight}}'), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
     className: "sr-only"
-  }, isRevisingTimeline ? t('timeline.revising') : isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing timeline' : isVerifyingTimeline ? t('timeline.validation.verifying') || 'Verifying timeline accuracy' : Object.values(isGeneratingTimelineImage || {}).some(Boolean) ? t('timeline.visuals.generating') || 'Generating timeline image' : ''), (isTeacherMode || isIndependentMode) && /*#__PURE__*/React.createElement("div", {
+  }, isRevisingTimeline ? t('timeline.revising') : isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing timeline' : isVerifyingTimeline ? _timelineReviewLabel(t, 'timeline.ai_review.running', 'Running AI review') : Object.values(isGeneratingTimelineImage || {}).some(Boolean) ? t('timeline.visuals.generating') || 'Generating timeline image' : ''), (isTeacherMode || isIndependentMode) && /*#__PURE__*/React.createElement("div", {
     "data-timeline-toolbar": true,
     className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4"
   }, isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-indigo-800"
   }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('timeline.udl_goal_desc')), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
+    className: "flex flex-wrap gap-2 min-w-0"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleSetIsTimelineGameToTrue,
     className: "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
@@ -322,27 +364,34 @@ function TimelineView(props) {
       const value = t(key);
       return typeof value === 'string' && value.trim() && value !== key ? value : fallback;
     };
-    const label = unchecked === items.length ? tl('timeline.validation.not_checked', 'Accuracy not yet checked') : tl('timeline.validation.some_not_checked', '{count} items not yet checked').split('{count}').join(String(unchecked));
+    const label = unchecked === items.length ? tl('timeline.validation.not_checked', 'AI review not yet run') : tl('timeline.validation.some_not_checked', '{count} items not yet checked').split('{count}').join(String(unchecked));
     return /*#__PURE__*/React.createElement("span", {
       "data-timeline-unverified": true,
       className: "inline-flex items-center gap-1 rounded-full border border-amber-400 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-900",
-      title: tl('timeline.validation.not_checked_tip', 'AI has not checked these items for factual accuracy yet. Press Verify accuracy to check them.')
+      title: tl('timeline.validation.not_checked_tip', 'These items have no saved AI review. Use Run AI review; check important claims against reliable sources.')
     }, /*#__PURE__*/React.createElement(AlertTriangle, {
       size: 12,
       className: "text-amber-700",
       "aria-hidden": "true"
     }), label);
-  })(), /*#__PURE__*/React.createElement("button", {
+  })(), /*#__PURE__*/React.createElement("p", {
+    "data-timeline-review-scope": true,
+    className: "w-full text-xs text-slate-700"
+  }, (() => {
+    const items = (Array.isArray(generatedContent.data) ? generatedContent.data : generatedContent.data.items || []).filter(Boolean);
+    const checked = items.filter(item => typeof item.verification?.factual === 'boolean' && typeof item.verification?.position === 'boolean').length;
+    return _timelineReviewLabel(t, 'timeline.ai_review.coverage', 'AI review saved for {checked} of {total} items. No cited fact check.').replace('{checked}', String(checked)).replace('{total}', String(items.length));
+  })()), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleVerifyTimelineAccuracy(),
     disabled: isVerifyingTimeline,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
     "aria-busy": isVerifyingTimeline,
-    title: t('timeline.validation.verify_tooltip') || 'Run AI accuracy check on each item'
+    title: _timelineReviewLabel(t, 'timeline.ai_review.tooltip', 'Ask AI to review these items. No external sources are checked.')
   }, isVerifyingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 14,
     className: reducedMotion ? '' : 'animate-spin',
     "aria-hidden": "true"
-  }) : '🔍', isVerifyingTimeline ? t('timeline.validation.verifying') || 'Verifying…' : t('timeline.validation.verify') || 'Verify accuracy')), /*#__PURE__*/React.createElement("div", {
+  }) : '🔍', isVerifyingTimeline ? _timelineReviewLabel(t, 'timeline.ai_review.running', 'Running AI review') : _timelineReviewLabel(t, 'timeline.ai_review.action', 'Run AI review'))), /*#__PURE__*/React.createElement("div", {
     className: "relative pl-12 sm:pl-16 border-l-2 border-indigo-200 space-y-8 my-8"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute left-[-7px] top-0 font-black text-indigo-700 text-[11px] uppercase tracking-widest -translate-y-full"
@@ -377,16 +426,13 @@ function TimelineView(props) {
     draggable: true,
     "data-keyboard-alternative": "move-buttons",
     role: "group",
-    "aria-label": t('timeline.item_position_aria', {
-      position: idx + 1,
-      total: (Array.isArray(generatedContent?.data) ? generatedContent.data : generatedContent?.data?.items || []).length
-    }) || `Timeline item ${idx + 1}`,
+    "aria-label": timelinePositionLabel(idx) + (item.event ? ': ' + item.event : ''),
     "aria-describedby": "timeline-reorder-instructions",
     tabIndex: 0,
     "aria-keyshortcuts": "Alt+ArrowUp Alt+ArrowDown",
     onDragStart: e => handleTimelineDragStart(e, idx),
     onKeyDown: e => {
-      if (!e.altKey) return;
+      if (e.target !== e.currentTarget || !e.altKey || e.ctrlKey || e.metaKey || e.nativeEvent.isComposing || e.keyCode === 229) return;
       if (e.key === 'ArrowUp' && idx > 0) {
         e.preventDefault();
         handleTimelineMove(idx, idx - 1);
@@ -399,6 +445,7 @@ function TimelineView(props) {
     onDragEnd: handleTimelineDragEnd,
     className: `relative flex flex-wrap items-start gap-2 p-3 rounded-xl border-2 transition-all ${draggedTimelineIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-white border-slate-200 shadow-sm'}`
   }, /*#__PURE__*/React.createElement("div", {
+    "data-timeline-move-controls": true,
     className: "flex flex-col items-center gap-1 mt-2 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500"
   }, /*#__PURE__*/React.createElement(GripVertical, {
     size: 16,
@@ -407,38 +454,51 @@ function TimelineView(props) {
     className: "text-[11px] font-bold bg-slate-100 px-1.5 rounded text-slate-600"
   }, idx + 1), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "data-timeline-move": "up",
+    style: {
+      minWidth: 44,
+      minHeight: 44
+    },
     onClick: () => handleTimelineMove(idx, idx - 1),
     disabled: idx === 0,
-    "aria-label": t('timeline.move_up_aria', {
-      position: idx + 1
-    }) || `Move timeline item ${idx + 1} up`,
-    className: "w-7 h-7 inline-flex items-center justify-center rounded bg-white border border-slate-400 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
+    "aria-label": _timelineReviewLabel(t, 'timeline.move_up_aria', 'Move timeline item {position} up').replace('{position}', String(idx + 1)) + (item.event ? ': ' + item.event : ''),
+    className: "w-11 h-11 inline-flex items-center justify-center rounded bg-white border border-slate-400 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "↑")), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "data-timeline-move": "down",
+    style: {
+      minWidth: 44,
+      minHeight: 44
+    },
     onClick: () => handleTimelineMove(idx, idx + 1),
     disabled: idx === (Array.isArray(generatedContent?.data) ? generatedContent.data : generatedContent?.data?.items || []).length - 1,
-    "aria-label": t('timeline.move_down_aria', {
-      position: idx + 1
-    }) || `Move timeline item ${idx + 1} down`,
-    className: "w-7 h-7 inline-flex items-center justify-center rounded bg-white border border-slate-400 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
+    "aria-label": _timelineReviewLabel(t, 'timeline.move_down_aria', 'Move timeline item {position} down').replace('{position}', String(idx + 1)) + (item.event ? ': ' + item.event : ''),
+    className: "w-11 h-11 inline-flex items-center justify-center rounded bg-white border border-slate-400 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "↓"))), /*#__PURE__*/React.createElement("div", {
+    "data-timeline-fields": true,
     className: "flex-1 min-w-0 grid grid-cols-1 gap-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('common.enter_item'),
+    "aria-label": timelineFieldLabel('timeline.label_placeholder', 'Label/Step', idx),
     type: "text",
+    style: {
+      minHeight: 44
+    },
     value: item.date,
     onChange: e => handleTimelineChange(idx, 'date', e.target.value),
     className: "w-1/3 min-w-0 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
     placeholder: t('timeline.label_placeholder')
   }), /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('common.text_field'),
+    "aria-label": timelineFieldLabel('timeline.event_placeholder', 'Event description', idx),
     type: "text",
+    style: {
+      minHeight: 44
+    },
     "data-timeline-event": true,
     value: item.event,
     onChange: e => handleTimelineChange(idx, 'event', e.target.value),
@@ -447,19 +507,25 @@ function TimelineView(props) {
   })), (item.event_en || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("input", _extends({}, _timelineTranslationAttributes(generatedContent), {
-    "aria-label": t('common.enter_item'),
+    "aria-label": timelineFieldLabel('timeline.label_placeholder', 'Label/Step', idx, true),
     type: "text",
+    style: {
+      minHeight: 44
+    },
     value: item.date_en || '',
     onChange: e => handleTimelineChange(idx, 'date', e.target.value, true),
     className: "w-1/3 min-w-0 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
-    placeholder: t('timeline.label_en_placeholder')
+    placeholder: _timelineReviewLabel(t, 'translate.companion_label', 'Companion translation')
   })), /*#__PURE__*/React.createElement("input", _extends({}, _timelineTranslationAttributes(generatedContent), {
-    "aria-label": t('common.text_field'),
+    "aria-label": timelineFieldLabel('timeline.event_placeholder', 'Event description', idx, true),
     type: "text",
+    style: {
+      minHeight: 44
+    },
     value: item.event_en || '',
     onChange: e => handleTimelineChange(idx, 'event', e.target.value, true),
     className: "w-2/3 min-w-0 text-xs text-slate-600 bg-white border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
-    placeholder: t('timeline.event_en_placeholder')
+    placeholder: _timelineReviewLabel(t, 'translate.companion_label', 'Companion translation')
   })))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center gap-1 mt-1 shrink-0"
   }, item.image ? /*#__PURE__*/React.createElement("div", {
@@ -609,14 +675,14 @@ function TimelineView(props) {
     }))), /*#__PURE__*/React.createElement("div", {
       className: "text-red-700 leading-relaxed pl-4"
     }, item.verification.concern || (item.verification.factual === false ? t('timeline.validation.factual_concern') || 'Factual concern — review this item.' : t('timeline.validation.position_concern') || 'Position may be wrong — check placement on the axis.')));
-  })(), item.verification && item.verification.factual !== false && item.verification.position !== false && (item.verification.rationale ? /*#__PURE__*/React.createElement("details", {
+  })(), item.verification && item.verification.factual === true && item.verification.position === true && (item.verification.rationale ? /*#__PURE__*/React.createElement("details", {
     className: "mt-2 group"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800 cursor-pointer hover:bg-emerald-100 list-none transition-colors"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 11,
     className: "text-emerald-600"
-  }), t('timeline.validation.verified') || 'Verified', /*#__PURE__*/React.createElement("span", {
+  }), _timelineReviewLabel(t, 'timeline.ai_review.no_issue', 'AI review: no issue flagged'), /*#__PURE__*/React.createElement("span", {
     className: "text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform"
   }, "▾")), /*#__PURE__*/React.createElement("div", {
     className: "mt-1.5 text-[11px] bg-emerald-50/50 border-l-2 border-emerald-300 px-2 py-1.5 text-emerald-900/90 leading-relaxed rounded-r"
@@ -625,7 +691,7 @@ function TimelineView(props) {
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 11,
     className: "text-emerald-600"
-  }), " ", t('timeline.validation.verified') || 'Verified')))))) : /*#__PURE__*/React.createElement("div", {
+  }), " ", _timelineReviewLabel(t, 'timeline.ai_review.no_issue', 'AI review: no issue flagged'))))))) : /*#__PURE__*/React.createElement("div", {
     className: "relative -ml-12 sm:-ml-16"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in duration-300"

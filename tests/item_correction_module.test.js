@@ -61,9 +61,9 @@ describe('ItemCorrection module', () => {
     expect(err.textContent).toMatch(/suggested fix/i);
   });
 
-  it('POSTs a structured payload to the worker /submitItemCorrection route', async () => {
+  it('POSTs a structured payload to the versioned private review route', async () => {
     IC.openFor({ packId: 'praxis-core-5752', packTitle: 'Praxis Core 5752', itemId: 'core5752-b1-083', prompt: 'q', domain: 'math', reviewTier: 'source-reviewed', currentAnswer: '14' });
-    global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true }) }));
+    global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true, storage: 'private' }) }));
     document.getElementById('allo-ic-suggest').value = 'The key should be B.';
     document.getElementById('allo-ic-kind').value = 'wrong-answer';
     document.getElementById('allo-ic-note').value = 'per the blueprint';
@@ -72,7 +72,7 @@ describe('ItemCorrection module', () => {
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
     const [url, opts] = global.fetch.mock.calls[0];
-    expect(url).toMatch(/\/submitItemCorrection$/);
+    expect(url).toMatch(/\/v2\/submitItemCorrection$/);
     expect(opts.method).toBe('POST');
     const payload = JSON.parse(opts.body);
     expect(payload.packId).toBe('praxis-core-5752');
@@ -80,11 +80,11 @@ describe('ItemCorrection module', () => {
     expect(payload.reviewTier).toBe('source-reviewed');
     expect(payload.suggested).toBe('The key should be B.');
     expect(payload.kind).toMatch(/^wrong-answer/);
-    // success shows the non-fallback thank-you
+    // Only a confirmed private receipt clears the draft.
     expect(document.getElementById('allo-ic-overlay').textContent).toMatch(/sent for review/i);
   });
 
-  it('falls back to the Google Form (new tab) when the worker is unreachable', async () => {
+  it('retains the draft without opening another destination when the worker is unreachable', async () => {
     IC.openFor({ packId: 'p', packTitle: 'Pack', itemId: 'x', prompt: 'q', reviewTier: 'source-reviewed' });
     global.fetch = vi.fn(() => Promise.reject(new Error('network down')));
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
@@ -92,11 +92,10 @@ describe('ItemCorrection module', () => {
     document.getElementById('allo-ic-send').click();
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(openSpy).toHaveBeenCalledTimes(1);
-    const formUrl = openSpy.mock.calls[0][0];
-    expect(formUrl).toMatch(/docs\.google\.com\/forms/);
-    expect(decodeURIComponent(formUrl)).toContain('Practice Item Correction');
-    expect(document.getElementById('allo-ic-overlay').textContent).toMatch(/opened in a form/i);
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(document.getElementById('allo-ic-suggest').value).toBe('reword the stem');
+    expect(document.getElementById('allo-ic-err').textContent).toMatch(/not confirmed/i);
+    expect(document.getElementById('allo-ic-send').disabled).toBe(false);
   });
 
   it('the root module and the deploy mirror are byte-identical', () => {

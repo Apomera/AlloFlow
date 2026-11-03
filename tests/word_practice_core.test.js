@@ -9,6 +9,17 @@ beforeEach(() => {
 });
 const wav = 'data:audio/wav;base64,' + Buffer.from('RIFF' + '\0'.repeat(4) + 'WAVE' + '\0'.repeat(40)).toString('base64');
 describe('shared word practice contract', () => {
+  it('round-trips only valid review IDs and keeps identically spelled meanings separate', () => {
+    const words = [{ entryId: 'river', word: 'bank' }, { entryId: 'money', word: 'bank' }];
+    const raw = { words, reviewItemIds: ['entry:money', 'entry:money', 'missing', 'bank', 2, null] };
+    const saved = JSON.parse(core.serializePack(raw));
+    expect(saved.reviewItemIds).toEqual(['entry:money']);
+    expect(core.normalizeInput(saved).reviewItemIds).toEqual(['entry:money']);
+    expect(core.normalizeInput({ ...saved, items: [saved.items[0]] }).reviewItemIds).toBeUndefined();
+    for (const invalid of [undefined, false, 'entry:money']) {
+      expect(core.normalizeInput({ words, reviewItemIds: invalid }).reviewItemIds).toBeUndefined();
+    }
+  });
   it('preserves the teaching word and vocabulary while dropping unrelated learner data', () => {
     const pack = core.normalizeInput({ title: 'Weekly words', words: [{ targetWord: 'ship', definition: 'A large boat', translations: { Spanish: { word: 'barco' } }, phonemes: ['sh', 'i', 'p'], _ttsAssets: { ship: { mime: 'audio/wav', base64: wav.split(',')[1] } }, learnerId: 'private', score: 97 }], phonemeBank: { sh: wav } });
     expect(pack.items[0]).toMatchObject({ word: 'ship', definition: 'A large boat', wordAudio: wav, translations: [{ language: 'Spanish', text: 'barco' }] });
@@ -75,5 +86,32 @@ describe('shared word practice contract', () => {
     expect(core.normalizeInput([{ word: 'ship', activityItems: { read_sentence: { sentence: 'The cat is big.', before: 'The ', after: ' is big.', options: ['cat', 'ship'] } } }]).items[0].sentenceActivity).toBe(null);
     expect(core.normalizeInput([{ word: 'ship', sentenceActivity: { prompt: 'The ____ is big.', choices: ['rain', 'light'], answer: 'ship' } }]).items[0].sentenceActivity).toBe(null);
     expect(core.normalizeInput([{ word: 'ship', sentenceActivity: { prompt: 'The ____ is big.', choices: ['rain', 'ship'], answer: 'rain' } }]).items[0].sentenceActivity).toBe(null);
+  });
+  it.each([
+    ['猫', '私は猫です。', '私は', 'です。', '私は____です。'],
+    ['叶子', '这是一片叶子。', '这是一片', '。', '这是一片____。'],
+    ['كتاب', 'قال: «كتاب»؛ ثم سكت.', 'قال: «', '»؛ ثم سكت.', 'قال: «____»؛ ثم سكت.'],
+    ['pain', 'Ce CAFÉ   sert\tPain\u202f!', 'ce cafe\u0301 sert', '!', 'Ce CAFÉ   sert\t____\u202f!'],
+    ['ship', 'We see\n  SHIP\t today.', 'We see', 'today.', 'We see\n  ____\t today.'],
+    ['café', '«cafe\u0301»', '«', '»', '«____»'],
+    ['C++', 'Code in C++.', 'Code in', '.', 'Code in ____.'],
+  ])('masks only the prepared target in %s and keeps its authored separators', (word, sentence, before, after, prompt) => {
+    const record = { word, activityItems: { read_sentence: { sentence, before, after, options: [word, 'other'] } } };
+    const pack = core.normalizeInput([record]);
+    expect(pack.items[0].sentenceActivity.prompt).toBe(prompt);
+    expect(core.normalizeInput(JSON.parse(core.serializePack(pack))).items[0].sentenceActivity.prompt).toBe(prompt);
+    expect(record.activityItems.read_sentence.sentence).toBe(sentence);
+  });
+  it('checks the entire authored target and suffix even after 2,000 characters', () => {
+    const before = 'Read the passage. '.repeat(140).trim();
+    const board = sentence => ({ word: 'ship', activityItems: { read_sentence: { sentence, before, after: 'sails.', options: ['ship', 'rain'] } } });
+    expect(core.normalizeInput([board(before + ' boat sails.')]).items[0].sentenceActivity).toBeNull();
+    expect(core.normalizeInput([board(before + ' ship vanished.')]).items[0].sentenceActivity).toBeNull();
+    expect(core.normalizeInput([board(before + ' ship sails.')]).items[0].sentenceActivity.prompt).toBe(before + ' ____ sails.');
+  });
+  it('requires a distinct distractor under the same comparison the player uses for answers', () => {
+    const board = options => ({ word: 'café', activityItems: { read_sentence: { sentence: 'Un café.', before: 'Un', after: '.', options } } });
+    expect(core.normalizeInput([board(['CAFÉ', 'cafe\u0301'])]).items[0].sentenceActivity).toBeNull();
+    expect(core.normalizeInput([board(['CAFÉ', 'cafe\u0301', 'thé', 'Thé'])]).items[0].sentenceActivity).toMatchObject({ choices: ['CAFÉ', 'thé'], answer: 'CAFÉ' });
   });
 });

@@ -1308,7 +1308,7 @@ describe('physical road layouts', () => {
     expect(RR.railroadRequiresFullStop('school_bus', passive)).toBe(true);
     expect(RR.railroadRequiresFullStop('schoolbus', passive)).toBe(true);
     expect(RR.railroadRequiresFullStop('car', passive)).toBe(false);
-    expect(RR.railroadRequiresFullStop('school_bus', { activeControl: true })).toBe(false);
+    expect(RR.railroadRequiresFullStop('school_bus', { activeControl: true })).toBe(true);
     expect(RR.railroadTrainCollisionAt({ x: -14, y: 0, type: 'car' }, passive, occupied)).toBe(true);
     expect(RR.railroadTrainCollisionAt({ x: 20, y: 0, type: 'car' }, passive, occupied)).toBe(false);
     expect(RR.railroadTrainCollisionAt({ x: 0, y: 5, type: 'car' }, passive, occupied)).toBe(false);

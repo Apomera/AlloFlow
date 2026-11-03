@@ -209,9 +209,37 @@
           '  diffuseColor.rgb=mix(diffuseColor.rgb,underColor*texelColor.rgb,0.93*(1.0-blFoldedPigment));',
           '}'
         ].join('\n'));
+        if (!dark) {
+          shader.fragmentShader = shader.fragmentShader.replace('if (!gl_FrontFacing) {', [
+            '// birdlab-upper-covert-color-begin',
+            'if (gl_FrontFacing && vBirdFeatherStyle.x>0.5) {',
+            '  float blCovertAlong=1.0-vUv.y;',
+            '  float blCovertFootprint=max(fwidth(vUv.y),fwidth(vUv.x*4.0));',
+            '  float blCovertResolve=1.0-smoothstep(0.22,0.48,blCovertFootprint);',
+            '  float blCovertRoot=(1.0-smoothstep(0.08,0.40,blCovertAlong))*blCovertResolve;',
+            '  float blCovertTip=smoothstep(0.52,0.94,blCovertAlong)*blCovertResolve;',
+            '  diffuseColor.rgb*=1.0-blCovertRoot*(0.05+vBirdFeatherStyle.y*0.02);',
+            '  diffuseColor.rgb*=vec3(1.0+blCovertTip*0.045,1.0+blCovertTip*0.028,1.0+blCovertTip*0.012);',
+            '}',
+            '// birdlab-upper-covert-color-end',
+            'if (!gl_FrontFacing) {'
+          ].join('\n'));
+          shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n' + [
+            '// birdlab-upper-covert-finish-begin',
+            'if (gl_FrontFacing && vBirdFeatherStyle.x>0.5) {',
+            '  float blCovertAlong=1.0-vUv.y;',
+            '  float blCovertFootprint=max(fwidth(vUv.y),fwidth(vUv.x*4.0));',
+            '  float blCovertResolve=1.0-smoothstep(0.22,0.48,blCovertFootprint);',
+            '  float blCovertRoot=1.0-smoothstep(0.08,0.40,blCovertAlong);',
+            '  float blCovertTip=smoothstep(0.52,0.94,blCovertAlong);',
+            '  roughnessFactor=clamp(roughnessFactor+(blCovertRoot*0.022-blCovertTip*0.016)*blCovertResolve,0.0,1.0);',
+            '}',
+            '// birdlab-upper-covert-finish-end'
+          ].join('\n'));
+        }
         vaneGrain(shader, false);
       };
-      m.customProgramCacheKey = function () { return 'birdlab-underwing-covert-markings-v5-' + dark + '|' + featherArt.vaneGrainCacheKey({ variants: 4 }); };
+      m.customProgramCacheKey = function () { return (dark ? 'birdlab-underwing-covert-markings-v5-true' : 'birdlab-underwing-covert-markings-v6-false') + '|' + featherArt.vaneGrainCacheKey({ variants: 4 }); };
     }
     underwing(wingMaterial, false); underwing(primaryMaterial, true);
 
@@ -312,13 +340,21 @@
       shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vHawkIris;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvHawkIris=position.xy;');
       shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vHawkIris;').replace('#include <color_fragment>', '#include <color_fragment>\n' + [
         'float radius=length(vHawkIris),angle=atan(vHawkIris.y+0.000001,vHawkIris.x+0.000001);',
-        'float fiber=sin(angle*83.0+sin(angle*11.0)*1.4+radius*8.0);',
-        'float detail=1.0-smoothstep(0.45,1.2,fwidth(angle)*83.0);',
-        'diffuseColor.rgb*=1.0+fiber*detail*0.11;',
-        'diffuseColor.rgb*=1.0-smoothstep(0.76,0.98,radius)*0.42;'
+        'float broadPhase=angle*31.0+sin(angle*9.0)*0.8+radius*10.0;',
+        'float finePhase=angle*113.0+sin(angle*13.0)*1.7+radius*14.0;',
+        'float broadFilter=1.0-smoothstep(0.65,1.7,fwidth(broadPhase));',
+        'float fineFilter=1.0-smoothstep(0.65,1.7,fwidth(finePhase));',
+        'float fibers=sin(broadPhase)*broadFilter*0.075+sin(finePhase)*fineFilter*0.045;',
+        'float collarRadius=0.66+sin(angle*23.0)*0.014;',
+        'float collarAA=max(fwidth(radius),0.008);',
+        'float collar=1.0-smoothstep(0.018,0.048+collarAA,abs(radius-collarRadius));',
+        'float warmCore=(1.0-smoothstep(0.67,0.85,radius))*0.16;',
+        'diffuseColor.rgb*=vec3(1.0+warmCore,1.0+warmCore*0.18,1.0-warmCore*0.38)*(1.0+fibers);',
+        'diffuseColor.rgb*=1.0-collar*0.12;',
+        'diffuseColor.rgb*=1.0-smoothstep(0.80,0.99,radius)*0.36;'
       ].join('\n'));
     };
-    irisMat.customProgramCacheKey = function () { return 'birdlab-hawk-radial-iris-v1'; };
+    irisMat.customProgramCacheKey = function () { return 'birdlab-hawk-radial-iris-v2'; };
     var pupilMat = material({ color: 0x0b0c0b, roughness: 0.11 });
     var browMat = material({ color: 0x604839, map: headRelief, bumpMap: headRelief, bumpScale: 0.00024, roughness: 0.97 });
     var eyes = [], eyelids = [], blinkClosure = { value: 0 };
@@ -375,15 +411,30 @@
     }
     var keratin = texture(keratinCanvas, 'hawk-fine-keratin-growth');
     var billMat = material({ color: 0x40423d, map: keratin, bumpMap: keratin, bumpScale: 0.000055, roughness: 0.37 });
+    billMat.extensions = { derivatives: true };
     billMat.onBeforeCompile = function (shader) {
       shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vHawkBill;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvHawkBill=position;');
-      shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vHawkBill;').replace('#include <color_fragment>', '#include <color_fragment>\n' + [
+      shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vHawkBill;\n' + [
+        'vec2 blKeratinLamina(vec2 uv){',
+        '  float phase=uv.y*17.0+sin(uv.x*6.2831853)*0.28+sin(uv.y*9.0)*0.12;',
+        '  float cyclesPerPixel=fwidth(phase);',
+        '  float detail=1.0-smoothstep(0.22,0.48,cyclesPerPixel);',
+        '  float lamina=sin(phase*6.2831853)*detail;',
+        '  return vec2(lamina,1.0-smoothstep(0.02,0.55,uv.y));',
+        '}'
+      ].join('\n')).replace('#include <color_fragment>', '#include <color_fragment>\n' + [
         'float jawLine=-0.014-(-vHawkBill.z-0.057)*0.18;',
         'float seam=(1.0-smoothstep(0.00045,0.0012,abs(vHawkBill.y-jawLine)))*smoothstep(0.004,0.014,abs(vHawkBill.x));',
-        'diffuseColor.rgb*=1.0-seam*0.32;'
+        'diffuseColor.rgb*=1.0-seam*0.32;',
+        'vec2 billLamina=blKeratinLamina(vUv);',
+        'diffuseColor.rgb*=1.0+billLamina.x*0.016;'
+      ].join('\n'));
+      shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n' + [
+        'float billTipWear=smoothstep(0.35,0.96,vUv.y);',
+        'roughnessFactor=clamp(roughnessFactor+billLamina.y*0.024+billLamina.x*0.016-billTipWear*0.018,0.32,0.48);'
       ].join('\n'));
     };
-    billMat.customProgramCacheKey = function () { return 'birdlab-hawk-keratin-jaw-v1'; };
+    billMat.customProgramCacheKey = function () { return 'birdlab-hawk-keratin-lamina-v3'; };
     var cereMat = material({ color: 0xb99a58, map: keratin, bumpMap: keratin, bumpScale: 0.00007, roughness: 0.82 });
     var cere = addMesh(head, eyeGeo, cereMat, 'subdued-yellow-cere'); cere.scale.set(0.023, 0.014, 0.019); cere.position.set(0, -0.008, -0.062);
     // Sweep the keratin around a turning centerline. Rings follow the curve

@@ -65,6 +65,7 @@ function makeGsSandbox() {
         createFile: (name, content) => { driveFiles.set(name, String(content)); return fileObj(name); },
     };
     const services = {
+        Session: { getActiveUser: () => ({ getEmail: () => "owner@example.test" }), getEffectiveUser: () => ({ getEmail: () => "owner@example.test" }) },
         CacheService: { getScriptCache: () => cache },
         PropertiesService: { getScriptProperties: () => ({
             getProperty: k => (props.has(k) ? props.get(k) : null),
@@ -85,17 +86,19 @@ function makeGsSandbox() {
             base64EncodeWebSafe: bytes => Buffer.from(bytes).toString('base64url'),
         },
     };
-    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, doGet: doGet, doPost: doPost };');
+    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, doGet: doGet, doPost: doPost, setupMailboxOwner: setupMailboxOwner };');
     const gs = factory(...Object.values(services));
-    return { call: p => JSON.parse(gs.handle(p).getContent()), gs, driveFiles, cacheStore, props };
+    const call = p => JSON.parse(gs.handle(p).getContent());
+    call.setupOwner = () => { gs.setupMailboxOwner(); return { ok: true, admin: props.get("admin") }; };
+    return { call, gs, driveFiles, cacheStore, props };
 }
 
 describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(27);
-        const claim = call({ a: 'claim' });
+        expect(call({ a: 'hello' }).v).toBe(28);
+        const claim = call.setupOwner();
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
         expect(call({ a: 'claim' }).e).toBe('claimed');
@@ -127,7 +130,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     });
     it('assembles chunked pack uploads and serves sliced downloads behind the pack secret', () => {
         const { call, driveFiles } = makeGsSandbox();
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         const id = 'PK-12345678-1234-1234-1234-123456789012';
         const PK = 'p_secret_p_secret_20';
         expect(call({ a: 'putpack', id, k: PK, part: 1, of: 2, data: 'AAA' }).e).toBe('not-admin');
@@ -164,7 +167,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     });
     it('stores chunked live and hosted-homework submissions in the teacher Drive behind scoped capabilities', () => {
         const { call, driveFiles } = makeGsSandbox();
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         const sessionSecret = 'k_secret_k_secret_20';
         expect(call({ a: 'open', admin, c: 'ABC23', k: sessionSecret }).ok).toBe(true);
         const joined = call({ a: 'join', c: 'ABC23', k: sessionSecret });
@@ -198,7 +201,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     });
     it('hosts plural asynchronous Word Clouds, selects by activity id, and deletes every sidecar', () => {
         const { call, driveFiles } = makeGsSandbox();
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         const id = 'PK-92345678-1234-1234-1234-123456789012';
         const aid = 'AC-82345678-1234-1234-1234-123456789012';
         const secondAid = 'AC-72345678-1234-1234-1234-123456789012';
@@ -306,7 +309,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
 
     it('runs an aggregate-only asynchronous rating with bounded integer values and one row per actor', () => {
         const { call, driveFiles } = makeGsSandbox();
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         const id = 'PK-13345678-1234-1234-1234-123456789012';
         const aid = 'AC-13345678-1234-1234-1234-123456789012';
         const secret = 'p_secret_p_secret_20';
@@ -390,7 +393,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
 
     it('accepts legacy singular activity requests and manifests while enforcing bounded unique plural ids', () => {
         const { call, driveFiles } = makeGsSandbox();
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         const secret = 'p_secret_p_secret_20';
         const expiresAt = new Date(Date.now() + 86400000).toISOString();
         const activity = {
@@ -536,7 +539,7 @@ describe('Code.gs hardening (v2)', () => {
     it("'auth' verifies admin tokens without protocol side effects", () => {
         const { call } = makeGsSandbox();
         expect(call({ a: 'auth', admin: 'whatever' })).toMatchObject({ ok: true, admin: false, claimed: false });
-        const claim = call({ a: 'claim' });
+        const claim = call.setupOwner();
         expect(call({ a: 'auth', admin: 'wrong-token' })).toMatchObject({ ok: true, admin: false, claimed: true });
         expect(call({ a: 'auth', admin: claim.admin })).toMatchObject({ ok: true, admin: true, claimed: true });
     });
@@ -544,7 +547,7 @@ describe('Code.gs hardening (v2)', () => {
     it('backs the admin token up as a Drive note at claim and refreshes it on auth (v3)', () => {
         const { call, driveFiles } = makeGsSandbox();
         const noteName = 'ADMIN-TOKEN (do not share).txt';
-        const claim = call({ a: 'claim' });
+        const claim = call.setupOwner();
         expect(driveFiles.has(noteName)).toBe(true);
         expect(driveFiles.get(noteName)).toContain(claim.admin);
         // Wrong token must NOT rewrite the note; valid auth refreshes it.
@@ -558,7 +561,7 @@ describe('Code.gs hardening (v2)', () => {
     it('survives cache eviction of the session marker via the durable Properties fallback (v4)', () => {
         const { call, gs, driveFiles, ...rest } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         expect(call({ a: 'open', admin, c: 'EVICT', k: K }).ok).toBe(true);
         const joined = call({ a: 'join', c: 'EVICT', k: K });
         expect(call({ a: 'send', uid: joined.uid, pt: joined.pt, c: 'EVICT', box: 'up', v: { kind: 'student', name: 'A' } }).ok).toBe(true);
@@ -579,7 +582,7 @@ describe('Code.gs hardening (v2)', () => {
         const K1 = 'k_one_k_one_k_one_20';
         const K2 = 'k_two_k_two_k_two_20';
         expect(call({ a: 'mysessions', admin: 'nope' }).e).toBe('not-admin');
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         expect(call({ a: 'mysessions', admin }).sessions).toEqual([]);
         call({ a: 'open', admin, c: 'ROOM1', k: K1 });
         call({ a: 'open', admin, c: 'ROOM2', k: K2 });
@@ -596,7 +599,7 @@ describe('Code.gs hardening (v2)', () => {
 
     it('purges replay messages when a code is ended and later reused', () => {
         const { call } = makeGsSandbox();
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         const secret = 'reused_secret_reused_20';
         call({ a: 'open', admin, c: 'REUSE', k: secret });
         call({ a: 'send', admin, c: 'REUSE', box: 'down', v: { kind: 'end', stale: true } });
@@ -609,7 +612,7 @@ describe('Code.gs hardening (v2)', () => {
     });
     it('rotates the admin token safely and closes active sessions only with explicit force', () => {
         const { call } = makeGsSandbox();
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         call({ a: 'open', admin, c: 'ROTAT', k: 'rotate_secret_rotate_20' });
         expect(call({ a: 'rotateadmin', admin }).e).toBe('sessions-active');
         const rotated = call({ a: 'rotateadmin', admin, force: true });
@@ -622,7 +625,7 @@ describe('Code.gs hardening (v2)', () => {
     it('caps participant writes independently and bounds message cache slots', () => {
         const { call, cacheStore } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         expect(call({ a: 'open', admin, c: 'FLOOD', k: K }).ok).toBe(true);
         const joined = call({ a: 'join', c: 'FLOOD', k: K });
         for (let i = 0; i < 120; i += 1) {
@@ -991,7 +994,7 @@ describe('student-pack serialization (full-fidelity)', () => {
         const H = buildClientHelpers({});
         const codec = new Function('Blob', 'Response', 'CompressionStream', 'DecompressionStream', helperSource + '; return { encode: _alloEncodeAlloPack, decode: _alloDecodeAlloPack };')(NodeBlob, globalThis.Response, NodeCS, NodeDS);
         const { call } = makeGsSandbox();
-        const admin = call({ a: 'claim' }).admin;
+        const admin = call.setupOwner().admin;
         const code = 'ABC23', secret = 'k_secret_k_secret_20';
         expect(call({ a: 'open', admin, c: code, k: secret }).ok).toBe(true);
         const joined = call({ a: 'join', c: code, k: secret });

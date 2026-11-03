@@ -245,7 +245,9 @@ describe('Heat pump boundary', () => {
   });
 
   it('describes insulation and entropy limits without contradicting the implemented models', () => {
-    const html = renderTool('heatLab', { _heatLab: { thickness: 10, entSplit: 39 } });
+    // The mug now starts near-bare (copper, 1 mm) so the badge is not won at
+    // mount; select the 10 mm fibreglass wrap explicitly to reach the winning copy.
+    const html = renderTool('heatLab', { _heatLab: { insMatId: 'fibre', thickness: 10, entSplit: 39 } });
     expect(html).toMatch(/approaches a one-half reduction only when the wrap dominates/i);
     expect(html).toMatch(/near equilibrium, not exactly at it/i);
     expect(html).not.toMatch(/still-air film.*sets a floor/i);
@@ -429,7 +431,8 @@ describe('Heat lab renders', () => {
     expect(html).toContain('Ice melting');
     expect(html).toContain('Energy is changing the phase');
     expect(SRC).toContain('curveScaleGradient');
-    expect(SRC).toContain('aria-label\': \'Live thermal state scale from minus 20 to 125 degrees Celsius.');
+    // Stage D routes the label through t(); the English fallback is unchanged.
+    expect(SRC).toContain('\'Live thermal state scale from minus 20 to 125 degrees Celsius.');
     expect(SRC).toContain('prefersReducedMotion ? \'none\' : \'left 160ms ease-out\'');
   });
 
@@ -473,7 +476,10 @@ describe('Heat lab renders', () => {
   it('keeps the topic index in the same order as the sections it links to', () => {
     const registry = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
     const dom = [...SRC.matchAll(/^        sec\('([a-z0-9]+)'/gm)].map((m) => m[1]).filter((id) => id !== 'next');
-    expect(registry.length).toBe(13);
+    // 13 topics through stage A; stage B added touch, equilibrium and notebook;
+    // stage C added the investigations and the cooler design challenge;
+    // stage D added the passive house designer.
+    expect(registry.length).toBe(19);
     // Order IS the contract: the index prints each topic's position as its
     // section number, so a reordering that kept the same set would misnumber.
     expect(dom).toEqual(registry);

@@ -164,7 +164,8 @@ describe('the sidebar offers it only where it works', () => {
   let Notice;
   const mounted = [];
   beforeAll(() => {
-    Notice = new Function('React', sliceBlock(SIDEBAR, 'function useAiTextAvailable(') + '\n' + sliceBlock(SIDEBAR, 'function OtherWaysToStart(') + '\n'
+    Notice = new Function('React', sliceBlock(SIDEBAR, 'function useAiTextAvailable(') + '\n'
+      + sliceBlock(SIDEBAR, 'function createPathFork(') + '\nconst PathFork = createPathFork();\n' + sliceBlock(SIDEBAR, 'function OtherWaysToStart(') + '\n'
       + sliceBlock(SIDEBAR, 'function SourceNeededNotice(') + '\nreturn SourceNeededNotice;')(React);
   });
   afterEach(() => { mounted.splice(0).forEach(({ root, host }) => { act(() => root.unmount()); host.remove(); }); delete window.__alloResolveAiCapability; });

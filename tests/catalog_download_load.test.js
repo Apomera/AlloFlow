@@ -1,6 +1,6 @@
 import {it,expect,vi} from 'vitest';import fs from 'node:fs';import path from 'node:path';import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),React=require(path.resolve('desktop/web-app/node_modules/react'));const win={React,AlloModules:{}};new Function('window',fs.readFileSync('catalog_module.js','utf8'))(win);const { _fetchCatalogLesson:fetchLesson,_parseCatalogLesson:parseLesson }=win.AlloModules.CommunityCatalog;
-const entry={path:'allopacks/test.allopack.json'},pack={allopack:{spec:'0.1'},history:[{id:'reading',type:'simplified',title:'Read',data:'Water moves.',meta:''}]};
+const entry={path:'allopacks/current/test.allopack.json'},pack={allopack:{spec:'0.1'},history:[{id:'reading',type:'simplified',title:'Read',data:'Water moves.',meta:''}]};
 it('never reads or saves an HTTP error response as a lesson',async()=>{const text=vi.fn(async()=>JSON.stringify({error:'missing'}));await expect(fetchLesson(entry,async()=>({ok:false,status:404,text}))).rejects.toThrow('HTTP 404');expect(text).not.toHaveBeenCalled();});
 it('accepts a BOM-prefixed successful response and preserves its payload',async()=>{expect(await fetchLesson(entry,async()=>({ok:true,text:async()=>'\uFEFF'+JSON.stringify(pack)}))).toEqual(pack);});
 it('reports invalid JSON clearly',async()=>{await expect(fetchLesson(entry,async()=>({ok:true,text:async()=>'<html>error</html>'}))).rejects.toThrow('not valid JSON');});

@@ -305,7 +305,7 @@ describe('flashcard HTML export', () => {
     expect(karen.getAttribute('dir')).toBe('ltr');
     const unknown = [...doc.querySelectorAll('.secondary-text')].find((el) => el.textContent === 'zib');
     expect(unknown.getAttribute('dir')).toBe('auto');
-    expect(unknown.hasAttribute('lang'), 'an unknown language must not be labelled English').toBe(false);
+    expect(unknown.getAttribute('lang'), 'an unknown language must clear the inherited UI language').toBe('');
   });
 
   it('writes each picture once, however many language sets repeat it', () => {

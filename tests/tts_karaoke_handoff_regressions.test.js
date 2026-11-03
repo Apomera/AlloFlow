@@ -430,6 +430,24 @@ describe('general Leveled Text stalled-preload promotion (2026-08-03)', () => {
     }
   });
 
+  it('holds the current sentence when the selected Kokoro voice fails even with device fallback enabled', async () => {
+    localStorage.setItem('alloflow_ai_config', JSON.stringify({ browserTtsFallback: true }));
+    const speak = vi.fn();
+    const original = window.speechSynthesis;
+    Object.defineProperty(window, 'speechSynthesis', { value: { speak }, configurable: true });
+    try {
+      const deps = makeSpanishDeps({ selectedVoice: 'af_bella', callTTS: vi.fn(async () => null), addToast: vi.fn() });
+      await PK.playSequence(0, ['Read this sentence.'], 17, 'standard', {}, null, null, 1, null, deps, 'leveled-text');
+      expect(deps.callTTS.mock.calls[0][3].allowProviderFallback).toBe(false);
+      expect(deps.stopPlayback).toHaveBeenCalledWith('kokoro-unavailable', 'leveled-text', 17);
+      expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('Kokoro'), 'warning');
+      expect(speak).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(window, 'speechSynthesis', { value: original, configurable: true });
+      localStorage.removeItem('alloflow_ai_config');
+    }
+  });
+
   it('stops playback instead of skipping when synthesis yields no audio and browser fallback is off', async () => {
     audioInstances = [];
     vi.stubGlobal('Audio', SequenceAudio);
@@ -614,6 +632,14 @@ describe('KaraokeAudioStore.getCompatible (stale stored-voice guard)', () => {
     expect(url).toBeTruthy();
     return st;
   }
+
+  it('does not replay a known cloud fallback as the selected Kokoro voice', () => {
+    const voice = { voice: 'af_bella', speed: 1, language: 'English', voiceResolverVersion: 2 };
+    const cloud = storeWith('ai', { ...voice, engine: 'gemini-tts' });
+    expect(cloud.getCompatible('The sun is hot.', voice)).toBeNull();
+    const local = storeWith('ai', { ...voice, engine: 'kokoro-browser' });
+    expect(local.getCompatible('The sun is hot.', voice)).toBe('blob:stored-clip');
+  });
 
   it('refuses a stored Puck AI clip when Kore is selected', () => {
     const st = storeWith('ai', { voice: 'Puck', speed: 1, language: 'English', voiceResolverVersion: 2 });

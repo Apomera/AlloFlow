@@ -481,6 +481,9 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       ? 2 : Number(wanted.voiceResolverVersion);
     if (!stored || Number(stored.voiceResolverVersion) !== requestedResolverVersion) return false;
     if (wanted.voice && (!stored.voice || String(stored.voice).toLowerCase() !== String(wanted.voice).toLowerCase())) return false;
+    // Earlier readers could save a fallback under the requested Kokoro voice.
+    // Retain those takes for review, but never replay a known different engine.
+    if (/^[ab][fm]_/i.test(wanted.voice || '') && stored.engine && !/kokoro/i.test(stored.engine)) return false;
     var provenanceKeys = ['provider', 'engine', 'engineVersion', 'model', 'modelVersion'];
     for (var i = 0; i < provenanceKeys.length; i++) {
       var provenanceKey = provenanceKeys[i];
@@ -580,10 +583,14 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       var matches = _identityEntriesForText(text);
       return matches.length === 1 ? matches[0] : null;
     };
+    // allowLegacyText is a live lookup constraint, never part of the portable identity.
+    var _legacyForIdentity = function (target, identity) {
+      return target.allowLegacyText !== false && legacy.get(keyFor(identity.spokenText)) || null;
+    };
     var _entryFor = function (target) {
       var identity = normalizeIdentity(target);
       if (identity) return identities.get(portableKeyForIdentity(identity)) ||
-        legacy.get(keyFor(identity.spokenText)) || null;
+        _legacyForIdentity(target, identity);
       if (isIdentityTarget(target)) return null;
       return legacy.get(keyFor(target)) || _preferredIdentityEntryForText(target, null, false);
     };
@@ -629,7 +636,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
           };
           return sameIdentity ? withProfileEvidence(result, direct, requestedProfile) : result;
         }
-        var legacyEntry = legacy.get(keyFor(identity.spokenText));
+        var legacyEntry = _legacyForIdentity(target, identity);
         if (!legacyEntry) return {
           status: 'missing', url: null, source: null, identity: Object.assign({}, identity),
           synthesisProfile: null, legacy: false
@@ -792,7 +799,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
           return { lane: identities, key: identityKey, entry: identities.get(identityKey), legacy: false };
         }
         var identityLegacyKey = keyFor(identity.spokenText);
-        return legacy.has(identityLegacyKey)
+        return target.allowLegacyText !== false && legacy.has(identityLegacyKey)
           ? { lane: legacy, key: identityLegacyKey, entry: legacy.get(identityLegacyKey), legacy: true }
           : null;
       }
@@ -938,7 +945,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         var lane = identity ? identities : legacy;
         var previous = lane.get(key);
         var previousBytes = previous ? base64ByteLength(previous.b64) : 0;
-        var legacyReplacement = identity ? legacy.get(keyFor(identity.spokenText)) : null;
+        var legacyReplacement = identity ? _legacyForIdentity(target, identity) : null;
         var incomingSource = source || 'ai';
         var incomingIsHuman = String(incomingSource).indexOf('human') === 0;
         var allowReplaceHuman = !!(options && options.allowReplaceHuman === true);

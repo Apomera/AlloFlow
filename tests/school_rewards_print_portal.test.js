@@ -2,7 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { createHash, webcrypto } from 'node:crypto';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import JSZip from 'jszip';
+import { React, ReactDOMClient, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const ROOT = path.resolve(process.cwd());
 const PORTAL = fs.readFileSync(path.join(ROOT, 'apps_script/school_rewards/Portal.html'), 'utf8');
@@ -2202,6 +2204,142 @@ describe('School Rewards Print Lab portal', () => {
     await oversized.nodes['print-asset-file'].onchange();
     expect(oversized.nodes.notice.textContent).toContain('4 MiB');
     expect(oversized.calls.some(call => call.name === 'uploadSchoolRewardsPrintAsset')).toBe(false);
+  });
+
+  it('accepts the exact final-size STL and review JSON from a Geometry World ZIP and rejects the source STL', async () => {
+    const previousGlobals = {};
+    const keys = ['StemLab', 'AlloModules', '__alloPrintLabPendingHandoff', '__alloPrintLabGeometrySession', 'JSZip'];
+    keys.forEach(key => { previousGlobals[key] = window[key]; });
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+
+    try {
+      resetStemLab();
+      window.StemLab.geometryWorldBuilderPure = {};
+      window.AlloModules = {};
+      new Function(fs.readFileSync(path.join(ROOT, 'printable_model_module.js'), 'utf8'))();
+      new Function(fs.readFileSync(path.join(ROOT, 'prim3d_module.js'), 'utf8'))();
+      new Function(fs.readFileSync(path.join(ROOT, 'stem_lab/stem_tool_printlab.js'), 'utf8'))();
+      const THREE = {};
+      new Function('exports', 'module', fs.readFileSync(path.join(ROOT, 'vendor/three-r128/three.min.js'), 'utf8'))(THREE, { exports: THREE });
+      const printable = window.AlloModules.PrintableModel;
+      const sourceMesh = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 8), new THREE.MeshBasicMaterial());
+      const sourceBytes = new Uint8Array(printable.exportBinaryStl(THREE, sourceMesh));
+      sourceMesh.geometry.dispose();
+      sourceMesh.material.dispose();
+      window.StemLab.ensureThree = () => Promise.resolve(THREE);
+      window.JSZip = JSZip;
+      vi.stubGlobal('crypto', webcrypto);
+      const downloads = [];
+      vi.stubGlobal('URL', class extends URL {
+        static createObjectURL(blob) { downloads.push(blob); return 'blob:package-test'; }
+        static revokeObjectURL() {}
+      });
+      vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+      window.__alloPrintLabPendingHandoff = {
+        schema: 'alloflow-print-source/1', id: 'exact-package', projectId: 'exact-package', sourceTool: 'geometryWorld',
+        format: 'STL', bytes: sourceBytes, title: 'Classroom bridge', description: 'A scale model', unitMm: 12.5,
+        aiUse: 'ASSISTED', aiDisclosure: 'AI suggested the starting arrangement.',
+        sourceModel: { schema: 'alloflow-geometry-world-build/1', coordinateSystem: 'x-right,y-up,z-depth', blocks: [{ x: 0, y: 1, z: 0, type: 'wood', shape: 'cube', rotation: 0 }] }
+      };
+      const ctx = makeCtx({ toolData: { printLab: { studentNote: 'Review the bridge supports.', materialId: 'PETG' } } });
+      ctx.setToolData = update => { ctx.toolData = typeof update === 'function' ? update(ctx.toolData) : update; };
+      React.act(() => root.render(React.createElement(function Host() { return window.StemLab._registry.printLab.render(ctx); })));
+      const click = label => {
+        const button = [...host.querySelectorAll('button')].find(node => node.textContent === label);
+        expect(button, label).toBeTruthy();
+        React.act(() => button.click());
+      };
+      click('2. Preflight');
+      click('Run advisory preflight');
+      click('4. Submit');
+      await React.act(async () => {
+        click('Download print package');
+        await vi.waitFor(() => expect(downloads).toHaveLength(1));
+      });
+      const readDownload = blob => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(blob);
+      });
+      const zip = await JSZip.loadAsync(await readDownload(downloads[0]));
+      const reviewText = await zip.file('review.alloflow-print.json').async('string');
+      const review = JSON.parse(reviewText);
+      const manifest = JSON.parse(await zip.file('manifest.json').async('string'));
+      const finalBytes = await zip.file('model.stl').async('uint8array');
+      const finalBuffer = finalBytes.buffer.slice(finalBytes.byteOffset, finalBytes.byteOffset + finalBytes.byteLength);
+      const finalHash = createHash('sha256').update(finalBytes).digest('hex');
+      expect(review).toMatchObject({
+        version: 'printable/1', sourceFormat: 'STL', originalFilename: 'model.stl', contentHash: finalHash,
+        unitDeclaration: '1 STL unit = 1 mm', title: 'Classroom bridge', description: 'A scale model',
+        aiUse: 'ASSISTED', aiDisclosure: 'AI suggested the starting arrangement.', studentNote: 'Review the bridge supports.',
+        preflight: { status: 'PASS', byteSize: finalBytes.byteLength, triangleCount: 12, dimensionsMm: { width: 25, depth: 100, height: 12.5 } }
+      });
+      expect(manifest.reviewFile).toBe('review.alloflow-print.json');
+      expect(manifest.model.sha256).toBe(finalHash);
+      expect(manifest.preflight).toEqual(review.preflight);
+      expect(finalHash).not.toBe(createHash('sha256').update(sourceBytes).digest('hex'));
+      expect(finalBytes.byteLength).toBe(sourceBytes.byteLength);
+      expect(await zip.file('READ-ME.txt').async('string')).toContain('import review.alloflow-print.json, then choose model.stl from this same folder');
+
+      // The separate Geometry World downloads form the same verifiable pair,
+      // including when the student keeps the original print orientation.
+      await React.act(async () => {
+        click('Download review handoff');
+        await vi.waitFor(() => expect(downloads).toHaveLength(2));
+      });
+      await React.act(async () => {
+        click('Optional STL export');
+        await vi.waitFor(() => expect(downloads).toHaveLength(3));
+      });
+      const separateText = new TextDecoder().decode(await readDownload(downloads[1]));
+      const separateReview = JSON.parse(separateText);
+      const separateStl = new Uint8Array(await readDownload(downloads[2]));
+      expect(separateReview.originalFilename).toBe('Classroom bridge.stl');
+      expect(separateReview.unitDeclaration).toBe('1 STL unit = 1 mm');
+      expect(separateReview.preflight).toEqual(review.preflight);
+      expect(separateReview.contentHash).toBe(createHash('sha256').update(separateStl).digest('hex'));
+      expect(separateReview.contentHash).toBe(finalHash);
+
+      const app = await runPortal();
+      app.nodes['print-package-file'].files = [{ name: 'review.alloflow-print.json', size: new TextEncoder().encode(reviewText).byteLength, text: async () => reviewText }];
+      await app.nodes['print-package-file'].onchange();
+      expect(app.nodes.notice.textContent).toContain('Handoff validated');
+      app.nodes['print-asset-file'].files = [{ name: 'model.stl', size: sourceBytes.byteLength, arrayBuffer: async () => sourceBytes.buffer }];
+      await app.nodes['print-asset-file'].onchange();
+      expect(app.nodes.notice.textContent).toContain('does not match the SHA-256 hash');
+      expect(app.calls.some(call => call.name === 'uploadSchoolRewardsPrintAsset')).toBe(false);
+      app.nodes['print-asset-file'].files = [{ name: 'model.stl', size: finalBytes.byteLength, arrayBuffer: async () => finalBuffer }];
+      await app.nodes['print-asset-file'].onchange();
+      expect(app.nodes['print-asset-summary'].innerHTML).toContain('SHA-256 matched');
+      app.nodes['print-window'].value = 'window-1';
+      await app.nodes['print-submit-form'].onsubmit({ preventDefault() {}, target: app.nodes['print-submit-form'] });
+      expect(app.calls.find(call => call.name === 'createSchoolRewardsPrintModel').argument).toMatchObject({
+        contentHash: finalHash, byteSize: finalBytes.byteLength, unitDeclaration: '1 STL unit = 1 mm',
+        widthMm: 25, depthMm: 100, heightMm: 12.5, clientPreflight: { materialEstimate: { material: 'PETG' } }
+      });
+      expect(app.calls.find(call => call.name === 'uploadSchoolRewardsPrintAsset').argument).toMatchObject({
+        fileName: 'model.stl', contentHash: finalHash, base64: Buffer.from(finalBytes).toString('base64')
+      });
+
+      app.nodes['print-package-file'].files = [{ name: 'Classroom bridge.alloflow-print.json', size: downloads[1].size, text: async () => separateText }];
+      await app.nodes['print-package-file'].onchange();
+      expect(app.nodes.notice.textContent).toContain('Handoff validated');
+      app.nodes['print-asset-file'].files = [{ name: 'Classroom bridge.stl', size: separateStl.byteLength, arrayBuffer: async () => separateStl.buffer }];
+      await app.nodes['print-asset-file'].onchange();
+      expect(app.nodes['print-asset-summary'].innerHTML).toContain('SHA-256 matched');
+    } finally {
+      React.act(() => root.unmount());
+      host.remove();
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+      keys.forEach(key => { if (previousGlobals[key] === undefined) delete window[key]; else window[key] = previousGlobals[key]; });
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
   });
 
   it('creates a linked model version and resubmits a revision-requested request', async () => {

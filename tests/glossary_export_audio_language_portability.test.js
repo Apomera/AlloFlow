@@ -50,6 +50,28 @@ function recording(resource, field, language, text, profile = {}, source = 'ai')
 
 describe.each(['source', 'runtime'])('Glossary audio/language portability: %s', name => {
   const implementation = () => implementations[name];
+  it.each(['standard', 'language'])('uses the saved wordLanguage for the %s card term and its matching recording', mode => {
+    const resource = resourceFor({ ...entry('Hola: Un saludo.'), term: 'שלום', wordLanguage: 'Hebrew', baseLanguage: 'French', def: 'Une salutation.', contextSentence: 'On dit bonjour.' });
+    recording(resource, 'term', 'he', 'שלום');
+    const { doc } = exported(implementation(), resource, mode);
+    const term = doc.querySelector('.front .primary-text');
+    expect([term.textContent, term.lang, term.dir]).toEqual(['שלום', 'he', 'rtl']);
+    expect(doc.querySelector('.front .lang-label').textContent).toBe(new Intl.DisplayNames([doc.documentElement.lang], { type: 'language' }).of('he'));
+    expect(doc.querySelector('.front [data-card-audio]')).toBeTruthy();
+    const definition = doc.querySelector(mode === 'language' ? '.front .def-text' : '.back .def-text > span');
+    expect([definition.textContent, definition.lang, definition.dir]).toEqual(['Une salutation.', 'fr', 'ltr']);
+    if (mode === 'standard') expect(doc.querySelector('[data-context-sentence] q').lang).toBe('fr');
+  });
+
+  it('prefers the explicit term language over wordLanguage when choosing a recording', () => {
+    const resource = resourceFor({ ...entry('Hola'), term: 'salam', termLanguage: 'ar-Latn', wordLanguage: 'Hebrew' });
+    recording(resource, 'term', 'he', 'salam');
+    const { doc } = exported(implementation(), resource);
+    const term = doc.querySelector('.front .primary-text');
+    expect([term.lang, term.dir]).toEqual(['ar-Latn', 'ltr']);
+    expect(doc.querySelector('.front [data-card-audio]')).toBeNull();
+  });
+
   it.each(['term', 'definition'])('excludes a stale-language %s recording while preserving the original bytes', field => {
     const resource = resourceFor({ ...entry('Hoja'), term: 'pain', termLanguage: 'French', definitionLanguage: 'French', def: 'Bread.' });
     recording(resource, field, 'English', field === 'term' ? 'pain' : 'pain: Bread.', { voice: 'Kore', provider: 'gemini', synthesisRate: 1, voiceResolverVersion: 2 });
@@ -150,6 +172,6 @@ describe.each(['source', 'runtime'])('Glossary audio/language portability: %s', 
     window.AlloModules.ModuleScopeExtras = { getSpeechLangCode: () => 'en-US' };
     resource.data[0].termLanguage = 'Unlisted language';
     const term = exported(implementation(), resource).doc.querySelector('.front .primary-text');
-    expect(term.hasAttribute('lang')).toBe(false); expect(term.dir).toBe('auto');
+    expect(term.getAttribute('lang')).toBe(''); expect(term.dir).toBe('auto');
   });
 });

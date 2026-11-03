@@ -220,7 +220,19 @@ function DbqView(props) {
     const claims = (Array.isArray(dbqData.corroborationClaims) ? dbqData.corroborationClaims : []).filter(claim => claim && typeof claim === 'object').map(claim => ({ ...claim, supportingDocs: knownDocIds(claim.supportingDocs), challengingDocs: knownDocIds(claim.challengingDocs) }));
     const resId = generatedContent.id;
     const r = studentResponses[resId] || {};
-    const dbqTab = r._dbqTab || 'documents';
+    const tabKeys = ['documents', 'corroboration', 'essay', 'rubric'];
+    const dbqTab = tabKeys.includes(r._dbqTab) ? r._dbqTab : 'documents';
+    const tabGroupId = 'dbq-sections-' + React.useId();
+    const tabRefs = React.useRef({});
+    const panelId = tabGroupId + '-panel';
+    React.useLayoutEffect(() => {
+      const tab = tabRefs.current[dbqTab];
+      const list = tab?.parentElement;
+      if (!list || typeof list.scrollBy !== 'function') return;
+      const item = tab.getBoundingClientRect(), bounds = list.getBoundingClientRect();
+      const offset = item.left < bounds.left ? item.left - bounds.left : item.right > bounds.right ? item.right - bounds.right : 0;
+      if (offset) list.scrollBy({ left: offset, behavior: 'instant' });
+    }, [dbqTab]);
     const dbqActiveDoc = String(r._dbqActiveDoc || docs[0]?.id || 'A');
     // The briefing card (title, historical context, print/timer, progress steps)
     // is reference material, not work surface. On a short window, or with a long
@@ -290,6 +302,19 @@ function DbqView(props) {
       return message ? <p role="status" className="text-sm text-slate-700 border border-amber-300 bg-amber-50 rounded-lg p-3">{message}</p> : null;
     };
     const setTab = tab => setDbq('_dbqTab', tab);
+    const onTabKeyDown = (event, tab) => {
+      const index = tabKeys.indexOf(tab);
+      const rtl = event.currentTarget.ownerDocument.defaultView.getComputedStyle(event.currentTarget.parentElement).direction === 'rtl';
+      let next;
+      if (event.key === 'ArrowRight') next = (index + (rtl ? -1 : 1) + tabKeys.length) % tabKeys.length;
+      else if (event.key === 'ArrowLeft') next = (index + (rtl ? 1 : -1) + tabKeys.length) % tabKeys.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = tabKeys.length - 1;
+      else return;
+      event.preventDefault();
+      setTab(tabKeys[next]);
+      tabRefs.current[tabKeys[next]]?.focus();
+    };
     const setDoc = docId => setDbq('_dbqActiveDoc', docId);
     const activeDoc = docs.find(d => d.id === dbqActiveDoc) || docs[0];
     const annotations = r._annotations || {};
@@ -477,7 +502,7 @@ function DbqView(props) {
               ps.textContent = '@media print{#pb{display:none!important}}';
               w.document.head.appendChild(ps);
             }
-          }} className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200">🖨️ {L('dbq.print_dbq_packet', 'Print DBQ Packet')}</button>{<DbqTimer resourceId={resId} deadline={r._dbqTimerEnd} onDeadlineChange={value => setDbq('_dbqTimerEnd', value)} t={t} />}<button type="button" onClick={() => setDbq('_dbqHeaderCollapsed', !headerCollapsed)} aria-expanded={!headerCollapsed} className="px-3 py-1.5 bg-white text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-50 transition-all flex items-center gap-1.5 border border-amber-300 ml-auto">{headerCollapsed ? `▾ ${t("ui_common.show_briefing") || 'Show briefing'}` : `▴ ${t("ui_common.hide_briefing") || 'Hide briefing'}`}</button></div></div><div className="flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto" role="tablist" aria-label={t("a11y.dbq_sections")}>{[['documents', '📄 ' + L('dbq.tab_docs', 'Docs ({n})', { n: docs.length })], ['corroboration', '🔗 ' + L('dbq.step_corroborate', 'Corroborate')], ['essay', '✏️ ' + L('dbq.step_essay', 'Essay')], ['rubric', '📊 ' + L('dbq.rubric', 'Rubric')]].map(([id, label]) => <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={{
+          }} className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200">🖨️ {L('dbq.print_dbq_packet', 'Print DBQ Packet')}</button>{<DbqTimer resourceId={resId} deadline={r._dbqTimerEnd} onDeadlineChange={value => setDbq('_dbqTimerEnd', value)} t={t} />}<button type="button" onClick={() => setDbq('_dbqHeaderCollapsed', !headerCollapsed)} aria-expanded={!headerCollapsed} className="px-3 py-1.5 bg-white text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-50 transition-all flex items-center gap-1.5 border border-amber-300 ml-auto">{headerCollapsed ? `▾ ${t("ui_common.show_briefing") || 'Show briefing'}` : `▴ ${t("ui_common.hide_briefing") || 'Hide briefing'}`}</button></div></div><div className="flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto" role="tablist" aria-label={t("a11y.dbq_sections")}>{[['documents', '📄 ' + L('dbq.tab_docs', 'Docs ({n})', { n: docs.length })], ['corroboration', '🔗 ' + L('dbq.step_corroborate', 'Corroborate')], ['essay', '✏️ ' + L('dbq.step_essay', 'Essay')], ['rubric', '📊 ' + L('dbq.rubric', 'Rubric')]].map(([id, label]) => <button key={id} type="button" role="tab" id={tabGroupId + '-' + id} aria-controls={panelId} aria-selected={dbqTab === id} tabIndex={dbqTab === id ? 0 : -1} ref={node => { tabRefs.current[id] = node; }} onKeyDown={event => onTabKeyDown(event, id)} onClick={() => setTab(id)} style={{
           ...tabBtnStyle(id),
           whiteSpace: 'nowrap',
           fontSize: '0.75rem'
@@ -562,7 +587,7 @@ function DbqView(props) {
                 color: s.done ? '#22c55e' : s.partial ? '#f59e0b' : '#cbd5e1',
                 fontWeight: 700
               }}>{s.done ? '●' : s.partial ? '◐' : '○'}</span><span className="text-slate-600">{s.label}</span>{s.detail && <span className="text-slate-600">({s.detail})</span>}</div>)}</div></div>;
-      })()}<div className="flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-3 sm:p-5" role="tabpanel" style={{
+      })()}<div className="flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-3 sm:p-5" role="tabpanel" id={panelId} aria-labelledby={tabGroupId + '-' + dbqTab} tabIndex={0} style={{
         minHeight: 'min(60vh, 420px)'
       }}>{dbqTab === 'documents' && <div className="flex flex-col sm:flex-row gap-3 sm:gap-4"><div className="flex sm:flex-col gap-1.5 sm:w-36 shrink-0 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0">{docs.map(doc => {
               const docDone = ['historical', 'audience', 'purpose', 'pointOfView'].every(k => (happNotes[doc.id] || {})[k]);

@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const APP_URL = process.env.ALLOFLOW_APP_URL || 'https://alloflow-cdn.pages.dev/app/';
-const PACK_DIR = path.resolve(__dirname, '../../allopacks');
+const PACK_DIR = path.resolve(__dirname, '../../allopacks/current'); // one current pack per topic (2026-11-02)
 const packs = fs.readdirSync(PACK_DIR).filter((f) => f.endsWith('.allopack.json'));
 
 test.describe.configure({ mode: 'serial' });

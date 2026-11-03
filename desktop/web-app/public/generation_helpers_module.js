@@ -702,7 +702,14 @@ const _markQueuedFullPackResourcesStopped = (resources) => Object.fromEntries(
   })
 );
 const _compactFullPackMatrixArtifacts = (items) => (Array.isArray(items) ? items : [])
-  .filter(item => item && typeof item === 'object' && item.id != null && item.type)
+  .filter(item => {
+    if (!item || typeof item !== 'object' || item.id == null || !item.type) return false;
+    if (item.type !== 'analysis') return true;
+    // A saved preview keeps identifiers and fingerprints, not the report or
+    // its passages. Check eligibility before that information is discarded.
+    const isCompleted = _getGenerationMatrixModule()?.isCompletedAnalysis;
+    return typeof isCompleted === 'function' ? isCompleted(item) : item.data?.analysisNeedsRecheck !== true && item.data?.analysisIncomplete !== true;
+  })
   .map(item => {
     const config = item.config && typeof item.config === 'object' ? item.config : {};
     const provenance = item.provenance && typeof item.provenance === 'object' ? item.provenance : {};

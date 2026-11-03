@@ -43,6 +43,27 @@ afterEach(() => { dom.window.close(); });
 describe('touch on the presentation card', () => {
   beforeEach(() => boot());
 
+  it('finishes a one-card round after revealing by touch, with a fresh round available', async () => {
+    await present({ words: [WORDS[0]] });
+    const finish = button('Finish round');
+    expect(finish.disabled).toBe(false);
+    gesture(stage(), [200, 200], [202, 201]);
+    expect(stage().textContent).toContain(WORDS[0].definition);
+    expect(finish.disabled).toBe(false);
+    gesture(stage(), [200, 200], [202, 201]);
+    expect(finish.disabled).toBe(true);
+    const panel = win.document.querySelector('.awp-round-actions');
+    expect(win.document.activeElement).toBe(panel.querySelector('h2'));
+    expect(panel.textContent).toContain('Round complete');
+    expect(panel.querySelector('.awp-note').hidden).toBe(false);
+    expect(panel.querySelector('.awp-note').textContent).toBe('No words marked for review.');
+    button('New round').click();
+    expect(finish.disabled).toBe(false);
+    expect(panel.querySelector('h2').hidden).toBe(true);
+    expect(win.document.activeElement).toBe(stage());
+    expect(stage().textContent).not.toContain(WORDS[0].definition);
+  });
+
   it('reveals with a tap, then moves on with the next tap', async () => {
     await present();
     expect(stage().textContent).not.toContain('A flat green part of a plant.');

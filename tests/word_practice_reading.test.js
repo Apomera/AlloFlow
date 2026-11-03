@@ -143,7 +143,7 @@ describe('the "Aa" button', () => {
     expect(doc.querySelector('.awp-word').textContent).toBe('ship');
     delete doc.fullscreenElement;
     buttonIn(player, 'Back to setup').click();
-    expect(listeners.size, 'leaving the player closes its panel').toBe(0);
+    expect(listeners.size, 'leaving the player keeps only the setup preview subscribed').toBe(1);
     expect(setupAa.hidden, 'back in setup, the dialog Aa returns').toBe(false);
   });
 
@@ -164,7 +164,7 @@ describe('the "Aa" button', () => {
     const { doc, ui, listeners } = load();
     const controller = ui.open({ words: ['ship'] });
     buttonIn(doc, 'Aa').click();
-    expect(listeners.size).toBe(1);
+    expect(listeners.size).toBe(2);
     controller.close();
     expect(listeners.size, 'the panel stopped listening').toBe(0);
     expect(panelOf(doc)).toBe(null);
@@ -201,10 +201,10 @@ describe('text size follows the reading settings', () => {
         else expect(px(value, 32, vw), key + ' grows with the root size at ' + vw + ' px wide').toBeGreaterThan(px(value, 16, vw));
       }
     }
-    expect(/\.awp \.awp-aa\{[^}]*min-width:44px/.test(css) && /\.awp button\{[^}]*min-height:44px/.test(css), 'Aa keeps a 44 px target at any text size').toBe(true);
+    expect(/\.awp \.awp-aa\{[^}]*min-width:44px/.test(css) && /\.awp button(?:\:not\([^{}]+\))?\{[^}]*min-height:44px/.test(css), 'Aa keeps a 44 px target at any text size').toBe(true);
     expect(Object.keys(PX_BEFORE).every((key) => sizes.some(([s, , m]) => (m ? '@' : '') + s === key)), 'every old size is still styled').toBe(true);
     const fontOverrides = [...css.matchAll(/([^{}]+)\{[^{}]*font-family\s*:[^;}]*!important[^{}]*\}/g)];
-    expect(fontOverrides.every(([, selector]) => selector.includes('[data-awp-card-font]:not([data-awp-card-font=default])')), 'only an explicitly selected card font can override reading settings').toBe(true);
+    expect(fontOverrides.every(([, selector]) => selector.includes('[data-awp-card-font]:not([data-awp-card-font=default])') || selector.includes('[data-awp-reader-font=true]')), 'only card font controls and the selected reader font override fonts').toBe(true);
   });
 
   it('the projected word\'s own size uses rem bounds that scale', async () => {
@@ -239,7 +239,8 @@ describe('"Use my reading settings" in the offline HTML', () => {
     expect(box, 'the option exists').toBeTruthy();
     expect(box.checked, 'off by default').toBe(false);
     expect(box.closest('.awp-fields')).toBe(checkboxFor(doc, 'Include prepared audio').closest('.awp-fields'));
-    expect(doc.getElementById(box.getAttribute('aria-describedby')).textContent).toBe('The HTML file uses your font, text size and spacing.');
+    expect(doc.getElementById(box.getAttribute('aria-describedby')).textContent).toContain('The HTML file uses your font, text size and spacing.');
+    expect(doc.getElementById(box.getAttribute('aria-describedby')).textContent).toContain('PowerPoint · Font Family · Size');
     box.checked = true;
     buttonIn(doc, 'Download HTML').click();
     expect(doc.querySelector('.awp-status').textContent, 'a status line while preparing').toBe('Adding your reading settings…');

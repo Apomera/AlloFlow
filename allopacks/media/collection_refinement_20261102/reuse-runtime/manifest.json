@@ -1,0 +1,1247 @@
+{
+  "technicalPreparation": "Reviewed existing artwork resized and encoded only for newly added native slots. Original source assets and legacy editions preserved.",
+  "assets": {
+    "ec517c2abfb17e8ac5477c4025d863029702d4c92ffc92326c516a050619388e": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\academic_discourse_more_practice_grade6-17-ec517c2abf.webp",
+      "originalSha256": "ec517c2abfb17e8ac5477c4025d863029702d4c92ffc92326c516a050619388e",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/ec517c2abfb17e8ac547.webp",
+      "sha256": "c754e2b79b9dbe1f109a5fca81740450c551a4afc76d08a4fa669478e10768d8",
+      "width": 512,
+      "height": 342,
+      "bytes": 5484
+    },
+    "fb692e886e257135de9d2c6b1206fe9c51a7ec665219309dac1316fe6c5730a6": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\american_revolution_causes_grade5-06-fb692e886e.webp",
+      "originalSha256": "fb692e886e257135de9d2c6b1206fe9c51a7ec665219309dac1316fe6c5730a6",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/fb692e886e257135de9d.webp",
+      "sha256": "d336c94d9d15580da3c1c429120bd8372d3508519c8df0b03619a75d2f0c9090",
+      "width": 480,
+      "height": 480,
+      "bytes": 4636
+    },
+    "2eb4e83fe43e9eb8f26e37882ab3448d21f77262262f25242e823629c581e6ed": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\area_perimeter_grade4-01-2eb4e83fe4.webp",
+      "originalSha256": "2eb4e83fe43e9eb8f26e37882ab3448d21f77262262f25242e823629c581e6ed",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2eb4e83fe43e9eb8f26e.webp",
+      "sha256": "e5f7960e94017fa1796242919331dd2514e82eebee61fe72523203d64ff2bb6b",
+      "width": 512,
+      "height": 512,
+      "bytes": 2564
+    },
+    "35d152a222cecd1a6e1a69e335290c272efa69d5bd246193d8519b05c20c7f02": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\area_perimeter_grade4-14-35d152a222.webp",
+      "originalSha256": "35d152a222cecd1a6e1a69e335290c272efa69d5bd246193d8519b05c20c7f02",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/35d152a222cecd1a6e1a.webp",
+      "sha256": "d5221463fcb5906170652908bde30d94f3a35ef080ef9f2d4f27446da000a462",
+      "width": 512,
+      "height": 512,
+      "bytes": 1332
+    },
+    "5ccb6eced90337a607b1b72c00f40ad127507204e3dc2bb18d43fad50474990b": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\area_perimeter_grade4-17-5ccb6eced9.webp",
+      "originalSha256": "5ccb6eced90337a607b1b72c00f40ad127507204e3dc2bb18d43fad50474990b",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/5ccb6eced90337a607b1.webp",
+      "sha256": "591fd2057009da9138a25e1a1b8b79b879e7cff9fae4ba127c6ada41aaf342b3",
+      "width": 512,
+      "height": 512,
+      "bytes": 3046
+    },
+    "089c44949c7006e542c9c52cc01cb074e439367d21cae4af04bdb958fedc660f": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\area_perimeter_grade4-11-089c44949c.webp",
+      "originalSha256": "089c44949c7006e542c9c52cc01cb074e439367d21cae4af04bdb958fedc660f",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/089c44949c7006e542c9.webp",
+      "sha256": "68f48d2682631c1f2663f063dff95c351c5693581bac119cff10bbe960a60867",
+      "width": 512,
+      "height": 512,
+      "bytes": 1232
+    },
+    "ae377eca1a46172eae2a0dbd02fe0ab102947138d74ae1abdb5afea4769ead1a": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\argument_evidence_grade6-02-ae377eca1a.webp",
+      "originalSha256": "ae377eca1a46172eae2a0dbd02fe0ab102947138d74ae1abdb5afea4769ead1a",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/ae377eca1a46172eae2a.webp",
+      "sha256": "4891d9553ee1d63efcea7f469e607c394c462dd8915c1720ae035b3f2609c138",
+      "width": 512,
+      "height": 512,
+      "bytes": 2838
+    },
+    "941420da9a560c0628531983bf28ea88eebf62e6e6e359a5c537739f76548828": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\argument_evidence_grade6-06-941420da9a.webp",
+      "originalSha256": "941420da9a560c0628531983bf28ea88eebf62e6e6e359a5c537739f76548828",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/941420da9a560c062853.webp",
+      "sha256": "9b4ac58a4ac0b2545586b2a4ec2e97964d51da1e83e7780aaf30b0d08d87ac9b",
+      "width": 512,
+      "height": 512,
+      "bytes": 3702
+    },
+    "a7599cb296eaed7ce0f1778b448fde4ba4d6201329546287d4f923fed3e18e1a": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\argument_evidence_grade6-01-a7599cb296.webp",
+      "originalSha256": "a7599cb296eaed7ce0f1778b448fde4ba4d6201329546287d4f923fed3e18e1a",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/a7599cb296eaed7ce0f1.webp",
+      "sha256": "d210e4214449a2e67c7e8663fb2ce1796e442b4daacb712cb9ec28388886573a",
+      "width": 512,
+      "height": 512,
+      "bytes": 36438
+    },
+    "ceba88826b0d17ba621125e02efa85eb50cdd92b3a1cda97dcb428683efa4e7e": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\body_systems_grade6-03-ceba88826b.webp",
+      "originalSha256": "ceba88826b0d17ba621125e02efa85eb50cdd92b3a1cda97dcb428683efa4e7e",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/ceba88826b0d17ba6211.webp",
+      "sha256": "4e8368e2082e792bec014c8b2715398ef222af5be43832c94b8970dcb4be5959",
+      "width": 512,
+      "height": 512,
+      "bytes": 3954
+    },
+    "70b9119a8652c209a8dc9544fdb6fc5d4d1103f7ff70a66a421a381ae68e3f23": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\body_systems_grade6-02-70b9119a86.webp",
+      "originalSha256": "70b9119a8652c209a8dc9544fdb6fc5d4d1103f7ff70a66a421a381ae68e3f23",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/70b9119a8652c209a8dc.webp",
+      "sha256": "cb00e6a2b8fb38a8abf06c2789e1fe1e5520c5216c0b4a7d322858218f38bebc",
+      "width": 512,
+      "height": 512,
+      "bytes": 2112
+    },
+    "dbec802adce3726782cff31c4a909133cb2246b26474b729d2efc5220710310f": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\body_systems_grade6-05-dbec802adc.webp",
+      "originalSha256": "dbec802adce3726782cff31c4a909133cb2246b26474b729d2efc5220710310f",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/dbec802adce3726782cf.webp",
+      "sha256": "ebacda8e5e23d055765f6919eb5639994f15a01f2776277f48a11e779faecdf5",
+      "width": 512,
+      "height": 512,
+      "bytes": 4088
+    },
+    "8e27bc3ccc1a878803fd1ecff3a2133848b0774ec4ee82adcd09a385269e5d2c": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\cell_structure_grade7-07-8e27bc3ccc.webp",
+      "originalSha256": "8e27bc3ccc1a878803fd1ecff3a2133848b0774ec4ee82adcd09a385269e5d2c",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/8e27bc3ccc1a878803fd.webp",
+      "sha256": "d5f353ab6879975ecd57a2198d5c919b5af6ce635c20f22e0f6d237ab8307f0a",
+      "width": 512,
+      "height": 512,
+      "bytes": 6138
+    },
+    "844ba65c45e3bcc99c27ff35891eb06be264c2c6c6faafa4244c65e7d0cc246d": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\cell_structure_grade7-02-844ba65c45.webp",
+      "originalSha256": "844ba65c45e3bcc99c27ff35891eb06be264c2c6c6faafa4244c65e7d0cc246d",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/844ba65c45e3bcc99c27.webp",
+      "sha256": "49e8cfc56b4bf09edbfa903be37f7df1eb442863fd023c533985484abe6b4079",
+      "width": 512,
+      "height": 512,
+      "bytes": 3938
+    },
+    "20f0357caa734ef7e092359513e061a0fb4a900ab6f8197106ec6b23aa0efa37": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\cell_structure_grade7-04-20f0357caa.webp",
+      "originalSha256": "20f0357caa734ef7e092359513e061a0fb4a900ab6f8197106ec6b23aa0efa37",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/20f0357caa734ef7e092.webp",
+      "sha256": "f8ddf8fec34ffa4b91f97c90b9630f073aac3ca928304d3ed20dce5f21f53602",
+      "width": 512,
+      "height": 512,
+      "bytes": 2088
+    },
+    "2a58ec268eea35098fc69603ba9959cae1246a75e899ab7c97078f523e7ddeae": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\central_idea_grade7-08-2a58ec268e.webp",
+      "originalSha256": "2a58ec268eea35098fc69603ba9959cae1246a75e899ab7c97078f523e7ddeae",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2a58ec268eea35098fc6.webp",
+      "sha256": "e5c2abd9af6a1092ea008a8edc26c391b5a65fe1d6559c40c8f1c44b531e6e83",
+      "width": 512,
+      "height": 512,
+      "bytes": 3264
+    },
+    "6c0a2400f9396acf27c244c6b13d8ce794ad878daea248ab5fb1b47bf6801c97": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\central_idea_grade7-11-6c0a2400f9.webp",
+      "originalSha256": "6c0a2400f9396acf27c244c6b13d8ce794ad878daea248ab5fb1b47bf6801c97",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/6c0a2400f9396acf27c2.webp",
+      "sha256": "9e05091e2a959b08757e462d87843d37e0c66e43d921cfbdbb23dbe10ee4e70f",
+      "width": 512,
+      "height": 512,
+      "bytes": 2682
+    },
+    "8d371026093504a8eebf6970985c83f5d84c4f955d25f5b75c4fc8c4010cfa52": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\central_idea_grade7-06-8d37102609.webp",
+      "originalSha256": "8d371026093504a8eebf6970985c83f5d84c4f955d25f5b75c4fc8c4010cfa52",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/8d371026093504a8eebf.webp",
+      "sha256": "280a3e858107ea369c8dcdf13454ba4d04dbfbbba1b56267a90f13ea6713f734",
+      "width": 512,
+      "height": 512,
+      "bytes": 1730
+    },
+    "50fdb8c3192197da55aad927338028caaccd7fa9da77aecc0ba12624bbce2f06": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\central_idea_grade7-04-50fdb8c319.webp",
+      "originalSha256": "50fdb8c3192197da55aad927338028caaccd7fa9da77aecc0ba12624bbce2f06",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/50fdb8c3192197da55aa.webp",
+      "sha256": "0b5718da0e9374f51670f6c93f77331bd02d7f7d400a154847dec8a62b621899",
+      "width": 512,
+      "height": 512,
+      "bytes": 3114
+    },
+    "d344a7e87148e43f2bd9a0f350ce2f1b877b451fae254e3c1ea3ee6cae2eeaa5": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\chemical_reactions_grade8-07-d344a7e871.webp",
+      "originalSha256": "d344a7e87148e43f2bd9a0f350ce2f1b877b451fae254e3c1ea3ee6cae2eeaa5",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/d344a7e87148e43f2bd9.webp",
+      "sha256": "4bc474931f8079eebf72b8cf7f16831de35dc12216e2e1d543b3cb079b589b80",
+      "width": 512,
+      "height": 512,
+      "bytes": 1584
+    },
+    "b80d5db84c092ae3c95d89dd0fcc03bcd5c1ab2d30808d77668684b7508d0ebb": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\chemical_reactions_grade8-08-b80d5db84c.webp",
+      "originalSha256": "b80d5db84c092ae3c95d89dd0fcc03bcd5c1ab2d30808d77668684b7508d0ebb",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/b80d5db84c092ae3c95d.webp",
+      "sha256": "6a2f13fb1fd96824bc4a826af7a52ccdf8145817485b7ad394b1e6a68a8dbad5",
+      "width": 512,
+      "height": 512,
+      "bytes": 2596
+    },
+    "c239ed0309d86a8d2e77497d025363d8524ba963ac76a35a3df9303d46cd96a1": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\constitution_grade8-15-c239ed0309.webp",
+      "originalSha256": "c239ed0309d86a8d2e77497d025363d8524ba963ac76a35a3df9303d46cd96a1",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/c239ed0309d86a8d2e77.webp",
+      "sha256": "46e5449cf33c946e7192e7b07bb225afb5370bf975fae2791f67f7d30727f77c",
+      "width": 512,
+      "height": 386,
+      "bytes": 4496
+    },
+    "58a5d955d80041a2aa64b08f547c0ab750077ab463607a79a72c09d40f07c9e7": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\constitution_grade8-05-58a5d955d8.webp",
+      "originalSha256": "58a5d955d80041a2aa64b08f547c0ab750077ab463607a79a72c09d40f07c9e7",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/58a5d955d80041a2aa64.webp",
+      "sha256": "a8ad60b81fbf6986ae10de6200004087ec6e555a683bc9ebbf4ab07ee470b96b",
+      "width": 480,
+      "height": 480,
+      "bytes": 4842
+    },
+    "6e59181d844448cf3fc9c306e44a1a04d13d93b03ae732488c00cbbbb4c2a5a0": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\context_clues_grade3-03-6e59181d84.webp",
+      "originalSha256": "6e59181d844448cf3fc9c306e44a1a04d13d93b03ae732488c00cbbbb4c2a5a0",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/6e59181d844448cf3fc9.webp",
+      "sha256": "4693f933a04f9982d1f8499da5c6a76c687d65bcc46511461b925dd11cba624d",
+      "width": 512,
+      "height": 512,
+      "bytes": 4430
+    },
+    "d3c4058ab6de99cbbaa05a545a74053a2b26d20b64b63cc09f9b36dc8bd731a9": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\context_clues_grade3-10-d3c4058ab6.webp",
+      "originalSha256": "d3c4058ab6de99cbbaa05a545a74053a2b26d20b64b63cc09f9b36dc8bd731a9",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/d3c4058ab6de99cbbaa0.webp",
+      "sha256": "630b43d6d93ebddec79662a6e1b4b3dda1af8fd5eac4de50d7ac569bf82929a1",
+      "width": 512,
+      "height": 512,
+      "bytes": 1148
+    },
+    "7b081594d9962ee105e5c1cedb90896aa75cd733fc590fd06b6a572c448b464e": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\context_clues_grade3-14-7b081594d9.webp",
+      "originalSha256": "7b081594d9962ee105e5c1cedb90896aa75cd733fc590fd06b6a572c448b464e",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/7b081594d9962ee105e5.webp",
+      "sha256": "609252e9c00ca08081118f698da75f0ac78ae8e8fb3a6bf2c225d8fd317a8185",
+      "width": 512,
+      "height": 512,
+      "bytes": 2896
+    },
+    "7a88c2c9f8002c6316d188ee071575cac9a6c7791ae1a836ef0f40d558494903": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\crew_feedback_grade6_8-03-7a88c2c9f8.webp",
+      "originalSha256": "7a88c2c9f8002c6316d188ee071575cac9a6c7791ae1a836ef0f40d558494903",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/7a88c2c9f8002c6316d1.webp",
+      "sha256": "06641fc52078157d7e666c86179b2c7735eec79342525903b7af84d533533304",
+      "width": 480,
+      "height": 480,
+      "bytes": 7254
+    },
+    "01c99bcc2e51814e038488af8d8ffc92a2c7bfc437a14cabe27ec6862dfd97d0": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\data_and_typical_grade6-07-01c99bcc2e.webp",
+      "originalSha256": "01c99bcc2e51814e038488af8d8ffc92a2c7bfc437a14cabe27ec6862dfd97d0",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/01c99bcc2e51814e0384.webp",
+      "sha256": "9d4b93f617ec7afe0440c87c385357f96563245ae41db32bf54134684293cc1c",
+      "width": 512,
+      "height": 512,
+      "bytes": 2134
+    },
+    "90f4b39d637c6cdb9d81f549ae1b1dfac258612b6d31f9a485ef4ee62bc4f021": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\data_and_typical_grade6-08-90f4b39d63.webp",
+      "originalSha256": "90f4b39d637c6cdb9d81f549ae1b1dfac258612b6d31f9a485ef4ee62bc4f021",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/90f4b39d637c6cdb9d81.webp",
+      "sha256": "d4d9febaf3eb49adf7b1af775c5022427d3a3801c0217fffab66ad0076691068",
+      "width": 512,
+      "height": 512,
+      "bytes": 3288
+    },
+    "92e23226a3229f1e18d4629316eb22ae560f4ed89e5dc67c45b803e0d6df7802": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\data_and_typical_grade6-01-92e23226a3.webp",
+      "originalSha256": "92e23226a3229f1e18d4629316eb22ae560f4ed89e5dc67c45b803e0d6df7802",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/92e23226a3229f1e18d4.webp",
+      "sha256": "a95a36d0f758fbbec916d78fedd19863647215623165a25cf5c3255b066ba12a",
+      "width": 512,
+      "height": 512,
+      "bytes": 1986
+    },
+    "d5464d485b50473e00ca57c7908c8f0dd2a3bfdcb2fccb08ccdf62c783c16d22": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\day_night_sky_grade1-01-d5464d485b.webp",
+      "originalSha256": "d5464d485b50473e00ca57c7908c8f0dd2a3bfdcb2fccb08ccdf62c783c16d22",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/d5464d485b50473e00ca.webp",
+      "sha256": "7698bc5c5c14b7e942d0f4f10f0bdd21f7d7ff52a26e5e8a2c40f54d37254633",
+      "width": 512,
+      "height": 512,
+      "bytes": 4828
+    },
+    "c5534d4fc38d05d9aed147ecad0f947c18a099d3abec18a03b13a925cea420e0": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\day_night_sky_grade1-14-c5534d4fc3.webp",
+      "originalSha256": "c5534d4fc38d05d9aed147ecad0f947c18a099d3abec18a03b13a925cea420e0",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/c5534d4fc38d05d9aed1.webp",
+      "sha256": "b4b3342f426a7fd5d2c708c760bb73b0882452a41507bcf79793fb5c0d0a36b4",
+      "width": 512,
+      "height": 512,
+      "bytes": 3608
+    },
+    "5894f99360975f8c7413d44c41434eb9c2f67a2ae7b199947c8dc7b473c0f4ea": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\day_night_sky_grade1-20-5894f99360.webp",
+      "originalSha256": "5894f99360975f8c7413d44c41434eb9c2f67a2ae7b199947c8dc7b473c0f4ea",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/5894f99360975f8c7413.webp",
+      "sha256": "257d2fee7e09e5ae9d00b6b87e56db33416b251dd3b2ea16e7865436c0ba15a1",
+      "width": 512,
+      "height": 512,
+      "bytes": 1660
+    },
+    "05dbc67eeb3af3da4dd2c1ab039657459d2b4d76617512346b44eb342ba45df6": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\decimal_place_value_grade5-02-05dbc67eeb.webp",
+      "originalSha256": "05dbc67eeb3af3da4dd2c1ab039657459d2b4d76617512346b44eb342ba45df6",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/05dbc67eeb3af3da4dd2.webp",
+      "sha256": "2cfbbc505263992c507620488408b9f67c1e92535e9a29b9d90d43fc720b1495",
+      "width": 512,
+      "height": 512,
+      "bytes": 2500
+    },
+    "7103176ae39854d0be46fd526ede571b2d1c434169efb4866d26dacdcad2e0df": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\decimal_place_value_grade5-10-7103176ae3.webp",
+      "originalSha256": "7103176ae39854d0be46fd526ede571b2d1c434169efb4866d26dacdcad2e0df",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/7103176ae39854d0be46.webp",
+      "sha256": "410822f858d3b0ea594df9813318af15087e5e7bdc4f05f00dcdee6c11197d40",
+      "width": 512,
+      "height": 512,
+      "bytes": 2652
+    },
+    "150b442b1e4cbedd02b63dbda67dd3af60eab80267559ad96fbcb9f28314cb70": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\decimal_place_value_grade5-08-150b442b1e.webp",
+      "originalSha256": "150b442b1e4cbedd02b63dbda67dd3af60eab80267559ad96fbcb9f28314cb70",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/150b442b1e4cbedd02b6.webp",
+      "sha256": "cea33300ea52698734654c93b173c52ae370cdcdddcaf03aead096d4aa8fe2e2",
+      "width": 512,
+      "height": 512,
+      "bytes": 9850
+    },
+    "6a1b7a637e3a4d4d4f24954ee72146653b4961bfd8df8fb3f553c725c75611c2": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\ecosystems_food_webs_grade5-01-6a1b7a637e.webp",
+      "originalSha256": "6a1b7a637e3a4d4d4f24954ee72146653b4961bfd8df8fb3f553c725c75611c2",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/6a1b7a637e3a4d4d4f24.webp",
+      "sha256": "1253190be751aeae68310f36116d79ba1f3eec135393d3664de04c0dff832d90",
+      "width": 512,
+      "height": 512,
+      "bytes": 2222
+    },
+    "2a384e6dc25dc68ab3e24ae27370f939abd5cea15347e7d203131f0b96a036e3": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\ecosystems_food_webs_grade5-16-2a384e6dc2.webp",
+      "originalSha256": "2a384e6dc25dc68ab3e24ae27370f939abd5cea15347e7d203131f0b96a036e3",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2a384e6dc25dc68ab3e2.webp",
+      "sha256": "0230b55d698a0fe56175ef42cd86618dc229826d0d1412d65425da80db497506",
+      "width": 512,
+      "height": 512,
+      "bytes": 6426
+    },
+    "ecdaee68126b46493e84390d77375acab5fe49b81d1041179a4d7db52f5db292": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\ecosystems_food_webs_grade5-02-ecdaee6812.webp",
+      "originalSha256": "ecdaee68126b46493e84390d77375acab5fe49b81d1041179a4d7db52f5db292",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/ecdaee68126b46493e84.webp",
+      "sha256": "1d60e95f1f5e78549341cf582267f532f47773b0ac4488276b186be41debaa67",
+      "width": 512,
+      "height": 512,
+      "bytes": 4148
+    },
+    "e74491091c7bccf2bb4c43ab20c03c702aa40b7313a6cbc7ddaa8370f09820f9": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\energy_transfer_grade4-04-e74491091c.webp",
+      "originalSha256": "e74491091c7bccf2bb4c43ab20c03c702aa40b7313a6cbc7ddaa8370f09820f9",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/e74491091c7bccf2bb4c.webp",
+      "sha256": "18c56413d9addeabad52f89e5be83e9b9799cadb4d40d0ecd4280b15477d1d2c",
+      "width": 512,
+      "height": 512,
+      "bytes": 966
+    },
+    "f8cce5c8ef93816a597a273c9b5a77c6033d2523f91e3b9fbf1f0e3a08640a3f": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\energy_transfer_grade4-09-f8cce5c8ef.webp",
+      "originalSha256": "f8cce5c8ef93816a597a273c9b5a77c6033d2523f91e3b9fbf1f0e3a08640a3f",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/f8cce5c8ef93816a597a.webp",
+      "sha256": "51dccd28446737b683682bcfa19dfd9960ffa5fc1fa5e52949552816afba4ef3",
+      "width": 512,
+      "height": 512,
+      "bytes": 3644
+    },
+    "30bcfdd1e6c689db14045212074c0b3fa24217500062465d9b46fd37e996d716": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\equal_groups_grade3-03-30bcfdd1e6.webp",
+      "originalSha256": "30bcfdd1e6c689db14045212074c0b3fa24217500062465d9b46fd37e996d716",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/30bcfdd1e6c689db1404.webp",
+      "sha256": "e4422b2df7f05b432a0b702640ec09fbd486f3dfc5ead6db21ae514a312b6b07",
+      "width": 512,
+      "height": 512,
+      "bytes": 4100
+    },
+    "3f7a0c99117d0a8b263597e22c604e016a4aac9c349649d91d9c59db19e203a2": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\equal_groups_grade3-14-3f7a0c9911.webp",
+      "originalSha256": "3f7a0c99117d0a8b263597e22c604e016a4aac9c349649d91d9c59db19e203a2",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/3f7a0c99117d0a8b2635.webp",
+      "sha256": "3aea67fcd7a570f847dc7f361874479b44e647f61f53ee4d85bd6a077d8f855b",
+      "width": 512,
+      "height": 512,
+      "bytes": 4512
+    },
+    "26220117dcc11791c1286dfce925cfbaf756f0bf5960fab12e2e55d25a408569": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\equal_groups_grade3-17-26220117dc.webp",
+      "originalSha256": "26220117dcc11791c1286dfce925cfbaf756f0bf5960fab12e2e55d25a408569",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/26220117dcc11791c128.webp",
+      "sha256": "988f587758663bd25e31dc1610e2b67dd4a06afb3c9d44edd2a93f6964af4da8",
+      "width": 512,
+      "height": 512,
+      "bytes": 2252
+    },
+    "72532e3dc842817fd8a7339cbb33bead1b90331f8e77222e6243c6baf95bfb39": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\figurative_language_grade5-02-72532e3dc8.webp",
+      "originalSha256": "72532e3dc842817fd8a7339cbb33bead1b90331f8e77222e6243c6baf95bfb39",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/72532e3dc842817fd8a7.webp",
+      "sha256": "b84a54ef640489f781ea3f095aee7d522a1645d7127e605cddca5477d4480851",
+      "width": 512,
+      "height": 512,
+      "bytes": 2366
+    },
+    "2221438b654149c5baae8c38b590f46bf92f88158346ca7724563b2a3b7facba": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\figurative_language_grade5-08-2221438b65.webp",
+      "originalSha256": "2221438b654149c5baae8c38b590f46bf92f88158346ca7724563b2a3b7facba",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2221438b654149c5baae.webp",
+      "sha256": "5488072804fc216754f153c5dd20a39c5a3d0e7b5f334d2817baf5d110ce79a5",
+      "width": 512,
+      "height": 512,
+      "bytes": 4902
+    },
+    "d110e41590484711a9dee7169da2b5efc6cee50b0565cdb2c9974d0ed9354f42": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\figurative_language_grade5-06-d110e41590.webp",
+      "originalSha256": "d110e41590484711a9dee7169da2b5efc6cee50b0565cdb2c9974d0ed9354f42",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/d110e41590484711a9de.webp",
+      "sha256": "2bd091b02cc190fd2df770d0496d67f7647f143727d134006449a7097994c602",
+      "width": 512,
+      "height": 512,
+      "bytes": 3300
+    },
+    "cdd6ae5898da11f19bb6299f30ecedee60c6a52cd4bba95c6115699cc11f78c8": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\forces_motion_grade3-09-cdd6ae5898.webp",
+      "originalSha256": "cdd6ae5898da11f19bb6299f30ecedee60c6a52cd4bba95c6115699cc11f78c8",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/cdd6ae5898da11f19bb6.webp",
+      "sha256": "bcdc7358a136e0db2e081a292434700b94bc0a5ac41c0c4f11e11bb2b7e63f73",
+      "width": 480,
+      "height": 480,
+      "bytes": 3310
+    },
+    "f93981fbe793d6230f95eddf3884a44ab6eb1517c7e3e41831366277d6104f9d": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\forces_motion_grade3-12-f93981fbe7.webp",
+      "originalSha256": "f93981fbe793d6230f95eddf3884a44ab6eb1517c7e3e41831366277d6104f9d",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/f93981fbe793d6230f95.webp",
+      "sha256": "b7573cae3bdc8bff256d4fdc1855b58fa6d2f8d27d78c7fbed089c18d5aa0fae",
+      "width": 480,
+      "height": 480,
+      "bytes": 7524
+    },
+    "cceb541b600af70e96daed5eb9ad9ad3e090fa9ec98ad1454dae622df410135a": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\forces_motion_grade3-36-cceb541b60.webp",
+      "originalSha256": "cceb541b600af70e96daed5eb9ad9ad3e090fa9ec98ad1454dae622df410135a",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/cceb541b600af70e96da.webp",
+      "sha256": "c44108d2ad371b95b3e3152a4691f66957724c48f9286bda2d0cb27e05597f8c",
+      "width": 512,
+      "height": 341,
+      "bytes": 8166
+    },
+    "19016148a81c15e9690eb224cc0ea1c4d9d2076261b09c06b24c8905735dc779": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\fractions_number_line_grade4-02-19016148a8.webp",
+      "originalSha256": "19016148a81c15e9690eb224cc0ea1c4d9d2076261b09c06b24c8905735dc779",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/19016148a81c15e9690e.webp",
+      "sha256": "925311a35fcd0a0ed2f64b31d9de6082c43a5e2cdd2d33e3d1fb2446f768fb1b",
+      "width": 512,
+      "height": 512,
+      "bytes": 1624
+    },
+    "64825d0a83e7c66523a1ce7834c466b2af63d0381ffc5a18e753866ea3d1f6d8": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\fractions_number_line_grade4-08-64825d0a83.webp",
+      "originalSha256": "64825d0a83e7c66523a1ce7834c466b2af63d0381ffc5a18e753866ea3d1f6d8",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/64825d0a83e7c66523a1.webp",
+      "sha256": "11e4827c6668ef33b0a1c32997b4798464badcaeff876932d5980e83cee83fbc",
+      "width": 512,
+      "height": 512,
+      "bytes": 2152
+    },
+    "1340cd4a1c7f79fb55a9957729c66b4332acbab580aa351484cfa519d10f037e": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\fractions_number_line_grade4-03-1340cd4a1c.webp",
+      "originalSha256": "1340cd4a1c7f79fb55a9957729c66b4332acbab580aa351484cfa519d10f037e",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/1340cd4a1c7f79fb55a9.webp",
+      "sha256": "eb7d66c3750d02d5e5851147e5b3f938778ffeed316c47d43272a79691f0e10e",
+      "width": 512,
+      "height": 512,
+      "bytes": 2092
+    },
+    "a716df2408de54c5231388f498319e400ac3f0f836e95224d2a17502fea42813": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\fractions_number_line_grade4-17-a716df2408.webp",
+      "originalSha256": "a716df2408de54c5231388f498319e400ac3f0f836e95224d2a17502fea42813",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/a716df2408de54c52313.webp",
+      "sha256": "bf836ebfbf229feb8a4a8f901702194eda17e80d1be43222e2e1590777f12d46",
+      "width": 512,
+      "height": 512,
+      "bytes": 20514
+    },
+    "35f97fd9ad103906f0bd7615bab8354fb0c6691518264a2935bfd46b33c0e9ec": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\habitats_diversity_grade2-09-35f97fd9ad.webp",
+      "originalSha256": "35f97fd9ad103906f0bd7615bab8354fb0c6691518264a2935bfd46b33c0e9ec",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/35f97fd9ad103906f0bd.webp",
+      "sha256": "cf2a813458fcd0f8084216f3e2da9f01dd2c6b137a3d2ffabb6e26cbb16862f1",
+      "width": 400,
+      "height": 400,
+      "bytes": 8556
+    },
+    "450b162fa4922ccf5c5446cc07607b026af7ee9e98bd36f9e1fdf0cfeddf115d": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\habitats_diversity_grade2-14-450b162fa4.webp",
+      "originalSha256": "450b162fa4922ccf5c5446cc07607b026af7ee9e98bd36f9e1fdf0cfeddf115d",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/450b162fa4922ccf5c54.webp",
+      "sha256": "226fa9002c2e21eaf484ea90b3d22d93252c8965e6263642d755f4e16a677d7d",
+      "width": 320,
+      "height": 320,
+      "bytes": 9076
+    },
+    "3b3940d8498ff49c3530267009cf070561abd9540070cd021c4cf4293d8033cc": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\habitats_diversity_grade2-15-3b3940d849.webp",
+      "originalSha256": "3b3940d8498ff49c3530267009cf070561abd9540070cd021c4cf4293d8033cc",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/3b3940d8498ff49c3530.webp",
+      "sha256": "1b0be51856f1accf65d7ea6a3f00af9ec43ac1538207aceb260c56ea7f2b4aa1",
+      "width": 320,
+      "height": 320,
+      "bytes": 9494
+    },
+    "ec3b814ff8abed1f98a010a24455a32bce5f3b80273ef412cbae2597ed52fa01": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\linear_equations_grade8-02-ec3b814ff8.webp",
+      "originalSha256": "ec3b814ff8abed1f98a010a24455a32bce5f3b80273ef412cbae2597ed52fa01",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/ec3b814ff8abed1f98a0.webp",
+      "sha256": "c4c362dcafb0decf8e06789e8c94968084ffe4c5b1713963397ac8a56e9cd326",
+      "width": 512,
+      "height": 512,
+      "bytes": 4132
+    },
+    "cf9e7abb91652f8b21a814435804538226f54f0820fc21dc4433375f0884c1e0": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\linear_equations_grade8-07-cf9e7abb91.webp",
+      "originalSha256": "cf9e7abb91652f8b21a814435804538226f54f0820fc21dc4433375f0884c1e0",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/cf9e7abb91652f8b21a8.webp",
+      "sha256": "4082e4c5b85b03c0bd8ce4eb9b814eb7c239510e7e2e46d0e83d27f2e6e03c41",
+      "width": 512,
+      "height": 512,
+      "bytes": 3388
+    },
+    "8a96e4e315dbbd9bcb3678439e8ff1a859816afdad03f2971591a1c3b310cf48": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\linear_equations_grade8-05-8a96e4e315.webp",
+      "originalSha256": "8a96e4e315dbbd9bcb3678439e8ff1a859816afdad03f2971591a1c3b310cf48",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/8a96e4e315dbbd9bcb36.webp",
+      "sha256": "03364d4130a39341f2fd4072e9ceb98b4be5cc3da8c5feddc5cb65b4511c7fcf",
+      "width": 512,
+      "height": 512,
+      "bytes": 3696
+    },
+    "c3839993450fbdaa3d25dc59d843eb05bfe01f0c94fb450d6bd526bf6b485424": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\linear_equations_grade8-10-c383999345.webp",
+      "originalSha256": "c3839993450fbdaa3d25dc59d843eb05bfe01f0c94fb450d6bd526bf6b485424",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/c3839993450fbdaa3d25.webp",
+      "sha256": "0e3573391dc89302852dd8c4964833cc342b700bd25456f4760330c97881b9e8",
+      "width": 512,
+      "height": 512,
+      "bytes": 5160
+    },
+    "728ca37c240ce1eba9bcd67d5524f267329963bcc54b4d1e8565b2c9460581cd": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\magnetism_grade6-10-728ca37c24.webp",
+      "originalSha256": "728ca37c240ce1eba9bcd67d5524f267329963bcc54b4d1e8565b2c9460581cd",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/728ca37c240ce1eba9bc.webp",
+      "sha256": "9d99582106b1afa2364daf31295b88ef9b5f98985cc158b38a0e6128441007a7",
+      "width": 512,
+      "height": 512,
+      "bytes": 1834
+    },
+    "e64736c61867c7bf3bc163dd6d65a4eae2c83dd103970a009fd4e800f73b21e6": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\magnetism_grade6-05-e64736c618.webp",
+      "originalSha256": "e64736c61867c7bf3bc163dd6d65a4eae2c83dd103970a009fd4e800f73b21e6",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/e64736c61867c7bf3bc1.webp",
+      "sha256": "9f12c73ed0dab8954205f9e0810490c4b92b64d495f929ccfc4ffff49857d644",
+      "width": 512,
+      "height": 512,
+      "bytes": 1342
+    },
+    "a4b605a204215bb20c400809904c269a562c2f0b77173c19ec9a13b2f6f8df94": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\magnetism_grade6-12-a4b605a204.webp",
+      "originalSha256": "a4b605a204215bb20c400809904c269a562c2f0b77173c19ec9a13b2f6f8df94",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/a4b605a204215bb20c40.webp",
+      "sha256": "0293771fab9c5de8f811dcffd135bef1eee837a3e45629e109abd73ea1611f0b",
+      "width": 512,
+      "height": 512,
+      "bytes": 4084
+    },
+    "2399ab44a530cad3b8470d57c175fcadb3166c13d5c9a637036882b10a9559c3": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\magnetism_grade6-06-2399ab44a5.webp",
+      "originalSha256": "2399ab44a530cad3b8470d57c175fcadb3166c13d5c9a637036882b10a9559c3",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2399ab44a530cad3b847.webp",
+      "sha256": "d43cab0cea54da6f70afba930cdb9c6bf69688ae79379cfaece7230731c0669e",
+      "width": 512,
+      "height": 512,
+      "bytes": 3690
+    },
+    "bcc9ca717d0728c2640c33550e575ecc5c27641939d59cadcea73cc70aa19276": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\main_idea_grade4-01-bcc9ca717d.webp",
+      "originalSha256": "bcc9ca717d0728c2640c33550e575ecc5c27641939d59cadcea73cc70aa19276",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/bcc9ca717d0728c2640c.webp",
+      "sha256": "3b22252bb6b8189b5bfcb7c23482e08e3edcebae36e9d0c4ab8a30970a911859",
+      "width": 512,
+      "height": 512,
+      "bytes": 1696
+    },
+    "d3d33428fca3cf19d447bc3e067269b90193d969317e1929fc855211d417da98": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\main_idea_grade4-04-d3d33428fc.webp",
+      "originalSha256": "d3d33428fca3cf19d447bc3e067269b90193d969317e1929fc855211d417da98",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/d3d33428fca3cf19d447.webp",
+      "sha256": "85cdf0a42c3b615982a44f412dbb8180a0c8996cf174f722361740e60eb1ce64",
+      "width": 512,
+      "height": 512,
+      "bytes": 1934
+    },
+    "c09032e615812f9cdef2495f2106d178240749465b84546e355b4e0249d3e669": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\main_idea_grade4-09-c09032e615.webp",
+      "originalSha256": "c09032e615812f9cdef2495f2106d178240749465b84546e355b4e0249d3e669",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/c09032e615812f9cdef2.webp",
+      "sha256": "c161bdddd9cd4bd403324e6e3d77f13da0b24b11d31b125ab662268eacd99454",
+      "width": 512,
+      "height": 512,
+      "bytes": 2216
+    },
+    "b87d43d958c6786e751d85a45a98e91b04126702766675a3c647c03bf2f68949": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\main_idea_grade4-08-b87d43d958.webp",
+      "originalSha256": "b87d43d958c6786e751d85a45a98e91b04126702766675a3c647c03bf2f68949",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/b87d43d958c6786e751d.webp",
+      "sha256": "7077650a87cd9b8179058f43adb2847f29d789f6f07ab01715dbe5e2e79bb533",
+      "width": 512,
+      "height": 512,
+      "bytes": 1720
+    },
+    "5f0d6d3fc456906ada60ea74575fb6e9a1f4977f3f6942f4a642aad600df110e": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\making_ten_grade1-06-5f0d6d3fc4.webp",
+      "originalSha256": "5f0d6d3fc456906ada60ea74575fb6e9a1f4977f3f6942f4a642aad600df110e",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/5f0d6d3fc456906ada60.webp",
+      "sha256": "f565cb9dba3bfa5967cd987593f3320c15f2012491477095e5bdfc7b07604fbd",
+      "width": 512,
+      "height": 512,
+      "bytes": 4678
+    },
+    "1362aa1ba10a243218561b66a8b11941a68fc9c66a8c4de530614e3ddd2ff9e2": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\making_ten_grade1-08-1362aa1ba1.webp",
+      "originalSha256": "1362aa1ba10a243218561b66a8b11941a68fc9c66a8c4de530614e3ddd2ff9e2",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/1362aa1ba10a24321856.webp",
+      "sha256": "e4766d458fef917e13a2c5c53346d19b6c4ba82aa37cbbdd7f3152752fa81c06",
+      "width": 512,
+      "height": 512,
+      "bytes": 4194
+    },
+    "7b53fe8c43b766a2f75c1c8b8cb699a13cba99b816d9202b63667db46497f084": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\making_ten_grade1-01-7b53fe8c43.webp",
+      "originalSha256": "7b53fe8c43b766a2f75c1c8b8cb699a13cba99b816d9202b63667db46497f084",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/7b53fe8c43b766a2f75c.webp",
+      "sha256": "604ec4e00478605f0d65a16e6d66590220811add13539fcc48c6a2bc28ce14a9",
+      "width": 512,
+      "height": 512,
+      "bytes": 12568
+    },
+    "b887e20f5940e25bf897955543e16cd5304be677f1a5bc9d2d002645f2b20861": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\map_skills_grade3-02-b887e20f59.webp",
+      "originalSha256": "b887e20f5940e25bf897955543e16cd5304be677f1a5bc9d2d002645f2b20861",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/b887e20f5940e25bf897.webp",
+      "sha256": "933f5e0e2ea1893f6606c2e12296837f339dd3d14fb41a5e328adff7eedd2162",
+      "width": 512,
+      "height": 256,
+      "bytes": 5356
+    },
+    "8d24ff0eea78551dc658825de82c6e5d22d821483494d61cd3fccc098690352f": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\map_skills_grade3-15-8d24ff0eea.webp",
+      "originalSha256": "8d24ff0eea78551dc658825de82c6e5d22d821483494d61cd3fccc098690352f",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/8d24ff0eea78551dc658.webp",
+      "sha256": "082ac65cdfc79543176bfd3a6959f46abdefdde64420117f793b91cd16bb9f81",
+      "width": 512,
+      "height": 288,
+      "bytes": 8656
+    },
+    "b57d41318ee441556c44715afc7bb273aa9be5561f5199b44bd315e5ec8d97a6": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\map_skills_grade3-04-b57d41318e.webp",
+      "originalSha256": "b57d41318ee441556c44715afc7bb273aa9be5561f5199b44bd315e5ec8d97a6",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/b57d41318ee441556c44.webp",
+      "sha256": "6cc2ec1ffae7a7b8c89ff6f433982b7a1cc7c1c3f7c266932c551aa3e3f621c4",
+      "width": 480,
+      "height": 480,
+      "bytes": 3000
+    },
+    "d85498e3c5715f1fe4cc1c08b5fd7f265dc3329e309eea8f4a64acae3b113d10": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\moon_phases_grade6-01-d85498e3c5.webp",
+      "originalSha256": "d85498e3c5715f1fe4cc1c08b5fd7f265dc3329e309eea8f4a64acae3b113d10",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/d85498e3c5715f1fe4cc.webp",
+      "sha256": "34f6c0b0d63ebf42f355f55884c7e56495929a62130e7acb8c9014a04cc56bad",
+      "width": 512,
+      "height": 512,
+      "bytes": 2744
+    },
+    "ec2c711ddf3127690431721c2b791d053b9ba226ddf1bd776a12a1213784a9f7": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\moon_phases_grade6-02-ec2c711ddf.webp",
+      "originalSha256": "ec2c711ddf3127690431721c2b791d053b9ba226ddf1bd776a12a1213784a9f7",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/ec2c711ddf3127690431.webp",
+      "sha256": "e4b03a27bae225307a6547c7b7cf4bf408751a18067c0bd580a2fb3266be9827",
+      "width": 512,
+      "height": 512,
+      "bytes": 6584
+    },
+    "04fb70db0cb3b9fa2a4cd3742735bc83bfeb3d6e1ab51c625655ee59dce741f8": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\moon_phases_grade6-08-04fb70db0c.webp",
+      "originalSha256": "04fb70db0cb3b9fa2a4cd3742735bc83bfeb3d6e1ab51c625655ee59dce741f8",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/04fb70db0cb3b9fa2a4c.webp",
+      "sha256": "1ec691fe1d01da88ceadcb25a970790a71cf072d81ab23ea7cbfd67aeaa79a8b",
+      "width": 512,
+      "height": 512,
+      "bytes": 2738
+    },
+    "2255ff323146641db12f1b3d51733724689bfb0024a161052cc935e1dfd94633": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\moon_phases_grade6-10-2255ff3231.webp",
+      "originalSha256": "2255ff323146641db12f1b3d51733724689bfb0024a161052cc935e1dfd94633",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2255ff323146641db12f.webp",
+      "sha256": "fec53810aa4935bad7959a4383964df4d93bd608a59022baf046e4fedfd50daa",
+      "width": 512,
+      "height": 512,
+      "bytes": 2356
+    },
+    "833cb90a8fdc3ef26675fd30d20af743268c4060a4889657e143df7902deaac8": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\natural_selection_grade8-02-833cb90a8f.webp",
+      "originalSha256": "833cb90a8fdc3ef26675fd30d20af743268c4060a4889657e143df7902deaac8",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/833cb90a8fdc3ef26675.webp",
+      "sha256": "a92beb70c5b619b1f2ed52aacaa0466e97dd7de74214475f26dd1c25632ea5ea",
+      "width": 512,
+      "height": 512,
+      "bytes": 4942
+    },
+    "88edc3a7baf229ad3d619f1566329107c22c97b7fbc72b9916422d19f78bfd87": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\natural_selection_grade8-08-88edc3a7ba.webp",
+      "originalSha256": "88edc3a7baf229ad3d619f1566329107c22c97b7fbc72b9916422d19f78bfd87",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/88edc3a7baf229ad3d61.webp",
+      "sha256": "d55acdd6389137c78edeeebb37868b2c1eb3de4f5abb9c8cf75a108a97589ee2",
+      "width": 512,
+      "height": 512,
+      "bytes": 2648
+    },
+    "2b95259b6afd38a5a134a9b4f9401d676ddb2a90fb53882550256822fd94cd74": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\natural_selection_grade8-16-2b95259b6a.webp",
+      "originalSha256": "2b95259b6afd38a5a134a9b4f9401d676ddb2a90fb53882550256822fd94cd74",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2b95259b6afd38a5a134.webp",
+      "sha256": "7f36370829f4b7f34bedd4e54aedbc7ea78fd67496fcc3a73e98d9b415b0d14d",
+      "width": 512,
+      "height": 512,
+      "bytes": 11930
+    },
+    "2255357bbe43c8f555791ad1f1c8d1c6a8bf0edab3ddb9ae9b0e800052261a61": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\photosynthesis_grade7-01-2255357bbe.webp",
+      "originalSha256": "2255357bbe43c8f555791ad1f1c8d1c6a8bf0edab3ddb9ae9b0e800052261a61",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2255357bbe43c8f55579.webp",
+      "sha256": "b5bc9ebb9a33ff2d51e81f216b0134e446d869378e7ae37717aed960120209ab",
+      "width": 512,
+      "height": 512,
+      "bytes": 4860
+    },
+    "8e76388a924b5367d671a458f1e65b318563c9ad79578a853b201b4ac271aba0": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\photosynthesis_grade7-07-8e76388a92.webp",
+      "originalSha256": "8e76388a924b5367d671a458f1e65b318563c9ad79578a853b201b4ac271aba0",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/8e76388a924b5367d671.webp",
+      "sha256": "7821fc36e709278d980a5a13af99c797807bb5a62842cdda5b5edfd657b6851d",
+      "width": 512,
+      "height": 512,
+      "bytes": 3934
+    },
+    "7ffc7197bc97561ce61aeb8c07c1a353954c39b669c02ebd67b25963f3319434": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\photosynthesis_grade7-06-7ffc7197bc.webp",
+      "originalSha256": "7ffc7197bc97561ce61aeb8c07c1a353954c39b669c02ebd67b25963f3319434",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/7ffc7197bc97561ce61a.webp",
+      "sha256": "6ad1477847cd558e262bf5f0ad14ccc066fa117165db88b8a99a9f035ff7bc88",
+      "width": 512,
+      "height": 512,
+      "bytes": 4100
+    },
+    "315d5a1347f4a7f28eccb9bc9b0461d2c23040e08794ef4e75e3e1b9dbbc7758": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\photosynthesis_grade7-11-315d5a1347.webp",
+      "originalSha256": "315d5a1347f4a7f28eccb9bc9b0461d2c23040e08794ef4e75e3e1b9dbbc7758",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/315d5a1347f4a7f28ecc.webp",
+      "sha256": "6a59da492a7f836a0ba3b025ac81c42093f8c26961f7676ef9691b0b83235a3d",
+      "width": 512,
+      "height": 512,
+      "bytes": 2102
+    },
+    "083dd7fa06a95170a835ec481d65bb1f85a9675e775f044bdba838547e918ff0": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\photosynthesis_grade7-05-083dd7fa06.webp",
+      "originalSha256": "083dd7fa06a95170a835ec481d65bb1f85a9675e775f044bdba838547e918ff0",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/083dd7fa06a95170a835.webp",
+      "sha256": "951519175bbd091993039c1fbf8af5bd10c22db812c6b0ac5c260f425237c920",
+      "width": 512,
+      "height": 512,
+      "bytes": 2910
+    },
+    "7cef9bfe2f056c3a5ec8d91f6d053029b06605563d70c2feae2fa2bf72080619": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\photosynthesis_grade7-13-7cef9bfe2f.webp",
+      "originalSha256": "7cef9bfe2f056c3a5ec8d91f6d053029b06605563d70c2feae2fa2bf72080619",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/7cef9bfe2f056c3a5ec8.webp",
+      "sha256": "e1635d23ec3ee129d2bab3594be770d6fe9ae9b1661e750bdbdce6fa69e49d55",
+      "width": 512,
+      "height": 512,
+      "bytes": 1688
+    },
+    "0b0d1200f03ec357b0c5c1d0c674ee2303c8287842c2fc094f44266f6f0a4809": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\photosynthesis_grade7-08-0b0d1200f0.webp",
+      "originalSha256": "0b0d1200f03ec357b0c5c1d0c674ee2303c8287842c2fc094f44266f6f0a4809",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/0b0d1200f03ec357b0c5.webp",
+      "sha256": "68ea70519c00fdf84f60a602fa09b373b200eb2aae6796d3b3c4c4c3f2633dc8",
+      "width": 512,
+      "height": 512,
+      "bytes": 2748
+    },
+    "479f3182dd9d4a7dee655d6369fc3bf9f51f41e97a944ed37d8452c6629c6623": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\place_value_grade2-03-479f3182dd.webp",
+      "originalSha256": "479f3182dd9d4a7dee655d6369fc3bf9f51f41e97a944ed37d8452c6629c6623",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/479f3182dd9d4a7dee65.webp",
+      "sha256": "9170bb8f385b58663a1e87a1bf7a47157d51ac782c631f344301c48b06e47d99",
+      "width": 512,
+      "height": 512,
+      "bytes": 2556
+    },
+    "be1d833e31d5e6ca83f3da1058d234c34a584b5f5eb990c7a8e6ea46c5446d6c": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\place_value_grade2-09-be1d833e31.webp",
+      "originalSha256": "be1d833e31d5e6ca83f3da1058d234c34a584b5f5eb990c7a8e6ea46c5446d6c",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/be1d833e31d5e6ca83f3.webp",
+      "sha256": "6efe4c61600d5e6314109ed4820679e9d522aca61bcc862abbd98dbbb1df4552",
+      "width": 512,
+      "height": 512,
+      "bytes": 3936
+    },
+    "b91729d31999d2353503c1126ddbedd8c470f90c93bf3fadf8fa87c8992d1f16": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\plant_needs_grade3-03-b91729d319.webp",
+      "originalSha256": "b91729d31999d2353503c1126ddbedd8c470f90c93bf3fadf8fa87c8992d1f16",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/b91729d31999d2353503.webp",
+      "sha256": "8ec853c9743b058713373d5ac9f2d461098c829b7a3b7e835f7609847b85ecae",
+      "width": 512,
+      "height": 341,
+      "bytes": 33646
+    },
+    "08d6bdcdd88f8d7093e4dca14c41c1c7bc20465ee730eb606eaa5e1f615305a4": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\plant_needs_grade3-01-08d6bdcdd8.webp",
+      "originalSha256": "08d6bdcdd88f8d7093e4dca14c41c1c7bc20465ee730eb606eaa5e1f615305a4",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/08d6bdcdd88f8d7093e4.webp",
+      "sha256": "5ddffb29603a866290d1c710846765835afe2c5e2b04327046bcb37138b42811",
+      "width": 512,
+      "height": 341,
+      "bytes": 21790
+    },
+    "7798296172d5af55a32382b17ffca72d505742c9c98d363a805b64335a1437b6": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\plant_needs_grade3-37-7798296172.webp",
+      "originalSha256": "7798296172d5af55a32382b17ffca72d505742c9c98d363a805b64335a1437b6",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/7798296172d5af55a323.webp",
+      "sha256": "2817135184e95e1531a7827ee3115dc3bc9e434f9d198077614965a73429eb4f",
+      "width": 512,
+      "height": 341,
+      "bytes": 10742
+    },
+    "45b2257797a852fd0a9dfd02f9b3fb0951cfbb5fe6299a11ea1f78e0e4f53372": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\plate_tectonics_grade6-09-45b2257797.webp",
+      "originalSha256": "45b2257797a852fd0a9dfd02f9b3fb0951cfbb5fe6299a11ea1f78e0e4f53372",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/45b2257797a852fd0a9d.webp",
+      "sha256": "92bf310ef57b41a13a37b38347a25346daf9bb9eed4315507325cd4dfbead2d7",
+      "width": 400,
+      "height": 400,
+      "bytes": 24024
+    },
+    "64340a756163dc4f6d39b60bfef92147c0ba6718081b72fa937389a9667f890a": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\plate_tectonics_grade6-03-64340a7561.webp",
+      "originalSha256": "64340a756163dc4f6d39b60bfef92147c0ba6718081b72fa937389a9667f890a",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/64340a756163dc4f6d39.webp",
+      "sha256": "d017aaae51246950bdd4eb25cfed73b447fc65d42681ad4927fcdcacc38092b9",
+      "width": 512,
+      "height": 512,
+      "bytes": 2552
+    },
+    "7d55e0b36f3a79bc4515a99651fb8928a2337c346e96dc8ff70d19c6fb4534f9": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\plate_tectonics_grade6-07-7d55e0b36f.webp",
+      "originalSha256": "7d55e0b36f3a79bc4515a99651fb8928a2337c346e96dc8ff70d19c6fb4534f9",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/7d55e0b36f3a79bc4515.webp",
+      "sha256": "4a8dbee32e29f18ef557e4099d870b188ff0ca9742c740dab6fc67cad770b6a2",
+      "width": 512,
+      "height": 512,
+      "bytes": 2382
+    },
+    "c7777a3d98cf98af8b695d262175240d371ac4c086b3a583b1945f8d96962b87": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\plate_tectonics_grade6-02-c7777a3d98.webp",
+      "originalSha256": "c7777a3d98cf98af8b695d262175240d371ac4c086b3a583b1945f8d96962b87",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/c7777a3d98cf98af8b69.webp",
+      "sha256": "517f23e4d33be5c41ee8183aa1c6a2f7569e547ba7411c73c7c6a526604f94d9",
+      "width": 512,
+      "height": 512,
+      "bytes": 1668
+    },
+    "cab8d35b48fbd125fe5fe754981edc0aeed5b1b461cea6f8e83adb352407841f": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\point_of_view_grade4-03-cab8d35b48.webp",
+      "originalSha256": "cab8d35b48fbd125fe5fe754981edc0aeed5b1b461cea6f8e83adb352407841f",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/cab8d35b48fbd125fe5f.webp",
+      "sha256": "8e31a6ea60c457c006042f0c9efa8b010e171516668416c7b3be9316d3410e2d",
+      "width": 512,
+      "height": 512,
+      "bytes": 4396
+    },
+    "dad0cc2a3c3dd3ac10d2e7654e8d52089f8c4d2d3a544951027672d60d5f1986": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\point_of_view_grade4-04-dad0cc2a3c.webp",
+      "originalSha256": "dad0cc2a3c3dd3ac10d2e7654e8d52089f8c4d2d3a544951027672d60d5f1986",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/dad0cc2a3c3dd3ac10d2.webp",
+      "sha256": "17807bedad8095283e4ba1c7cff1ee1ac9d164ddd3bfbee3ac4e19b0fb5e2cbb",
+      "width": 512,
+      "height": 512,
+      "bytes": 2190
+    },
+    "3a3f470df7b9dd76abb1b5f708b6a32de4ba9f59d674a342c3e414e3363faf52": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\point_of_view_grade4-11-3a3f470df7.webp",
+      "originalSha256": "3a3f470df7b9dd76abb1b5f708b6a32de4ba9f59d674a342c3e414e3363faf52",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/3a3f470df7b9dd76abb1.webp",
+      "sha256": "d3634a7f71c673777ccf9c596a067535f772b65518c1d5d4c9fe4298e5a17732",
+      "width": 512,
+      "height": 512,
+      "bytes": 1926
+    },
+    "4e16e1a23fb18b7984d956c5d5ddbc16568de92c9f0ed0dfc16999c9d0f33ecd": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\probability_models_grade7-07-4e16e1a23f.webp",
+      "originalSha256": "4e16e1a23fb18b7984d956c5d5ddbc16568de92c9f0ed0dfc16999c9d0f33ecd",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/4e16e1a23fb18b7984d9.webp",
+      "sha256": "f27e6751d8d0e6e9d61e6c1c6463315ebf05f7926d26c47830d8501fb3b6cfbb",
+      "width": 512,
+      "height": 512,
+      "bytes": 5372
+    },
+    "dbfefcd997bbf16eedc3860dd16eddfaf5358c0f2249501ad183bd3e21348673": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\probability_models_grade7-09-dbfefcd997.webp",
+      "originalSha256": "dbfefcd997bbf16eedc3860dd16eddfaf5358c0f2249501ad183bd3e21348673",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/dbfefcd997bbf16eedc3.webp",
+      "sha256": "38a4c13a258914e7d49cb1646872ae69f8e1c4ac98a6eda13a036add2be99907",
+      "width": 512,
+      "height": 512,
+      "bytes": 4032
+    },
+    "6d9dba6c4752d9ff27bb32ae27b898f343eb8ec3ee34c01af3ee81fc5f44a6ff": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\probability_models_grade7-08-6d9dba6c47.webp",
+      "originalSha256": "6d9dba6c4752d9ff27bb32ae27b898f343eb8ec3ee34c01af3ee81fc5f44a6ff",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/6d9dba6c4752d9ff27bb.webp",
+      "sha256": "8910fdbfb71984e83edc5cf717fd485efe7c624f6284923f00f9536ef5c2a09a",
+      "width": 512,
+      "height": 512,
+      "bytes": 4312
+    },
+    "af531730379f0d527822804f6142b2ebe7683fe6ebbfbb7b411f86727f108c17": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\proportional_relationships_grade7-02-af53173037.webp",
+      "originalSha256": "af531730379f0d527822804f6142b2ebe7683fe6ebbfbb7b411f86727f108c17",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/af531730379f0d527822.webp",
+      "sha256": "1e801596cec48a118e316ac749b50ded8cc2f567d2d084c08a1c55584bb35fe8",
+      "width": 512,
+      "height": 512,
+      "bytes": 4274
+    },
+    "b311a4590d4e0d2bca8dffde88b3f931be568eebb241c9daeb8c15a35b15cd4a": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\proportional_relationships_grade7-04-b311a4590d.webp",
+      "originalSha256": "b311a4590d4e0d2bca8dffde88b3f931be568eebb241c9daeb8c15a35b15cd4a",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/b311a4590d4e0d2bca8d.webp",
+      "sha256": "3143b154059a8b7a4374ce75d26234d93cce3550084b519051d6faba4b69bddf",
+      "width": 512,
+      "height": 512,
+      "bytes": 2168
+    },
+    "22c209b9647f05889d74e6f1e2f2e0ab1f923663a16893c8fb961add469555e1": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\proportional_relationships_grade7-03-22c209b964.webp",
+      "originalSha256": "22c209b9647f05889d74e6f1e2f2e0ab1f923663a16893c8fb961add469555e1",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/22c209b9647f05889d74.webp",
+      "sha256": "408946e823e9a84749d4b81c84759ce0858193369756cbf380f7768fc72ab585",
+      "width": 512,
+      "height": 512,
+      "bytes": 3770
+    },
+    "be92e069d5686cf52ff6cb671921009712243e0a7ab72c123d850bee4a218e10": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\ratios_real_life_grade6-03-be92e069d5.webp",
+      "originalSha256": "be92e069d5686cf52ff6cb671921009712243e0a7ab72c123d850bee4a218e10",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/be92e069d5686cf52ff6.webp",
+      "sha256": "e989743881d12c744607921d7d3ca7e7fc9c4e8ffe459ab9d54f2d2ba0c31a3c",
+      "width": 512,
+      "height": 512,
+      "bytes": 1114
+    },
+    "7bbce1eddd66419f3ddf5cabaf8d409aaf20ed8fcecea98b5a7ed8e5a204fced": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\ratios_real_life_grade6-09-7bbce1eddd.webp",
+      "originalSha256": "7bbce1eddd66419f3ddf5cabaf8d409aaf20ed8fcecea98b5a7ed8e5a204fced",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/7bbce1eddd66419f3ddf.webp",
+      "sha256": "39db131e53146ad45303d48dd8a4fcd1a87393b26391545ee1f1b5edb67f65d6",
+      "width": 512,
+      "height": 512,
+      "bytes": 2026
+    },
+    "83d6314454648f8c5e7c2ef4bbc156c3be25960559b2b184772f0941be8655f1": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\ratios_real_life_grade6-04-83d6314454.webp",
+      "originalSha256": "83d6314454648f8c5e7c2ef4bbc156c3be25960559b2b184772f0941be8655f1",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/83d6314454648f8c5e7c.webp",
+      "sha256": "0fe3d0f5f34ddc79390a40929e6c9db3412cf5e65130ac162e4624ed42f07983",
+      "width": 512,
+      "height": 512,
+      "bytes": 1402
+    },
+    "60cb65399ce689d047558974a8a6af1ca5adb9a368cdae0ce449e86c27c790ff": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\ratios_real_life_grade6-01-60cb65399c.webp",
+      "originalSha256": "60cb65399ce689d047558974a8a6af1ca5adb9a368cdae0ce449e86c27c790ff",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/60cb65399ce689d04755.webp",
+      "sha256": "62906754979a19e3ef509218c79721b700864b07ab1a9d590e291fadafb22439",
+      "width": 512,
+      "height": 512,
+      "bytes": 15250
+    },
+    "b6356d315c54aa95ced15bd7969f1766202facdab6a8f2b53f0a5f7086ea61c4": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\scarcity_choice_grade7-03-b6356d315c.webp",
+      "originalSha256": "b6356d315c54aa95ced15bd7969f1766202facdab6a8f2b53f0a5f7086ea61c4",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/b6356d315c54aa95ced1.webp",
+      "sha256": "b27f706b1a1ad9db928f824c20d24308baaca86e5df711b89f6acb97526ef789",
+      "width": 512,
+      "height": 512,
+      "bytes": 2472
+    },
+    "8d3d0e2060d41dea5a23b142ce8fbba1594129dc89c79da6392aba017563057a": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\scarcity_choice_grade7-07-8d3d0e2060.webp",
+      "originalSha256": "8d3d0e2060d41dea5a23b142ce8fbba1594129dc89c79da6392aba017563057a",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/8d3d0e2060d41dea5a23.webp",
+      "sha256": "828671f1fc82fdd54103f2fd0ae883f093b156adf96abbe75a6d10690a045767",
+      "width": 512,
+      "height": 512,
+      "bytes": 2400
+    },
+    "d06d5591a8fa0cdcc3968b6a430a9a959dca18a33021cd6fdf3e4d0d4a396ac4": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\scarcity_choice_grade7-01-d06d5591a8.webp",
+      "originalSha256": "d06d5591a8fa0cdcc3968b6a430a9a959dca18a33021cd6fdf3e4d0d4a396ac4",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/d06d5591a8fa0cdcc396.webp",
+      "sha256": "1ec78fd55fcd86c42c883a888a3a9a37e5c78bffd8471a0cb152d078e28914e2",
+      "width": 512,
+      "height": 512,
+      "bytes": 15636
+    },
+    "217a312bba37b5d07b2d207459a519ab8d13037f216f40eb4c36fbc12e7272e1": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\simple_machines_grade5-01-217a312bba.webp",
+      "originalSha256": "217a312bba37b5d07b2d207459a519ab8d13037f216f40eb4c36fbc12e7272e1",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/217a312bba37b5d07b2d.webp",
+      "sha256": "b6cf8848f49ca440afc7882a3f6f81b4560b7da96937c706f8126bc060c1d7af",
+      "width": 512,
+      "height": 512,
+      "bytes": 1472
+    },
+    "64b3ca78941e75618dfdca16ff2e9a16b4f63daa9bd82d7af61abd8294534b06": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\simple_machines_grade5-02-64b3ca7894.webp",
+      "originalSha256": "64b3ca78941e75618dfdca16ff2e9a16b4f63daa9bd82d7af61abd8294534b06",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/64b3ca78941e75618dfd.webp",
+      "sha256": "4323574666877883a02221ac85a76e2efa603487f1dca762eca04137bb8ad37f",
+      "width": 512,
+      "height": 512,
+      "bytes": 2890
+    },
+    "d60691662d3fd0701cba84f91aa03af2ca903b1a1e1cf9c4621207f016614cb8": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\simple_machines_grade5-11-d60691662d.webp",
+      "originalSha256": "d60691662d3fd0701cba84f91aa03af2ca903b1a1e1cf9c4621207f016614cb8",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/d60691662d3fd0701cba.webp",
+      "sha256": "7346df4bc6bee9d9e9be048a5a79e543c221a01600d5eea5b6b5598228d0d833",
+      "width": 512,
+      "height": 512,
+      "bytes": 2782
+    },
+    "30b5239a6217f10eb64705249f08c6a34f5e239fb57f1ba57e72d1047807919a": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\simple_machines_grade5-03-30b5239a62.webp",
+      "originalSha256": "30b5239a6217f10eb64705249f08c6a34f5e239fb57f1ba57e72d1047807919a",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/30b5239a6217f10eb647.webp",
+      "sha256": "7e0ab25d5583d1f346d4ed5bad65031241bd90769c11642b1b5821675594d8ea",
+      "width": 512,
+      "height": 512,
+      "bytes": 1744
+    },
+    "981c3f8139521afc00dd12fa6ec33020a355c56fc5d4a5de9e107fd9237c8738": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\energy_transfer_grade4-05-981c3f8139.webp",
+      "originalSha256": "981c3f8139521afc00dd12fa6ec33020a355c56fc5d4a5de9e107fd9237c8738",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/981c3f8139521afc00dd.webp",
+      "sha256": "29b36bb51dc0576096861d4dd2aa9f2b7afcc989958ff7ecaaf96d978858b234",
+      "width": 400,
+      "height": 400,
+      "bytes": 7492
+    },
+    "72a8c0fbaeae5305723b5d803b3c041608a25ef85f2130fbb3da37752e833298": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\energy_transfer_grade4-14-72a8c0fbae.webp",
+      "originalSha256": "72a8c0fbaeae5305723b5d803b3c041608a25ef85f2130fbb3da37752e833298",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/72a8c0fbaeae5305723b.webp",
+      "sha256": "6349fbe5baab66062b7358f5a8162a0ef52fb7c43c5fbef0205944f34cf7b2f0",
+      "width": 320,
+      "height": 320,
+      "bytes": 9702
+    },
+    "44ee6f0f2b8c45ab1eb1d39fbdad7e41a0d5cc663f6250f78c21b49ba5b6609d": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\states_of_matter_grade4-19-44ee6f0f2b.webp",
+      "originalSha256": "44ee6f0f2b8c45ab1eb1d39fbdad7e41a0d5cc663f6250f78c21b49ba5b6609d",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/44ee6f0f2b8c45ab1eb1.webp",
+      "sha256": "ccbcfb22a17e92dd68023f3fc995a19467ace5288cedd0a6d8413511f3ffcc15",
+      "width": 280,
+      "height": 187,
+      "bytes": 3928
+    },
+    "51f42f76fafe7eb421317093f0ad0200f3f933fda5d3c273c0329e70c4135a07": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\states_of_matter_grade4-22-51f42f76fa.webp",
+      "originalSha256": "51f42f76fafe7eb421317093f0ad0200f3f933fda5d3c273c0329e70c4135a07",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/51f42f76fafe7eb42131.webp",
+      "sha256": "1e9caec9845098d7c3f8281c59390670a39b0043357982a7d724f2db7dc6ce76",
+      "width": 280,
+      "height": 280,
+      "bytes": 1982
+    },
+    "285bc0e1ea2bc7d545a689e655b7ff3245a42045b39248fc0f7dce5c34f81d4c": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\states_of_matter_grade4-23-285bc0e1ea.webp",
+      "originalSha256": "285bc0e1ea2bc7d545a689e655b7ff3245a42045b39248fc0f7dce5c34f81d4c",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/285bc0e1ea2bc7d545a6.webp",
+      "sha256": "5994ea0bb02c99a86d225836809299009b3705666b23d1d89f89966f0aa81348",
+      "width": 280,
+      "height": 187,
+      "bytes": 2142
+    },
+    "2795b83aba12d8cd0cef4b29f55573b5e782ac7fbd0208c55ec7ea11c0f050be": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\states_of_matter_grade4-18-2795b83aba.webp",
+      "originalSha256": "2795b83aba12d8cd0cef4b29f55573b5e782ac7fbd0208c55ec7ea11c0f050be",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2795b83aba12d8cd0cef.webp",
+      "sha256": "729c930382feb6ccf2ae5e6c4a07147646ee62ed2492320c19fbe15d38e94420",
+      "width": 512,
+      "height": 341,
+      "bytes": 5820
+    },
+    "d1eb4fb3a3b9a248a36d36e430c185474f26995aac4dcc710abb00043a140fb2": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\story_retell_grade2-03-d1eb4fb3a3.webp",
+      "originalSha256": "d1eb4fb3a3b9a248a36d36e430c185474f26995aac4dcc710abb00043a140fb2",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/d1eb4fb3a3b9a248a36d.webp",
+      "sha256": "3633dbddaaee4d36f51b588769784d3c548cbfd42e01a49845dc377e209a9cab",
+      "width": 512,
+      "height": 512,
+      "bytes": 3638
+    },
+    "3c66da7922908faa0ce3d6c450ea3903a2f7a5bf14cce6a0dbbe46b1e6ec545d": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\story_retell_grade2-10-3c66da7922.webp",
+      "originalSha256": "3c66da7922908faa0ce3d6c450ea3903a2f7a5bf14cce6a0dbbe46b1e6ec545d",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/3c66da7922908faa0ce3.webp",
+      "sha256": "796f2d9a32e1b0d3cc448fe7cea1031cf5b4e2dff3d3994aadb94da2d16d2ab7",
+      "width": 512,
+      "height": 512,
+      "bytes": 1476
+    },
+    "a4472a01213439942582a4f5d36240f124c4ae9ed63c171c98e85b981ac47292": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\theme_development_grade8-05-a4472a0121.webp",
+      "originalSha256": "a4472a01213439942582a4f5d36240f124c4ae9ed63c171c98e85b981ac47292",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/a4472a01213439942582.webp",
+      "sha256": "db80a4eab8f9cd52fa1d4154d822ca285dc9be0ac28c4d7f8a6a4488dc451ebe",
+      "width": 512,
+      "height": 512,
+      "bytes": 1462
+    },
+    "f8c0cecbb3fbe8d8146367ff488fa7fe193ce9e66f2da48ebee6a02e6b14e0f5": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\then_and_now_grade2-19-f8c0cecbb3.webp",
+      "originalSha256": "f8c0cecbb3fbe8d8146367ff488fa7fe193ce9e66f2da48ebee6a02e6b14e0f5",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/f8c0cecbb3fbe8d81463.webp",
+      "sha256": "41e05b78fe80b850550c936c31658ebb2fa94d482abaf1349dadf0c8ee37f548",
+      "width": 180,
+      "height": 180,
+      "bytes": 2594
+    },
+    "2a09e0258d1dc6e235167365b38126c713eacdfb0ffa43261caf0c82676e8e32": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\volume_grade5-09-2a09e0258d.webp",
+      "originalSha256": "2a09e0258d1dc6e235167365b38126c713eacdfb0ffa43261caf0c82676e8e32",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/2a09e0258d1dc6e23516.webp",
+      "sha256": "d751914cd6a203070c6ea3e426cba261342d3faa862e962999f0970bfb1ab87e",
+      "width": 512,
+      "height": 512,
+      "bytes": 9452
+    },
+    "bfd10bf601c7fe2efddd6586670a9e65f7b9600619838ebec2eda3efcfe717bd": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\volume_grade5-01-bfd10bf601.webp",
+      "originalSha256": "bfd10bf601c7fe2efddd6586670a9e65f7b9600619838ebec2eda3efcfe717bd",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/bfd10bf601c7fe2efddd.webp",
+      "sha256": "5806d1b466e320361882f826951a613ebbace684d6323eb99bfaa1bfb9a11855",
+      "width": 512,
+      "height": 512,
+      "bytes": 2150
+    },
+    "1f80c075c05d5e64cd3b5ad897a68deffe3d2642e2d58a2dc8de848ea10aa142": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\volume_grade5-03-1f80c075c0.webp",
+      "originalSha256": "1f80c075c05d5e64cd3b5ad897a68deffe3d2642e2d58a2dc8de848ea10aa142",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/1f80c075c05d5e64cd3b.webp",
+      "sha256": "7a4fca48c79138cba0cb3eca1946fb28fffe7c7dc43ac5393ef4a8d171d83141",
+      "width": 512,
+      "height": 512,
+      "bytes": 7036
+    },
+    "501a6e5ff2f3f73a92fe1cba843ffa5a544641ad6440e0337d8e25264aa078dc": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\water_cycle_grade6-12-501a6e5ff2.webp",
+      "originalSha256": "501a6e5ff2f3f73a92fe1cba843ffa5a544641ad6440e0337d8e25264aa078dc",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/501a6e5ff2f3f73a92fe.webp",
+      "sha256": "aa61fa2c7f71050af0a580084743bcb4449f850fcbe96001c08f61bdb4ffe8dd",
+      "width": 480,
+      "height": 480,
+      "bytes": 9816
+    },
+    "eccbf26f802d7fe8d679b76bed7a65764a55d818aeda75030cdaf8b767b2362d": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\weathering_erosion_grade4-03-eccbf26f80.webp",
+      "originalSha256": "eccbf26f802d7fe8d679b76bed7a65764a55d818aeda75030cdaf8b767b2362d",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/eccbf26f802d7fe8d679.webp",
+      "sha256": "ac8d62d55525ccba50fb4ffa24425e8d37bc8169442fef4bf38712bdcbacc3f0",
+      "width": 400,
+      "height": 400,
+      "bytes": 20954
+    },
+    "55c6c45b6fe7ba5d3d599e1943afbb9cd9055fd69514760526393de9c9d0999a": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\weathering_erosion_grade4-06-55c6c45b6f.webp",
+      "originalSha256": "55c6c45b6fe7ba5d3d599e1943afbb9cd9055fd69514760526393de9c9d0999a",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/55c6c45b6fe7ba5d3d59.webp",
+      "sha256": "0869269e0ff98d9f66f4213564463d903d7000393af46169b5e64b39094fd24f",
+      "width": 400,
+      "height": 400,
+      "bytes": 14342
+    },
+    "0e003ec0c1dd040baa7a5eb3c86cbc1359365b6660b4cf98affd3441e5e62713": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\weathering_erosion_grade4-15-0e003ec0c1.webp",
+      "originalSha256": "0e003ec0c1dd040baa7a5eb3c86cbc1359365b6660b4cf98affd3441e5e62713",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/0e003ec0c1dd040baa7a.webp",
+      "sha256": "3718b8b6209b7f5eba09d0982b6484b3806046bf8b4e37c93bfe9e70cd65045d",
+      "width": 320,
+      "height": 320,
+      "bytes": 8752
+    },
+    "02a19b9348a10fdc86c1bfae3e2c1f954ca46f2b663afaf211d625d2e5ca1d85": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\word_families_grade1-07-02a19b9348.webp",
+      "originalSha256": "02a19b9348a10fdc86c1bfae3e2c1f954ca46f2b663afaf211d625d2e5ca1d85",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/02a19b9348a10fdc86c1.webp",
+      "sha256": "3b8e8c7f4a8a80147194b3a46b1090ee3047eec11e890d722217699c4260cda9",
+      "width": 512,
+      "height": 512,
+      "bytes": 1782
+    },
+    "84695e6017d173615f919d7bfabb18fd806ca0cf8efdf1340c622c0fdd673aab": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\word_families_grade1-04-84695e6017.webp",
+      "originalSha256": "84695e6017d173615f919d7bfabb18fd806ca0cf8efdf1340c622c0fdd673aab",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/84695e6017d173615f91.webp",
+      "sha256": "d0d642f0cdc804768007655b0c7cdefb7a09cb05ebbbee24958146442a177503",
+      "width": 512,
+      "height": 512,
+      "bytes": 3464
+    },
+    "33abc9d941cab75608d2c0843422554467f6e832504f58e8f168974e41c60d04": {
+      "originalFile": "reports\\allopacks-collection-review-2026-11-02\\image-mapping\\asset-review\\word_families_grade1-02-33abc9d941.webp",
+      "originalSha256": "33abc9d941cab75608d2c0843422554467f6e832504f58e8f168974e41c60d04",
+      "file": "allopacks/media/collection_refinement_20261102/reuse-runtime/33abc9d941cab75608d2.webp",
+      "sha256": "fa0ac74a7e0f62d360aaf7b19f50cb244e7cb645175381d1ebb815ead2b715a4",
+      "width": 512,
+      "height": 512,
+      "bytes": 1268
+    }
+  }
+}

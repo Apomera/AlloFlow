@@ -10,12 +10,128 @@
 // Out of scope: the FileReader / file-picker UI wiring (covered by the
 // render golden master) and SheetJS itself (covered by SheetJS's own
 // tests; we pin only the wrapper's null-library + empty-workbook + happy
-// paths via an inline minimal fake XLSX namespace).
+// paths via an inline minimal fake XLSX namespace). Browser delivery tests below
+// use an isolated synthetic document; no script request or real upload occurs.
 
 import { describe, it, expect } from 'vitest';
 import * as LumenMod from '../stem_lab/stem_tool_lumen.js';
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import vm from 'node:vm';
 
 const L = LumenMod.default || LumenMod;
+
+const lumenSource = readFileSync('stem_lab/stem_tool_lumen.js', 'utf8');
+const loaderStart = lumenSource.indexOf('  var _xlsxLoadPromise = null;');
+const loaderEnd = lumenSource.indexOf('  // JSON -> table.', loaderStart);
+const loaderSource = lumenSource.slice(loaderStart, loaderEnd);
+const approvedXlsx = version => ({ version, read() {}, utils: { sheet_to_csv() {} } });
+function loaderHarness(preloaded) {
+  const scripts = [], attachments = [], timers = new Map();
+  let timerId = 0;
+  const window = { XLSX: preloaded };
+  const document = {
+    createElement() { return { remove() { this.removed = true; } }; },
+    head: { appendChild(script) {
+      scripts.push(script);
+      attachments.push({ src: script.src, integrity: script.integrity, crossOrigin: script.crossOrigin, referrerPolicy: script.referrerPolicy });
+    } }
+  };
+  const scope = { window, document, setTimeout(callback) { timers.set(++timerId, callback); return timerId; }, clearTimeout(id) { timers.delete(id); } };
+  vm.runInNewContext(loaderSource + '\nthis.load = lazyLoadXLSX;', scope);
+  return { ...scope, scripts, attachments, timers };
+}
+
+describe('Lumen ingest - pinned spreadsheet delivery', () => {
+  it.each(['0.18.5', '0.20.1', undefined])('replaces a preloaded %s library before accepting it', async version => {
+    const stale = approvedXlsx(version), h = loaderHarness(stale);
+    const pending = h.load();
+    expect(h.scripts).toHaveLength(1);
+    const current = approvedXlsx('0.20.3'); h.window.XLSX = current;
+    h.scripts[0].onload();
+    expect(await pending).toBe(current);
+    expect(h.timers.size).toBe(0);
+  });
+
+  it('accepts an already current complete API and returns its captured instance after a global overwrite', async () => {
+    const current = approvedXlsx('0.20.3'), h = loaderHarness(current);
+    expect(await h.load()).toBe(current);
+    h.window.XLSX = approvedXlsx('0.20.1');
+    expect(await h.load()).toBe(current);
+    expect(h.scripts).toHaveLength(0);
+  });
+
+  it('uses the exact vendored SRI for the primary and official fallback before attachment', async () => {
+    const h = loaderHarness(), pending = h.load();
+    h.scripts[0].onerror();
+    const integrity = 'sha384-' + createHash('sha384').update(readFileSync('runtime_assets/document/sheetjs-0.20.3/xlsx.full.min.js')).digest('base64');
+    expect(h.attachments).toEqual([
+      { src: 'https://alloflow-cdn.pages.dev/runtime_assets/document/sheetjs-0.20.3/xlsx.full.min.js', integrity, crossOrigin: 'anonymous', referrerPolicy: 'no-referrer' },
+      { src: 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js', integrity, crossOrigin: 'anonymous', referrerPolicy: 'no-referrer' }
+    ]);
+    const current = approvedXlsx('0.20.3'); h.window.XLSX = current;
+    h.scripts[1].onload();
+    expect(await pending).toBe(current);
+    expect(h.scripts.every(script => script.removed)).toBe(true);
+  });
+
+  it.each([approvedXlsx('0.20.1'), { version: '0.20.3', read() {} }])('rejects load events that leave an obsolete or incomplete API and permits a later retry', async invalid => {
+    const h = loaderHarness(), pending = h.load();
+    const rejected = expect(pending).rejects.toThrow(/approved SheetJS version/);
+    h.window.XLSX = invalid;
+    h.scripts[0].onload(); h.scripts[1].onload();
+    await rejected;
+    const retry = h.load();
+    expect(h.scripts).toHaveLength(3);
+    const current = approvedXlsx('0.20.3'); h.window.XLSX = current;
+    h.scripts[2].onload();
+    expect(await retry).toBe(current);
+  });
+
+  it('shares an in-flight request, rejects both failed sources, and retries without a stale promise', async () => {
+    const h = loaderHarness(), pending = h.load();
+    expect(h.load()).toBe(pending);
+    const rejected = expect(pending).rejects.toThrow(/either source/);
+    h.scripts[0].onerror(); h.scripts[1].onerror();
+    await rejected;
+    const retry = h.load();
+    expect(retry).not.toBe(pending);
+    const current = approvedXlsx('0.20.3'); h.window.XLSX = current;
+    h.scripts[2].onload();
+    expect(await retry).toBe(current);
+  });
+
+  it('falls back after a bounded timeout and ignores a late event from the retired attempt', async () => {
+    const h = loaderHarness(), pending = h.load(), lateLoad = h.scripts[0].onload;
+    h.timers.values().next().value();
+    expect(h.scripts).toHaveLength(2);
+    h.window.XLSX = approvedXlsx('0.20.1'); lateLoad();
+    const current = approvedXlsx('0.20.3'); h.window.XLSX = current;
+    h.scripts[1].onload();
+    expect(await pending).toBe(current);
+    expect(h.timers.size).toBe(0);
+  });
+
+  it('rejects arbitrary override URLs without attempting a script request', async () => {
+    const h = loaderHarness(approvedXlsx('0.20.3'));
+    await expect(h.load('https://unapproved.example/synthetic.js')).rejects.toThrow(/Unapproved/);
+    expect(h.scripts).toHaveLength(0);
+  });
+
+  it('recovers from a changed captured instance instead of reusing a resolved promise', async () => {
+    const h = loaderHarness(), pending = h.load();
+    const previous = approvedXlsx('0.20.3'); h.window.XLSX = previous;
+    h.scripts[0].onload(); expect(await pending).toBe(previous);
+    previous.version = '0.20.1';
+    const retry = h.load(), current = approvedXlsx('0.20.3'); h.window.XLSX = current;
+    expect(h.scripts).toHaveLength(2);
+    h.scripts[1].onload(); expect(await retry).toBe(current);
+  });
+
+  it('keeps the browser and desktop modules byte-identical', () => {
+    expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_lumen.js', 'utf8')).toBe(lumenSource);
+  });
+});
 
 describe('Lumen ingest — parseTextTable', () => {
   it('parses a simple header + 3 rows of CSV', () => {

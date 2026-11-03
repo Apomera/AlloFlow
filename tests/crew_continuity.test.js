@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const DIR = process.env.CREW_PACK_DIR ? resolve(process.env.CREW_PACK_DIR) : resolve(process.cwd(), 'allopacks');
+const DIR = process.env.CREW_PACK_DIR ? resolve(process.env.CREW_PACK_DIR) : resolve(process.cwd(), 'allopacks', 'current');
 const GUIDE = process.env.CREW_GUIDE_PATH ? resolve(process.env.CREW_GUIDE_PATH) : resolve(process.cwd(), 'docs/CREW_LAUNCH_TEACHER_GUIDE.md');
 const PACKS = readdirSync(DIR).filter((f) => /^crew_.*\.allopack\.json$/.test(f))
   .map((f) => JSON.parse(readFileSync(resolve(DIR, f), 'utf8')))
@@ -148,8 +148,13 @@ describe('Crew continuity: the callbacks tell the earlier week\'s story the way 
     expect(w10).not.toMatch(/HOWL Tracker goal/);
     expect(res(byWeek(10), 'directions').data.body).toMatch(/Open the goal you set in week 4/);
   });
-  it('week 11\'s Lena uses week 5\'s ask, and week 5 is the week on asking', () => {
-    expect(res(byWeek(11), 'simplified').data).toMatch(/what she learned in week 5 and asks/);
+  // The 2026-11-02 review rewrote Lena's ask (a teacher-approved group channel, so a sick Omar need
+  // not answer on a personal phone) and dropped the week 5 callback. Any week 5 callback must still
+  // point at the week on asking, and Lena still asks early instead of waiting.
+  it('week 11\'s Lena asks early, any week 5 callback points at week 5\'s ask, and week 5 is the week on asking', () => {
+    const w11 = res(byWeek(11), 'simplified').data;
+    expect(w11).toMatch(/She could wait\. Instead she uses the teacher-approved group channel to ask/);
+    if (/\bweek 5\b/i.test(allText(byWeek(11)))) expect(w11).toMatch(/what she learned in week 5 and asks/);
     expect(byWeek(5).allopack.title).toMatch(/Asking for What You Need/);
   });
 });

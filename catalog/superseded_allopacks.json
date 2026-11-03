@@ -1,0 +1,18 @@
+{
+  "note": "Packs kept in allopacks/current/ but deliberately unlisted (withheld), e.g. awaiting an author review. The 127 superseded older editions were deleted on 2026-11-02 (recoverable from git history).",
+  "entries": [],
+  "withheld": [
+    {
+      "path": "allopacks/current/academic_discourse_reading_space_grade6.allopack.json",
+      "reason": "Unlisted pending author review; shared privately and republished only with written approval."
+    },
+    {
+      "path": "allopacks/current/academic_discourse_more_practice_grade6.allopack.json",
+      "reason": "Unlisted pending author review; shared privately and republished only with written approval."
+    },
+    {
+      "path": "allopacks/current/reading_decisions_grade6.allopack.json",
+      "reason": "Unlisted pending author review; shared privately and republished only with written approval."
+    }
+  ]
+}

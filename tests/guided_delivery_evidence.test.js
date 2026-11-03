@@ -19,6 +19,10 @@ const base = overrides => ({ guidedMode: true, exportPreviewSource: 'history', b
 function render(state, ref = { current: null }, complete = vi.fn()) {
   return new Function('state', 'ref', 'completeGuidedDelivery', `
     const { guidedMode, exportPreviewSource, builderResourceIds, guidedCreatedHistoryIds, history, inputText, guidedPlanBrief } = state;
+    const guidedPackageIds = state.guidedPackageIds || guidedCreatedHistoryIds;
+    const guidedLessonScope = inputText;
+    const guidedDocumentKey = 'current document', guidedDocumentKeyRef = { current: guidedDocumentKey };
+    let deliveryEvidence = {}; const setGuidedDeliveryEvidence = update => { deliveryEvidence = update(deliveryEvidence); };
     const getExportableHistory = items => items.filter(item => item && item.type !== 'persona');
     ${selectCode}
     ${signatureCode}
@@ -27,16 +31,25 @@ function render(state, ref = { current: null }, complete = vi.fn()) {
     const capturedContext = getBuilderGuidedDeliveryContext();
     ref.current = capturedContext;
     ${confirmCode}
-    return { context: capturedContext, report: () => confirmBuilderGuidedDelivery(capturedContext) };
+    return { context: capturedContext, report: outcome => confirmBuilderGuidedDelivery(capturedContext, outcome), evidence: () => deliveryEvidence };
   `)(state, ref, complete);
 }
 
 describe('Builder export evidence belongs to the current Guided lesson', () => {
+  it.each([
+    ['print', { kind: 'builder', format: 'print' }], ['lms', { kind: 'package', format: 'ims' }],
+    ['lms', { kind: 'package', format: 'qti' }], ['lms', { kind: 'package', format: 'h5p' }],
+    [null, { kind: 'builder', format: 'html' }],
+  ])('only records delivery for the route actually used (%s, %o)', (route, outcome) => {
+    const result = render(base());
+    expect(result.report(outcome)).toBe(true);
+    expect(result.evidence().documentExports).toEqual(route ? { [route]: 'current document' } : undefined);
+  });
   it('records a successful export of the complete current selection', () => {
     const complete = vi.fn();
     const result = render(base(), { current: null }, complete);
     expect(result.report()).toBe(true);
-    expect(complete).toHaveBeenCalledWith('exportCreated');
+    expect(complete).toHaveBeenCalledWith('exportCreated', null);
   });
 
   it.each([
@@ -80,26 +93,35 @@ describe('Builder export evidence belongs to the current Guided lesson', () => {
 });
 
 describe('Guided delivery completion requires a delivery outcome', () => {
-  function delivery(guidedMode = true, step = 'package-deliver') {
+  function delivery(guidedMode = true, step = 'package-deliver', setting = 'take-home') {
     const markGuidedStepDone = vi.fn();
     let evidence = {};
-    const api = new Function('guidedMode', 'step', 'markGuidedStepDone', 'setGuidedDeliveryEvidence', `
+    const api = new Function('guidedMode', 'step', 'guidedDeliverySetting', 'markGuidedStepDone', 'setGuidedDeliveryEvidence', `
       const GUIDED_DELIVERY_EVIDENCE_KEYS = ['directionsSaved', 'exportCreated', 'shareCreated', 'liveStarted', 'studentPreviewed'];
+      const guidedLessonScope = 'lesson A';
       const guidedActiveSteps = [{ id: step }], guidedStep = 0;
       ${block('  const markGuidedDeliveryEvidence =', '  const toggleGuidedStepId =')}
       return completeGuidedDelivery;
-    `)(guidedMode, step, markGuidedStepDone, update => { evidence = update(evidence); });
+    `)(guidedMode, step, setting, markGuidedStepDone, update => { evidence = update(evidence); });
     return { complete: api, markGuidedStepDone, evidence: () => evidence };
   }
 
   it.each(['studentPreviewed', 'directionsSaved'])('records %s without completing Package & Deliver', key => {
     const h = delivery(); h.complete(key);
-    expect(h.evidence()).toEqual({ [key]: true });
+    expect(h.evidence()).toEqual({ [key]: true, ...(['exportCreated', 'liveStarted', 'directionsSaved'].includes(key) ? { lessonScopes: { [key]: 'lesson A' } } : {}) });
     expect(h.markGuidedStepDone).not.toHaveBeenCalled();
   });
   it.each(['exportCreated', 'shareCreated', 'liveStarted'])('completes delivery for %s', key => {
     const h = delivery(); h.complete(key);
-    expect(h.evidence()).toEqual({ [key]: true });
+    expect(h.evidence()).toEqual({ [key]: true, ...(['exportCreated', 'liveStarted', 'directionsSaved'].includes(key) ? { lessonScopes: { [key]: 'lesson A' } } : {}) });
+    expect(h.markGuidedStepDone).toHaveBeenCalledWith('package-deliver');
+  });
+  it('does not advance a print lesson for a homework link or an LMS export', () => {
+    const h = delivery(true, 'package-deliver', 'print');
+    h.complete('shareCreated');
+    h.complete('exportCreated', 'lms');
+    expect(h.markGuidedStepDone).not.toHaveBeenCalled();
+    h.complete('exportCreated', 'print');
     expect(h.markGuidedStepDone).toHaveBeenCalledWith('package-deliver');
   });
   it('ignores unknown keys and actions outside Guided Mode', () => {
@@ -112,7 +134,7 @@ describe('Guided delivery completion requires a delivery outcome', () => {
   });
   it('records an export on another step without marking that step delivered', () => {
     const h = delivery(true, 'simplified'); h.complete('exportCreated');
-    expect(h.evidence()).toEqual({ exportCreated: true });
+    expect(h.evidence()).toEqual({ exportCreated: true, lessonScopes: { exportCreated: 'lesson A' } });
     expect(h.markGuidedStepDone).not.toHaveBeenCalled();
   });
 });

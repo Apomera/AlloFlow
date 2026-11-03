@@ -1,0 +1,12 @@
+# Opt in to NVIDIA acceleration for text. The base stack works without a GPU.
+# docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d ollama
+# Add --profile gpu to include the optional SANA image service as well.
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

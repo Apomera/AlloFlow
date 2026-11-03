@@ -649,14 +649,15 @@ describe('remediation MCP: direct production parity for deterministic adapters',
         const sanitizedResult = pipeline.sanitizeStyleForWCAG(pass2);
         const contrastFixed = asHtml(sanitizedResult, pass2);
 
+        // (2026-11-02) Rows carry `rule` (what the report prints; id/label printed blank) and a category.
         const checks = veraResult.failedRules.map((rule) => ({
-          id: 'ISO 14289-1 clause ' + rule.clause + ' test ' + rule.testNumber,
-          label: rule.message,
+          category: 'veraPDF (ISO 14289-1)',
+          rule: 'ISO 14289-1 clause ' + rule.clause + ' test ' + rule.testNumber + (rule.message ? ': ' + rule.message : ''),
           status: String(rule.clause) === '5' && Number(rule.testNumber) === 1 ? 'warn' : 'fail',
           detail: (rule.count || 1) + ' occurrence(s)',
         }));
         const summary = {
-          pass: 0,
+          pass: checks.filter((check) => check.status === 'pass').length,
           fail: checks.filter((check) => check.status === 'fail').length,
           warn: checks.filter((check) => check.status === 'warn').length,
           manual: 0, na: 0,
@@ -672,7 +673,8 @@ describe('remediation MCP: direct production parity for deterministic adapters',
           score: null,
           summary: 'Source audit not performed by a triangulated auditor panel in this flow.',
           issues: [],
-        }, { checks, summary }, { fileName: 'Parity lesson.pdf' });
+        // (2026-11-02) The veraPDF verdict goes in as the independent verdict, as the app passes it.
+        }, { checks, summary }, { fileName: 'Parity lesson.pdf', veraPdf: veraResult });
         return {
           contrastHtml: contrastFixed,
           styleFixes: sanitizedResult && typeof sanitizedResult.fixCount === 'number' ? sanitizedResult.fixCount : null,

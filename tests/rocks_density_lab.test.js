@@ -50,7 +50,8 @@ describe('virtual mineral density measurements', () => {
     expect(readings).toContain('26.5 g');
     expect(readings).toContain('30.0 mL');
     expect(readings).toContain('40.0 mL');
-    expect(app.find('data-rk-density-instruments').props['aria-label']).toContain('26.5 g');
+    expect(app.find('data-rk-density-balance').props['aria-label']).toContain('26.5 g');
+    expect(app.find('data-rk-density-cylinder').props['aria-label']).toContain('40.0 mL');
   });
 
   it.each([['2.65','g/cm3'],['2,65','g/mL'],['2650','kg/m3']])('accepts %s in %s with explicit units', (answer, unit) => {

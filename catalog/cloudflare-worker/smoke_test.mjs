@@ -1,6 +1,5 @@
-// Smoke test for the catalog/translation submission worker. No network: the GitHub-commit
-// fetch is mocked. Exercises routing, validation, the /submitTranslation happy path (asserts the
-// committed record + target path), PII detection, and a /submit regression check.
+// Smoke test for private catalog intake. All KV and outbound challenge calls are mocked.
+// Exercises routing, validation, private staging, PII detection, and abuse controls.
 //   run: node smoke_test.mjs   (or: npm test)
 import worker from './src/index.js';
 
@@ -8,12 +7,15 @@ let pass = 0, fail = 0;
 function ok(cond, msg) { if (cond) { pass++; } else { fail++; console.error('  ✗ ' + msg); } }
 const req = (path, opts = {}) => new Request('https://w.example' + path, opts);
 const jsonPost = (path, body) => req(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-const ENV = { GITHUB_PAT: 'fake-pat', GITHUB_OWNER: 'Apomera', GITHUB_REPO: 'AlloFlow', GITHUB_BRANCH: 'main' };
+let lastPrivate = null, failPrivate = false;
+const communityKv = { async put(key, value, options) { if (failPrivate) throw new Error('synthetic storage failure'); lastPrivate = { key, record: JSON.parse(value), options }; } };
+const baselineRate = new Map();
+const ENV = { COMMUNITY_SUBMISSIONS: communityKv, SUBMIT_RATE_PER_MINUTE: '5000', SUBMIT_RATE_PER_DAY: '5000', SUBMIT_RATE: { async get(key) { return baselineRate.get(key) ?? null; }, async put(key, value) { baselineRate.set(key, value); } } };
 
-// Mock global fetch (the worker's GitHub commit). Capture the last call for assertions.
-let lastGh = null;
+// Mock every outbound request. No test contacts a live service.
+let lastOutbound = null;
 const realFetch = globalThis.fetch;
-globalThis.fetch = async (url, init) => { lastGh = { url: String(url), init }; return new Response(JSON.stringify({ content: { path: 'ok' } }), { status: 201 }); };
+failPrivate = false; globalThis.fetch = async (url, init) => { lastOutbound = { url: String(url), init }; return new Response(JSON.stringify({ content: { path: 'ok' } }), { status: 201 }); };
 
 const run = async () => {
   // 1. CORS preflight
@@ -24,9 +26,9 @@ const run = async () => {
   r = await worker.fetch(req('/healthz'), ENV);
   ok(r.status === 200, '/healthz → 200');
 
-  // 3. missing PAT → 500
+  // Missing required protection/storage returns 503.
   r = await worker.fetch(jsonPost('/submitTranslation', { language: 'Greek', suggested: 'X' }), {});
-  ok(r.status === 500, 'no GITHUB_PAT → 500 (got ' + r.status + ')');
+  ok(r.status === 503, 'missing protection/storage → 503 (got ' + r.status + ')');
 
   // 4. wrong content-type → 415
   r = await worker.fetch(req('/submitTranslation', { method: 'POST', body: 'x' }), ENV);
@@ -40,27 +42,27 @@ const run = async () => {
   r = await worker.fetch(jsonPost('/submitTranslation', { suggested: 'X' }), ENV);
   ok(r.status === 400, 'missing language → 400 (got ' + r.status + ')');
 
-  // 7. happy path → 201 + correct commit
-  lastGh = null;
+  // 7. happy path → 201 + correct private record
+  lastOutbound = null;
   r = await worker.fetch(jsonPost('/submitTranslation', {
     language: 'Greek', key: 'common.save', current: 'Save', suggested: 'Αποθήκευση', english: 'Save', note: 'better',
   }), ENV);
   ok(r.status === 201, 'valid submitTranslation → 201 (got ' + r.status + ')');
   const body = await r.json();
   ok(body.ok === true && body.language === 'Greek', 'response ok:true + language echoed');
-  ok(lastGh && /\/contents\/translations\/pending\/\d+-greek-common-save\.json$/.test(lastGh.url), 'commits to translations/pending/<ts>-greek-common-save.json');
-  const committed = JSON.parse(Buffer.from(JSON.parse(lastGh.init.body).content, 'base64').toString('utf8'));
-  ok(committed.kind === 'translation_correction' && committed.suggested === 'Αποθήκευση' && committed.key === 'common.save', 'committed record shape correct');
+  ok(lastPrivate && lastPrivate.key.startsWith('community:translation_correction:'), 'translation record is staged privately');
+  const staged = lastPrivate.record;
+  ok(staged.kind === 'translation_correction' && staged.suggested === 'Αποθήκευση' && staged.key === 'common.save', 'staged record shape correct');
 
-  // 8. PII detection still flags (mock commit ok) — email in suggestion
+  // 8. PII detection still flags (mock private storage succeeds) — email in suggestion
   r = await worker.fetch(jsonPost('/submitTranslation', { language: 'Greek', suggested: 'email me at a@b.com' }), ENV);
   const pbody = await r.json();
   ok(r.status === 201 && pbody.pii_findings_count >= 1, 'PII (email) detected → pii_findings_count >= 1');
 
-  // ── /submitItemCorrection → public GitHub item_corrections/pending/ (mirrors translations) ──
-  // 8a. missing PAT → 500
+  // ── /submitItemCorrection → private community staging (mirrors translations) ──
+  // Missing required protection/storage returns 503.
   r = await worker.fetch(jsonPost('/submitItemCorrection', { packId: 'p', kind: 'wrong-answer', suggested: 'x' }), {});
-  ok(r.status === 500, '/submitItemCorrection no GITHUB_PAT → 500 (got ' + r.status + ')');
+  ok(r.status === 503, '/submitItemCorrection missing protection/storage → 503 (got ' + r.status + ')');
   // 8b. wrong content-type → 415
   r = await worker.fetch(req('/submitItemCorrection', { method: 'POST', body: 'x' }), ENV);
   ok(r.status === 415, '/submitItemCorrection non-JSON → 415 (got ' + r.status + ')');
@@ -73,8 +75,8 @@ const run = async () => {
   // 8e. unknown kind → 400 (allowlist)
   r = await worker.fetch(jsonPost('/submitItemCorrection', { packId: 'p', kind: 'malicious-thing', suggested: 'x' }), ENV);
   ok(r.status === 400, '/submitItemCorrection unknown kind → 400 (got ' + r.status + ')');
-  // 8f. happy path → 201 + correct commit path + record shape
-  lastGh = null;
+  // 8f. happy path → 201 + correct private key + record shape
+  lastOutbound = null;
   r = await worker.fetch(jsonPost('/submitItemCorrection', {
     packId: 'praxis-core-5752', packTitle: 'Praxis Core 5752', itemId: 'core5752-b1-083',
     domain: 'math-data-statistics-probability', reviewTier: 'source-reviewed',
@@ -84,9 +86,9 @@ const run = async () => {
   ok(r.status === 201, '/submitItemCorrection valid → 201 (got ' + r.status + ')');
   const icBody = await r.json();
   ok(icBody.ok === true && icBody.pack_id === 'praxis-core-5752' && icBody.item_id === 'core5752-b1-083', '/submitItemCorrection echoes pack_id + item_id');
-  ok(lastGh && /\/contents\/item_corrections\/pending\/\d+-praxis-core-5752-core5752-b1-083\.json$/.test(lastGh.url), 'commits to item_corrections/pending/<ts>-<pack>-<item>.json');
-  const icRec = JSON.parse(Buffer.from(JSON.parse(lastGh.init.body).content, 'base64').toString('utf8'));
-  ok(icRec.kind === 'item_correction' && icRec.pack_id === 'praxis-core-5752' && icRec.review_tier === 'source-reviewed' && icRec.problem_kind.startsWith('wrong-answer'), '/submitItemCorrection committed record shape correct');
+  ok(lastPrivate && lastPrivate.key.startsWith('community:item_correction:'), 'item correction is staged privately');
+  const icRec = lastPrivate.record;
+  ok(icRec.kind === 'item_correction' && icRec.pack_id === 'praxis-core-5752' && icRec.review_tier === 'source-reviewed' && icRec.problem_kind.startsWith('wrong-answer'), '/submitItemCorrection staged record shape correct');
   // 8g. PII in the note is flagged but does not block
   r = await worker.fetch(jsonPost('/submitItemCorrection', { packId: 'p', kind: 'other', suggested: 'call me at 207-555-0143' }), ENV);
   const icPii = await r.json();
@@ -148,7 +150,7 @@ const run = async () => {
   const lb = await r.json();
   ok(r.status === 200 && lb.ok === true && lb.count === 2, 'GET /bugs valid token → 200 + lists 2 reports (got ' + r.status + '/' + (lb && lb.count) + ')');
 
-  // ── /submit (lessons): validation + happy path + GitHub-failure → 502 ──
+  // ── /submit (lessons): validation + happy path + private-storage failure → 503 ──
   const validAff = { author_or_authorized: true, no_pii: true, license_agreed: true, age_eligible: true };
   const validMeta = { title: 'My Lesson', subject: 'Math', grade_level: '5' };
   const validLesson = { lesson_payload: { content: 'hello world' }, metadata: validMeta, affirmations: validAff };
@@ -165,21 +167,21 @@ const run = async () => {
   // 20. affirmation not true → 400
   r = await worker.fetch(jsonPost('/submit', { ...validLesson, affirmations: { ...validAff, no_pii: false } }), ENV);
   ok(r.status === 400, '/submit affirmation not true → 400 (got ' + r.status + ')');
-  // 21. happy path → 201 + commit to catalog/pending + record defaults
-  lastGh = null;
+  // 21. happy path → 201 + private stage + record defaults
+  lastOutbound = null;
   r = await worker.fetch(jsonPost('/submit', validLesson), ENV);
   ok(r.status === 201, '/submit valid → 201 (got ' + r.status + ')');
   const sbody = await r.json();
   ok(sbody.ok === true && sbody.slug === 'my-lesson', '/submit returns ok + slug "my-lesson"');
-  ok(lastGh && /\/contents\/catalog\/pending\/\d+-my-lesson\.json$/.test(lastGh.url), '/submit commits to catalog/pending/<ts>-my-lesson.json');
-  const subRec = JSON.parse(Buffer.from(JSON.parse(lastGh.init.body).content, 'base64').toString('utf8'));
+  ok(lastPrivate && lastPrivate.key.startsWith('community:lesson_submission:'), 'lesson is staged privately');
+  const subRec = lastPrivate.record;
   ok(subRec.metadata.license === 'CC-BY-SA-4.0' && subRec.pii_scan.ran_server_side === true, '/submit record defaults license + records server-side PII scan');
-  // 22. GitHub commit failure → 502
-  globalThis.fetch = async () => new Response('forbidden', { status: 403 });
-  r = await worker.fetch(jsonPost('/submit', validLesson), ENV);
-  ok(r.status === 502, '/submit GitHub failure → 502 (got ' + r.status + ')');
+  // 22. Private storage failure → 503
+  failPrivate = true;
+  r = await worker.fetch(jsonPost('/submit', { ...validLesson, metadata: { ...validMeta, title: 'Synthetic failure' } }), ENV);
+  ok(r.status === 503, '/submit private-storage failure → 503 (got ' + r.status + ')');
   // restore the success mock
-  globalThis.fetch = async (url, init) => { lastGh = { url: String(url), init }; return new Response(JSON.stringify({ content: { path: 'ok' } }), { status: 201 }); };
+  failPrivate = false; globalThis.fetch = async (url, init) => { lastOutbound = { url: String(url), init }; return new Response(JSON.stringify({ content: { path: 'ok' } }), { status: 201 }); };
 
   // ── /submit abuse controls (SUBMIT_RATE bound) ──
   // Freeze the clock so the fixed minute window cannot roll over mid-test.
@@ -190,7 +192,7 @@ const run = async () => {
   const ENVRATE = { ...ENV, SUBMIT_RATE: RATEKV, SUBMIT_RATE_PER_MINUTE: '2' };
   const ipReq = (body, ip) => req('/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip }, body: JSON.stringify(body) });
   const distinct = (n) => ({ ...validLesson, metadata: { ...validMeta, title: 'Lesson ' + n } });
-  // 23. identical body twice → the second is 409 (the commit already happened once)
+  // 23. identical body twice → the second is 409 (the record was already staged)
   r = await worker.fetch(ipReq(validLesson, '1.1.1.1'), ENVRATE);
   ok(r.status === 201, '/submit first copy → 201 (got ' + r.status + ')');
   r = await worker.fetch(ipReq(validLesson, '1.1.1.1'), ENVRATE);
@@ -203,16 +205,16 @@ const run = async () => {
   // 25. another IP is unaffected
   r = await worker.fetch(ipReq(distinct(4), '2.2.2.2'), ENVRATE);
   ok(r.status === 201, '/submit other IP unaffected → 201 (got ' + r.status + ')');
-  // 26. a failed commit must NOT poison the dedupe key: the retry succeeds
-  globalThis.fetch = async () => new Response('forbidden', { status: 403 });
+  // 26. a failed write must NOT poison the dedupe key: the retry succeeds
+  failPrivate = true;
   r = await worker.fetch(ipReq(distinct(5), '3.3.3.3'), ENVRATE);
-  ok(r.status === 502, '/submit commit failure → 502 (got ' + r.status + ')');
-  globalThis.fetch = async (url, init) => { lastGh = { url: String(url), init }; return new Response(JSON.stringify({ content: { path: 'ok' } }), { status: 201 }); };
+  ok(r.status === 503, '/submit private-storage failure → 503 (got ' + r.status + ')');
+  failPrivate = false; globalThis.fetch = async (url, init) => { lastOutbound = { url: String(url), init }; return new Response(JSON.stringify({ content: { path: 'ok' } }), { status: 201 }); };
   r = await worker.fetch(ipReq(distinct(5), '3.3.3.3'), ENVRATE);
-  ok(r.status === 201, '/submit retry after a failed commit → 201, not 409 (got ' + r.status + ')');
-  // 27. namespace not bound → fail open, exactly today's production behaviour
-  r = await worker.fetch(ipReq(distinct(6), '1.1.1.1'), ENV);
-  ok(r.status === 201, '/submit without SUBMIT_RATE bound → 201 (got ' + r.status + ')');
+  ok(r.status === 201, '/submit retry after a failed private write → 201, not 409 (got ' + r.status + ')');
+  // 27. namespace not bound → fail closed for every public intake route
+  r = await worker.fetch(ipReq(distinct(6), '1.1.1.1'), { ...ENV, SUBMIT_RATE: undefined });
+  ok(r.status === 503, '/submit without SUBMIT_RATE bound → 503 (got ' + r.status + ')');
   // 28. Turnstile is enforced only once the secret is configured
   const ENVTS = { ...ENV, TURNSTILE_SECRET: 'ts-secret' };
   r = await worker.fetch(jsonPost('/submit', distinct(7)), ENVTS);
@@ -227,11 +229,11 @@ const run = async () => {
   ok(r.status === 201, '/submit AlloPack-format lesson_payload → 201 (got ' + r.status + ')');
   Date.now = realNow;
 
-  // ── scanForPii pattern matrix (asserted via the committed /submit record) ──
+  // ── scanForPii pattern matrix (asserted via the staged /submit record) ──
   async function piiTypesFor(text) {
-    lastGh = null;
+    lastOutbound = null;
     await worker.fetch(jsonPost('/submit', { lesson_payload: { content: text }, metadata: validMeta, affirmations: validAff }), ENV);
-    const rec = JSON.parse(Buffer.from(JSON.parse(lastGh.init.body).content, 'base64').toString('utf8'));
+    const rec = lastPrivate.record;
     return rec.pii_scan.findings.map(f => f.type);
   }
   ok((await piiTypesFor('call us at 207-555-0143')).includes('phone (US)'), 'scanForPii detects phone (US)');

@@ -119,7 +119,12 @@
     if (Array.isArray(value)) return value.slice(0,100).map(v => safeNoteTree(v,depth+1));
     if (!value || typeof value !== 'object') return null;
     const keys = new Set(['id','text','type','question','answer','response','quote','studentAnswer','strength','growthNudge','sourceConnection','found','detail','sourceAlignment','message','completion','quality','alignment','rubric','completeness','accuracy','depth','elaboration','draftFingerprint','createdAt','xpAwarded','hadPriorXp']);
-    return Object.fromEntries(Object.entries(value).filter(([key])=>keys.has(key)).map(([key,v])=>[key,safeNoteTree(v,depth+1)]));
+    const out = Object.fromEntries(Object.entries(value).filter(([key])=>keys.has(key)).map(([key,v])=>[key,safeNoteTree(v,depth+1)]));
+    const scope=value.sourceScope;
+    if (record(scope) && scope.version===1 && Number.isSafeInteger(scope.totalCharacters) && Number.isSafeInteger(scope.includedCharacters) && scope.totalCharacters>=0 && scope.includedCharacters>=0 && scope.includedCharacters<=50000 && ((scope.status==='none' && scope.totalCharacters===0 && scope.includedCharacters===0) || (scope.status==='full' && scope.totalCharacters>0 && scope.totalCharacters===scope.includedCharacters) || (scope.status==='partial' && scope.totalCharacters>50000 && scope.includedCharacters===50000)) && typeof scope.sourceFingerprint==='string' && /^[0-9]+:[0-9a-z]+$/.test(scope.sourceFingerprint) && scope.sourceFingerprint.length<=64) {
+      out.sourceScope={version:1,status:scope.status,totalCharacters:scope.totalCharacters,includedCharacters:scope.includedCharacters,sourceFingerprint:scope.sourceFingerprint};
+    }
+    return out;
   }
   function noteSubmission(resource, raw) {
     const original = resource.data || {}, out = { schemaVersion: 1, templateType: original.templateType || 'cornell-notes' };

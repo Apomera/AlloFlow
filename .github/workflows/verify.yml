@@ -511,7 +511,8 @@ jobs:
     # and the same --gate passed locally on freshly generated pairs (veraPDF 1.30.2, 0 introduced).
     # The job fails loudly, not silently, if veraPDF is missing or produces no artifact pairs, so
     # a green run is real.
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, where this Playwright cannot install chromium (red 10-25..31).
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

@@ -4,7 +4,7 @@
 // them, directions through the REAL app normalizer, envelopes through the REAL Agent Core
 // contract. Catalog policy (settled 2026-07-20): packs are ENGLISH-ONLY.
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
 
@@ -18,7 +18,17 @@ const _e = anti.indexOf('let globalAudioCtx');
 const { normalize } = new Function(anti.slice(_s, _e) + '\nreturn { normalize: _alloNormalizeDirectionsData };')();
 
 const TEACHER_ONLY = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES = ['), anti.indexOf('const TEACHER_ONLY_TYPES = [') + 600);
-const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'timeline', 'outline', 'math', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge']);
+const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'timeline', 'outline', 'math', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge',
+  // Native app resource types used by the 2026-11 source-literacy and paper-bridge drafts.
+  'brainstorm', 'dbq']);
+// 2026-11-02: allopacks/current/ holds one ILLUSTRATED pack per topic (the text-only editions were
+// retired), so lesson images are part of every pack.
+const PICTURE_TYPES = new Set(['image']);
+// "AI-assisted illustrated draft, educator review pending" refers to the artwork; facts verified in
+// the retired text edition stay verified unless the pack's reviewStatus itself is pending.
+const factReviewPending = pack => /educator review pending/i.test(pack.allopack.reviewStatus || '') ||
+  (/educator review pending/i.test(pack.allopack.author || '') && !/illustrated draft/i.test(pack.allopack.author || ''));
+const withoutPictures = pack => JSON.stringify(pack).replace(/data:image\/[a-z]+;base64,[A-Za-z0-9+/=]+/g, '');
 // The exact strings the organizer picker offers (view_sidebar_panels_source.jsx) and
 // that LIVE_ORGANIZER_STRUCTURE_TYPES in AlloFlowANTI.txt matches against. Keep in sync
 // with both; a value outside this list renders as an untyped organizer.
@@ -31,9 +41,9 @@ const MEMORY_AID_TYPES = new Set(['acronym-acrostic', 'rhyme-rhythm', 'chunking'
 const CHALLENGE_FAMILIES = new Set(['investigate', 'design', 'decide', 'propose', 'explore']);
 const LEGAL_GAMES = new Set(['crossword', 'wordScramble', 'memory', 'matching', 'bingo', 'timelineGame', 'conceptSortGame', 'syntaxScramble', 'vennDiagram', 'causeEffectSort']);
 
-const files = readdirSync(resolve(process.cwd(), 'allopacks')).filter((f) => f.endsWith('.allopack.json'));
+const files = readdirSync(resolve(process.cwd(), 'allopacks', 'current')).filter((f) => f.endsWith('.allopack.json'));
 expect(files.length).toBeGreaterThan(0);
-const readPack = file => JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', file), 'utf8'));
+const readPack = file => JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', 'current', file), 'utf8'));
 const isTeachingDraft = status => /\bdraft\b|\breview pending\b/i.test(status || '');
 const draftFiles = files.filter(file => isTeachingDraft(readPack(file).allopack.reviewStatus));
 
@@ -41,7 +51,7 @@ const draftFiles = files.filter(file => isTeachingDraft(readPack(file).allopack.
 // teaching drafts may contain multiple directions, artwork and a teacher guide;
 // validate that supported format below without claiming content approval.
 describe.each(files.filter(file => !draftFiles.includes(file)))('AlloPack: %s', (file) => {
-  const pack = JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', file), 'utf8'));
+  const pack = JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', 'current', file), 'utf8'));
   const items = pack.history;
   const byId = Object.fromEntries(items.map((i) => [i.id, i]));
   const ofType = (t) => items.filter((i) => i.type === t);
@@ -60,7 +70,7 @@ describe.each(files.filter(file => !draftFiles.includes(file)))('AlloPack: %s', 
     for (const it of items) {
       expect(it.id, 'duplicate id ' + it.id).toBe(seen.has(it.id) ? '__dupe__' : it.id);
       seen.add(it.id);
-      expect(REGISTERED.has(it.type), 'unregistered type ' + it.type).toBe(true);
+      expect(REGISTERED.has(it.type) || PICTURE_TYPES.has(it.type), 'unregistered type ' + it.type).toBe(true);
       expect(TEACHER_ONLY).not.toContain("'" + it.type + "'");
       expect(typeof it.title).toBe('string');
       expect(new Date(it.timestamp).toString()).not.toBe('Invalid Date');
@@ -186,7 +196,7 @@ describe.each(files.filter(file => !draftFiles.includes(file)))('AlloPack: %s', 
           // a curated pack ships verified, locked facts so the studio shows 0 items to review
           expect(c.factLocked).toBe(true);
           expect(typeof c.factVerified).toBe('boolean');
-          if (/educator review pending/i.test([pack.allopack.author, pack.allopack.reviewStatus].join(' ')) && !c.factReview) expect(c.factVerified).toBe(false);
+          if (factReviewPending(pack) && !c.factReview) expect(c.factVerified).toBe(false);
           if (c.hookFact) expect(typeof c.hookFact.text).toBe('string');
         }
         if (r.data.lessonRef && r.data.lessonRef.resourceId) expect(byId[r.data.lessonRef.resourceId], 'memory-aid lessonRef ' + r.data.lessonRef.resourceId).toBeTruthy();
@@ -204,7 +214,7 @@ describe.each(files.filter(file => !draftFiles.includes(file)))('AlloPack: %s', 
         expect(r.data.brief.deliverable.length).toBeGreaterThan(20);
         expect(r.data.brief.factLocked).toBe(true);
         expect(typeof r.data.brief.factVerified).toBe('boolean');
-        if (/educator review pending/i.test([pack.allopack.author, pack.allopack.reviewStatus].join(' ')) && !r.data.brief.factReview) expect(r.data.brief.factVerified).toBe(false);
+        if (factReviewPending(pack) && !r.data.brief.factReview) expect(r.data.brief.factVerified).toBe(false);
         expect(r.data.supports.parallelExample.move.length).toBeGreaterThan(20);
         expect(r.data.supports.frameChoices.length).toBeGreaterThanOrEqual(2);
         if (r.data.lessonRef && r.data.lessonRef.resourceId) expect(byId[r.data.lessonRef.resourceId], 'challenge lessonRef ' + r.data.lessonRef.resourceId).toBeTruthy();
@@ -224,8 +234,8 @@ describe.each(files.filter(file => !draftFiles.includes(file)))('AlloPack: %s', 
     }
   });
 
-  it('authoring rules: privacy, size, no embedded images, Agent Core contract', () => {
-    const s = JSON.stringify(pack).toLowerCase();
+  it('authoring rules: privacy, size, embedded WebP pictures only, Agent Core contract', () => {
+    const s = withoutPictures(pack).toLowerCase(); // base64 picture data is not prose
     // WORD-BOUNDARY matched: a substring scan false-positives on innocent prose
     // ('iep' hides inside other words). Bare 'sped' is NOT listed: after lowercasing it is
     // indistinguishable from the ordinary past tense of speed, so it produced false positives
@@ -234,8 +244,10 @@ describe.each(files.filter(file => !draftFiles.includes(file)))('AlloPack: %s', 
       const re = new RegExp('(^|[^a-z])' + banned.replace(/ /g, '\s+') + '([^a-z]|$)');
       expect(re.test(s), 'banned disclosure term in pack: ' + banned).toBe(false);
     }
-    expect(JSON.stringify(pack).length).toBeLessThan(500000);
-    expect(JSON.stringify(pack)).not.toMatch(/data:image\//);
+    // Illustrated packs embed their pictures: text stays compact, the whole file stays under the 2M contract cap.
+    expect(withoutPictures(pack).length).toBeLessThan(500000);
+    expect(JSON.stringify(pack).length).toBeLessThan(2000000);
+    expect([...new Set(JSON.stringify(pack).match(/data:image\/[a-z]+/g) || [])].every(kind => kind === 'data:image/webp')).toBe(true);
     const report = Contracts.validateArtifact({
       schemaVersion: Contracts.SCHEMA_VERSION,
       artifactId: 'allopack-' + file.replace('.allopack.json', ''),
@@ -277,6 +289,10 @@ describe.each(draftFiles)('Exported teaching draft: %s', file => {
         expect(item.data.essentialQuestion).toBeTypeOf('string');
         expect(item.data.objectives.length).toBeGreaterThan(0);
         expect(item.data.hook).toBeTypeOf('string');
+      } else if (item.type === 'brainstorm') {
+        // Teacher-only by default; the host projects discussion activities to learners (_alloProjectStudentActivityResource).
+        expect(anti).toContain("if (item.type === 'brainstorm') return _alloProjectStudentActivityResource(item);");
+        expect(item.data.every(activity => activity.kind === 'discussion')).toBe(true);
       } else expect(TEACHER_ONLY).not.toContain("'" + item.type + "'");
       expect(item.title).toBeTypeOf('string');
       expect(new Date(item.timestamp).toString()).not.toBe('Invalid Date');
@@ -347,18 +363,19 @@ describe('catalog-wide', () => {
     }
   });
   it('every pack has an image shot-list companion', () => {
-    const docs = readdirSync(resolve(process.cwd(), 'allopacks'));
+    const docs = readdirSync(resolve(process.cwd(), 'allopacks')); // shot lists stay beside the retired editions
     for (const f of files) {
-      const pack = JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', f), 'utf8'));
+      const pack = readPack(f);
       if (!pack.allopack.imageShotList) continue;
       const base = pack.allopack.imageShotList.split('/').pop();
-      expect(docs, 'missing shot-list ' + base).toContain(base);
+      // Shot lists live beside the retired editions (allopacks/*.IMAGES.md) or in allopacks/media/<pack>/.
+      expect(docs.includes(base) || existsSync(resolve(process.cwd(), pack.allopack.imageShotList)), 'missing shot-list ' + pack.allopack.imageShotList).toBe(true);
     }
   });
   it('resource-type coverage across the catalog is broad (variety goal)', () => {
     const types = new Set();
     for (const f of files) {
-      for (const it of JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', f), 'utf8')).history) types.add(it.type);
+      for (const it of readPack(f).history) types.add(it.type);
     }
     expect(types.size).toBeGreaterThanOrEqual(7);
   });

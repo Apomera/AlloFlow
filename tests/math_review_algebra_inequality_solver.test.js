@@ -28,10 +28,10 @@ describe('step-by-step solver', () => {
     expect(solution('-2x + 4 < 10')).toBe('x > -3');
   });
 
-  it('refuses forms it cannot solve instead of solving a fragment', () => {
+  it('solves the whole inequality, never a fragment, and refuses what it cannot solve', () => {
     // x + 1 < 2x + 3 has x on both sides; the old pattern solved only "x+1<2" -> x < 1 (true answer x > -2).
-    expect(solution('x + 1 < 2x + 3')).toBeNull();
-    expect(solution('2x + 3 < 7 + x')).toBeNull();
+    expect(solution('x + 1 < 2x + 3')).toBe('x > -2');
+    expect(solution('2x + 3 < 7 + x')).toBe('x < 4');
     expect(solution('0x + 3 < 7')).toBeNull();
   });
 

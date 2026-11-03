@@ -24,6 +24,7 @@
 const fs = require('fs');
 const path = require('path');
 const { entryFromPack, parseStandards } = require('./allopack_entry');
+const { validateAliases } = require('./allopack_aliases');
 
 const ROOT = path.resolve(__dirname);
 const REPO_ROOT = path.resolve(ROOT, '..');
@@ -94,17 +95,7 @@ function compareTitles(a, b) {
 
 function buildManifest() {
   const entries = [...approvedEntries(), ...publishedAllopackEntries()];
-  const seenPath = new Set();
-  const seenSlug = new Set();
-  const seenShare = new Set();
-  for (const e of entries) {
-    if (seenPath.has(e.path)) throw new Error(`duplicate catalog path: ${e.path}`);
-    if (seenSlug.has(e.slug)) throw new Error(`duplicate catalog slug: ${e.slug}`);
-    if (e.share_slug && seenShare.has(e.share_slug)) throw new Error(`duplicate share alias: ${e.share_slug}`);
-    seenPath.add(e.path);
-    seenSlug.add(e.slug);
-    if (e.share_slug) seenShare.add(e.share_slug);
-  }
+  validateAliases(entries);
   entries.sort((a, b) => compareTitles(a.title, b.title));
   return {
     schema_version: '1.0',

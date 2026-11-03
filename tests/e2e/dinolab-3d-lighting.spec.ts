@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { GlHarness } from './helpers/stem_gl_harness';
 test.describe.configure({timeout:240_000});test.use({video:'off',trace:'off'});
-const report='reports/dinolab-3d-lighting';
+const report=process.env.DINO_LIGHTING_REPORT_DIR||'reports/dinolab-3d-lighting';
 const harness=new GlHarness({toolFile:'stem_lab/stem_tool_dinolab.js',toolId:'dinoLab',width:1180,height:920,appStyles:true,
   probes:"var R=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){var r=new R(o),render=r.render.bind(r);r.render=function(s,c){window.__lightScene=s;window.__lightCamera=c;window.__lightRenderer=r;var result=render(s,c);if(window.__lightRequest){window.__lightRequest=false;var gl=r.getContext(),width=gl.drawingBufferWidth,height=gl.drawingBufferHeight,pixels=new Uint8Array(width*height*4);gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);var baseline=window.__lightBaseline,changed=0,total=0;for(var i=0;i<pixels.length;i+=4){total+=pixels[i]+pixels[i+1]+pixels[i+2];if(baseline&&Math.abs(pixels[i]-baseline[i])+Math.abs(pixels[i+1]-baseline[i+1])+Math.abs(pixels[i+2]-baseline[i+2])>12)changed++;}if(!baseline)window.__lightBaseline=pixels;window.__lightPixels={width:width,height:height,changed:changed,mean:total/(width*height*3)};}return result;};return r;};"});
 test.beforeAll(async()=>{fs.mkdirSync(report,{recursive:true});await harness.start();});test.afterAll(async()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));

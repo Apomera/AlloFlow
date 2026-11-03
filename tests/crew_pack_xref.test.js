@@ -12,7 +12,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const ROOT = process.cwd();
-const DIR = process.env.CREW_PACK_DIR ? resolve(process.env.CREW_PACK_DIR) : resolve(ROOT, 'allopacks');
+const DIR = process.env.CREW_PACK_DIR ? resolve(process.env.CREW_PACK_DIR) : resolve(ROOT, 'allopacks', 'current');
 const GUIDE = readFileSync(process.env.CREW_GUIDE_PATH ? resolve(process.env.CREW_GUIDE_PATH) : resolve(ROOT, 'docs', 'CREW_LAUNCH_TEACHER_GUIDE.md'), 'utf8');
 const FILES = readdirSync(DIR).filter((f) => /^crew_.*\.allopack\.json$/.test(f)).sort();
 
@@ -21,6 +21,9 @@ const HOUSE = new Set(['Glossary', 'Word Scramble', 'Matching', 'Sentence Frames
 const NUMBER_WORDS = { nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14 };
 const STOP = /\b(the|a|an|and|about|of|at|to|is|in|on|what|why|who|how|does|not|mean|says|said|with|for|it)\b/gi;
 
+// allopacks/current/ titles carry the edition label; the station names the week by its base title.
+const EDITION = new RegExp(' ' + String.fromCharCode(0x2014) + ' Illustrated Edition$');
+const baseTitle = (pack) => pack.allopack.title.replace(EDITION, '');
 const of = (pack, type) => pack.history.find((r) => r.type === type);
 
 // "Question N <verb> <phrase>" -> most content words of <phrase> appear in question N.
@@ -74,9 +77,9 @@ export function stationProblems(pack) {
   const manualQuest = station.quests.find((q) => q.type === 'manualComplete');
   const manualGoal = dir.data.objectives.find((o) => o.kind === 'manual');
   if (!manualQuest || !manualGoal || manualQuest.label !== manualGoal.label) out.push('station commitment and the manual goal differ');
-  const shortTitle = pack.allopack.title.replace(/^Crew Launch /, '');
+  const shortTitle = baseTitle(pack).replace(/^Crew Launch /, '');
   if (station.name !== 'Crew station: ' + shortTitle) out.push('station name "' + station.name + '" is not "Crew station: ' + shortTitle + '"');
-  if (!station.teacherNote.includes(pack.allopack.title)) out.push('teacher note does not name the pack');
+  if (!station.teacherNote.includes(baseTitle(pack))) out.push('teacher note does not name the pack');
   return out;
 }
 

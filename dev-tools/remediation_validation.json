@@ -145,7 +145,7 @@
     "desktop/mcp/vendor/pako.min.js",
     "desktop/mcp/vendor/axe.min.js",
     "accessibility-checker-engine/3.1.83/ace.js",
-    "dompurify/3.1.7/purify.min.js",
+    "dompurify/3.4.17/purify.min.js",
     "doc_builder_renderer_module.js",
     "tests/e2e/_tagged_pdf_invariants.ts",
     "test-assets/multi-column-sample.pdf",

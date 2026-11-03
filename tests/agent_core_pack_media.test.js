@@ -152,7 +152,7 @@ describe('native AlloPack raster media boundary', () => {
 
   it('accepts the established illustrated Water Cycle and native timeline assets', () => {
     for (const name of ['water_cycle_grade6', 'then_and_now_grade2', 'weather_vs_climate_grade5']) {
-      const p = JSON.parse(fs.readFileSync('allopacks/illustrated/' + name + '.allopack.json', 'utf8').replace(/^\uFEFF/, ''));
+      const p = JSON.parse(fs.readFileSync('allopacks/current/' + name + '.allopack.json', 'utf8').replace(/^\uFEFF/, ''));
       const report = media.validatePackMedia(p);
       expect(report.ok, name + ': ' + JSON.stringify(report.errors)).toBe(true);
       expect(report.stats.placements).toBeGreaterThan(20);

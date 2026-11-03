@@ -35,6 +35,25 @@ function explore(points = [], options = {}, weather = live()) {
 }
 
 describe('Loaded live weather timeline exploration', () => {
+  it('compares pinned endpoints chronologically and exposes intervening gaps and missing fields', () => {
+    const series = [point(1, { temperature: 17, windSpeed: 0 }), point(2, { temperature: null }), point(4, { temperature: 13, windSpeed: 3 })];
+    const result = kernel.compareLiveTimelineHours(series, live(), BASE + 4 * 3600000, BASE + 3600000);
+    expect(result.start).toBe(BASE + 3600000);
+    expect(result.metrics[0]).toMatchObject({ first: 17, last: 13, delta: -4, missingCount: 1 });
+    expect(result.metrics[1]).toMatchObject({ first: 0, last: 3, delta: 3 });
+    expect(result.gaps).toBe(1);
+    expect(result.citation).toContain('Missing at 1 of 3 loaded times');
+    expect(result.canAttach).toBe(true);
+  });
+
+  it('requires two loaded times and a comparable endpoint measurement to attach evidence', () => {
+    const wrongSource = point(1, { source: 'another provider' });
+    const result = kernel.compareLiveTimelineHours([wrongSource], live(), BASE, BASE + 3600000);
+    expect(result.metrics.every((metric) => metric.delta == null)).toBe(true);
+    expect(result.canAttach).toBe(false);
+    expect(kernel.compareLiveTimelineHours([], live(), BASE, BASE)).toBeNull();
+    expect(kernel.compareLiveTimelineHours([], live(), BASE, BASE + 3600000)).toBeNull();
+  });
   it('sorts absolute instants, keeps raw indexes, and does not mutate the response', () => {
     const points = [point(2), point(-1), point(1)];
     const weather = live();

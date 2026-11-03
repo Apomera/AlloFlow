@@ -55,6 +55,19 @@ const liveNotice = view => [...view.container.querySelectorAll('[role="status"]'
 function setClipboard(value) { Object.defineProperty(navigator, 'clipboard', { configurable: true, value }); }
 
 describe('glossary Present & Export launch', () => {
+  it('does not bind a stale filtered row to an unrelated glossary entry at the same index', async () => {
+    const base = glossaryMediaProps(), resource = { id: 'g', type: 'glossary', data: [{ term: 'Lead', def: 'A metal.' }] };
+    const update = vi.fn(), open = vi.fn();
+    window.__alloOpenWordPractice = open;
+    const view = mount({ ...base, generatedContent: resource, onUpdateResource: update,
+      filteredGlossaryData: [{ term: 'Lead', def: 'A different meaning.', _originalIdx: 0 }] });
+    const scope = [...view.container.querySelectorAll('label')].find(node => node.textContent.includes('Words to present')).querySelector('select');
+    await act(async () => { scope.value = 'filtered'; scope.dispatchEvent(new Event('change', { bubbles: true })); });
+    await click(launch(view));
+    const context = open.mock.calls[0][0];
+    expect(context.onSaveCardAnnotations(context.words[0].id, [], { width: 800, height: 500 })).toBe(false);
+    expect(update).not.toHaveBeenCalled();
+  });
   it('opens the actual bundled presenter and retains meanings and translations through presentation', async () => {
     const ensure = installHost(), view = mount();
     const original = JSON.stringify(view.props().generatedContent);
@@ -71,6 +84,70 @@ describe('glossary Present & Export launch', () => {
     expect(document.querySelector('.awp-card').textContent).toContain('A plant part that captures sunlight.');
     expect(document.querySelector('.awp-card').textContent).toContain('French: Feuille: Une partie de la plante qui capte la lumière.');
     expect(JSON.stringify(view.props().generatedContent)).toBe(original);
+  });
+
+  it('keeps glossary field languages, structured translations and separate homograph senses in the portable set', async () => {
+    installHost();
+    const open = vi.spyOn(window, '__alloOpenWordPractice');
+    const data = [
+      { entryId: 'leaf', term: '葉', termLanguage: 'Japanese', def: 'A leaf.', definitionLanguage: 'English', contextSentence: 'The leaf fell.', translations: { 'ar-Latn': { word: 'Waraqa', def: 'Waraqat nabat.' } } },
+      { glossaryEntryId: 42, term: 'pain', baseLanguage: 'French', def: 'Un aliment.', contextSentence: 'Il mange du pain.' },
+      { term: 'lead', def: 'To guide.', example: 'Ella dirige la clase.', exampleLanguage: 'Spanish', contextSentence: 'She leads.', contextSentenceLanguage: 'English' },
+      { term: 'lead', def: 'A metal.', contextSentence: 'Es un metal.', contextSentenceLanguage: 'Spanish' },
+      { id: 'glossary-row-2', term: 'tin', def: 'Another metal.' },
+    ];
+    const resource = { id: 'mixed', type: 'glossary', baseLanguage: 'English', data };
+    const original = JSON.stringify(resource);
+    const view = mount({ generatedContent: resource, filteredGlossaryData: data.map((item, index) => ({ ...item, _originalIdx: index })), currentUiLanguage: 'Arabic' });
+    await click(launch(view));
+    expect(field('Words (one per line)').value.split('\n')).toEqual(['葉', 'pain', 'lead', 'lead', 'tin']);
+    const options = open.mock.calls[0][0];
+    const core = window.AlloWordPracticeCore;
+    const pack = core.normalizeInput(options);
+    expect(pack.language).toBe('English');
+    expect(pack.items[0]).toMatchObject({ entryId: 'leaf', termLanguage: 'Japanese', definitionLanguage: 'English', example: 'The leaf fell.', exampleLanguage: 'English', translations: [{ language: 'ar-Latn', text: 'Waraqa: Waraqat nabat.' }] });
+    expect(pack.items[1]).toMatchObject({ entryId: '42', id: 'entry:42', termLanguage: 'French', definitionLanguage: 'French', exampleLanguage: 'French' });
+    expect(pack.items[2]).toMatchObject({ termLanguage: 'English', definition: 'To guide.', example: 'Ella dirige la clase.', exampleLanguage: 'Spanish' });
+    expect(pack.items[3]).toMatchObject({ termLanguage: 'English', definition: 'A metal.', example: 'Es un metal.', exampleLanguage: 'Spanish' });
+    expect(pack.items[4].id).toBe('glossary-row-2');
+    expect(new Set(pack.items.map(item => item.id)).size).toBe(data.length);
+    expect(core.normalizeInput(JSON.parse(core.serializePack(pack))).items).toEqual(pack.items);
+    field('Practice activity').value = 'vocabulary';
+    field('Repetitions per word').value = '1';
+    const shuffle = [...document.querySelectorAll('.awp-dialog label')].find(label => label.textContent.trim() === 'Shuffle each repetition');
+    shuffle.querySelector('input').checked = false;
+    await click(button(document.querySelector('.awp-dialog'), 'Present'));
+    await click(button(document.querySelector('.awp-dialog'), 'Show meaning'));
+    const card = document.querySelector('.awp-card');
+    expect(card.querySelector('.awp-word').lang).toBe('ja');
+    expect(card.querySelector('.awp-definition').lang).toBe('en');
+    expect(card.querySelector('.awp-example').lang).toBe('en');
+    expect(card.querySelector('[lang="ar-Latn"]').textContent).toContain('Waraqa: Waraqat nabat.');
+    expect(JSON.stringify(resource)).toBe(original);
+  });
+
+  it('keeps sorted filtered row identities and selects recordings from excluded holders by language', async () => {
+    installHost();
+    const open = vi.spyOn(window, '__alloOpenWordPractice');
+    const wav = marker => 'data:audio/wav;base64,' + Buffer.from('RIFF' + '\0'.repeat(4) + 'WAVE' + marker + '\0'.repeat(40)).toString('base64');
+    const french = wav('fr'), english = wav('en');
+    const data = [
+      { term: 'holder', baseLanguage: 'French', _ttsAssets: { pain: french } },
+      { term: 'pain', def: 'A sensation.' },
+      { term: 'another holder', _ttsAssets: { pain: english } },
+      { term: 'pain', wordLanguage: 'fr-FR', def: 'Un aliment.', definitionLanguage: 'French' },
+    ];
+    const resource = { id: 'recordings', type: 'glossary', baseLanguage: 'English', data };
+    const original = JSON.stringify(resource);
+    const view = mount({ generatedContent: resource, filteredGlossaryData: [3, 1].map(index => ({ ...data[index], _originalIdx: index })) });
+    const scope = [...view.container.querySelectorAll('label')].find(node => node.textContent.includes('Words to present')).querySelector('select');
+    await act(async () => { scope.value = 'filtered'; scope.dispatchEvent(new Event('change', { bubbles: true })); });
+    await click(launch(view));
+    const pack = window.AlloWordPracticeCore.normalizeInput(open.mock.calls[0][0]);
+    expect(pack.items).toHaveLength(2);
+    expect(pack.items[0]).toMatchObject({ id: 'glossary-row-3', termLanguage: 'fr-FR', definition: 'Un aliment.', wordAudio: french });
+    expect(pack.items[1]).toMatchObject({ id: 'glossary-row-1', termLanguage: 'English', definition: 'A sensation.', wordAudio: english });
+    expect(JSON.stringify(resource)).toBe(original);
   });
 
   it('presents only the current filtered words when that scope is selected', async () => {

@@ -25,8 +25,8 @@ try {
 // The tools the six Crew Launch packs link, by registered id, read from the packs
 // so this list cannot drift from what students are actually sent to.
 const LINKED = [...new Set(
-  readdirSync(resolve(ROOT, 'allopacks')).filter((f) => f.startsWith('crew_') && f.endsWith('.allopack.json'))
-    .flatMap((f) => [...readFileSync(resolve(ROOT, 'allopacks', f), 'utf8').matchAll(/\]\(#sel-hub\/([A-Za-z]+)(?:\?[^)]*)?\)/g)].map((m) => m[1]))
+  readdirSync(resolve(ROOT, 'allopacks', 'current')).filter((f) => f.startsWith('crew_') && f.endsWith('.allopack.json'))
+    .flatMap((f) => [...readFileSync(resolve(ROOT, 'allopacks', 'current', f), 'utf8').matchAll(/\]\(#sel-hub\/([A-Za-z]+)(?:\?[^)]*)?\)/g)].map((m) => m[1]))
 )].sort();
 
 let React, RDC, act;

@@ -61,6 +61,19 @@ function csvObject(text) {
 }
 
 describe('Live forecast snapshot journal', () => {
+  it('keeps the original explanation and pinned evidence in the saved forecast and exports', () => {
+    const entry = snapshot({ learnerReasoning: '=My claim', timelineEvidence: 'School hour A to B changed by −4 °C.' });
+    const data = { liveForecastCheckpoints: [entry], liveHourDraft: { reasoning: 'private unsaved text' } };
+    const restored = kernel.validateImmersiveLocalWorkspacePayload(kernel.immersiveLocalWorkspacePayload(data));
+    expect(restored.liveForecastCheckpoints[0]).toMatchObject({ learnerReasoning: entry.learnerReasoning, timelineEvidence: entry.timelineEvidence });
+    expect(restored.liveHourDraft).toBeUndefined();
+    const csv = csvObject(kernel.liveForecastReviewCsv([entry], [], null));
+    expect(csv['Original forecast explanation']).toBe("'=My claim");
+    expect(csv['Attached timeline evidence']).toBe(entry.timelineEvidence);
+    expect(kernel.liveForecastReviewText([entry], [], null)).toContain(entry.learnerReasoning);
+    expect(JSON.stringify(kernel.immersiveSessionSharePayload(data, { includeLocation: false }))).not.toMatch(/My claim|School hour|private unsaved text/);
+  });
+
   it('clones the original prediction and keeps the first valid copy of a repeated snapshot ID', () => {
     const original = snapshot();
     const changed = snapshot({ predicted: { temperature: 99 } });

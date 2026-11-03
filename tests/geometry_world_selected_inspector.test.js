@@ -49,21 +49,50 @@ function precedes(a,b){expect(a).toBeTruthy();expect(b).toBeTruthy();expect(!!(a
 const SCOPE='Showcase and Print Lab use these blocks.';
 
 describe('selected creation takes priority without conflating measurements or placement totals',()=>{
+  it('puts the selected creation and its edit controls ahead of the optional challenge',()=>{
+    const app=mount(),before=worldState(app.engine),challenge=app.host.querySelector('.gwe-challenge');
+    precedes(app.hero(),challenge);precedes(app.host.querySelector('.gwe-creation-editor'),challenge);
+    expect(worldState(app.engine)).toEqual(before);
+  });
+  it('opens selected-block editing directly and keeps the world and selection intact',()=>{
+    const app=mount(),before=worldState(app.engine),selection=structuredClone(app.engine._builderSelection);
+    const edit=app.host.querySelector('[data-gwe-edit-selection]');expect(edit).toBeTruthy();expect(edit.textContent).toBe('Edit selected blocks');
+    edit.focus();app.click(edit);React.act(()=>vi.advanceTimersByTime(80));
+    const editor=app.host.querySelector('.gwe-creation-editor');
+    expect(editor.open).toBe(true);expect(document.activeElement).toBe(editor.querySelector('summary'));
+    expect(app.engine._builderSelection).toEqual(selection);expect(worldState(app.engine)).toEqual(before);
+  });
+  it.each([{retained:null},{retained:'missing'},{retained:'ground'},{retained:'a',incomplete:true}])('offers direct editing only for a complete retained student selection %j',options=>{
+    const app=mount(options);expect(app.host.querySelector('[data-gwe-edit-selection]')).toBeNull();
+  });
+  it('brings a newly selected creation heading near the top of the dock',()=>{
+    const app=mount({retained:null}),body=app.host.querySelector('.gwe-builder-body');
+    app.click(app.host.querySelector('[data-gwe-choose-selection]'));
+    app.click(app.host.querySelector('[data-gwe-select-all]'));
+    const heading=app.host.querySelector('#gwe-selected-creation-title');expect(heading).toBeTruthy();
+    vi.spyOn(body,'getBoundingClientRect').mockReturnValue({top:100,bottom:600,height:500});
+    vi.spyOn(heading,'getBoundingClientRect').mockReturnValue({top:400,bottom:430,height:30});
+    body.scrollTop=25;React.act(()=>vi.advanceTimersByTime(80));
+    expect(document.activeElement).toBe(heading);expect(body.scrollTop).toBeGreaterThan(250);
+  });
   it.each(['b','ground'])('describes retained A while the separate inspector contains %s',fallback=>{
     const app=mount({retained:'a',fallback}),hero=app.hero(),before=worldState(app.engine),originalMeasurement=app.state().measureResult;
     expect(hero).toBeTruthy();expect(hero.textContent).toContain('Selected creation');expect(hero.textContent).toContain('Outlined selection');expect(hero.textContent).toContain('Blocks selected');expect(hero.textContent).toContain('Grid span');expect(hero.textContent).toContain(SCOPE);expect(hero.textContent).not.toContain('Placed');
     expect(Array.from(hero.querySelectorAll('.gwe-metric strong')).map(el=>el.textContent)).toEqual(['2']);expect(hero.querySelectorAll('.gwe-metric')).toHaveLength(1);
     expect(Array.from(hero.querySelectorAll('.gwe-grid-span dt')).map(el=>el.textContent)).toEqual(['Width (X)','Depth (Z)','Height (Y)']);expect(Array.from(hero.querySelectorAll('.gwe-grid-span dd')).map(el=>el.textContent)).toEqual(['2grid cells','1grid cell','1grid cell']);expect(hero.querySelector('.gwe-grid-span-note').textContent).toBe('Grid-cell bounds, including gaps; not occupied volume.');
     expect(app.host.querySelector('.gwe-current-tools')).toBeNull();
-    expect(app.host.querySelector('[aria-label="Select and measure aimed build"]').textContent).toBe('Select another build');expect(app.state().measureResult).toBe(originalMeasurement);expect(worldState(app.engine)).toEqual(before);
+    expect(app.host.querySelector('[data-gwe-choose-selection]').textContent).toBe('Change selection');expect(app.state().measureResult).toBe(originalMeasurement);expect(worldState(app.engine)).toEqual(before);
     expect(app.host.querySelector('.gwe-print-dimensions').textContent).toContain('25 × 12.5 × 12.5 mm');
   });
   it.each([{retained:null,fallback:'a'},{retained:null,fallback:'ground'},{retained:'missing',fallback:'a'},{retained:'a',fallback:'b',incomplete:true}])('keeps the default hierarchy and avoids a retained-scope claim for %j',options=>{
     const app=mount(options);expect(app.hero()).toBeNull();expect(app.host.textContent).not.toContain(SCOPE);expect(app.host.textContent).not.toContain('Outlined selection');
-    const summary=app.host.querySelector('[aria-label="Build summary"]');expect(summary.querySelectorAll('.gwe-metric')).toHaveLength(3);expect(summary.textContent).toContain('47Placed');expect(app.host.querySelector('.gwe-current-tools')).toBeNull();expect(app.host.querySelector('[aria-label="Select and measure aimed build"]').textContent).toBe('Select build');
+    const summary=app.host.querySelector('[aria-label="Build summary"]');expect(summary.querySelectorAll('.gwe-metric')).toHaveLength(3);expect(summary.textContent).toContain('47Placed');expect(app.host.querySelector('.gwe-current-tools')).toBeNull();expect(app.host.querySelector('[data-gwe-choose-selection]').textContent).toBe('Choose blocks');
   });
   it('Clear selection restores ordinary building order and controls without editing either creation',()=>{
-    const app=mount(),before=worldState(app.engine);app.click(app.button('Clear selection'));expect(app.engine._builderSelection).toBeNull();expect(app.state().measureResult).toBeNull();expect(app.hero()).toBeNull();expect(app.host.textContent).not.toContain(SCOPE);expect(app.host.querySelector('.gwe-current-tools')).toBeNull();expect(app.host.querySelector('[aria-label="Build summary"]').querySelectorAll('.gwe-metric')).toHaveLength(3);expect(app.host.querySelector('[aria-label="Select and measure aimed build"]').textContent).toBe('Select build');expect(worldState(app.engine)).toEqual(before);
+    const app=mount(),before=worldState(app.engine);app.click(app.button('Clear selection'));expect(app.engine._builderSelection).toBeNull();expect(app.state().measureResult).toBeNull();expect(app.hero()).toBeNull();expect(app.host.textContent).not.toContain(SCOPE);expect(app.host.querySelector('.gwe-current-tools')).toBeNull();expect(app.host.querySelector('[aria-label="Build summary"]').querySelectorAll('.gwe-metric')).toHaveLength(3);expect(app.host.querySelector('[data-gwe-choose-selection]').textContent).toBe('Choose blocks');expect(worldState(app.engine)).toEqual(before);
+    React.act(()=>vi.advanceTimersByTime(80));
+    expect(document.activeElement).toBe(app.host.querySelector('[data-gwe-choose-selection]'));
+    expect(app.host.querySelector('[data-gwe-edit-selection]')).toBeNull();expect(worldState(app.engine)).toEqual(before);
   });
 });
 
@@ -73,15 +102,15 @@ describe('selection changes keep useful editing state and export the displayed c
     React.act(()=>{details.querySelector('summary').click();vi.advanceTimersByTime(1);});input.focus();app.draft('7.25');app.select('b');expect(app.input()).toBe(input);expect(app.input().closest('form')).toBe(form);expect(input.value).toBe('7.25');expect(document.activeElement).toBe(input);expect(details.open).toBe(true);expect(app.state().builderPrintContext.unitMm).toBe(12.5);expect(app.hero().textContent).toContain('3');
     app.patch({selectedBlock:2,blockRotation:1});expect(app.input()).toBe(input);expect(input.value).toBe('7.25');expect(document.activeElement).toBe(input);expect(worldState(app.engine)).toEqual(before);
   });
-  it('retains the keyed scale form while changing between retained and fallback-only printable measurements',()=>{
-    const app=mount(),input=app.input(),details=input.closest('details');React.act(()=>{details.querySelector('summary').click();vi.advanceTimersByTime(1);});input.focus();app.draft('8.5');app.select(null,'a');expect(app.hero()).toBeNull();expect(app.input()).toBe(input);expect(input.value).toBe('8.5');expect(document.activeElement).toBe(input);
-    app.select('b','a');expect(app.hero()).toBeTruthy();expect(app.input()).toBe(input);expect(input.value).toBe('8.5');expect(document.activeElement).toBe(input);expect(details.open).toBe(true);
+  it('retains the size draft while print controls are hidden until a build is selected again',()=>{
+    const app=mount(),input=app.input(),details=input.closest('details');React.act(()=>{details.querySelector('summary').click();vi.advanceTimersByTime(1);});input.focus();app.draft('8.5');app.select(null,'a');expect(app.hero()).toBeNull();expect(app.input()).toBeNull();expect(app.host.querySelector('[data-gwe-send="print"]')).toBeNull();
+    app.select('b','a');expect(app.hero()).toBeTruthy();expect(app.input().value).toBe('8.5');expect(app.input().closest('details').open).toBe(true);expect(app.state().builderPrintContext.unitMm).toBe(12.5);
   });
-  it('Select another build uses the existing action and the hero agrees with the exact selected STL handoff',()=>{
+  it('choosing the aimed build updates the displayed selection and its exact STL handoff',()=>{
     const app=mount({fallback:'ground'}),before=worldState(app.engine),rawA=new Uint8Array(api.buildGeometryWorldStl(app.engine,app.groups.a).buffer),rawB=new Uint8Array(api.buildGeometryWorldStl(app.engine,app.groups.b).buffer);app.engine.aimed='b';
-    app.click(app.host.querySelector('[aria-label="Select and measure aimed build"]'));expect(app.engine._builderSelection.blocks).toEqual(app.groups.b);expect(Array.from(app.hero().querySelectorAll('.gwe-metric strong')).map(el=>el.textContent)).toEqual(['3']);expect(Array.from(app.hero().querySelectorAll('.gwe-grid-span dd')).map(el=>el.textContent)).toEqual(['2grid cells','1grid cell','2grid cells']);expect(worldState(app.engine)).toEqual(before);
+    app.click(app.host.querySelector('[data-gwe-choose-selection]'));app.click(app.host.querySelector('[data-gwe-select-aimed]'));expect(app.engine._builderSelection.blocks).toEqual(app.groups.b);expect(Array.from(app.hero().querySelectorAll('.gwe-metric strong')).map(el=>el.textContent)).toEqual(['3']);expect(Array.from(app.hero().querySelectorAll('.gwe-grid-span dd')).map(el=>el.textContent)).toEqual(['2grid cells','1grid cell','2grid cells']);expect(worldState(app.engine)).toEqual(before);
     expect(new Uint8Array(api.buildGeometryWorldStl(app.engine,app.groups.a).buffer)).toEqual(rawA);expect(new Uint8Array(api.buildGeometryWorldStl(app.engine,app.groups.b).buffer)).toEqual(rawB);
-    app.click(app.host.querySelector('[aria-label="Send selected build to Print Lab"]'));const handoff=window.__alloPrintLabPendingHandoff;expect(app.navigate).toHaveBeenCalledWith('printLab');expect(handoff.bytes).toEqual(rawB);expect(handoff.sourceModel.blocks).toHaveLength(3);expect(handoff.sourceModel.blocks.every(block=>block.type==='wood')).toBe(true);expect(handoff.unitMm).toBe(12.5);expect(worldState(app.engine)).toEqual(before);
+    app.click(app.host.querySelector('[data-gwe-send="print"]'));const handoff=window.__alloPrintLabPendingHandoff;expect(app.navigate).toHaveBeenCalledWith('printLab');expect(handoff.bytes).toEqual(rawB);expect(handoff.sourceModel.blocks).toHaveLength(3);expect(handoff.sourceModel.blocks.every(block=>block.type==='wood')).toBe(true);expect(handoff.unitMm).toBe(12.5);expect(worldState(app.engine)).toEqual(before);
   });
 });
 

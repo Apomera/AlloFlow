@@ -160,7 +160,7 @@ describe('homework selection integrity through production callbacks and serializ
   it('routes explicit empty selections to hosted activity-only authoring', async () => {
     const cloud = cloudHarness([quiz('unrelated')], { sharedAssignmentActivity: { enabled: true } });
     expect(await cloud.create([])).toBe('hosted-activity');
-    expect(cloud.hosted).toHaveBeenCalledWith([]);
+    expect(cloud.hosted).toHaveBeenCalledWith([], {});
     expect(cloud.upload).not.toHaveBeenCalled();
     expect(cloud.writes).toEqual([]);
   });
@@ -188,6 +188,20 @@ describe('homework selection integrity through production callbacks and serializ
     expect(saved.currentResourceId).toBe(original.id);
   });
 
+  it('suppresses a late Guided publication after its original workspace has been replaced', async () => {
+    const item = quiz('current');
+    let current = true;
+    const copy = vi.fn(), publish = vi.fn();
+    const write = vi.fn(async () => { current = false; });
+    const cloud = cloudHarness([item], { copyToClipboard: copy, setDoc: write });
+    expect(await cloud.create([item.id], { isCurrent: () => current, publish })).toBeNull();
+    expect(write).toHaveBeenCalledOnce();
+    expect(copy).not.toHaveBeenCalled();
+    expect(publish).not.toHaveBeenCalled();
+    expect(cloud.previews).toEqual([]);
+    expect(cloud.fallback).not.toHaveBeenCalled();
+  });
+
   it.each(['failure', 'unresolved reference'])('falls back without publishing a cloud assignment after hydration %s', async mode => {
     const { original, adapted } = readingPair(30);
     const hydrate = vi.fn(async (_app, resources) => {
@@ -199,7 +213,7 @@ describe('homework selection integrity through production callbacks and serializ
     expect(hydrate).toHaveBeenCalledOnce();
     expect(cloud.writes).toEqual([]);
     expect(cloud.previews).toEqual([]);
-    expect(cloud.fallback).toHaveBeenCalledExactlyOnceWith([adapted.id]);
+    expect(cloud.fallback).toHaveBeenCalledExactlyOnceWith([adapted.id], {});
     const packet = cloud.fallbackPackets[0];
     expect(packet.resources.map(item => item.id)).toEqual([original.id, adapted.id]);
     expect(packet.currentResourceId).toBe(original.id);

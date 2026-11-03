@@ -21,6 +21,18 @@
     .rk-explorer .rk-brand { display:flex; align-items:center; gap:10px; font-size:20px; font-weight:800; letter-spacing:-.025em; }
     .rk-explorer .rk-brand-mark { display:grid; place-items:center; flex:none; width:44px; height:44px; border-radius:14px; background:#f5efe5; color:#78350f; border:1px solid #e7d6bd; }
     .rk-explorer .rk-mode-nav { display:flex; flex-wrap:wrap; width:100%; padding:7px; gap:4px; border:1px solid #cbd5e1; border-radius:15px; background:#f8fafc; }
+    .rk-explorer .rk-mode-choices { display:flex; flex:1 1 100%; flex-wrap:wrap; gap:4px; min-width:0; }
+    .rk-explorer .rk-mode-trigger { display:flex; align-items:center; gap:10px; width:100%; min-height:44px; padding:8px 12px; border:1px solid #78350f; border-radius:10px; background:#fff; color:#78350f; line-height:1.35; text-align:start; }
+    .rk-explorer .rk-mode-trigger[hidden],.rk-explorer .rk-mode-choices[hidden] { display:none; }
+    .rk-explorer .rk-mode-trigger svg { flex:none; }
+    .rk-explorer .rk-mode-trigger-copy { flex:1; min-width:0; overflow-wrap:anywhere; }
+    .rk-explorer .rk-mode-trigger-copy span,.rk-explorer .rk-mode-trigger-copy strong { display:block; }
+    .rk-explorer .rk-mode-trigger-copy span { font-size:12px; font-weight:650; }
+    .rk-explorer .rk-mode-trigger-copy strong { font-size:15px; font-weight:800; }
+    .rk-explorer .rk-mode-trigger::after { content:''; width:9px; height:9px; flex:none; border-right:2px solid currentColor; border-bottom:2px solid currentColor; transform:rotate(45deg); margin:0 3px 4px; }
+    .rk-explorer .rk-mode-trigger[aria-expanded=true]::after { transform:rotate(225deg); margin:4px 3px 0; }
+    .rk-explorer [data-rk-mode-compact=true] .rk-mode-choices:not([hidden]) { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,118px),1fr)); gap:5px; padding-top:4px; }
+    .rk-explorer [data-rk-mode-compact=true] .rk-mode-button { flex-direction:row; justify-content:flex-start; min-width:0; min-height:44px; padding:7px 8px; text-align:start; font-size:13px; }
     .rk-explorer .rk-mode-button { display:flex; flex:1 0 auto; flex-direction:column; justify-content:center; align-items:center; gap:5px; min-width:78px; max-width:100%; min-height:60px; padding:8px 6px; border:1px solid transparent; border-radius:10px; background:transparent; color:#475569; font-size:12px; line-height:1.3; overflow-wrap:anywhere; transition:background-color .15s,border-color .15s,box-shadow .15s; }
     .rk-explorer .rk-mode-button svg { flex:none; }
     .rk-explorer .rk-mode-button[aria-pressed=true] { color:#fff; background:#78350f; border-color:#78350f; box-shadow:0 2px 5px #78350f26; }
@@ -46,16 +58,78 @@
     .rk-explorer .rk-family-filters button { min-height:44px; border:1px solid #cbd5e1; }
     .rk-explorer .rk-cabinet { border:1px solid #d6c8b5; border-radius:14px; background:#fbf8f3; margin-bottom:16px; }
     .rk-explorer .rk-cabinet-body { padding:2px 14px 14px; }
-    .rk-explorer .rk-specimen-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(142px,1fr)); gap:12px; margin-bottom:18px; }
-    .rk-explorer .rk-specimen-grid>button { display:flex; flex-direction:column; align-items:stretch; min-width:0; padding:10px; border-radius:16px; transform:none; transition:box-shadow .15s,border-color .15s; }
-    .rk-explorer .rk-specimen-grid>button:hover { transform:none; box-shadow:0 5px 16px #0f172a14; border-color:#64748b; }
+    .rk-explorer .rk-notebook-index { margin-top:16px; }
+    .rk-explorer .rk-notebook-index h4 { margin:0 0 8px; font-size:14px; font-weight:750; }
+    .rk-explorer .rk-notebook-index-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr)); gap:8px; }
+    .rk-explorer .rk-notebook-index a { display:flex; align-items:center; gap:8px; min-height:44px; min-width:0; padding:8px 10px; background:#fff; border:1px solid #64748b; border-radius:9px; color:#1e3a8a; font-size:13px; line-height:1.45; text-decoration:none; overflow-wrap:anywhere; }
+    .rk-explorer .rk-notebook-index a:hover { background:#f1f5f9; }
+    .rk-explorer .rk-notebook-index a span { text-decoration:underline; text-underline-offset:2px; }
+    .rk-explorer .rk-notebook-index a strong { font-size:17px; font-variant-numeric:tabular-nums; }
+    .rk-explorer .rk-notebook-index-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .rk-explorer .rk-notebook-index-actions a { font-weight:700; }
+    .rk-explorer [data-rk-notebook] h4[tabindex="-1"] { scroll-margin-block-start:10px; }
+    .rk-explorer [data-rk-nb-share-chooser] { margin-top:12px; }
+    .rk-explorer [data-rk-nb-share-chooser] > summary { background:#f1f5f9; border:1px solid #64748b; border-radius:8px; color:#1e3a8a; }
+    .rk-explorer [data-rk-nb-share-chooser][open] > summary { margin-bottom:14px; }
+    .rk-explorer [data-rk-nb-share-chooser] fieldset label { padding:4px 6px; border-radius:6px; }
+    .rk-explorer [data-rk-nb-share-chooser] label:has(input:checked) { background:#eaf2fb; }
+    .rk-explorer [data-rk-nb-share-chooser] input[type=checkbox] { flex:none; width:18px; height:18px; accent-color:#1e40af; }
+    .rk-explorer .rk-report-actions { display:flex; flex-wrap:wrap; gap:8px; }
+    .rk-explorer .rk-report-actions button { min-height:44px; padding:9px 12px; border-radius:8px; border:1px solid #64748b; background:white; color:#1e3a8a; font-size:13px; font-weight:700; }
+    .rk-explorer .rk-report-actions button:disabled { border-style:dashed; background:#f1f5f9; color:#475569; }
+    .rk-explorer .rk-report-actions[data-ready=false] [data-rk-nb-share-preview]:enabled,.rk-explorer .rk-report-actions [data-rk-nb-share-download]:enabled { border-color:#1e40af; background:#1e40af; color:white; }
+    .rk-explorer .rk-field-picker { margin:16px 0 12px; border:1px solid #64748b; border-radius:12px; background:#fff; }
+    .rk-explorer .rk-field-picker summary { padding:12px 14px; color:#1e3a8a; }
+    .rk-explorer .rk-field-picker-copy { flex:1; min-width:0; overflow-wrap:anywhere; }
+    .rk-explorer .rk-field-picker-copy span,.rk-explorer .rk-field-picker-copy strong { display:block; }
+    .rk-explorer .rk-field-picker-copy span { font-size:12px; font-weight:650; }
+    .rk-explorer .rk-field-picker-copy strong { margin-top:3px; font-size:15px; line-height:1.5; }
+    .rk-explorer .rk-field-picker [role=group] { padding:0 12px 12px; }
+    .rk-explorer .rk-field-stages { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+    .rk-explorer .rk-field-stages button { display:flex; flex:1 1 max-content; flex-wrap:wrap; align-items:center; justify-content:center; gap:7px; min-height:48px; min-width:0; max-width:100%; padding:10px 6px; border:1px solid #64748b; border-radius:10px; background:#fff; color:#1e3a8a; font-size:14px; font-weight:750; line-height:1.5; overflow-wrap:anywhere; }
+    .rk-explorer .rk-field-stages button span { min-width:0; }
+    .rk-explorer .rk-field-stages .rk-field-stage-current { flex-basis:100%; font-size:12px; font-weight:600; }
+    .rk-explorer .rk-field-stages button[aria-current=step] { border:2px solid #1e40af; padding:9px 5px; background:#eff6ff; color:#1e3a8a; }
+    .rk-explorer .rk-field-stages button:disabled { color:#475569; border-style:dashed; background:#f1f5f9; }
+    .rk-explorer .rk-field-next-action { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:0 0 16px; padding:14px; border:1px solid #93c5fd; border-radius:12px; background:#eff6ff; }
+    .rk-explorer .rk-field-next-copy { flex:1 1 220px; min-width:0; }
+    .rk-explorer .rk-field-next-copy strong { display:block; color:#1e3a8a; font-size:14px; }
+    .rk-explorer .rk-field-next-copy p { margin:4px 0 0; color:#334155; font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
+    .rk-explorer .rk-field-next-action button { min-height:44px; max-width:100%; padding:10px 14px; border:1px solid #1e40af; border-radius:9px; background:#1e40af; color:#fff; font-size:14px; font-weight:750; line-height:1.5; overflow-wrap:anywhere; text-align:start; }
+    @media(forced-colors:active) {
+      .rk-explorer .rk-field-picker,.rk-explorer .rk-field-next-action,.rk-explorer .rk-field-stages button { border-color:CanvasText; }
+      .rk-explorer .rk-field-stages button[aria-current=step] { outline:2px solid Highlight; outline-offset:-5px; }
+      .rk-explorer .rk-field-stages button:disabled { color:GrayText; }
+    }
+    @media(max-width:600px) { .rk-explorer .rk-notebook-index-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .rk-explorer .rk-notebook-index-grid a { flex-direction:column; align-items:flex-start; gap:2px; } }
+    .rk-explorer .rk-cabinet-shelf { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,6.25rem),1fr)); gap:6px; }
+    .rk-explorer .rk-cabinet-shelf>[data-rk-slot] { min-width:0; min-height:54px; }
+    .rk-explorer .rk-cabinet-shelf>button { justify-content:center; gap:4px; padding:6px; }
+    .rk-explorer .rk-cabinet-label { max-width:100%; font-size:.8125rem; font-weight:700; line-height:1.4; overflow-wrap:anywhere; }
+    .rk-explorer .rk-specimen-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(164px,1fr)); gap:14px; margin-bottom:22px; }
+    .rk-explorer .rk-specimen-grid>button { display:flex; flex-direction:column; align-items:stretch; gap:0; min-width:0; padding:10px; border-radius:16px; transform:none; text-align:start; box-shadow:0 2px 5px #0f172a06; transition:box-shadow .15s,border-color .15s; }
+    .rk-explorer .rk-specimen-grid>button:hover { transform:none; box-shadow:0 6px 18px #0f172a16; border-color:#64748b; }
     .rk-explorer .rk-specimen-grid>button[aria-pressed=true] { outline:2px solid #334155; outline-offset:2px; }
-    .rk-explorer .rk-specimen-grid>button>div { display:grid; place-items:center; height:112px; flex:none; margin-bottom:9px; border-bottom:1px solid #e2e8f0; }
-    .rk-explorer .rk-specimen-grid>button>div svg { width:92px; height:92px; }
-    .rk-explorer .rk-specimen-grid>button>span:not([data-rk-grid-got]):not([data-rk-mineral-h]) { font-size:14px; line-height:1.35; overflow-wrap:anywhere; }
-    .rk-explorer .rk-specimen-grid>button>span:last-child { font-size:12px!important; font-weight:500; margin-top:4px; }
+    .rk-explorer .rk-specimen-art { position:relative; display:grid; place-items:center; height:140px; flex:none; margin-bottom:10px; border:1px solid #e2e8f0; border-radius:11px; background:linear-gradient(145deg,var(--rk-specimen-tint,#f1f5f9),#fff); }
+    .rk-explorer .rk-specimen-art::before { content:''; position:absolute; width:100px; height:100px; border:1px solid #cbd5e1; border-radius:50%; opacity:.6; }
+    .rk-explorer .rk-specimen-art svg { position:relative; width:116px; height:116px; }
+    .rk-explorer .rk-specimen-name { display:block; margin:0; min-height:2.8em; color:#0f172a; font-size:15px; line-height:1.4; font-weight:800; overflow-wrap:anywhere; }
+    .rk-explorer .rk-specimen-caption { display:block; margin:3px 0 10px; color:#475569; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+    .rk-explorer .rk-specimen-family,.rk-explorer .rk-specimen-hardness { display:block; align-self:flex-start; max-width:100%; margin-top:auto; padding:4px 8px; border:1px solid #cbd5e1; border-radius:7px; background:#f8fafc; color:#334155; font-size:12px; font-weight:700; line-height:1.4; overflow-wrap:anywhere; }
+    .rk-explorer .rk-specimen-family { color:var(--rk-specimen-ink,#334155); background:var(--rk-specimen-tint,#f8fafc); }
     .rk-explorer [data-rk-hero],.rk-explorer [data-rk-mineral-hero] { box-shadow:inset 0 0 0 5px #ffffffa8,0 8px 20px #0f172a0d; }
-    .rk-explorer .rk-detail-card { border-radius:18px; padding:20px; box-shadow:0 8px 28px #0f172a08; }
+    .rk-explorer .rk-detail-card { border-radius:20px; padding:24px; box-shadow:0 8px 28px #0f172a08; }
+    .rk-explorer .rk-specimen-intro { padding:18px; border:1px solid #e2e8f0; border-radius:15px; background:linear-gradient(125deg,#f8fafc,#fff 75%); }
+    .rk-explorer .rk-specimen-description { flex:1 1 300px; min-width:0; }
+    .rk-explorer .rk-specimen-description>p { font-size:14px; line-height:1.75; color:#334155; }
+    .rk-explorer .rk-specimen-close-up { max-width:100%; gap:5px; }
+    .rk-explorer .rk-specimen-close-up>svg { width:176px; max-width:100%; height:auto; aspect-ratio:1; }
+    .rk-explorer .rk-specimen-close-up>span { font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+    .rk-explorer .rk-specimen-formula { margin:4px 0 16px; color:#475569; font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
+    .rk-explorer .rk-specimen-question-row { flex-wrap:wrap; }
+    .rk-explorer .rk-specimen-question-row input { flex:1 1 180px; min-width:0; width:100%; max-width:100%; min-height:44px; font-size:14px; }
+    .rk-explorer .rk-specimen-question-row button { min-height:44px; max-width:100%; padding:10px 14px; overflow-wrap:anywhere; }
+    .rk-explorer [data-rk-link-agent]>span { min-width:0; max-width:100%; overflow-wrap:anywhere; }
     .rk-explorer .rk-detail-nav { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid #cbd5e1; }
     .rk-explorer .rk-detail-nav button { min-height:44px; max-width:100%; padding:10px 12px; border:1px solid #64748b; border-radius:10px; background:#fff; color:#334155; font-size:13px; line-height:1.5; font-weight:700; overflow-wrap:anywhere; }
     .rk-explorer .rk-detail-nav button:hover:not(:disabled) { background:#f1f5f9; border-color:#334155; }
@@ -66,16 +140,45 @@
     .rk-explorer .rk-detail-steps button span { display:block; font-weight:500; }
     .rk-explorer [data-wb-guide-graphic] { width:56px; min-height:56px; height:auto; padding:7px 4px; overflow-wrap:anywhere; text-align:center; }
     .rk-explorer [data-wb-guide-graphic]>span { max-width:100%; }
-    .rk-explorer .rk-detail-card>h4,.rk-explorer [data-rk-rock-card] h4 { font-size:23px; font-weight:800; line-height:1.25; }
+    .rk-explorer .rk-detail-card>h4,.rk-explorer [data-rk-detail-intro]>h4,.rk-explorer [data-rk-rock-card] h4 { font-size:26px; font-weight:800; line-height:1.3; overflow-wrap:anywhere; }
     .rk-explorer [data-rk-rock-card]>div:last-child>p { font-size:14px; line-height:1.7; }
-    .rk-explorer [data-rk-mineral-props]>div { padding:12px; border-radius:12px; }
+    .rk-explorer [data-rk-mineral-props] { gap:12px; grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr)); }
+    .rk-explorer [data-rk-mineral-props]>div { padding:14px; border-radius:12px; text-align:start; }
+    .rk-explorer [data-rk-mineral-props]>div>p:first-child { color:#475569; font-size:12px; line-height:1.5; }
+    .rk-explorer [data-rk-mineral-props]>div>p:nth-child(2) { justify-content:flex-start; color:#0f172a; font-size:15px; line-height:1.5; overflow-wrap:anywhere; }
+    .rk-explorer [data-rk-mineral-props]>div>p:nth-child(3) { font-size:12px; line-height:1.6; }
     .rk-explorer .rk-scroll-hint { display:flex; align-items:center; gap:6px; color:#5b21b6; font-size:12px; font-weight:700; margin:8px 0 0; }
-    .rk-explorer .rk-comparison-stage { position:relative; display:grid; place-items:center; min-height:210px; padding:24px; margin-top:14px; border:1px solid #e2e8f0; border-radius:14px; background:radial-gradient(ellipse at center,#fff 15%,#f1f5f9 80%); }
-    .rk-explorer .rk-comparison-stage::before { content:''; position:absolute; inset:15px; border:1px solid #cbd5e1; border-radius:50%; width:175px; height:175px; margin:auto; }
-    .rk-explorer .rk-comparison-stage svg { width:160px; height:160px; position:relative; }
+    .rk-explorer .rk-comparison-stage { position:relative; display:grid; place-items:center; min-height:224px; padding:20px; margin-top:14px; border:1px solid #dbe4ea; border-radius:14px; background:radial-gradient(ellipse at center,#fff 15%,var(--rk-compare-wash,#f1f5f9) 90%); }
+    .rk-explorer .rk-comparison-stage::before { content:''; position:absolute; inset:0; border:1px solid #cbd5e1; border-radius:50%; width:184px; height:184px; margin:auto; }
+    .rk-explorer .rk-comparison-stage svg { width:176px; height:176px; max-width:100%; position:relative; }
     .rk-explorer .rk-specimen-number { display:inline-grid; place-items:center; width:26px; height:26px; border-radius:8px; margin-right:8px; background:#f1f5f9; color:#334155; font-size:12px; font-variant-numeric:tabular-nums; }
-    .rk-explorer [data-rk-compare-specimen] { box-shadow:0 4px 14px #0f172a08; }
-    .rk-explorer [data-rk-compare-row]:nth-child(even) { background:#f8fafc; }
+    .rk-explorer [data-rk-compare] { min-width:0; }
+    .rk-explorer [data-rk-compare] .rk-specimen-number { width:auto; min-width:26px; height:auto; min-height:26px; padding:2px 5px; vertical-align:middle; }
+    .rk-explorer [data-rk-compare-specimen] { display:flex; flex-direction:column; box-shadow:0 4px 14px #0f172a08; }
+    .rk-explorer [data-rk-compare-specimen=left] { --rk-compare-wash:#f0fdfa; }
+    .rk-explorer [data-rk-compare-specimen=right] { --rk-compare-wash:#f5f3ff; }
+    .rk-explorer [data-rk-compare-specimen] [data-rk-compare-open] { align-self:flex-start; max-width:100%; margin-top:auto; overflow-wrap:anywhere; text-align:start; }
+    .rk-explorer .rk-compare-name { margin:14px 0 0; color:#0f172a; font-size:22px; font-weight:800; line-height:1.4; overflow-wrap:anywhere; }
+    .rk-explorer .rk-compare-presets>summary { min-height:44px; padding:0; color:#115e59; }
+    .rk-explorer .rk-compare-presets>div { padding-top:12px; }
+    .rk-explorer .rk-compare-evidence [data-rk-compare-row] { margin-top:14px; }
+    .rk-explorer .rk-compare-values { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr)); gap:10px; }
+    .rk-explorer .rk-compare-value { min-width:0; padding:12px; border:1px solid #b5d8d1; border-inline-start:3px solid #0f766e; border-radius:10px; background:#f0fdfa; color:#1e293b; font-size:14px; line-height:1.7; overflow-wrap:anywhere; }
+    .rk-explorer .rk-compare-value:nth-child(2) { border-color:#d8cff1; border-inline-start-color:#7c3aed; background:#f8f6ff; }
+    .rk-explorer .rk-compare-value-name { display:block; margin-bottom:7px; font-size:13px; font-weight:800; line-height:1.5; color:#115e59; }
+    .rk-explorer .rk-compare-value:nth-child(2) .rk-compare-value-name { color:#6d28d9; }
+    .rk-explorer .rk-compare-value-name .rk-specimen-number { background:#fff; border:1px solid #cbd5e1; }
+    .rk-explorer .rk-compare-diagnostic { border:1px solid #f0d19d; border-radius:10px; }
+    .rk-explorer .rk-compare-scratch { margin-top:18px; border:1px solid #99c8bd; border-radius:12px; }
+    .rk-explorer .rk-compare-scratch-results { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr)); gap:10px; list-style:none; padding:0; }
+    .rk-explorer .rk-compare-scratch-results li { padding:12px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; line-height:1.7; overflow-wrap:anywhere; }
+    .rk-explorer .rk-compare-scratch-results strong { display:block; margin-bottom:4px; color:#115e59; }
+    .rk-explorer .rk-compare-scratch-results li:nth-child(2) strong { color:#6d28d9; }
+    .rk-explorer [data-rk-compare] :is(button,summary,label) { overflow-wrap:anywhere; }
+    @media(forced-colors:active) {
+      .rk-explorer .rk-compare-value,.rk-explorer .rk-compare-value-name .rk-specimen-number,.rk-explorer .rk-compare-scratch,.rk-explorer .rk-compare-scratch-results li { border-color:CanvasText; }
+      .rk-explorer [data-rk-compare-preset][aria-pressed=true] { outline:2px solid Highlight; outline-offset:-5px; }
+    }
     .rk-explorer :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline:3px solid #1d4ed8!important; outline-offset:3px; }
     .rk-explorer .rk-landscape-instructions { line-height:1.6; }
     .rk-explorer .rk-catalogue-controls { padding:16px; margin-bottom:14px; border:1px solid #cbd5e1; border-radius:14px; background:#f8fafc; }
@@ -118,11 +221,17 @@
       .rk-explorer .rk-progress-counts { gap:8px; }
       .rk-explorer .rk-progress-counts>div>span { font-size:12px; }
       .rk-explorer .rk-specimen-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+      .rk-explorer .rk-specimen-art { height:112px; }
+      .rk-explorer .rk-specimen-art::before { width:82px; height:82px; }
+      .rk-explorer .rk-specimen-art svg { width:96px; height:96px; }
+      .rk-explorer .rk-specimen-intro { padding:12px; }
       .rk-explorer .rk-detail-card { padding:14px; }
       .rk-explorer [data-rocks-header-action=geology-3d] { font-size:11px; padding:6px; }
     }
     @media (prefers-reduced-motion:reduce) { .rk-explorer * { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
     @media (forced-colors:active) {
+      .rk-explorer .rk-specimen-art,.rk-explorer .rk-specimen-intro,.rk-explorer .rk-specimen-family,.rk-explorer .rk-specimen-hardness { border-color:CanvasText; }
+      .rk-explorer .rk-specimen-art::before { border-color:CanvasText; }
       .rk-explorer .rk-mode-button[aria-pressed=true],.rk-explorer .rk-specimen-grid>button[aria-pressed=true],.rk-explorer .rk-family-filters button[aria-pressed=true] { border:2px solid Highlight; outline:2px solid Highlight; }
       .rk-explorer .rk-progress-track>div { background:Highlight; forced-color-adjust:none; }
       .rk-explorer .rk-mode-hero,.rk-explorer .rk-cabinet,.rk-explorer .rk-mode-nav,.rk-explorer .rk-brand-mark { border-color:CanvasText; }
@@ -130,7 +239,149 @@
       .rk-explorer .rk-study-card button[aria-pressed=true] { border:2px solid Highlight; outline:2px solid Highlight; }
       .rk-explorer :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline-color:Highlight!important; }
     }
+    .rk-explorer .rk-quiz-workspace { margin-top:16px; padding:24px; border:1px solid #cbbda8; border-radius:20px; background:#fbf8f0; color:#20383e; line-height:1.65; min-width:0; }
+    .rk-explorer .rk-quiz-workspace :is(h4,h5,p,span,button,li) { overflow-wrap:anywhere; }
+    .rk-explorer .rk-quiz-workspace :is(h4,h5) { line-height:1.5; }
+    .rk-explorer .rk-quiz-workspace :is(#rk-quiz-question,#rk-quiz-practice-question) { font-size:20px; margin:18px 0; }
+    .rk-explorer .rk-quiz-workspace :is(#rk-quiz-results-title,#rk-quiz-practice-results-title) { font-size:24px; }
+    .rk-explorer .rk-quiz-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .rk-explorer .rk-quiz-header p { font-size:14px; }
+    .rk-explorer [data-rk-quiz-progress] { padding:12px 14px; margin:14px 0; border:1px solid #d8cebd; border-radius:12px; background:#fff; gap:5px; }
+    .rk-explorer .rk-quiz-progress-summary { flex-basis:100%; margin:0 0 5px; font-size:13px; color:#4c5e61; line-height:1.6; }
+    .rk-explorer .rk-quiz-specimens { gap:12px; }
+    .rk-explorer .rk-quiz-specimens figure { padding:14px; min-width:120px; border:1px solid #cbbda8; border-radius:14px; }
+    .rk-explorer .rk-quiz-specimens figcaption { font-size:14px; line-height:1.6; margin-top:8px; overflow-wrap:anywhere; }
+    .rk-explorer .rk-quiz-options { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,max(240px,calc(50% - 6px))),1fr)); gap:12px; }
+    .rk-explorer .rk-quiz-option { display:flex; flex-direction:column; align-items:stretch; gap:10px; min-width:0; min-height:100px; padding:16px; border-radius:14px; text-align:left; font-size:15px; line-height:1.6; transform:none!important; }
+    .rk-explorer .rk-quiz-option:not([aria-disabled=true]) { border-color:#916338; }
+    .rk-explorer .rk-quiz-option[data-rk-quiz-answer-result=correct] { border-color:#20705a; background:#eff8f3; color:#155645; }
+    .rk-explorer .rk-quiz-option[data-rk-quiz-answer-result=chosen] { border-color:#b34332; background:#fff1ec; color:#873525; }
+    .rk-explorer .rk-quiz-answer-number { display:inline-block; align-self:flex-start; width:auto; height:auto; max-width:100%; padding:3px 8px; border:1px solid #d9c9b2; border-radius:7px; background:#f6efe1; color:#704520; font-size:12px; line-height:1.5; }
+    .rk-explorer .rk-quiz-answer-content { display:flex; align-items:center; gap:12px; min-width:0; }
+    .rk-explorer .rk-quiz-answer-text { min-width:0; overflow-wrap:anywhere; }
+    .rk-explorer .rk-quiz-option[aria-disabled=true] { cursor:default; }
+    .rk-explorer .rk-quiz-option [data-rk-quiz-answer-state] { font-size:12px; margin-top:6px; }
+    .rk-explorer .rk-quiz-topics { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,max(230px,calc(33.333% - 8px))),1fr)); gap:12px; margin:12px 0 20px; padding:0; list-style:none; }
+    .rk-explorer .rk-quiz-topic { display:flex; flex-direction:column; gap:10px; min-width:0; margin:0; padding:16px; border:1px solid #cbbda8; border-radius:14px; background:#fff; font-size:14px; }
+    .rk-explorer .rk-quiz-topic-header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
+    .rk-explorer .rk-quiz-topic-score { padding:3px 9px; border-radius:7px; background:#edf5f0; color:#1e5c50; font-weight:800; font-variant-numeric:tabular-nums; }
+    .rk-explorer .rk-quiz-topic-meter { display:block; width:100%; height:8px; border-radius:99px; overflow:hidden; background:#ede4d3; }
+    .rk-explorer [data-rk-practice-topic] { min-height:46px; width:100%; margin-top:auto; padding:10px 12px; border:1px solid #916338; border-radius:10px; background:#fffaf0; color:#704520; font-size:13px; font-weight:750; line-height:1.6; }
+    .rk-explorer .rk-quiz-workspace :is([data-rk-practice-next],[data-rk-quiz-again]) { min-height:46px; }
+    @media(max-width:600px) { .rk-explorer .rk-quiz-workspace { padding:16px; border-radius:16px; } }
+    @media(forced-colors:active) {
+      .rk-explorer .rk-quiz-workspace,.rk-explorer .rk-quiz-workspace :is(figure,figcaption,div,p,span,li,button) { background:Canvas!important; color:CanvasText!important; border-color:CanvasText!important; box-shadow:none!important; }
+      .rk-explorer .rk-quiz-topic-meter>span { background:CanvasText!important; }
+      .rk-explorer .rk-quiz-option[aria-disabled=true] { border-style:dashed; }
+    }
   `;
+  function rkActivityHeading(mode) {
+    return ({ compare:'rk-compare-title', fieldwork:'rk-field-title', densityLab:'rk-density-title', notebook:'rk-notebook-title' })[mode] || 'rk-activity-title';
+  }
+  // STEAM Lab remounts its plugin on each activity change. Keep this one
+  // explicit focus request on the surrounding lab, outside the saved work.
+  const rkFocusRequests = new WeakMap();
+  function rkFocusScope(element) {
+    return element && (element.closest('[data-stem-lab]') || element.closest('[data-rk-explorer]'));
+  }
+  function rkCompleteFocus(scope) {
+    const request = scope && rkFocusRequests.get(scope);
+    if (!request || !scope.isConnected) return;
+    const nav = scope.querySelector('[data-rocks-mode-nav]');
+    const activeMode = nav && nav.querySelector('[data-rocks-mode][aria-pressed=true]');
+    if (!activeMode || activeMode.dataset.rocksMode !== request.mode) return;
+    const root = nav.closest('[data-rk-explorer]');
+    if (request.caseId && root.querySelector('[data-rk-field-current]')?.dataset.rkFieldCurrent !== request.caseId) return;
+    const target = root.querySelector(request.selector);
+    if (!target || target.disabled) return;
+    const doc = root.ownerDocument;
+    if (doc.activeElement !== doc.body && doc.activeElement !== request.previousFocus && doc.activeElement !== request.button) return;
+    rkFocusRequests.delete(scope);
+    clearTimeout(request.expire);
+    if (/^H[1-6]$/.test(target.tagName)) target.tabIndex = -1;
+    target.focus({ preventScroll:true });
+    if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block:request.caseId ? 'nearest' : 'start' });
+  }
+  function rkRequestFocus(button, mode, selector, caseId) {
+    const scope = rkFocusScope(button);
+    if (!scope) return;
+    const previous = rkFocusRequests.get(scope);
+    if (previous) clearTimeout(previous.expire);
+    const request = { button, mode, selector, caseId, previousFocus:button.ownerDocument.activeElement };
+    rkFocusRequests.set(scope, request);
+    request.expire = setTimeout(function () {
+      if (rkFocusRequests.get(scope) === request) rkFocusRequests.delete(scope);
+    }, 750);
+    // Also handle selecting the current case or activity without a new mount.
+    setTimeout(function () { if (rkFocusRequests.get(scope) === request) rkCompleteFocus(scope); }, 0);
+  }
+  function RkActivityNavigation(props) {
+    const React = props.react, h = React.createElement;
+    const [compact, setCompact] = React.useState(() => typeof window !== 'undefined' && window.innerWidth <= 600);
+    const [open, setOpen] = React.useState(false);
+    const nav = React.useRef(null), trigger = React.useRef(null);
+    const compactWidth = React.useRef(compact), focusWideChoice = React.useRef(false);
+    const choicesId = React.useId();
+
+    React.useEffect(function () {
+      const element = nav.current;
+      function measure() {
+        const narrow = (element.clientWidth || element.getBoundingClientRect().width || window.innerWidth) <= 600;
+        if (narrow === compactWidth.current) return;
+        compactWidth.current = narrow;
+        const active = element.ownerDocument.activeElement;
+        // Keep a focused wide choice visible during a resize. Conversely, a
+        // focused compact trigger hands focus to the current wide choice.
+        setOpen(narrow && element.contains(active) && active !== trigger.current);
+        focusWideChoice.current = !narrow && active === trigger.current;
+        setCompact(narrow);
+      }
+      measure();
+      const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+      if (observer) observer.observe(element);
+      window.addEventListener('resize', measure);
+      return function () {
+        if (observer) observer.disconnect();
+        window.removeEventListener('resize', measure);
+      };
+    }, []);
+    React.useEffect(function () {
+      if (!compact && focusWideChoice.current) {
+        focusWideChoice.current = false;
+        const choice = nav.current.querySelector('[data-rocks-mode][aria-pressed=true]');
+        if (choice) choice.focus({ preventScroll:true });
+      }
+    }, [compact]);
+    React.useEffect(function () {
+      setOpen(false);
+    }, [props.mode]);
+    React.useEffect(function () { rkCompleteFocus(rkFocusScope(nav.current)); });
+    return h('nav', {
+      ref:nav, className:'rk-mode-nav order-3 flex w-full flex-wrap', 'aria-label':props.label,
+      'data-rocks-mode-nav':'responsive', 'data-rk-mode-compact':compact,
+      onClickCapture:function (event) {
+        const choice = event.target.closest('[data-rocks-mode]');
+        if (compact && choice) {
+          setOpen(false);
+          const mode = choice.getAttribute('data-rocks-mode');
+          rkRequestFocus(choice, mode, '#' + rkActivityHeading(mode));
+        }
+      },
+      onKeyDown:function (event) {
+        if (compact && open && event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen(false);
+          trigger.current.focus();
+        }
+      }
+    },
+    h('button', { ref:trigger, type:'button', hidden:!compact, className:'rk-mode-trigger', 'data-rk-mode-trigger':true,
+      'aria-expanded':open, 'aria-controls':choicesId, onClick:function () { setOpen(previous => !previous); } },
+      rkActivityIcon(h, props.mode, 20),
+      h('span', { className:'rk-mode-trigger-copy' }, h('span', null, props.changeLabel), h('strong', null, props.currentLabel))),
+    h('div', { id:choicesId, className:'rk-mode-choices', hidden:compact && !open, 'data-rk-mode-choices':true }, props.children));
+  }
   function rkActivityIcon(h, mode, size) {
     var paths = {
       landscape: 'M2 19 8 7l4 7 3-5 7 10H2ZM6 11l2 2 2-2M13 12l2 2 2-2',
@@ -4885,6 +5136,12 @@
     {
       id: 'deep-cooling', title: 'The exposed mountain core', setting: 'An eroded mountain exposes a massive rock body. Which rock is it, and what does its texture tell you about cooling?',
       candidates: ['basalt', 'granite', 'gabbro', 'rhyolite'], answer: 'granite', required: ['grains', 'minerals'],
+      evidenceHint: "A pale color and an intrusive setting still leave several possibilities. Bring together the mineral mixture and a close view of the crystals.",
+      claimHints: {
+        gabbro: "Large crystals also fit gabbro. Which minerals in your specimen help you distinguish two coarse-grained rocks?",
+        basalt: "Look for a fine groundmass between the crystals. Does the observed texture fit a typical basalt?",
+        rhyolite: "Rhyolite may contain quartz and feldspar. What does the material between the larger crystals look like?"
+      },
       clues: [
         { id: 'grains', title: 'Inspect the grain boundaries', text: 'Interlocking crystals are several millimeters across. There is no fine-grained groundmass.' },
         { id: 'minerals', title: 'Identify the major minerals', text: 'The sample contains abundant quartz and pale or pink feldspar, with scattered dark mica flakes.' },
@@ -4899,6 +5156,13 @@
     {
       id: 'rounded-river', title: 'Pebbles inside a cliff', setting: 'A cliff contains rock fragments inside a finer matrix. Identify the rock and decide what the fragments can tell you about transport.',
       candidates: ['sandstone', 'breccia', 'tuff', 'conglom'], answer: 'conglom', required: ['size', 'shape'],
+      otherEvidence: [['shape', 'layers']],
+      evidenceHint: "The larger fragments’ outlines separate angular and rounded gravel. Use the ruler or the bed description to establish that gravel is present.",
+      claimHints: {
+        sandstone: "Sand and gravel can occur in neighboring beds. What size are the larger pieces in the rock being identified?",
+        breccia: "Both candidates can contain gravel. Trace the edges of several pieces and compare their corners.",
+        tuff: "Look at the larger pieces and their matrix. What evidence would you expect from a deposit of volcanic ash?"
+      },
       clues: [
         { id: 'size', title: 'Measure the larger fragments', text: 'Many fragments are 8 to 25 mm across, held together by finer grains and cement.' },
         { id: 'shape', title: 'Trace the fragment outlines', text: 'Most of the larger fragments have rounded edges rather than sharp, broken corners.' },
@@ -4913,6 +5177,13 @@
     {
       id: 'carbonate-contact', title: 'A white rock beside an intrusion', setting: 'A pale rock occurs near an old igneous intrusion. Is it a sedimentary rock, or has its original texture changed?',
       candidates: ['quartzite', 'limestone', 'marble', 'granite'], answer: 'marble', required: ['texture', 'acid'],
+      otherEvidence: [['texture', 'contact']],
+      evidenceHint: "Acid response identifies a carbonate component. Crystal boundaries and the relationship to the neighboring rock help establish whether its texture changed.",
+      claimHints: {
+        quartzite: "A sugary texture can occur in several rocks. Check the composition using the acid result or the rock across the contact.",
+        limestone: "Limestone can react strongly with acid. Compare the texture of this specimen with the fossil-bearing layer farther away.",
+        granite: "Compare the minerals suggested by the acid result with the quartz and feldspar expected in granite."
+      },
       clues: [
         { id: 'texture', title: 'Look closely at the surface', text: 'The rock has a sugary mosaic of interlocking crystals. No recognizable shell outlines remain in this sample.' },
         { id: 'acid', title: 'Read the laboratory acid result', text: 'A fresh surface reacts vigorously with dilute hydrochloric acid, consistent with abundant calcite. This is a supplied lab result, not an instruction to handle acid.' },
@@ -4927,6 +5198,13 @@
     {
       id: 'resistant-ridge', title: 'The resistant ridge', setting: 'A pale rock forms a ridge above softer surrounding rocks. Use composition and fracture evidence to distinguish similar-looking samples.',
       candidates: ['marble', 'sandstone', 'gneiss', 'quartzite'], answer: 'quartzite', required: ['fracture', 'mineral'],
+      otherEvidence: [['mineral', 'map'], ['fracture', 'map']],
+      evidenceHint: "Several rocks resist erosion and give little or no acid reaction. Look for a second line of evidence in the grain boundaries, fracture, or mapped history.",
+      claimHints: {
+        sandstone: "Both candidates may be quartz-rich. Does the break follow the spaces between grains, and do the crystal boundaries record later change?",
+        marble: "A pale, crystalline sample can be carbonate-rich or quartz-rich. Which observation tests the composition?",
+        gneiss: "Look for evidence of alternating mineral bands. How does that expectation compare with the mineral examination and field history?"
+      },
       clues: [
         { id: 'fracture', title: 'Inspect a prepared broken surface', text: 'The break passes through the quartz grains. The grains do not fall out as separate sand particles.' },
         { id: 'mineral', title: 'Read the mineral examination', text: 'The sample is overwhelmingly quartz. A thin section shows recrystallized grain boundaries.' },
@@ -4941,6 +5219,12 @@
     {
       id: 'roofing-sheets', title: 'The old roofing quarry', setting: 'A quarry supplied thin roofing sheets. What distinguishes the material from an ordinary layered mudrock?',
       candidates: ['shale', 'slate', 'schist', 'phyllite'], answer: 'slate', required: ['grain', 'cleavage'],
+      evidenceHint: "Several fine-grained rocks split into sheets. Combine the relation between splitting planes and bedding with an observation of grain size and sheen.",
+      claimHints: {
+        shale: "Shale commonly splits along bedding. Check whether the splitting planes here follow or cut the original layers.",
+        schist: "Can you resolve individual aligned mineral flakes on this specimen? Compare your observation with the texture expected in schist.",
+        phyllite: "Very fine grains can fit either possibility. Look for the silky sheen associated with phyllite."
+      },
       clues: [
         { id: 'grain', title: 'Inspect grain size and sheen', text: 'Individual mineral grains are too small to distinguish with a hand lens. The surface is dull rather than silky or glittery.' },
         { id: 'cleavage', title: 'Compare splitting and bedding', text: 'The rock splits into flat, smooth sheets along closely spaced planes that cut across faint original sedimentary layers.' },
@@ -4955,6 +5239,13 @@
     {
       id: 'floating-stone', title: 'A stone washed ashore', setting: 'A surprisingly light stone washes onto a beach after volcanic activity offshore. Identify the material using more than its location.',
       candidates: ['tuff', 'basalt', 'pumice', 'obsidian'], answer: 'pumice', required: ['walls', 'water'],
+      otherEvidence: [['walls', 'fragments']],
+      evidenceHint: "The beach location gives little information about origin. Pair the structure of the pore walls with evidence about bulk density or the presence of an ash matrix.",
+      claimHints: {
+        obsidian: "Glassy material alone leaves more than one possibility. Compare the fraction occupied by gas cavities with the solid glass.",
+        basalt: "Basalt can contain gas cavities. Examine the thickness and material of the walls between them.",
+        tuff: "Tuff is made of consolidated volcanic ash. Is this sample a fragment in an ash matrix, or a continuous piece with pores?"
+      },
       clues: [
         { id: 'walls', title: 'Examine the pore walls', text: 'Numerous closely spaced gas-bubble cavities have very thin, glassy walls. The whole piece has a frothy structure.' },
         { id: 'water', title: 'Read the water observation', text: 'This dry sample initially floats. It contains enough trapped gas space to have a bulk density below that of water.' },
@@ -5016,6 +5307,129 @@
       h('figcaption', { style: { marginTop: 5, fontSize: 11, lineHeight: 1.5, color: '#475569' } }, T('stem.rocks.field_scene_caption', 'Setting sketch, not to scale. The ring marks the study site; collect observations below to examine the sample.')));
   }
 
+  function rkFieldFragmentWidth(estimate) {
+    var text = String(estimate || '').trim().replace(',', '.');
+    return /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(text) ? Number(text) : NaN;
+  }
+  function rkFieldValidIds(list, allowed) {
+    return Array.isArray(list) ? list.filter(function (id, index) { return allowed.indexOf(id) >= 0 && list.indexOf(id) === index; }) : [];
+  }
+  function rkFieldEvidenceSets(c) { return [c.required].concat(c.otherEvidence || []); }
+  function rkFieldMissingClue(c, cited) {
+    var missing = rkFieldEvidenceSets(c).map(function (set) { return set.filter(function (id) { return cited.indexOf(id) < 0; }); });
+    var shortest = missing.reduce(function (best, set) { return set.length < best.length ? set : best; });
+    return c.clues.find(function (clue) { return clue.id === shortest[0]; });
+  }
+  function rkFieldNextStep(c, record, T) {
+    var r = record || {}, fragment = c.id === 'rounded-river' && r.fragmentObservation;
+    var ids = c.clues.map(function (clue) { return clue.id; });
+    var observed = rkFieldValidIds(r.observed, ids), cited = rkFieldValidIds(r.cited, observed);
+    var claim = c.candidates.indexOf(r.claim) >= 0 ? r.claim : '', reasoning = typeof r.reasoning === 'string' ? r.reasoning : '';
+    var attempts = Array.isArray(r.attempts) ? r.attempts : [], last = attempts[attempts.length - 1];
+    var unfinishedFragment = fragment && !fragment.compared && (fragment.estimate || fragment.shape);
+    var started = !!(observed.length || claim || reasoning.trim() || attempts.length || r.solved || unfinishedFragment || (fragment && fragment.compared));
+    var feedback = typeof r.feedback === 'string' ? r.feedback : '';
+    if (!feedback && last && last.claim === claim && last.reasoning === reasoning) {
+      var sameIds = function (previous, current) { return Array.isArray(previous) && previous.length === current.length && current.every(function (id) { return previous.indexOf(id) >= 0; }); };
+      if (sameIds(last.cited, cited) && sameIds(last.observed, observed)) feedback = last.result || '';
+    }
+    var step = function (key, words, selector, clue) {
+      var label = T('stem.rocks.field_next_' + key, words);
+      if (clue) label += ': ' + T('stem.rocks.field_' + c.id + '_' + clue.id + '_title', clue.title);
+      var phases = { start:'observe', width:'observe', outline:'observe', measure_compare:'observe', collect:'observe', revisit_observation:'observe', interpretation:'review' };
+      return { label: label, selector: selector, feedback: feedback, started: started, phase:phases[key] || 'explain' };
+    };
+    var clueSelector = function (action, id) { return '[data-rk-field-' + action + '="' + id + '"]'; };
+    if (!started) return step('start', 'Read the case setting', '#rk-field-case-title');
+    if (feedback === 'revise-claim') return step('revise_claim', 'Revisit your identification', '#rk-field-claim');
+    if (feedback === 'revise-evidence') {
+      var missing = rkFieldMissingClue(c, cited);
+      if (!missing) return step('check', 'Check your claim and evidence', '[data-rk-field-check]');
+      return observed.indexOf(missing.id) >= 0
+        ? step('revisit_citation', 'Revisit your selected evidence', clueSelector('cite', missing.id), missing)
+        : step('revisit_observation', 'Revisit an observation', clueSelector('observe', missing.id), missing);
+    }
+    // Older supported records may have no attempt history. A current edit to
+    // a checked claim, however, takes precedence over the lifetime solved flag.
+    if (r.solved === true && (feedback === 'supported' || (!last && !feedback && !unfinishedFragment))) {
+      return step('interpretation', 'Review the geologist’s interpretation', '#rk-field-debrief-title');
+    }
+    if (unfinishedFragment) {
+      var width = rkFieldFragmentWidth(fragment.estimate);
+      if (!(width > 0 && width <= 1000)) return step('width', 'Estimate the fragment width', '#rk-fragment-estimate');
+      if (['rounded', 'angular'].indexOf(fragment.shape) < 0) return step('outline', 'Choose the fragment outline', '#rk-fragment-shape');
+      return step('measure_compare', 'Compare your fragment measurement', '[data-rk-field-fragment-compare]');
+    }
+    if (observed.length < 2) return step('collect', 'Collect another observation', clueSelector('observe', ids.find(function (id) { return observed.indexOf(id) < 0; })));
+    if (!claim) return step('claim', 'Choose a rock for your claim', '#rk-field-claim');
+    if (cited.length < 2) return step('cite', 'Select evidence for your claim', clueSelector('cite', observed.find(function (id) { return cited.indexOf(id) < 0; })));
+    if (!reasoning.trim()) return step('reason', 'Explain your reasoning', '#rk-field-reasoning');
+    return step('check', 'Check your claim and evidence', '[data-rk-field-check]');
+  }
+
+  function rkFocusFieldStep(event, c, step) {
+    rkRequestFocus(event && event.currentTarget, 'fieldwork', step.selector, c.id);
+  }
+
+  function rkFieldFragmentMeasurement(h, tr, entry, observed, save, needsInput, markIncomplete) {
+    var observation = entry.fragmentObservation || {};
+    var estimate = typeof observation.estimate === 'string' ? observation.estimate.slice(0, 12) : '';
+    var shape = ['rounded', 'angular'].indexOf(observation.shape) >= 0 ? observation.shape : '';
+    var width = rkFieldFragmentWidth(estimate);
+    var validWidth = width > 0 && width <= 1000;
+    var compared = observation.compared === true && validWidth && !!shape;
+    var inputStyle = { width: '100%', minWidth: 0, boxSizing: 'border-box', minHeight: 44, padding: 9, border: '1px solid #64748b', borderRadius: 7, background: '#fff', color: '#1e293b' };
+    var buttonStyle = { minHeight: 44, marginTop: 10, padding: '8px 12px', border: '1px solid #92400e', borderRadius: 8, background: '#fff', color: '#78350f', fontWeight: 700 };
+    var updateDraft = function (newEstimate, newShape) {
+      if (!compared) save({ fragmentObservation: { estimate: newEstimate, shape: newShape, compared: false } });
+    };
+    var submit = function (event) {
+      event.preventDefault();
+      if (compared) return;
+      if (!validWidth || !shape) {
+        markIncomplete();
+        var field = event.currentTarget.elements.namedItem(!validWidth ? 'width' : 'outline');
+        if (field) field.focus();
+        return;
+      }
+      var newClues = ['size', 'shape'].filter(function (id) { return observed.indexOf(id) < 0; });
+      save({ fragmentObservation: { estimate: estimate, shape: shape, compared: true }, observed: observed.concat(newClues), feedback: '' });
+    };
+    var description = tr('fragment_description', 'The two vertical guides touch the furthest left and right edges of one fragment. They meet the ruler at 5 mm and 25 mm. The outline curves smoothly around its perimeter, with no sharp corners.');
+    var ticks = [];
+    for (var millimeters = 0; millimeters <= 35; millimeters++) {
+      var x = 24 + 7 * millimeters;
+      var major = millimeters % 5 === 0;
+      ticks.push(h('line', { key: 'tick-' + millimeters, x1: x, x2: x, y1: 100, y2: major ? 111 : 105, stroke: 'currentColor', strokeWidth: 1.5 }));
+      if (major) ticks.push(h('text', { key: 'label-' + millimeters, x: x, y: 132, textAnchor: 'middle', fill: 'currentColor', fontSize: 19, fontWeight: millimeters === 5 || millimeters === 25 ? 750 : 500 }, String(millimeters)));
+    }
+    return h('section', { 'data-rk-field-fragment': true, 'aria-labelledby': 'rk-fragment-title', style: { margin: '12px 0', padding: 14, background: '#fffbeb', border: '1px solid #b45309', borderRadius: 10, minWidth: 0 } },
+      h('h6', { id: 'rk-fragment-title', style: { fontWeight: 800, fontSize: 15, margin: '0 0 6px' } }, tr('fragment_title', 'Measure one fragment')),
+      h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, tr('fragment_task', 'Estimate the width between the guides and describe the fragment’s outline. Compare your first observations with the geologist’s notes, or collect the supplied observations below.')),
+      h('svg', { viewBox: '0 0 300 142', role: 'img', 'aria-label': description, style: { display: 'block', width: '100%', maxWidth: 450, height: 'auto', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: 8, background: '#fff', color: '#1e293b', marginTop: 8 }, focusable: 'false' },
+        h('path', { d: 'M59 59 C59 37 78 23 106 20 C140 16 177 24 190 42 C196 50 199 59 199 67 C199 79 186 84 170 86 C133 91 93 87 74 78 C65 74 59 69 59 59Z', fill: '#d6c3a8', stroke: 'currentColor', strokeWidth: 2.5 }),
+        h('path', { d: 'M70 50 Q83 25 121 25 M142 81 Q171 83 186 73', fill: 'none', stroke: '#f6ead8', strokeWidth: 3, strokeLinecap: 'round' }),
+        [59,199].map(function (edge) { return h('line', { key: edge, x1: edge, x2: edge, y1: 48, y2: 100, stroke: 'currentColor', strokeWidth: 1.5, strokeDasharray: '4 3' }); }),
+        h('line', { x1: 24, x2: 269, y1: 100, y2: 100, stroke: 'currentColor', strokeWidth: 2 }), ticks),
+      h('p', { style: { fontSize: 12, margin: '3px 0 7px' } }, tr('fragment_scale', 'Ruler in millimeters. Small ticks are 1 mm apart.')),
+      h('details', null, h('summary', { style: { minHeight: 44, paddingTop: 8, cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, tr('fragment_text_reading', 'Read the ruler and outline in words')), h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, description)),
+      h('form', { 'data-rk-field-fragment-form': true, 'aria-labelledby': 'rk-fragment-title', onSubmit: submit, noValidate: true },
+        h('label', { htmlFor: 'rk-fragment-estimate', style: { display: 'block', fontWeight: 700, fontSize: 13 } }, tr('fragment_estimate', 'Estimated width in millimeters')),
+        h('input', { type: 'text', inputMode: 'decimal', name: 'width', id: 'rk-fragment-estimate', 'data-rk-field-fragment-estimate': true, value: estimate, maxLength: 12, readOnly: compared, required: true, style: inputStyle, 'aria-invalid': needsInput && !validWidth ? true : undefined, 'aria-describedby': needsInput && !validWidth ? 'rk-fragment-error' : undefined, onChange: function (e) { updateDraft(e.target.value.slice(0, 12), shape); } }),
+        h('label', { htmlFor: 'rk-fragment-shape', style: { display: 'block', fontWeight: 700, fontSize: 13, marginTop: 8 } }, tr('fragment_shape', 'Fragment outline')),
+        h('select', { name: 'outline', id: 'rk-fragment-shape', 'data-rk-field-fragment-shape': true, value: shape, disabled: compared, required: true, style: inputStyle, 'aria-invalid': needsInput && !shape ? true : undefined, 'aria-describedby': needsInput && !shape ? 'rk-fragment-error' : undefined, onChange: function (e) { updateDraft(estimate, e.target.value); } },
+          h('option', { value: '' }, tr('fragment_choose_shape', 'Choose an outline')),
+          h('option', { value: 'rounded' }, tr('fragment_rounded', 'Rounded')),
+          h('option', { value: 'angular' }, tr('fragment_angular', 'Angular'))),
+        h('button', { type: 'submit', 'data-rk-field-fragment-compare': true, 'aria-disabled': compared, style: buttonStyle }, compared ? tr('fragment_compared', 'Field note compared') : tr('fragment_compare', 'Compare with field notes')),
+        needsInput && (!validWidth || !shape) ? h('p', { id: 'rk-fragment-error', role: 'alert', style: { color: '#78350f', fontSize: 13 } }, tr('fragment_error', 'Enter a width greater than 0 and up to 1000 mm, then choose an outline.')) : null),
+      h('div', { role: 'status', 'aria-atomic': true, 'data-rk-field-fragment-result': true, style: { fontSize: 13, lineHeight: 1.6 } },
+        compared ? h('p', null, h('strong', null, tr('fragment_reference', 'Reference measurement: 20 mm across, with a rounded outline.')), ' ',
+          Math.abs(width - 20) <= 2 ? tr('fragment_width_close', 'Your estimate is within 2 mm of the reference.') : tr('fragment_width_revisit', 'Subtract the left reading from the right reading: 25 mm minus 5 mm gives 20 mm.'),
+          ' ', shape === 'rounded' ? tr('fragment_shape_close', 'Your outline description matches the field note.') : tr('fragment_shape_revisit', 'Trace the smooth changes in direction. An angular outline would have distinct sharp turns.'),
+          ' ', tr('fragment_collected', 'The size and shape observations are ready to cite below.')) : null));
+  }
+
   function rkRenderFieldCases(h, opts) {
     var state = opts.state && typeof opts.state === 'object' ? opts.state : {};
     var T = opts.T;
@@ -5027,14 +5441,15 @@
     var records = state.records && typeof state.records === 'object' ? state.records : {};
     var entry = records[current.id] && typeof records[current.id] === 'object' ? records[current.id] : {};
     var validIds = current.clues.map(function (clue) { return clue.id; });
-    var validList = function (list, allowed) { return Array.isArray(list) ? list.filter(function (id, i) { return allowed.indexOf(id) >= 0 && list.indexOf(id) === i; }) : []; };
+    var validList = rkFieldValidIds;
     var observed = validList(entry.observed, validIds);
     var cited = validList(entry.cited, observed);
     var claim = current.candidates.indexOf(entry.claim) >= 0 ? entry.claim : '';
     var reasoning = typeof entry.reasoning === 'string' ? entry.reasoning.slice(0, 6000) : '';
     var attempts = Array.isArray(entry.attempts) ? entry.attempts.filter(function (a) { return a && typeof a === 'object'; }).slice(-30) : [];
     var solved = entry.solved === true;
-    var feedback = typeof entry.feedback === 'string' ? entry.feedback : '';
+    var currentStep = rkFieldNextStep(current, entry, T);
+    var feedback = currentStep.feedback;
     var rockFor = function (id) { return opts.rocks.find(function (r) { return r.id === id; }); };
     var rockName = function (id) { var rock = typeof id === 'string' ? rockFor(id) : null; return rock ? rock.label : tr('none_yet', 'None yet.'); };
     var say = function (text) { if (typeof opts.announce === 'function') opts.announce(text); };
@@ -5053,22 +5468,34 @@
       save({ cited: cited.indexOf(id) >= 0 ? cited.filter(function (x) { return x !== id; }) : cited.concat(id), feedback: '' });
     };
     var ready = observed.length >= 2 && cited.length >= 2 && !!claim && reasoning.trim().length > 0;
-    var feedbackText = function (result) {
+    var feedbackText = function (result, c, candidate, evidence) {
+      c = c || current;
+      candidate = candidate === undefined ? claim : candidate;
+      evidence = Array.isArray(evidence) ? evidence : [];
       if (result === 'needs-evidence') return tr('needs_evidence', 'Choose at least two collected observations, select a rock, and explain the connection before checking.');
-      if (result === 'revise-claim') return tr('revise_claim', 'Reconsider your rock choice. Compare the grain structure and composition with the alternatives, then revise your claim. Your observations and earlier attempt are kept.');
-      if (result === 'revise-evidence') return tr('revise_evidence', 'Your rock choice fits, but your selected evidence does not yet include the two most diagnostic observations. Collect or revisit the tests and choose evidence that distinguishes the closest look-alike.');
+      if (result === 'revise-claim') {
+        if (c.claimHints && Object.prototype.hasOwnProperty.call(c.claimHints, candidate)) return tr(c.id + '_hint_' + candidate, c.claimHints[candidate]);
+        return tr('revise_claim', 'Reconsider your rock choice. Compare the grain structure and composition with the alternatives, then revise your claim. Your observations and earlier attempt are kept.');
+      }
+      if (result === 'revise-evidence') {
+        var nextClue = rkFieldMissingClue(c, evidence);
+        if (!nextClue) return tr('earlier_evidence', 'This earlier check asked for a revision. Check the claim again to review this evidence with the current guide.');
+        var hint = caseText(c, 'evidenceHint');
+        return nextClue ? hint + ' ' + tr('evidence_revisit', 'One observation to revisit') + ': ' + clueText(c, nextClue, 'title') + '.' : hint;
+      }
       if (result === 'supported') return tr('supported', 'Your identification and selected evidence fit this case. Compare your explanation with the geologist’s interpretation below. The written reasoning is for your own or your teacher’s review.');
       return '';
     };
     var check = function () {
       if (!ready) { save({ feedback: 'needs-evidence' }); say(feedbackText('needs-evidence')); return; }
-      var result = claim !== current.answer ? 'revise-claim' : current.required.every(function (id) { return cited.indexOf(id) >= 0; }) ? 'supported' : 'revise-evidence';
+      var hasSupport = rkFieldEvidenceSets(current).some(function (set) { return set.every(function (id) { return cited.indexOf(id) >= 0; }); });
+      var result = claim !== current.answer ? 'revise-claim' : hasSupport ? 'supported' : 'revise-evidence';
       var attempt = { claim: claim, cited: cited.slice(), observed: observed.slice(), reasoning: reasoning, result: result };
       var last = attempts[attempts.length - 1];
       var sameIds = function (a, b) { return Array.isArray(a) && a.slice().sort().join('|') === b.slice().sort().join('|'); };
       var duplicate = last && last.claim === claim && last.reasoning === reasoning && last.result === result && sameIds(last.cited, cited) && sameIds(last.observed, observed);
       save({ attempts: duplicate ? attempts : attempts.concat(attempt).slice(-30), feedback: result, solved: solved || result === 'supported' });
-      say(feedbackText(result));
+      say(feedbackText(result, current, claim, cited));
     };
     var completeCount = cases.filter(function (c) { return records[c.id] && records[c.id].solved === true; }).length;
     var notebook = function () {
@@ -5080,6 +5507,13 @@
         var history = Array.isArray(row.attempts) ? row.attempts.filter(function (a) { return a && typeof a === 'object'; }).slice(-30) : [];
         lines.push((index + 1) + '. ' + caseText(c, 'title'));
         lines.push(caseText(c, 'setting'));
+        if (c.id === 'rounded-river' && row.fragmentObservation) {
+          var fragment = row.fragmentObservation;
+          lines.push(fragment.compared ? tr('fragment_compared', 'Field note compared') : tr('fragment_draft', 'Observation draft'));
+          if (fragment.estimate) lines.push(tr('fragment_estimate', 'Estimated width in millimeters') + ': ' + fragment.estimate);
+          if (fragment.shape === 'rounded' || fragment.shape === 'angular') lines.push(tr('fragment_shape', 'Fragment outline') + ': ' + (fragment.shape === 'rounded' ? tr('fragment_rounded', 'Rounded') : tr('fragment_angular', 'Angular')));
+          if (fragment.compared) lines.push(tr('fragment_reference', 'Reference measurement: 20 mm across, with a rounded outline.'));
+        }
         lines.push(tr('observations', 'Collected observations') + ':');
         if (!seen.length) lines.push(tr('none_yet', 'None yet.'));
         c.clues.filter(function (clue) { return seen.indexOf(clue.id) >= 0; }).forEach(function (clue) { lines.push('- ' + clueText(c, clue, 'title') + ': ' + clueText(c, clue, 'text') + (selected.indexOf(clue.id) >= 0 ? ' [' + tr('cited', 'cited') + ']' : '')); });
@@ -5087,7 +5521,7 @@
         lines.push(tr('reasoning', 'My reasoning') + ': ' + (typeof row.reasoning === 'string' ? row.reasoning : ''));
         history.forEach(function (a, i) {
           var evidence = validList(a.cited, c.clues.map(function (clue) { return clue.id; }));
-          lines.push(tr('attempt', 'Attempt') + ' ' + (i + 1) + ': ' + (c.candidates.indexOf(a.claim) >= 0 ? rockName(a.claim) : '') + ' — ' + feedbackText(a.result));
+          lines.push(tr('attempt', 'Attempt') + ' ' + (i + 1) + ': ' + (c.candidates.indexOf(a.claim) >= 0 ? rockName(a.claim) : '') + ' — ' + feedbackText(a.result, c, a.claim, evidence));
           lines.push(tr('selected_evidence', 'Selected evidence') + ': ' + evidence.map(function (id) { return clueText(c, c.clues.find(function (clue) { return clue.id === id; }), 'title'); }).join('; '));
           lines.push(tr('reasoning', 'My reasoning') + ': ' + (typeof a.reasoning === 'string' ? a.reasoning : ''));
         });
@@ -5134,31 +5568,73 @@
           h('h3', { id: 'rk-field-title', style: { margin: '0 0 6px', fontSize: 22, fontWeight: 800 } }, tr('title', 'Geologist’s field cases')),
           h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, maxWidth: 650 } }, tr('intro', 'Build a rock identification from evidence. Collect observations, choose the strongest clues, and explain how they support your claim. You can revise your work and keep a revision trail.'))),
         h('div', { style: { padding: '10px 14px', borderRadius: 12, background: '#fef3c7', border: '1px solid #d97706', color: '#78350f', fontWeight: 800, fontSize: 13 }, 'data-rk-field-progress': completeCount }, progress)),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 8, margin: '16px 0' }, role: 'group', 'aria-label': tr('case_picker', 'Choose a field case') },
+      h('details', { className:'rk-field-picker', 'data-rk-field-picker':true, onKeyDown:function (event) {
+        if (event.key === 'Escape' && event.currentTarget.open) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.currentTarget.open = false;
+          event.currentTarget.querySelector('summary').focus();
+        }
+      } },
+      h('summary', { className:'rk-disclosure-summary' },
+        h('span', { className:'rk-field-picker-copy' },
+          h('span', null, tr('case_picker', 'Choose a field case')),
+          h('strong', { 'data-rk-field-picker-current':true }, caseText(current, 'title')))),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 8 }, role: 'group', 'aria-label': tr('case_picker', 'Choose a field case') },
         cases.map(function (c, index) {
           var active = c.id === current.id;
-          var done = records[c.id] && records[c.id].solved === true;
-          return h('button', { key: c.id, type: 'button', 'data-rk-field-case': c.id, 'aria-pressed': active, onClick: function () { opts.setState({ activeId: c.id }); }, className: buttonClass, style: { textAlign: 'left', background: active ? '#92400e' : '#fff', color: active ? '#fff' : '#334155', borderColor: active ? '#78350f' : '#94a3b8' } },
-            h('span', { style: { display: 'block', fontSize: 11, marginBottom: 3 } }, tr('case', 'Case') + ' ' + (index + 1) + (done ? ' · ' + tr('supported_short', 'Supported') : '')),
-            caseText(c, 'title'));
+          var step = active ? currentStep : rkFieldNextStep(c, records[c.id], T);
+          return h('button', { key: c.id, type: 'button', 'data-rk-field-case': c.id, 'aria-pressed': active, onClick: function (event) {
+            var origin = event && event.currentTarget;
+            var picker = origin && origin.closest && origin.closest('[data-rk-field-picker]');
+            if (picker) picker.open = false;
+            opts.setState({ activeId: c.id });
+            rkFocusFieldStep(event, c, step);
+          }, className: buttonClass, style: { textAlign: 'left', background: active ? '#92400e' : '#fff', color: active ? '#fff' : '#334155', borderColor: active ? '#78350f' : '#94a3b8' } },
+            h('span', { style: { display: 'block', fontSize: 11, marginBottom: 3 } }, tr('case', 'Case') + ' ' + (index + 1) + (step.selector === '#rk-field-debrief-title' ? ' · ' + tr('supported_short', 'Supported') : '')),
+            caseText(c, 'title'),
+            h('span', { 'data-rk-field-next': c.id, style: { display: 'block', marginTop: 4, fontSize: 13, fontWeight: 500, lineHeight: 1.5 } }, step.label));
+        }))),
+      h('nav', { className:'rk-field-stages', 'aria-label':tr('stage_navigation', 'Investigation steps'), 'data-rk-field-stages':true },
+        [
+          { id:'observe', label:tr('stage_observe', 'Observe'), selector:'#rk-field-observe-title' },
+          { id:'explain', label:tr('stage_explain', 'Explain'), selector:'#rk-field-explain-title' },
+          { id:'review', label:tr('stage_review', 'Review'), selector:'#rk-field-debrief-title' }
+        ].map(function (stage, index) {
+          return h('button', { key:stage.id, type:'button', 'data-rk-field-stage':stage.id,
+            'aria-current':currentStep.phase === stage.id ? 'step' : undefined,
+            disabled:stage.id === 'review' && !solved,
+            'aria-describedby':stage.id === 'review' && !solved ? 'rk-field-review-help' : undefined,
+            onClick:function (event) { rkFocusFieldStep(event, current, stage); } },
+            h('span', null, String(index + 1)), h('span', null, stage.label),
+            currentStep.phase === stage.id ? h('span', { className:'rk-field-stage-current' }, tr('current_step', 'Current step')) : null);
         })),
+      h('div', { className:'rk-field-next-action', 'data-rk-field-next-action':currentStep.phase },
+        h('div', { className:'rk-field-next-copy' },
+          h('strong', null, tr('next_action', 'Your next step')),
+          h('p', null, observed.length + ' / ' + validIds.length + ' ' + tr('observations_recorded', 'observations recorded') + ' · ' + cited.length + ' ' + tr('observations_cited', 'selected as evidence')),
+          !solved ? h('p', { id:'rk-field-review-help' }, tr('review_available', 'Review opens after your claim and evidence are supported.')) : null),
+        h('button', { type:'button', 'data-rk-field-continue':true,
+          onClick:function (event) { rkFocusFieldStep(event, current, currentStep); } }, currentStep.label)),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,320px),1fr))', alignItems: 'start', gap: 16 } },
         h('div', { style: cardStyle },
-          h('h4', { style: { margin: '0 0 8px', fontSize: 18, fontWeight: 800 }, 'data-rk-field-current': current.id }, caseText(current, 'title')),
+          h('h4', { id: 'rk-field-case-title', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 18, fontWeight: 800 }, 'data-rk-field-current': current.id }, caseText(current, 'title')),
           h('p', { style: { margin: '0 0 16px', fontSize: 14, lineHeight: 1.6 } }, caseText(current, 'setting')),
           rkFieldContextScene(h, current, T),
-          h('h5', { style: { margin: '0 0 8px', fontSize: 14, fontWeight: 800 } }, '1. ' + tr('collect', 'Collect your observations')),
+          h('h5', { id:'rk-field-observe-title', tabIndex:-1, style: { margin: '0 0 8px', fontSize: 14, fontWeight: 800 } }, '1. ' + tr('collect', 'Collect your observations')),
+          current.id === 'rounded-river' ? rkFieldFragmentMeasurement(h, tr, entry, observed, save, state.fragmentNeedsInput === true, function () { opts.setState({ fragmentNeedsInput: true }); }) : null,
           current.clues.map(function (clue, index) {
             var seen = observed.indexOf(clue.id) >= 0;
+            var revisit = feedback === 'revise-evidence' && currentStep.selector === '[data-rk-field-observe="' + clue.id + '"]';
             return h('div', { key: current.id + clue.id, style: { marginTop: 8, padding: 12, background: seen ? '#ecfdf5' : '#f8fafc', border: '1px solid ' + (seen ? '#6ee7b7' : '#cbd5e1'), borderRadius: 10 } },
-              h('button', { type: 'button', 'data-rk-field-observe': clue.id, disabled: seen, 'aria-expanded': seen, 'aria-controls': 'rk-field-clue-' + clue.id, onClick: function () { collect(clue.id); }, className: buttonClass, style: { width: '100%', textAlign: 'left', background: '#fff', color: '#1e293b', borderColor: '#94a3b8', cursor: seen ? 'default' : 'pointer' } },
+              h('button', { type: 'button', 'data-rk-field-observe': clue.id, 'aria-disabled': seen, 'aria-expanded': seen, 'aria-controls': 'rk-field-clue-' + clue.id, 'aria-describedby': seen ? 'rk-field-clue-' + clue.id : revisit ? 'rk-field-feedback' : undefined, onClick: function () { collect(clue.id); }, className: buttonClass, style: { width: '100%', textAlign: 'left', background: '#fff', color: '#1e293b', borderColor: '#94a3b8', cursor: seen ? 'default' : 'pointer' } },
                 (seen ? '✓ ' : (index + 1) + '. ') + clueText(current, clue, 'title')),
               seen ? h('p', { id: 'rk-field-clue-' + clue.id, style: { margin: '10px 0 0', color: '#064e3b', fontSize: 13, lineHeight: 1.6 }, 'data-rk-field-observation': clue.id }, clueText(current, clue, 'text')) : h('span', { id: 'rk-field-clue-' + clue.id, hidden: true }));
           })),
         h('div', { style: cardStyle },
-          h('h5', { style: { margin: '0 0 12px', fontSize: 14, fontWeight: 800 } }, '2. ' + tr('build_claim', 'Build a supported claim')),
+          h('h5', { id:'rk-field-explain-title', tabIndex:-1, style: { margin: '0 0 12px', fontSize: 14, fontWeight: 800 } }, '2. ' + tr('build_claim', 'Build a supported claim')),
           h('label', { htmlFor: 'rk-field-claim', style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 5 } }, tr('claim', 'My identification')),
-          h('select', { id: 'rk-field-claim', value: claim, 'data-rk-field-claim': true, onChange: function (event) { save({ claim: event.target.value, feedback: '' }); }, style: { width: '100%', minHeight: 44, padding: 8, border: '1px solid #64748b', borderRadius: 8, background: '#fff', color: '#1e293b', fontSize: 14 } },
+          h('select', { id: 'rk-field-claim', value: claim, 'data-rk-field-claim': true, 'aria-describedby': feedback === 'revise-claim' ? 'rk-field-feedback' : undefined, onChange: function (event) { save({ claim: event.target.value, feedback: '' }); }, style: { width: '100%', minHeight: 44, padding: 8, border: '1px solid #64748b', borderRadius: 8, background: '#fff', color: '#1e293b', fontSize: 14 } },
             h('option', { value: '' }, tr('choose_rock', 'Choose a rock')),
             current.candidates.map(function (id) { return h('option', { key: id, value: id }, rockName(id)); })),
           claim && rockFor(claim) ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, margin: '12px 0', padding: 10, borderRadius: 10, background: '#f8fafc' } },
@@ -5168,21 +5644,21 @@
             h('legend', { style: { fontSize: 13, fontWeight: 800, marginBottom: 8 } }, tr('cite_two', 'Select at least two observations as evidence')),
             observed.length ? current.clues.filter(function (clue) { return observed.indexOf(clue.id) >= 0; }).map(function (clue) {
               return h('label', { key: clue.id, style: { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, cursor: 'pointer', fontSize: 13 } },
-                h('input', { type: 'checkbox', checked: cited.indexOf(clue.id) >= 0, 'data-rk-field-cite': clue.id, onChange: function () { toggleCitation(clue.id); }, style: { width: 20, height: 20, flexShrink: 0, accentColor: '#92400e' } }), clueText(current, clue, 'title'));
+                h('input', { type: 'checkbox', checked: cited.indexOf(clue.id) >= 0, 'data-rk-field-cite': clue.id, 'aria-describedby': feedback === 'revise-evidence' && currentStep.selector === '[data-rk-field-cite="' + clue.id + '"]' ? 'rk-field-feedback' : undefined, onChange: function () { toggleCitation(clue.id); }, style: { width: 20, height: 20, flexShrink: 0, accentColor: '#92400e' } }), clueText(current, clue, 'title'));
             }) : h('p', { style: { fontSize: 13, color: '#475569', lineHeight: 1.5 } }, tr('collect_first', 'Collect observations in step 1. Each one can then be selected here.'))),
           h('label', { htmlFor: 'rk-field-reasoning', style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 5 } }, tr('reasoning', 'My reasoning')),
           h('p', { id: 'rk-field-reasoning-help', style: { margin: '0 0 8px', fontSize: 12, color: '#475569', lineHeight: 1.5 } }, tr('reasoning_hint', 'I think the sample is ___ because ___. This differs from ___ because ___. What does that suggest about how it formed?')),
           h('textarea', { id: 'rk-field-reasoning', 'data-rk-field-reasoning': true, 'aria-describedby': 'rk-field-reasoning-help', value: reasoning, maxLength: 6000, onChange: function (event) { save({ reasoning: event.target.value.slice(0, 6000), feedback: '' }); }, rows: 4, style: { width: '100%', boxSizing: 'border-box', padding: 10, border: '1px solid #64748b', borderRadius: 8, resize: 'vertical', background: '#fff', color: '#1e293b', fontSize: 14, lineHeight: 1.6 } }),
           h('button', { type: 'button', 'data-rk-field-check': true, onClick: check, className: buttonClass, style: { marginTop: 12, background: '#92400e', borderColor: '#78350f', color: '#fff' }, 'aria-describedby': 'rk-field-check-help' }, tr('check', 'Check claim and evidence')),
           h('p', { id: 'rk-field-check-help', style: { margin: '8px 0 0', fontSize: 12, color: '#475569', lineHeight: 1.5 } }, tr('check_hint', 'The check compares your rock choice and selected observations. Your explanation stays in the notebook for discussion.')),
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { marginTop: feedback ? 12 : 0 }, 'data-rk-field-feedback': feedback }, feedback ? h('p', { style: { margin: 0, padding: 12, fontSize: 13, lineHeight: 1.6, borderRadius: 10, color: feedback === 'supported' ? '#064e3b' : '#78350f', background: feedback === 'supported' ? '#d1fae5' : '#fef3c7', border: '1px solid ' + (feedback === 'supported' ? '#059669' : '#d97706') } }, feedbackText(feedback)) : null),
+          h('div', { id: 'rk-field-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { marginTop: feedback ? 12 : 0 }, 'data-rk-field-feedback': feedback }, feedback ? h('p', { style: { margin: 0, padding: 12, fontSize: 13, lineHeight: 1.6, borderRadius: 10, color: feedback === 'supported' ? '#064e3b' : '#78350f', background: feedback === 'supported' ? '#d1fae5' : '#fef3c7', border: '1px solid ' + (feedback === 'supported' ? '#059669' : '#d97706') } }, feedbackText(feedback, current, claim, cited)) : null),
           attempts.length ? h('details', { style: { marginTop: 14 } },
             h('summary', { style: { minHeight: 44, fontWeight: 800, cursor: 'pointer', fontSize: 13 } }, tr('attempts', 'My earlier attempts') + ' (' + attempts.length + ')'),
             h('p', { style: { fontSize: 12, lineHeight: 1.5, color: '#475569' } }, tr('attempt_limit', 'The notebook keeps the latest 30 distinct attempts for each case.')),
             h('ol', { style: { paddingLeft: 22, fontSize: 13, lineHeight: 1.6 } }, attempts.map(function (a, i) { return h('li', { key: i, style: { marginBottom: 12 } },
-              h('strong', null, rockName(a.claim)), h('p', { style: { margin: '3px 0' } }, typeof a.reasoning === 'string' ? a.reasoning : ''), h('p', { style: { margin: '3px 0', color: '#475569' } }, feedbackText(a.result))); }))) : null)),
+              h('strong', null, rockName(a.claim)), h('p', { style: { margin: '3px 0' } }, typeof a.reasoning === 'string' ? a.reasoning : ''), h('p', { style: { margin: '3px 0', color: '#475569' } }, feedbackText(a.result, current, a.claim, a.cited))); }))) : null)),
       solved ? h('section', { 'data-rk-field-debrief': current.id, 'aria-labelledby': 'rk-field-debrief-title', style: { marginTop: 16, padding: 18, border: '1px solid #059669', background: '#ecfdf5', color: '#064e3b', borderRadius: 14 } },
-        h('h4', { id: 'rk-field-debrief-title', style: { margin: '0 0 10px', fontSize: 17, fontWeight: 800 } }, '3. ' + tr('interpretation', 'Geologist’s interpretation')),
+        h('h4', { id: 'rk-field-debrief-title', tabIndex: -1, style: { margin: '0 0 10px', fontSize: 17, fontWeight: 800 } }, '3. ' + tr('interpretation', 'Geologist’s interpretation')),
         h('p', { style: { margin: '0 0 10px', fontSize: 14, lineHeight: 1.7 } }, caseText(current, 'explanation')),
         h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.7 } }, h('strong', null, tr('alternatives', 'Compare the alternatives') + ': '), caseText(current, 'alternatives')),
         h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.7 } }, h('strong', null, tr('limits', 'What this evidence cannot tell us') + ': '), caseText(current, 'limit')),
@@ -5219,7 +5695,7 @@
     var note = typeof notes[pairKey] === 'string' ? notes[pairKey] : '';
     var field = { width: '100%', minWidth: 0, minHeight: 44, padding: '9px 11px', border: '1px solid #64748b', borderRadius: 8, color: '#0f172a', background: '#ffffff', fontSize: 14 };
     var button = { minHeight: 44, padding: '8px 12px', border: '1px solid #64748b', borderRadius: 9, color: '#1e293b', background: '#ffffff', fontWeight: 700, fontSize: 13 };
-    var panel = { padding: 16, border: '1px solid #cbd5e1', borderRadius: 14, background: '#ffffff', color: '#0f172a', minWidth: 0 };
+    var panel = { padding: 18, border: '1px solid #cbd5e1', borderRadius: 16, background: '#ffffff', color: '#0f172a', minWidth: 0 };
     var grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: 12 };
     var label = function (key, fallback) { return T('stem.rocks.compare_' + key, fallback); };
     var changePair = function (a, b) { o.setState({ left: a, right: b, exportText: '', message: '' }); };
@@ -5285,42 +5761,51 @@
           } }, kind === 'rocks' ? label('rocks', 'Compare rocks') : label('minerals', 'Compare minerals'));
         })),
         h('p', { style: { fontSize: 12, margin: '12px 0 0', color: '#334155' } }, mineral ? label('mineral_limit', 'Minerals have characteristic compositions and crystal structures. Hardness and density here are representative values; the Mohs scale ranks scratch resistance and is not a linear scale.') : label('rock_limit', 'A rock is an aggregate of minerals or mineral matter. Compare textures and formation clues; a mixed rock does not have one universal Mohs hardness.'))),
-      h('div', { style: panel },
-        h('p', { style: { fontSize: 13, fontWeight: 800, margin: '0 0 8px' } }, label('presets', 'Start with a useful pair')),
+      h('details', { className:'rk-compare-presets', 'data-rk-compare-presets':true, style: panel, onKeyDown:function (event) {
+        if (event.key === 'Escape' && event.currentTarget.open) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.currentTarget.open = false;
+          event.currentTarget.querySelector('summary').focus();
+        }
+      } },
+        h('summary', { className:'rk-disclosure-summary' }, label('presets', 'Start with a useful pair')),
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, presets.map(function (pair) {
           var a = byId(pair[0]), b = byId(pair[1]); if (!a || !b) return null;
-          return h('button', { key: pair.join(':'), type: 'button', 'data-rk-compare-preset': pair.join(':'), 'aria-pressed': left.id === a.id && right.id === b.id, style: button, onClick: function () { changePair(a.id, b.id); } }, a.label + ' / ' + b.label);
+          var active = left.id === a.id && right.id === b.id;
+          return h('button', { key: pair.join(':'), type: 'button', 'data-rk-compare-preset': pair.join(':'), 'aria-pressed': active, style: Object.assign({},button,active ? {background:'#115e59',color:'#fff',borderColor:'#115e59'} : {}), onClick: function () { changePair(a.id, b.id); } }, a.label + ' / ' + b.label);
         }))),
-      h('div', { style: grid }, [left, right].map(function (r, i) {
+      h('div', { className:'rk-compare-specimens', style: grid }, [left, right].map(function (r, i) {
         var side = i === 0 ? 'left' : 'right';
         return h('article', { key: side, 'data-rk-compare-specimen': side, style: Object.assign({}, panel, { borderTop: '4px solid ' + (i === 0 ? '#0f766e' : '#7c3aed') }) },
           h('label', { htmlFor: 'rk-compare-' + side, style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 8 } }, h('span', { className:'rk-specimen-number', 'aria-hidden':true }, i === 0 ? '01' : '02'), i === 0 ? label('left', 'First specimen') : label('right', 'Second specimen')),
           h('select', { id: 'rk-compare-' + side, value: r.id, 'data-rk-compare-select': side, style: field, onChange: function (e) { choose(side, e.target.value); } }, pool.map(function (v) { return h('option', { key: v.id, value: v.id }, v.label); })),
           h('div', { 'aria-hidden': true, className: 'rk-comparison-stage' }, mineral ? rkMineralSwatch(h, r, 128) : rkRockSwatch(h, r, 128)),
+          h('h5', { className:'rk-compare-name', 'data-rk-compare-name':side }, r.label),
           h('p', { style: { fontSize:11, color:'#475569', margin:'6px 0 0', textAlign:'center' } }, label('illustration_scale', 'Illustrated specimen · not to scale')),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '10px 0' } }, mineral ? o.luster(r) + ' · ' + (o.habit(r) || o.crystal(r.crystal)) : o.gloss(r.texture, r.id)),
           h('button', { type: 'button', style: button, 'data-rk-compare-open': r.id, onClick: function () { o.open(r.id, mineral); } }, label('open', 'Explore specimen') + ': ' + r.label));
       })),
-      h('div', { style: panel },
+      h('div', { className:'rk-compare-evidence', 'data-rk-compare-evidence':true, style: panel },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
           h('h4', { style: { fontSize: 17, fontWeight: 800, margin: 0 } }, label('property_title', 'Compare the evidence')),
           h('label', { style: { minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700 } },
             h('input', { type: 'checkbox', checked: !!s.differencesOnly, 'data-rk-compare-differences': true, onChange: function (e) { o.setState({ differencesOnly: e.target.checked }); } }), label('only_differences', 'Show differences only'))),
         h('p', { 'role': 'status', style: { fontSize: 12, color: '#475569', marginBottom: 10 } }, different.length + ' / ' + rows.length + ' ' + label('different_count', 'reference properties differ. Not every difference is diagnostic.')),
         displayRows.map(function (r) { return h('div', { key: r.id, 'data-rk-compare-row': r.id, style: { borderTop: '1px solid #cbd5e1', padding: '12px 0' } },
-          h('h5', { style: { fontWeight: 800, fontSize: 13, margin: '0 0 8px' } }, r.name + (r.a === r.b ? ' · ' + label('shared', 'shared') : '')),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 } }, [r.a, r.b].map(function (v, i) { return h('div', { key: i, style: { fontSize: 13, lineHeight: 1.6, overflowWrap: 'anywhere' } },
-            h('span', { style: { display: 'block', fontSize: 11, fontWeight: 800, color: i === 0 ? '#115e59' : '#6d28d9' } }, i === 0 ? left.label : right.label), v); })));
+          h('h5', { style: { fontWeight: 800, fontSize: 15, margin: '0 0 10px' } }, r.name + (r.a === r.b ? ' · ' + label('shared', 'shared') : '')),
+          h('div', { className:'rk-compare-values' }, [r.a, r.b].map(function (v, i) { return h('div', { key: i, className:'rk-compare-value' },
+            h('span', { className:'rk-compare-value-name' }, h('span', {className:'rk-specimen-number','aria-hidden':true},i === 0 ? '01' : '02'), i === 0 ? left.label : right.label), v); })));
         }),
-        distinction ? h('p', { 'data-rk-compare-diagnostic': true, style: { background: '#fffbeb', borderLeft: '4px solid #b45309', padding: 12, fontSize: 14, lineHeight: 1.6 } }, distinction) : null,
-        mineral ? h('div', { style: { background: '#f0fdfa', padding: 12, borderRadius: 10 } },
+        distinction ? h('p', { className:'rk-compare-diagnostic', 'data-rk-compare-diagnostic': true, style: { background: '#fffbeb', borderLeft: '4px solid #b45309', padding: 12, fontSize: 14, lineHeight: 1.6 } }, distinction) : null,
+        mineral ? h('div', { className:'rk-compare-scratch', style: { background: '#f0fdfa', padding: 14, borderRadius: 12 } },
           h('label', { htmlFor: 'rk-compare-reference', style: { display: 'block', fontWeight: 800, fontSize: 13, marginBottom: 5 } }, label('scratch_reference', 'Predict a scratch test with the same reference')),
           h('select', { id: 'rk-compare-reference', value: [2.5, 3.5, 5.5, 6.5, 9].indexOf(Number(s.reference)) >= 0 ? Number(s.reference) : 5.5, style: field, onChange: function (e) { o.setState({ reference: Number(e.target.value) }); } },
             [[2.5, label('ref_finger', 'Fingernail')], [3.5, label('ref_copper', 'Copper reference')], [5.5, label('ref_glass', 'Glass reference')], [6.5, label('ref_plate', 'Streak plate')], [9, label('ref_corundum', 'Corundum')]].map(function (v) { return h('option', { key: v[0], value: v[0] }, v[1] + ' · ' + v[0]); })),
-          h('ul', { style: { margin: '10px 0 0', paddingLeft: 18, fontSize: 13 }, 'aria-live': 'polite' }, [left, right].map(function (r) {
+          h('ul', { className:'rk-compare-scratch-results', role:'list', style: { margin: '12px 0 0', fontSize: 14 }, 'aria-live': 'polite' }, [left, right].map(function (r) {
             var ref = [2.5, 3.5, 5.5, 6.5, 9].indexOf(Number(s.reference)) >= 0 ? Number(s.reference) : 5.5;
             var result = rkScratchOutcome(ref, r.hardness);
-            return h('li', { key: r.id, 'data-rk-compare-scratch': r.id + ':' + result }, r.label + ': ' + (result === 'scratched' ? label('scratched', 'the reference scratches the specimen') : result === 'borderline' ? label('borderline', 'equal modeled hardness; retest with another reference') : label('not_scratched', 'the reference does not scratch the specimen')));
+            return h('li', { key: r.id, 'data-rk-compare-scratch': r.id + ':' + result }, h('strong',null,r.label), (result === 'scratched' ? label('scratched', 'the reference scratches the specimen') : result === 'borderline' ? label('borderline', 'equal modeled hardness; retest with another reference') : label('not_scratched', 'the reference does not scratch the specimen')));
           }))) : null),
       h('div', { style: panel },
         h('label', { htmlFor: 'rk-compare-note', style: { display: 'block', fontSize: 16, fontWeight: 800, marginBottom: 5 } }, label('my_explanation', 'My explanation')),
@@ -5361,7 +5846,7 @@
     return bytes;
   }
 
-  function rkNotebookCleanData(data, config) {
+  function rkNotebookCleanData(data, config, schema) {
     var fail = function (path, problem) { throw new Error('Notebook: ' + path + ' ' + problem + '.'); };
     var own = function (object, key) { return Object.prototype.hasOwnProperty.call(object, key); };
     var object = function (value, path, allowed) {
@@ -5404,7 +5889,7 @@
     var rockIds = config.rockIds, mineralIds = config.mineralIds, cases = config.cases;
     if (!Array.isArray(rockIds) || !Array.isArray(mineralIds) || !Array.isArray(cases)) fail('configuration', 'is incomplete');
     var caseIds = cases.map(function (item) { return item.id; });
-    data = object(data, 'data', ['compare', 'fieldCases', 'archive', 'densityLab', 'specimenNotes']);
+    data = object(data, 'data', ['compare', 'fieldCases', 'archive', 'densityLab', 'specimenNotes', 'weathHunt']);
 
     var comparison = object(optional(data.compare, {}), 'compare', ['notes', 'kind', 'left', 'right']);
     var noteMap = object(optional(comparison.notes, {}), 'compare.notes');
@@ -5428,12 +5913,26 @@
     var records = {};
     var feedbacks = ['', 'needs-evidence', 'revise-claim', 'revise-evidence', 'supported'];
     var cleanCaseWork = function (work, c, path, attempt) {
-      object(work, path, attempt ? ['observed', 'cited', 'claim', 'reasoning', 'result'] : ['observed', 'cited', 'claim', 'reasoning', 'attempts', 'feedback', 'solved']);
+      var allowed = attempt ? ['observed', 'cited', 'claim', 'reasoning', 'result'] : ['observed', 'cited', 'claim', 'reasoning', 'attempts', 'feedback', 'solved'];
+      if (!attempt && c.id === 'rounded-river' && schema !== 1 && schema !== 2) allowed.push('fragmentObservation');
+      object(work, path, allowed);
       var clues = c.clues.map(function (clue) { return clue.id; });
       var observed = list(optional(work.observed, []), clues, path + '.observed');
       var cited = list(optional(work.cited, []), observed, path + '.cited');
       var claim = enumeration(optional(work.claim, ''), [''].concat(c.candidates), path + '.claim');
       var result = { observed: observed, cited: cited, claim: claim, reasoning: string(optional(work.reasoning, ''), path + '.reasoning', 6000) };
+      if (work.fragmentObservation !== undefined) {
+        var fragmentPath = path + '.fragmentObservation';
+        var fragment = object(work.fragmentObservation, fragmentPath, ['estimate', 'shape', 'compared']);
+        var estimate = string(fragment.estimate, fragmentPath + '.estimate', 12);
+        var shape = enumeration(fragment.shape, ['', 'rounded', 'angular'], fragmentPath + '.shape');
+        var compared = bool(fragment.compared, fragmentPath + '.compared');
+        if (compared) {
+          var value = Number(estimate.trim().replace(',', '.'));
+          if (!shape || !/^(?:\d+(?:[.,]\d+)?|[.,]\d+)$/.test(estimate.trim()) || value <= 0 || value > 1000) fail(fragmentPath, 'requires a valid measurement and shape before comparison');
+        }
+        result.fragmentObservation = { estimate: estimate, shape: shape, compared: compared };
+      }
       if (attempt) result.result = enumeration(work.result, feedbacks.slice(2), path + '.result');
       else {
         result.solved = bool(optional(work.solved, false), path + '.solved');
@@ -5477,6 +5976,43 @@
     });
 
     var clean = { compare: compare, fieldCases: fieldCases, archive: archive };
+    if (data.weathHunt !== undefined) {
+      var fromSession = schema === 'session';
+      var weatherKeys = ['tempSwing', 'rainMm', 'pH', 'rock', 'hypothesis', 'explanation', 'log', 'understood', 'stuckRevealed', 'modelOn'];
+      var weather = object(data.weathHunt, 'weathHunt', fromSession ? weatherKeys.concat('rainfall') : weatherKeys);
+      var weatherRocks = ['granite', 'limestone', 'sandstone'];
+      var climateNumber = function (v, min, max, path) {
+        // Earlier sessions could store slider values as strings. Files use numbers.
+        if (fromSession && typeof v === 'string' && v.trim()) v = Number(v);
+        return number(v, min, max, path);
+      };
+      var rainfall = function (millimetres, oldScale, path, fallback) {
+        if (fromSession && millimetres == null && oldScale != null) return climateNumber(oldScale, 0, 500, path) * 6;
+        return climateNumber(optional(millimetres, fallback), 0, 3000, path);
+      };
+      clean.weathHunt = {
+        tempSwing: climateNumber(optional(weather.tempSwing, 20), 0, 50, 'weathHunt.tempSwing'),
+        rainMm: rainfall(weather.rainMm, weather.rainfall, 'weathHunt.rainMm', 1200),
+        pH: climateNumber(optional(weather.pH, 5.6), 3, 8, 'weathHunt.pH'),
+        rock: enumeration(optional(weather.rock, 'granite'), weatherRocks, 'weathHunt.rock'),
+        hypothesis: string(optional(weather.hypothesis, ''), 'weathHunt.hypothesis', RK_NOTEBOOK_MAX_BYTES),
+        explanation: string(optional(weather.explanation, ''), 'weathHunt.explanation', RK_NOTEBOOK_MAX_BYTES),
+        understood: bool(optional(weather.understood, false), 'weathHunt.understood'),
+        stuckRevealed: bool(optional(weather.stuckRevealed, false), 'weathHunt.stuckRevealed'),
+        modelOn: bool(optional(weather.modelOn, false), 'weathHunt.modelOn'),
+        log: array(optional(weather.log, []), 'weathHunt.log', 8).map(function (entry, i) {
+          var path = 'weathHunt.log[' + i + ']';
+          object(entry, path, fromSession ? ['t', 'rm', 'r', 'p', 'rk', 'st'] : ['t', 'rm', 'p', 'rk', 'st']);
+          return {
+            t: climateNumber(entry.t, 0, 50, path + '.t'),
+            rm: rainfall(entry.rm, entry.r, path + '.rm'),
+            p: climateNumber(entry.p, 3, 8, path + '.p'),
+            rk: enumeration(fromSession ? optional(entry.rk, 'granite') : entry.rk, weatherRocks, path + '.rk'),
+            st: enumeration(entry.st, ['chemDom', 'physDom', 'mixed', 'minimal'], path + '.st')
+          };
+        })
+      };
+    }
     if (data.specimenNotes !== undefined) {
       var specimenMap = object(data.specimenNotes, 'specimenNotes');
       if (Object.keys(specimenMap).length > rockIds.length + mineralIds.length) fail('specimenNotes', 'exceeds the number of known specimens');
@@ -5535,19 +6071,21 @@
       return out;
     };
     if (!toolData || typeof toolData !== 'object' || Array.isArray(toolData)) throw new Error('Notebook: tool data must be an object.');
-    var journal = pick(toolData, ['specimenNotes']).specimenNotes;
+    var sections = pick(toolData, ['specimenNotes', 'weathHunt']);
+    var journal = sections.specimenNotes;
     var data = {
       compare: pick(toolData.compare, ['notes', 'kind', 'left', 'right']),
       fieldCases: pick(toolData.fieldCases, ['activeId', 'records']),
       archive: toolData.wb && toolData.wb.archive !== undefined ? toolData.wb.archive : [],
-      specimenNotes: journal === undefined ? {} : journal
+      specimenNotes: journal === undefined ? {} : journal,
+      weathHunt: pick(sections.weathHunt, ['tempSwing', 'rainMm', 'rainfall', 'pH', 'rock', 'hypothesis', 'explanation', 'log', 'understood', 'stuckRevealed', 'modelOn'])
     };
     if (toolData.densityLab !== undefined) data.densityLab = pick(toolData.densityLab, ['mineralId', 'volume', 'initialWater', 'measured', 'estimate', 'units', 'prediction', 'explanation', 'trials']);
-    return rkNotebookCleanData(data, config);
+    return rkNotebookCleanData(data, config, 'session');
   }
 
   function rkNotebookEncode(toolData, config) {
-    var envelope = { format: 'alloflow-rocks-notebook', version: 2, createdAt: new Date().toISOString(), data: rkNotebookSnapshot(toolData, config) };
+    var envelope = { format: 'alloflow-rocks-notebook', version: 3, createdAt: new Date().toISOString(), data: rkNotebookSnapshot(toolData, config) };
     var text = JSON.stringify(envelope, null, 2);
     if (rkNotebookByteLength(text) > RK_NOTEBOOK_MAX_BYTES) throw new Error('Notebook: saved work exceeds the 1 MB file limit. Download individual reports instead.');
     return text;
@@ -5565,13 +6103,16 @@
     } catch (e) { throw new Error('Notebook: file is not valid notebook JSON or contains a forbidden property.'); }
     if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) throw new Error('Notebook: file must contain a notebook object.');
     if (envelope.format !== 'alloflow-rocks-notebook') throw new Error('Notebook: this file is not an AlloFlow rocks notebook.');
-    if (envelope.version !== 1 && envelope.version !== 2) throw new Error('Notebook: this notebook version is not supported.');
+    if ([1, 2, 3].indexOf(envelope.version) < 0) throw new Error('Notebook: this notebook version is not supported.');
     if (Object.keys(envelope).some(function (key) { return ['format', 'version', 'createdAt', 'data'].indexOf(key) < 0; })) throw new Error('Notebook: file contains unsupported top-level fields.');
     if (typeof envelope.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(envelope.createdAt) || !Number.isFinite(Date.parse(envelope.createdAt)) || new Date(envelope.createdAt).toISOString() !== envelope.createdAt) throw new Error('Notebook: creation time must be a valid ISO date.');
     var hasJournal = envelope.data && Object.prototype.hasOwnProperty.call(envelope.data, 'specimenNotes');
     if (envelope.version === 1 && hasJournal) throw new Error('Notebook: version 1 does not support specimen notes.');
-    if (envelope.version === 2 && !hasJournal) throw new Error('Notebook: version 2 must include specimen notes.');
-    return rkNotebookCleanData(envelope.data, config);
+    if (envelope.version >= 2 && !hasJournal) throw new Error('Notebook: version ' + envelope.version + ' must include specimen notes.');
+    var hasWeather = envelope.data && Object.prototype.hasOwnProperty.call(envelope.data, 'weathHunt');
+    if (envelope.version < 3 && hasWeather) throw new Error('Notebook: this version does not support weathering investigations.');
+    if (envelope.version === 3 && !hasWeather) throw new Error('Notebook: version 3 must include weathering investigations.');
+    return rkNotebookCleanData(envelope.data, config, envelope.version);
   }
   // END ROCKS NOTEBOOK CODEC
 
@@ -5579,6 +6120,9 @@
   // A single review surface for the learner's written work. Backup payloads
   // contain only validated learning records, never the host or active timers.
   var rkNotebookReadSequence = 0;
+  function rkDensityBalanceReading(density, volume) {
+    return Math.round(density * volume * 10 + 1e-8) / 10;
+  }
   function rkRenderNotebook(h, o) {
     var d = o.data || {}, ui = o.state || {}, T = o.T;
     var tr = function (key, fallback) { return T('stem.rocks.notebook_' + key, fallback); };
@@ -5586,6 +6130,19 @@
     var button = { background: '#ffffff', color: '#1e3a8a', border: '1px solid #64748b', borderRadius: 8, minHeight: 44, padding: '9px 12px', fontSize: 13, fontWeight: 700 };
     var input = { width: '100%', minWidth: 0, boxSizing: 'border-box', padding: 10, border: '1px solid #64748b', borderRadius: 8, background: '#ffffff', color: '#0f172a', fontSize: 13 };
     var grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', alignItems: 'start', gap: 12 };
+    var sectionLink = function (headingId, label, count) {
+      return h('a', {
+        key: headingId, href: '#' + headingId, 'data-rk-nb-jump': headingId,
+        onClick: function (event) {
+          var notebook = event.currentTarget.closest('[data-rk-notebook]');
+          var heading = notebook && notebook.querySelector('#' + headingId);
+          if (!heading) return;
+          event.preventDefault();
+          heading.focus({ preventScroll: true });
+          if (typeof heading.scrollIntoView === 'function') heading.scrollIntoView({ block: 'start' });
+        }
+      }, count !== undefined && h('strong', null, count), h('span', null, label));
+    };
     var data, dataError = false;
     try { data = rkNotebookSnapshot(d, o.config); }
     catch (e) { dataError = true; data = { compare: { notes: {} }, fieldCases: { records: {} }, archive: [], densityLab: { trials: [] }, specimenNotes: {} }; }
@@ -5611,36 +6168,66 @@
     var records = data.fieldCases.records;
     var archive = data.archive;
     var trials = data.densityLab && Array.isArray(data.densityLab.trials) ? data.densityLab.trials : [];
-    var casesStarted = o.config.cases.filter(function (c) { var r = records[c.id]; return r && (r.observed.length || r.claim || r.reasoning); });
+    var weather = data.weathHunt;
+    var weatherTrials = weather ? weather.log : [];
+    var hasWeather = weather && (weatherTrials.length || weather.hypothesis || weather.explanation || weather.tempSwing !== 20 || weather.rainMm !== 1200 || weather.pH !== 5.6 || weather.rock !== 'granite' || weather.understood || weather.stuckRevealed || weather.modelOn);
+    var climateDescription = function (rock, swing, rain, pH) {
+      var rockLabel = rock === 'limestone' ? T('stem.rocks.weath_rock_carbonate', 'Limestone or marble') : name(rock);
+      return rockLabel + ' · ΔT ' + swing + ' °C · ' + T('stem.rocks.weath_log_rain', 'rain') + ' ' + rain + ' mm/yr · pH ' + pH;
+    };
+    var weatherOutcome = function (id) {
+      var labels = { chemDom: ['wx_map_chem', 'Chemical wins'], physDom: ['wx_map_phys', 'Physical wins'], mixed: ['wx_map_mixed', 'Both at work'], minimal: ['wx_map_minimal', 'Little weathering'] };
+      return T('stem.rocks.' + labels[id][0], labels[id][1]);
+    };
     var complete = o.config.cases.filter(function (c) { return records[c.id] && records[c.id].solved; }).length;
     var say = function (message) { o.setState({ message: message }); if (typeof o.announce === 'function') o.announce(message); };
     var caseTitle = function (c) { return T('stem.rocks.field_' + c.id + '_title', c.title); };
     var clueTitle = function (c, id) { var clue = c.clues.find(function (x) { return x.id === id; }); return clue ? T('stem.rocks.field_' + c.id + '_' + id + '_title', clue.title) : ''; };
-    var report = function () {
-      var lines = [tr('title', 'My geology notebook'), tr('report_boundary', 'Learner notes and modeled investigations. Written explanations are for discussion, not automatically graded.'), '', tr('journal', 'Specimen study journal')];
-      if (!journal.length) lines.push(tr('empty_journal', 'Bookmark a catalogue specimen or write a note or question on its detail card to keep it here.'));
+    // Both text exports use the same formatters. The selected report passes an
+    // explicit allowlist down to the individual journal observation or question.
+    var report = function (selected) {
+      var includes = function (id) { return !selected || selected.has(id); };
+      var hasSection = function (group) { return !selected || shareGroups[group].items.some(function (item) { return selected.has(item.id); }); };
+      var lines = [selected ? tr('share_report_title', 'My selected geology work') : tr('title', 'My geology notebook'), tr('report_boundary', 'Learner notes and modeled investigations. Written explanations are for discussion, not automatically graded.'), ''];
+      if (hasSection('journal')) lines.push(tr('journal', 'Specimen study journal'));
+      if (!selected && !journal.length) lines.push(tr('empty_journal', 'Bookmark a catalogue specimen or write a note or question on its detail card to keep it here.'));
       journal.forEach(function (entry) {
+        var showNote = includes('journal:' + entry[0]), showQuestion = includes('question:' + entry[0]);
+        if (!showNote && !showQuestion) return;
         lines.push(specimenName(entry[0]) + ' · ' + (entry[0].split(':')[0] === 'rocks' ? tr('rock', 'Rock') : tr('mineral', 'Mineral')));
-        if (entry[1].bookmarked) lines.push(tr('bookmarked', 'Bookmarked'));
-        if (entry[1].note) lines.push(tr('study_note', 'My study note') + ': ' + entry[1].note);
-        if (entry[1].question) lines.push(tr('study_question', 'My question') + ': ' + entry[1].question);
+        if (showNote && entry[1].bookmarked) lines.push(tr('bookmarked', 'Bookmarked'));
+        if (showNote && entry[1].note) lines.push(tr('study_note', 'My study note') + ': ' + entry[1].note);
+        if (showQuestion && entry[1].question) lines.push(tr('study_question', 'My question') + ': ' + entry[1].question);
         lines.push('');
       });
-      lines.push(tr('comparisons', 'Comparison notes'));
-      if (!notes.length) lines.push(tr('empty_notes', 'No comparison explanations yet.'));
-      notes.forEach(function (entry) { var pair = entry[0].split(':'); lines.push(name(pair[1]) + ' / ' + name(pair[2]), entry[1], ''); });
-      lines.push(tr('cases', 'Field investigations'));
+      if (hasSection('comparisons')) lines.push(tr('comparisons', 'Comparison notes'));
+      if (!selected && !notes.length) lines.push(tr('empty_notes', 'No comparison explanations yet.'));
+      notes.forEach(function (entry) {
+        if (!includes('compare:' + entry[0])) return;
+        var pair = entry[0].split(':');
+        lines.push(name(pair[1]) + ' / ' + name(pair[2]), entry[1], '');
+      });
+      if (hasSection('field')) lines.push(tr('cases', 'Field investigations'));
       o.config.cases.forEach(function (c) {
-        var r = records[c.id]; if (!r) return;
+        var r = records[c.id]; if (!r || !includes('field:' + c.id)) return;
         lines.push(caseTitle(c));
+        if (r.fragmentObservation) {
+          var fragment = r.fragmentObservation;
+          lines.push(fragment.compared ? T('stem.rocks.field_fragment_compared', 'Field note compared') : T('stem.rocks.field_fragment_draft', 'Observation draft'));
+          if (fragment.estimate) lines.push(T('stem.rocks.field_fragment_estimate', 'Estimated width in millimeters') + ': ' + fragment.estimate);
+          if (fragment.shape) lines.push(T('stem.rocks.field_fragment_shape', 'Fragment outline') + ': ' + (fragment.shape === 'rounded' ? T('stem.rocks.field_fragment_rounded', 'Rounded') : T('stem.rocks.field_fragment_angular', 'Angular')));
+          if (fragment.compared) lines.push(T('stem.rocks.field_fragment_reference', 'Reference measurement: 20 mm across, with a rounded outline.'));
+        }
         c.clues.filter(function (clue) { return r.observed.indexOf(clue.id) >= 0; }).forEach(function (clue) { lines.push('- ' + clueTitle(c, clue.id) + ': ' + T('stem.rocks.field_' + c.id + '_' + clue.id + '_text', clue.text)); });
         lines.push(tr('claim', 'Claim') + ': ' + name(r.claim), tr('cited', 'Selected evidence') + ': ' + r.cited.map(function (id) { return clueTitle(c, id); }).join('; '), tr('reasoning', 'Reasoning') + ': ' + r.reasoning);
         r.attempts.forEach(function (a, i) { lines.push(tr('attempt', 'Attempt') + ' ' + (i + 1) + ': ' + name(a.claim), a.cited.map(function (id) { return clueTitle(c, id); }).join('; '), a.reasoning); });
         if (r.solved) lines.push(tr('interpretation', 'Reference interpretation') + ': ' + T('stem.rocks.field_' + c.id + '_explanation', c.explanation));
         lines.push('');
       });
-      lines.push(tr('density', 'Density experiments'));
-      trials.forEach(function (trial, i) { lines.push(tr('trial', 'Trial') + ' ' + (i + 1) + ': ' + name(trial.mineralId),
+      if (hasSection('density')) lines.push(tr('density', 'Density experiments'));
+      trials.forEach(function (trial, i) {
+        if (!includes('density:' + i)) return;
+        lines.push(tr('trial', 'Trial') + ' ' + (i + 1) + ': ' + name(trial.mineralId),
         tr('mass', 'Mass') + ': ' + trial.mass + ' g',
         tr('water_before', 'Water before') + ': ' + trial.initialWater + ' mL',
         tr('water_after', 'Water after') + ': ' + trial.finalWater + ' mL',
@@ -5648,28 +6235,155 @@
         tr('calculated_density', 'Density from measurements') + ': ' + trial.density + ' g/cm³',
         tr('entered_density', 'My calculation') + ': ' + trial.estimate + ' ' + (trial.units === 'kg/m3' ? 'kg/m³' : trial.units === 'g/mL' ? 'g/mL' : 'g/cm³'),
         tr('prediction', 'My prediction') + ': ' + trial.prediction, tr('explanation', 'My explanation') + ': ' + trial.explanation, ''); });
-      if (data.densityLab) {
+      if (data.densityLab && includes('density:draft')) {
         lines.push(tr('density_draft', 'Current density investigation draft') + ': ' + name(data.densityLab.mineralId),
           tr('prediction', 'My prediction') + ': ' + data.densityLab.prediction,
           tr('entered_density', 'My calculation') + ': ' + data.densityLab.estimate + ' ' + (data.densityLab.units === 'kg/m3' ? 'kg/m³' : data.densityLab.units === 'g/mL' ? 'g/mL' : 'g/cm³'),
           tr('explanation', 'My explanation') + ': ' + data.densityLab.explanation);
+        if (selected) {
+          var lab = data.densityLab;
+          lines.push(tr('share_sample_setting', 'Sample volume setting') + ': ' + lab.volume + ' cm³',
+            tr('share_water_setting', 'Starting water setting') + ': ' + lab.initialWater + ' mL');
+          if (lab.measured.mass) {
+            var mineral = o.minerals.find(function (item) { return item.id === lab.mineralId; });
+            if (mineral) lines.push(tr('mass', 'Mass') + ': ' + rkDensityBalanceReading(mineral.density, lab.volume) + ' g');
+          }
+          if (lab.measured.before) lines.push(tr('water_before', 'Water before') + ': ' + lab.initialWater + ' mL');
+          if (lab.measured.before && lab.measured.after) lines.push(tr('water_after', 'Water after') + ': ' + (lab.initialWater + lab.volume) + ' mL');
+        }
       }
-      lines.push('', tr('mineral_reports', 'Completed mineral investigations'));
-      archive.forEach(function (entry) { lines.push(entry.report, tr('reflection', 'Reflection') + ': ' + entry.reflection, ''); });
+      if (hasSection('weathering')) lines.push('', tr('weathering', 'Weathering investigation'));
+      if (hasWeather && includes('weathering:investigation')) {
+        lines.push(tr('current_climate', 'Current conditions') + ': ' + climateDescription(weather.rock, weather.tempSwing, weather.rainMm, weather.pH));
+        if (weather.hypothesis) lines.push(tr('weather_hypothesis', 'My weathering hypothesis') + ': ' + weather.hypothesis);
+        weatherTrials.forEach(function (trial, i) {
+          lines.push(tr('trial', 'Trial') + ' ' + (i + 1) + ': ' + climateDescription(trial.rk, trial.t, trial.rm, trial.p) + ' · ' + weatherOutcome(trial.st));
+        });
+        if (weather.explanation) lines.push(tr('explanation', 'My explanation') + ': ' + weather.explanation);
+      } else if (!selected) lines.push(tr('empty_weathering', 'Test how rainfall, temperature swings, and rain acidity affect a rock.'));
+      if (hasSection('archive')) lines.push('', tr('mineral_reports', 'Completed mineral investigations'));
+      archive.forEach(function (entry) {
+        if (includes('archive:' + entry.id)) lines.push(entry.report, tr('reflection', 'Reflection') + ': ' + entry.reflection, '');
+      });
       return lines.join('\n');
     };
-    var download = function (text, filename, mime) {
+    var download = function (text, filename, mime, forSharing) {
       var url, link;
       try {
         url = URL.createObjectURL(new Blob([text], { type: mime })); link = document.createElement('a');
         link.href = url; link.download = filename; document.body.appendChild(link); link.click();
-        say(tr('downloaded', 'Notebook download requested.'));
-      } catch (e) { o.setState({ exportText: text, message: tr('manual', 'Download unavailable. Select and copy the text below, or save it to a file.') }); }
+        if (forSharing) o.setState({ shareMessage: tr('share_downloaded', 'Selected report download requested.') });
+        else say(tr('downloaded', 'Notebook download requested.'));
+      } catch (e) {
+        if (forSharing) {
+          o.setState({ shareMessage: tr('share_manual', 'Download unavailable. Select and copy your preview text.') });
+          focusShare('rk-nb-share-text');
+        } else o.setState({ exportText: text, message: tr('manual', 'Download unavailable. Select and copy the text below, or save it to a file.') });
+      }
       finally { if (link && link.parentNode) link.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
     };
     var prepareImport = function (text) {
       try { var restored = rkNotebookDecode(text, o.config); o.setState({ pending: restored, reading: false, importError: false, message: tr('review_import', 'File checked. Review the saved work below before replacing your notebook.') }); }
       catch (e) { o.setState({ pending: null, reading: false, importError: true, message: tr('invalid_import', 'This file is not a supported geology notebook, contains invalid records, or is too large. Your current work has not changed.') }); }
+    };
+    var shareGroups = {
+      journal: { title: tr('journal', 'Specimen study journal'), items: [] },
+      comparisons: { title: tr('comparisons', 'Comparison notes'), items: [] },
+      field: { title: tr('cases', 'Field investigations'), items: [] },
+      density: { title: tr('density', 'Density experiments'), items: [] },
+      weathering: { title: tr('weathering', 'Weathering investigation'), items: [] },
+      archive: { title: tr('mineral_reports', 'Completed mineral investigations'), items: [] }
+    };
+    var addChoice = function (group, id, label, key) {
+      shareGroups[group].items.push({ id: id, label: label, key: key || id });
+    };
+    journal.forEach(function (entry) {
+      var key = entry[0], record = entry[1], label = specimenName(key) + ' · ';
+      if (record.note.trim() || record.bookmarked) addChoice('journal', 'journal:' + key, label + (record.note.trim() ? tr('study_note', 'My study note') : tr('bookmarked', 'Bookmarked')));
+      if (record.question.trim()) addChoice('journal', 'question:' + key, label + tr('study_question', 'My question'));
+    });
+    notes.forEach(function (entry) {
+      var pair = entry[0].split(':');
+      addChoice('comparisons', 'compare:' + entry[0], name(pair[1]) + ' / ' + name(pair[2]));
+    });
+    o.config.cases.forEach(function (c) {
+      var record = records[c.id];
+      if (!record) return;
+      var fragment = record.fragmentObservation;
+      if (record.observed.length || record.claim || record.reasoning.trim() || record.solved || record.attempts.length || (fragment && (fragment.estimate.trim() || fragment.shape || fragment.compared))) {
+        addChoice('field', 'field:' + c.id, caseTitle(c));
+      }
+    });
+    trials.forEach(function (trial, i) {
+      var id = 'density:' + i;
+      // A full log drops its oldest row. Bind consent to the normalized trial
+      // content as well as its position so a different row cannot inherit it.
+      addChoice('density', id, tr('trial', 'Trial') + ' ' + (i + 1) + ' · ' + name(trial.mineralId) + ' · ' + trial.mass + ' g / ' + trial.volume + ' cm³', id + ':' + JSON.stringify(trial));
+    });
+    var draft = dataError ? null : data.densityLab;
+    if (draft && (draft.prediction.trim() || draft.explanation.trim() || draft.estimate.trim() || draft.measured.mass || draft.measured.before || draft.measured.after || draft.mineralId !== 'quartz' || draft.volume !== 10 || draft.initialWater !== 30 || draft.units !== 'g/cm3')) {
+      addChoice('density', 'density:draft', tr('density_draft', 'Current density investigation draft') + ' · ' + name(draft.mineralId));
+    }
+    if (hasWeather) addChoice('weathering', 'weathering:investigation', tr('share_weathering_work', 'Weathering settings, trials, hypothesis, and explanation'));
+    archive.forEach(function (entry) {
+      addChoice('archive', 'archive:' + entry.id, name(entry.specimenId) + ' #' + entry.id.replace('investigation-', '') + ' · ' + tr('share_report_reflection', 'Report and reflection'));
+    });
+
+    var shareItems = Object.values(shareGroups).reduce(function (items, group) { return items.concat(group.items); }, []);
+    var savedKeys = new Set(Array.isArray(ui.shareKeys) ? ui.shareKeys : []);
+    var selectedItems = shareItems.filter(function (item) { return savedKeys.has(item.key); });
+    var selectedIds = new Set(selectedItems.map(function (item) { return item.id; }));
+    var previewText = typeof ui.sharePreview === 'string' && ui.sharePreview && selectedItems.length && ui.sharePreview === report(selectedIds) ? ui.sharePreview : '';
+    var focusShare = function (id) {
+      setTimeout(function () { var target = document.getElementById(id); if (target) target.focus(); }, 0);
+    };
+    var changeChoices = function (items, include) {
+      var keys = new Set(selectedItems.map(function (item) { return item.key; }));
+      items.forEach(function (item) { if (include) keys.add(item.key); else keys.delete(item.key); });
+      o.setState({ shareKeys: Array.from(keys), sharePreview: '', shareMessage: '' });
+    };
+    var renderShareGroup = function (key) {
+      var group = shareGroups[key], items = group.items;
+      var count = items.filter(function (item) { return selectedIds.has(item.id); }).length;
+      var labelStyle = { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, fontSize: 14, cursor: 'pointer', overflowWrap: 'anywhere' };
+      return h('fieldset', { key: key, style: { margin: 0, padding: '4px 12px 12px', minWidth: 0, border: '1px solid #94a3b8', borderRadius: 10 } },
+        h('legend', { style: { padding: '0 4px', fontWeight: 750 } }, group.title),
+        h('label', { style: labelStyle }, h('input', { type: 'checkbox', checked: !!items.length && count === items.length, disabled: !items.length,
+          'data-rk-nb-share-group': key, ref: function (input) { if (input) input.indeterminate = count > 0 && count < items.length; },
+          onChange: function (e) { changeChoices(items, e.target.checked); } }),
+          tr('share_all_group', 'Include all') + ' · ' + group.title + ' (' + items.length + ')'),
+        items.map(function (item) {
+          return h('label', { key: item.key, style: labelStyle }, h('input', { type: 'checkbox', checked: selectedIds.has(item.id), 'data-rk-nb-share-item': item.id, onChange: function (e) { changeChoices([item], e.target.checked); } }), item.label);
+        }));
+    };
+    var shareSection = function () {
+      return h('section', { style: panel, 'aria-labelledby': 'rk-nb-share-title' },
+        h('h4', { id: 'rk-nb-share-title', tabIndex: -1, style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('share_title', 'Share selected work')),
+        h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, tr('share_help', 'Choose the entries to include in a readable text report. Specimen questions have their own checkboxes. Preview the exact text before downloading.')),
+        h('details', { 'data-rk-nb-share-chooser': true },
+          h('summary', { id: 'rk-nb-share-summary', style: { minHeight: 44, padding: '12px', fontWeight: 700, cursor: 'pointer' } }, tr('share_choose', 'Choose work for my report')),
+          !shareItems.length ? h('div', null,
+            h('p', {style:{margin:'8px 0 12px'}}, dataError ? tr('share_invalid_records', 'Review the unreadable records in their original activities before preparing a report.') : tr('share_empty', 'Save a specimen note or complete part of an investigation to choose it here.')),
+            h('button', { type:'button', style:button, 'data-rk-nb-share-start':true, onClick:function () { o.resume('rocks'); } }, tr('browse_rocks', 'Browse rocks'))) : h('div', null,
+          shareItems.length ? h('div', { style: grid }, Object.keys(shareGroups).filter(function (key) { return shareGroups[key].items.length; }).map(renderShareGroup)) : null,
+          h('p', { 'data-rk-nb-share-count': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { fontWeight: 700, fontSize: 14, margin: '12px 0' } },
+            tr('share_count', 'Selected entries') + ': ' + selectedItems.length + ' / ' + shareItems.length),
+          h('div', { className:'rk-report-actions', 'data-ready':!!previewText },
+            h('button', { type: 'button', disabled: !selectedItems.length, 'data-rk-nb-share-preview': true, onClick: function () {
+              o.setState({ sharePreview: report(selectedIds), shareMessage: '' });
+              focusShare('rk-nb-share-text');
+            } }, tr('share_preview', 'Preview selected report')),
+            h('button', { type: 'button', disabled: !previewText, 'data-rk-nb-share-download': true, onClick: function () {
+              if (previewText) download(previewText, 'my-selected-geology-work.txt', 'text/plain;charset=utf-8', true);
+            } }, tr('share_download', 'Download selected report')),
+            h('button', { type: 'button', disabled: !selectedItems.length, 'data-rk-nb-share-clear': true, onClick: function () {
+              o.setState({ shareKeys: [], sharePreview: '', shareMessage: '' });
+              focusShare('rk-nb-share-summary');
+            } }, tr('share_clear', 'Clear report selection'))),
+          previewText ? h('div', { style: { marginTop: 12 } },
+            h('label', { htmlFor: 'rk-nb-share-text', style: { fontWeight: 700 } }, tr('share_preview_text', 'Selected report preview')),
+            h('textarea', { id: 'rk-nb-share-text', readOnly: true, rows: 9, value: previewText, style: Object.assign({}, input, { minHeight: 160, resize: 'vertical' }) })) : null,
+          h('p', { role: 'status', 'aria-live': 'polite', style: { fontSize: 13 } }, previewText ? ui.shareMessage || '' : ''))));
     };
     var readFile = function (event) {
       var file = event.target.files && event.target.files[0]; event.target.value = ''; if (!file) return;
@@ -5700,11 +6414,22 @@
       h('header', { style: Object.assign({}, panel, { background: '#eff6ff', borderColor: '#1d4ed8' }) },
         h('p', { style: { color: '#1e40af', fontSize: 11, fontWeight: 800, letterSpacing: '.12em', margin: '0 0 5px' } }, tr('eyebrow', 'YOUR EVIDENCE, IN ONE PLACE')),
         h('h3', { id: 'rk-notebook-title', style: { fontSize: 24, fontWeight: 800, margin: '0 0 8px' } }, tr('title', 'My geology notebook')),
-        h('p', { style: { fontSize: 14, lineHeight: 1.6, margin: 0 } }, tr('intro_journal', 'Review your specimen notes, comparisons, field observations, measurements, and completed mineral reports. Resume your study or save a notebook file to continue on another device.')),
-        h('div', { style: Object.assign({}, grid, { marginTop: 14 }) }, [[journal.length, tr('journal_entries', 'Specimens in my journal')], [notes.length, tr('comparisons', 'Comparison notes')], [complete + ' / ' + o.config.cases.length, tr('supported_cases', 'Field cases supported')], [trials.length, tr('density_trials', 'Recorded density trials')], [archive.length, tr('mineral_reports', 'Completed mineral investigations')]].map(function (item, i) { return h('div', { key: i, style: { background: '#ffffff', border: '1px solid #93c5fd', padding: 12, borderRadius: 10 } }, h('strong', { style: { display: 'block', fontSize: 24, color: '#1e3a8a' } }, item[0]), h('span', { style: { fontSize: 12 } }, item[1])); }))),
+        h('p', { style: { fontSize: 14, lineHeight: 1.6, margin: 0 } }, tr('intro_weathering', 'Review your specimen notes, comparisons, field observations, density and weathering trials, and completed mineral reports. Resume your study or save a notebook file to continue on another device.')),
+        h('nav', { className: 'rk-notebook-index', 'aria-labelledby': 'rk-nb-index-title' },
+          h('h4', { id: 'rk-nb-index-title' }, tr('index_title', 'Notebook sections')),
+          h('div', { className: 'rk-notebook-index-grid' },
+            sectionLink('rk-nb-journal', tr('journal_entries', 'Specimens in my journal'), journal.length),
+            sectionLink('rk-nb-comparisons', tr('comparisons', 'Comparison notes'), notes.length),
+            sectionLink('rk-nb-field', tr('supported_cases', 'Field cases supported'), complete + ' / ' + o.config.cases.length),
+            sectionLink('rk-nb-density-title', tr('density_trials', 'Recorded density trials'), trials.length),
+            sectionLink('rk-nb-weathering-title', tr('weather_trials', 'recorded weathering trials'), weatherTrials.length),
+            sectionLink('rk-nb-mineral-reports-title', tr('mineral_reports', 'Completed mineral investigations'), archive.length)),
+          h('div', { className: 'rk-notebook-index-actions' },
+            sectionLink('rk-nb-share-title', tr('index_share', 'Choose work for a report')),
+            sectionLink('rk-nb-save-title', tr('index_files', 'Full notebook files'))))),
       dataError ? h('p', { role: 'alert', style: panel }, tr('damaged', 'Some saved records could not be read. Open the original activities to review your work. You can still open a valid notebook file below.')) : null,
       h('section', { style: panel, 'aria-labelledby': 'rk-nb-journal' },
-        h('h4', { id: 'rk-nb-journal', style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('journal', 'Specimen study journal')),
+        h('h4', { id: 'rk-nb-journal', tabIndex: -1, style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('journal', 'Specimen study journal')),
         h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, journal.length ? tr('journal_help', 'Your notes and questions are saved with each catalogue specimen. Reopen a specimen to revise your thinking.') : tr('empty_journal', 'Bookmark a catalogue specimen or write a note or question on its detail card to keep it here.')),
         h('div', { className: 'rk-nb-journal-controls' },
           h('div', { className: 'rk-nb-journal-field' },
@@ -5717,7 +6442,7 @@
               h('option', { value: 'bookmarked' }, tr('journal_filter_bookmarked', 'Bookmarked')),
               h('option', { value: 'questions' }, tr('journal_filter_questions', 'Has questions')))),
           h('button', { type: 'button', style: button, 'data-rk-nb-journal-reset': true, disabled: !journalQuery && journalFilter === 'all', onClick: function (e) { o.setState({ journalQuery: '', journalFilter: 'all' }); var controls = e && e.currentTarget && e.currentTarget.closest('.rk-nb-journal-controls'); var search = controls && controls.querySelector('input'); if (search) search.focus(); } }, tr('journal_reset', 'Reset journal filters'))),
-        h('p', { id: 'rk-nb-journal-search-help', style: { fontSize: 12, lineHeight: 1.6, color: '#475569', margin: '10px 0 6px' } }, tr('journal_search_help', 'Search specimen names, your notes, or your questions. Separate words narrow the results. Entries are sorted by name. Exports include your entire journal.')),
+        h('p', { id: 'rk-nb-journal-search-help', style: { fontSize: 12, lineHeight: 1.6, color: '#475569', margin: '10px 0 6px' } }, tr('journal_browsing_help', 'Search specimen names, notes, or questions. Separate words narrow the results. Entries are sorted by name. Choose report entries under Share selected work.')),
         h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-rk-nb-journal-count': true, style: { fontSize: 13, fontWeight: 700, margin: '8px 0 12px' } }, tr('journal_showing', 'Showing') + ' ' + visibleJournal.length + ' / ' + journal.length + ' ' + tr('journal_result_entries', 'saved specimens')),
         journal.length && !visibleJournal.length ? h('p', { 'data-rk-nb-journal-empty': true, style: { padding: 14, fontSize: 14, lineHeight: 1.6, border: '1px dashed #64748b', borderRadius: 10, background: '#f8fafc' } }, tr('journal_no_matches', 'No saved specimens match these filters. Try fewer words, choose All saved, or reset the journal filters. Your notes and bookmarks are unchanged.')) : null,
         h('div', { id: 'rk-nb-journal-results', className: 'rk-nb-journal-results' }, visibleJournal.map(function (entry) { var parts = entry[0].split(':'), item = specimen(entry[0]), picture = parts[0] === 'rocks' ? o.rockPic : o.mineralPic; return h('details', { key: entry[0], 'data-rk-nb-specimen': entry[0], className: 'rk-nb-journal-entry' },
@@ -5734,38 +6459,45 @@
           h('button', { type: 'button', 'data-rk-nb-open': 'minerals', style: button, onClick: function () { o.resume('minerals'); } }, tr('browse_minerals', 'Browse minerals')))),
       h('div', { style: grid },
         h('section', { style: panel, 'aria-labelledby': 'rk-nb-comparisons' },
-          h('h4', { id: 'rk-nb-comparisons', style: { fontSize: 18, fontWeight: 800, margin: '0 0 12px' } }, tr('comparisons', 'Comparison notes')),
+          h('h4', { id: 'rk-nb-comparisons', tabIndex: -1, style: { fontSize: 18, fontWeight: 800, margin: '0 0 12px' } }, tr('comparisons', 'Comparison notes')),
           notes.length ? notes.map(function (entry) { var pair = entry[0].split(':'); return h('article', { key: entry[0], style: { borderTop: '1px solid #cbd5e1', padding: '12px 0' } },
             h('h5', { style: { fontWeight: 800, margin: '0 0 5px' } }, name(pair[1]) + ' / ' + name(pair[2])),
             h('p', { style: { fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, entry[1]),
             h('button', { type: 'button', 'data-rk-nb-resume-pair': entry[0], style: button, onClick: function () { o.resume('compare', { kind: pair[0], left: pair[1], right: pair[2] }); } }, tr('resume_pair', 'Continue this comparison'))); }) : h('p', { style: { fontSize: 13 } }, tr('empty_notes', 'No comparison explanations yet.')),
           h('button', { type: 'button', 'data-rk-nb-open': 'compare', style: button, onClick: function () { o.resume('compare'); } }, tr('start_comparing', 'Compare two specimens'))),
         h('section', { style: panel, 'aria-labelledby': 'rk-nb-field' },
-          h('h4', { id: 'rk-nb-field', style: { fontSize: 18, fontWeight: 800, margin: '0 0 12px' } }, tr('cases', 'Field investigations')),
-          o.config.cases.map(function (c) { var r = records[c.id]; return h('article', { key: c.id, style: { borderTop: '1px solid #cbd5e1', padding: '12px 0' } },
+          h('h4', { id: 'rk-nb-field', tabIndex: -1, style: { fontSize: 18, fontWeight: 800, margin: '0 0 12px' } }, tr('cases', 'Field investigations')),
+          o.config.cases.map(function (c) { var r = records[c.id], step = rkFieldNextStep(c, r, T); return h('article', { key: c.id, style: { borderTop: '1px solid #cbd5e1', padding: '12px 0' } },
             h('h5', { style: { fontWeight: 800, margin: '0 0 5px' } }, caseTitle(c)),
-            h('p', { style: { fontSize: 13, marginBottom: 8 } }, r && r.solved ? tr('supported', 'Identification supported; review your explanation.') : r && (r.observed.length || r.reasoning || r.claim) ? r.observed.length + ' / ' + c.clues.length + ' ' + tr('observations', 'observations collected') : tr('not_started', 'Not started yet')),
-            h('button', { type: 'button', style: button, 'data-rk-nb-resume-case': c.id, onClick: function () { o.resume('fieldwork', { activeId: c.id }); } }, r ? tr('resume_case', 'Resume this case') : tr('start_case', 'Start this case'))); }))),
+            h('p', { style: { fontSize: 13, marginBottom: 8 } }, step.selector === '#rk-field-debrief-title' ? tr('supported', 'Identification supported; review your explanation.') : step.started ? r.observed.length + ' / ' + c.clues.length + ' ' + tr('observations', 'observations collected') : tr('not_started', 'Not started yet')),
+            h('button', { type: 'button', style: button, 'aria-label': step.label + ' · ' + caseTitle(c), 'data-rk-nb-resume-case': c.id, onClick: function (event) { o.resume('fieldwork', { activeId: c.id }, { event: event, c: c, step: step }); } }, step.label)); }))),
       h('div', { style: grid },
-        h('section', { style: panel },
-          h('h4', { style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('density', 'Density experiments')),
+        h('section', { style: panel, 'aria-labelledby': 'rk-nb-density-title' },
+          h('h4', { id: 'rk-nb-density-title', tabIndex: -1, style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('density', 'Density experiments')),
           h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, trials.length ? trials.length + ' ' + tr('trials_ready', 'trials recorded. Revisit the measurements and compare sample sizes.') : tr('empty_density', 'Measure mass and displaced water, calculate density, and test whether a larger sample is denser.')),
           data.densityLab && data.densityLab.explanation ? h('p', { style: { fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, data.densityLab.explanation) : null,
           h('button', { type: 'button', 'data-rk-nb-open': 'densityLab', style: button, onClick: function () { o.resume('densityLab'); } }, tr('open_density', 'Open density lab'))),
-        h('section', { style: panel },
-          h('h4', { style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('mineral_reports', 'Completed mineral investigations')),
+        h('section', { style: panel, 'data-rk-nb-weathering': true, 'aria-labelledby': 'rk-nb-weathering-title' },
+          h('h4', { id: 'rk-nb-weathering-title', tabIndex: -1, style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('weathering', 'Weathering investigation')),
+          h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, hasWeather ? weatherTrials.length + ' ' + tr('weather_trials', 'recorded weathering trials') + ' · ' + climateDescription(weather.rock, weather.tempSwing, weather.rainMm, weather.pH) : tr('empty_weathering', 'Test how rainfall, temperature swings, and rain acidity affect a rock.')),
+          weather && weather.hypothesis ? h('p', { style: { fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, tr('weather_hypothesis', 'My weathering hypothesis') + ': ' + weather.hypothesis) : null,
+          weather && weather.explanation ? h('p', { style: { fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, tr('explanation', 'My explanation') + ': ' + weather.explanation) : null,
+          h('button', { type: 'button', style: button, 'data-rk-nb-open': 'weathHunt', onClick: function () { o.resume('weathHunt'); } }, hasWeather ? tr('resume_weathering', 'Resume Weathering Hunt') : tr('open_weathering', 'Open Weathering Hunt'))),
+        h('section', { style: panel, 'aria-labelledby': 'rk-nb-mineral-reports-title' },
+          h('h4', { id: 'rk-nb-mineral-reports-title', tabIndex: -1, style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('mineral_reports', 'Completed mineral investigations')),
           !archive.length ? h('p', { style: { fontSize: 13 } }, tr('empty_minerals', 'Identify an unknown in the workbench to save its observations and reasoning here.')) : archive.slice().reverse().map(function (entry) { return h('details', { key: entry.id, 'data-rk-nb-report': entry.id, style: { borderTop: '1px solid #cbd5e1', padding: '10px 0' } },
             h('summary', { style: { fontWeight: 700, minHeight: 44, cursor: 'pointer' } }, name(entry.specimenId) + ' · ' + entry.id.replace('investigation-', '#')),
             h('pre', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontFamily: 'inherit', fontSize: 13, lineHeight: 1.6 } }, entry.report),
             entry.reflection ? h('p', { style: { fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, tr('reflection', 'Reflection') + ': ' + entry.reflection) : null); }),
           h('button', { type: 'button', 'data-rk-nb-open': 'workbench', style: button, onClick: function () { o.resume('workbench'); } }, tr('open_workbench', 'Open mineral workbench')))),
+      shareSection(),
       h('section', { style: panel, 'aria-labelledby': 'rk-nb-save-title' },
-        h('h4', { id: 'rk-nb-save-title', style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('save_title', 'Keep and share your work')),
-        h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, tr('save_help_journal', 'Save a notebook file to reopen your specimen journal, comparisons, field cases, density trials, and completed reports. Download a readable report for discussion. An unfinished mineral workbench sample stays in the current session and is not included in the file.')),
+        h('h4', { id: 'rk-nb-save-title', tabIndex: -1, style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('full_title', 'Full notebook backup and report')),
+        h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, tr('save_help_weathering', 'Save a notebook file to reopen your specimen journal, comparisons, field cases, density trials, weathering investigation, and completed reports. Download a readable report for discussion. An unfinished mineral workbench sample stays in this session.')),
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, margin: '12px 0' } },
-          h('button', { type: 'button', disabled: dataError, 'data-rk-nb-save': true, style: Object.assign({}, button, { background: '#1e40af', color: '#ffffff' }), onClick: function () { try { download(rkNotebookEncode(d, o.config), 'my-geology-notebook.json', 'application/json;charset=utf-8'); } catch (e) { say(tr('save_failed', 'The notebook could not be saved. Review your records in the original activities.')); } } }, tr('save', 'Save notebook file')),
-          h('button', { type: 'button', disabled: dataError, 'data-rk-nb-report-download': true, style: button, onClick: function () { download(report(), 'my-geology-report.txt', 'text/plain;charset=utf-8'); } }, tr('download_report', 'Download readable report')),
-          h('button', { type: 'button', disabled: dataError, 'data-rk-nb-show-text': true, style: button, onClick: function () { o.setState({ exportText: report() }); } }, tr('show_text', 'Show report text'))),
+          h('button', { type: 'button', disabled: dataError, 'data-rk-nb-save': true, style: Object.assign({}, button, { background: '#1e40af', color: '#ffffff' }), onClick: function () { try { download(rkNotebookEncode(d, o.config), 'my-geology-notebook.json', 'application/json;charset=utf-8'); } catch (e) { say(tr('save_failed', 'The notebook could not be saved. Review your records in the original activities.')); } } }, tr('save_full', 'Save full notebook file')),
+          h('button', { type: 'button', disabled: dataError, 'data-rk-nb-report-download': true, style: button, onClick: function () { download(report(), 'my-geology-report.txt', 'text/plain;charset=utf-8'); } }, tr('download_full_report', 'Download full readable report')),
+          h('button', { type: 'button', disabled: dataError, 'data-rk-nb-show-text': true, style: button, onClick: function () { o.setState({ exportText: report() }); } }, tr('show_full_text', 'Show full report text'))),
         h('label', { htmlFor: 'rk-nb-file', style: { fontSize: 14, fontWeight: 700, display: 'block', marginBottom: 6 } }, tr('open_file', 'Open a saved notebook')),
         h('input', { id: 'rk-nb-file', type: 'file', accept: '.json,application/json', disabled: !!ui.reading, onChange: readFile, style: input, 'aria-describedby': 'rk-nb-file-help' }),
         h('p', { id: 'rk-nb-file-help', style: { fontSize: 12, color: '#475569' } }, tr('file_help', 'Choose a notebook saved by this tool (up to 1 MB). You will review it before it replaces any saved work.')),
@@ -5774,7 +6506,8 @@
           h('h5', { style: { fontWeight: 800, margin: '0 0 8px' } }, tr('import_title', 'Review the notebook to open')),
           h('p', { style: { fontSize: 13 } }, Object.keys(pending.compare.notes).length + ' ' + tr('comparisons', 'Comparison notes') + ' · ' + Object.keys(pending.fieldCases.records).length + ' ' + tr('cases', 'Field investigations') + ' · ' + pending.archive.length + ' ' + tr('mineral_reports', 'Completed mineral investigations') + ' · ' + ((pending.densityLab && pending.densityLab.trials) || []).length + ' ' + tr('density_trials', 'Recorded density trials')),
           h('p', { 'data-rk-nb-import-journal': true, style: { fontSize: 13 } }, pending.specimenNotes !== undefined ? Object.keys(pending.specimenNotes).length + ' ' + tr('journal_entries', 'Specimens in my journal') : tr('legacy_journal', 'This older notebook has no specimen journal. Your current specimen notes and bookmarks will be kept.')),
-          h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, pending.specimenNotes !== undefined ? tr('replace_warning_journal', 'Opening this file replaces your specimen journal, comparisons, field cases, density trials, and completed reports, including empty sections. Save your current notebook first if you want to keep it. Your active mineral sample and other tool progress stay in this session.') : tr('replace_warning', 'Opening this file replaces those four notebook sections. Save your current notebook first if you want to keep it. Your active mineral sample and other tool progress stay in this session.')),
+          h('p', { 'data-rk-nb-import-weathering': true, style: { fontSize: 13 } }, pending.weathHunt ? pending.weathHunt.log.length + ' ' + tr('weather_trials', 'recorded weathering trials') + '. ' + tr('weather_replace', 'Opening this file replaces the current weathering settings, hypothesis, trials, and explanation, including empty work.') : tr('legacy_weathering', 'This older notebook has no weathering investigation. Your current weathering work will be kept.')),
+          h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, pending.weathHunt ? tr('replace_warning_weathering', 'Opening this file replaces all six notebook sections, including empty sections. Save your current notebook first if you want to keep it. Your active mineral sample and other tool progress stay in this session.') : pending.specimenNotes !== undefined ? tr('replace_warning_journal', 'Opening this file replaces your specimen journal, comparisons, field cases, density trials, and completed reports, including empty sections. Save your current notebook first if you want to keep it. Your active mineral sample and other tool progress stay in this session.') : tr('replace_warning', 'Opening this file replaces those four notebook sections. Save your current notebook first if you want to keep it. Your active mineral sample and other tool progress stay in this session.')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
             h('button', { type: 'button', 'data-rk-nb-confirm-import': true, style: Object.assign({}, button, { background: '#92400e', color: '#ffffff' }), onClick: function () { rkNotebookReadSequence++; o.restore(pending); } }, tr('replace', 'Replace notebook with this file')),
             h('button', { type: 'button', 'data-rk-nb-cancel-import': true, style: button, onClick: function () { rkNotebookReadSequence++; o.setState({ pending: null, message: tr('cancelled', 'Opening cancelled. Your notebook is unchanged.') }); setTimeout(function () { var input = document.getElementById('rk-nb-file'); if (input) input.focus(); }, 0); } }, tr('cancel', 'Keep current notebook')))) : null,
@@ -5798,7 +6531,7 @@
     var volume = clampStep(s.volume, 5, 30, 10);
     var before = clampStep(s.initialWater, 10, 50, 30);
     var after = before + volume;
-    var mass = Math.round(mineral.density * volume * 10 + 1e-8) / 10;
+    var mass = rkDensityBalanceReading(mineral.density, volume);
     var ratio = mass / volume;
     var measured = s.measured && typeof s.measured === 'object' ? s.measured : {};
     var hasMass = measured.mass === true, hasBefore = measured.before === true, hasAfter = hasBefore && measured.after === true;
@@ -5930,13 +6663,16 @@
       var currentWater = hasAfter ? after : before;
       var y = waterY(currentWater);
       var specimenSize = 48 * Math.cbrt(volume / 10);
-      var label = tr('instrument_aria', 'Virtual balance and 100 mL graduated cylinder.') + ' ' + (hasMass ? mass.toFixed(1) + ' g. ' : tr('balance_unread', 'Balance not read yet. ')) + (hasBefore ? tr('before', 'Initial water level') + ': ' + before.toFixed(1) + ' mL. ' : '') + (hasAfter ? tr('after', 'Water level with specimen') + ': ' + after.toFixed(1) + ' mL.' : '');
-      return h('div', { tabIndex:0, role:'region', 'aria-label':tr('instrument_aria', 'Virtual balance and 100 mL graduated cylinder.'), 'data-rk-density-instrument-scroll':true, style:{ overflowX:'auto', borderRadius:14 } },
-      h('svg', { viewBox: '0 0 480 300', width: '100%', role: 'img', 'aria-label': label, 'data-rk-density-instruments': true, style: { display: 'block', minWidth:480, background: '#f5f8f5', borderRadius: 14, border: '1px solid #c9d9d5' } },
-        h('path', { d: 'M18 35H462M18 75H462M18 115H462M18 155H462M18 195H462M18 235H462M40 20V254M80 20V254M120 20V254M160 20V254M200 20V254M240 20V254M280 20V254M320 20V254M360 20V254M400 20V254M440 20V254', fill: 'none', stroke: '#e5ece7', strokeWidth: 1, 'aria-hidden': true }),
+      var unread = tr('not_measured', 'Not measured');
+      var balanceLabel = tr('mass', 'Dry specimen mass') + ': ' + (hasMass ? mass.toFixed(1) + ' g' : unread);
+      var cylinderLabel = tr('before', 'Initial water level') + ': ' + (hasBefore ? before.toFixed(1) + ' mL' : unread) + '. ' + tr('after', 'Water level with specimen') + ': ' + (hasAfter ? after.toFixed(1) + ' mL' : unread);
+      return h('div', { role:'group', 'aria-label':tr('instrument_aria', 'Virtual balance and 100 mL graduated cylinder.'), 'data-rk-density-instruments':true, className:'rk-density-instruments' },
+      h('figure', { className:'rk-density-instrument', 'data-rk-density-instrument':'balance' },
+      h('figcaption', null, tr('balance_caption', 'Dry mass · 0.1 g display')),
+      h('svg', { viewBox: '0 28 260 245', width: '100%', role: 'img', 'aria-label': balanceLabel, 'data-rk-density-balance':true },
+        h('path', { className:'rk-density-instrument-grid', d: 'M18 35H242M18 75H242M18 115H242M18 155H242M18 195H242M18 235H242M40 28V254M80 28V254M120 28V254M160 28V254M200 28V254M240 28V254', fill: 'none', stroke: '#e0e9e4', strokeWidth: 1, 'aria-hidden': true }),
         h('ellipse', { cx: 129, cy: 257, rx: 111, ry: 6, fill: '#d5e0da', 'aria-hidden': true }),
-        h('ellipse', { cx: 354, cy: 255, rx: 63, ry: 6, fill: '#d5e0da', 'aria-hidden': true }),
-        h('line', { x1: 16, x2: 464, y1: 260, y2: 260, stroke: '#7b9394', strokeWidth: 1.5 }),
+        h('line', { x1: 16, x2: 244, y1: 260, y2: 260, stroke: '#7b9394', strokeWidth: 1.5 }),
         h('rect', { x: 24, y: 188, width: 208, height: 66, rx: 13, fill: '#dce7e5', stroke: '#49636a', strokeWidth: 2 }),
         h('path', { d: 'M37 190H219Q230 190 230 201H26Q26 190 37 190Z', fill: '#f9fcfa', stroke: 'none' }),
         h('rect', { x: 42, y: 250, width: 26, height: 7, rx: 2, fill: '#49636a' }),
@@ -5948,7 +6684,13 @@
           h('polygon', { points: '4,41 0,17 18,2 40,7 50,32 37,49 15,48', fill: mineral.color, stroke: '#0f172a', strokeWidth: 2 }),
           h('path', { d: 'M0 17L24 23L40 7M24 23L37 49', fill: 'none', stroke: '#334155', strokeWidth: 2 })) : null,
         h('rect', { x: 48, y: 203, width: 160, height: 35, rx: 6, fill: '#173941', stroke: '#102e35', strokeWidth: 1 }),
-        h('text', { x: 128, y: 227, textAnchor: 'middle', fontSize: 22, fill: '#f0fdfa', fontFamily: 'ui-monospace,monospace', letterSpacing: 1 }, hasMass ? mass.toFixed(1) + ' g' : '— g'),
+        h('text', { x: 128, y: 227, textAnchor: 'middle', fontSize: 22, fill: '#f0fdfa', fontFamily: 'ui-monospace,monospace', letterSpacing: 1 }, hasMass ? mass.toFixed(1) + ' g' : '— g'))),
+      h('figure', { className:'rk-density-instrument', 'data-rk-density-instrument':'cylinder' },
+      h('figcaption', null, tr('cylinder_caption', 'Volume · 0.1 mL readout')),
+      h('svg', { viewBox:'250 28 230 245', width:'100%', role:'img', 'aria-label':cylinderLabel, 'data-rk-density-cylinder':true },
+        h('path', { className:'rk-density-instrument-grid', d:'M268 35H462M268 75H462M268 115H462M268 155H462M268 195H462M268 235H462M280 28V254M320 28V254M360 28V254M400 28V254M440 28V254', fill:'none', stroke:'#e0e9e4', strokeWidth:1, 'aria-hidden':true }),
+        h('ellipse', { cx:354, cy:255, rx:63, ry:6, fill:'#d5e0da', 'aria-hidden':true }),
+        h('line', { x1:268, x2:464, y1:260, y2:260, stroke:'#7b9394', strokeWidth:1.5 }),
         h('rect', { x: 297, y: 248, width: 114, height: 7, rx: 3, fill: '#dce7e5', stroke: '#49636a', strokeWidth: 1.5 }),
         h('path', { d: 'M312 42V238Q312 248 322 248H386Q396 248 396 238V42', fill: '#fff', stroke: '#49636a', strokeWidth: 2.5 }),
         h('path', { className: 'rk-density-waterbody', d: 'M314 ' + y + 'Q354 ' + (y + 6) + ' 394 ' + y + 'V238Q394 246 386 246H322Q314 246 314 238Z', fill: '#80ced1' }),
@@ -5956,10 +6698,8 @@
         h('path', { d: 'M320 48V238', fill: 'none', stroke: '#fff', strokeWidth: 3, opacity: .7, 'aria-hidden': true }),
         hasAfter ? h('polygon', { points: '331,232 327,225 341,' + (230 - volume * .45) + ' 365,' + (232 - volume * .45) + ' 378,231 368,241 340,240', fill: mineral.color, stroke: '#0f172a', strokeWidth: 2 }) : null,
         hasAfter ? h('line', { x1: 298, x2: 407, y1: waterY(before), y2: waterY(before), stroke: '#92400e', strokeWidth: 2, strokeDasharray: '5 4' }) : null,
-        Array.from({ length: 11 }, function (_, i) { var v = i * 10; return h('g', { key: v }, h('line', { x1: 314, x2: 328, y1: waterY(v), y2: waterY(v), stroke: '#334155', strokeWidth: 1.5 }), h('text', { x: 407, y: waterY(v) + 4, fontSize: 12, fill: ink, fontFamily: 'ui-monospace,monospace' }, String(v))); }),
-        h('text', { x: 430, y: 38, fontSize: 12, fill: ink, textAnchor: 'middle' }, 'mL'),
-        h('text', { x: 128, y: 282, fontSize: 12, fill: ink, textAnchor: 'middle' }, tr('balance_caption', 'Dry mass · 0.1 g display')),
-        h('text', { x: 354, y: 282, fontSize: 12, fill: ink, textAnchor: 'middle' }, tr('cylinder_caption', 'Volume · 0.1 mL readout'))));
+        Array.from({ length: 11 }, function (_, i) { var v = i * 10; return h('g', { key: v }, h('line', { x1: 314, x2: 328, y1: waterY(v), y2: waterY(v), stroke: '#334155', strokeWidth: 1.5 }), h('text', { x: 407, y: waterY(v) + 4, fontSize: 14, fill: ink, fontFamily: 'ui-monospace,monospace' }, String(v))); }),
+        h('text', { x: 430, y: 38, fontSize: 14, fill: ink, textAnchor: 'middle' }, 'mL'))));
     };
     var diagram = function () {
       var points = trials.slice(-12);
@@ -5982,6 +6722,12 @@
         '[data-rk-density-lab] :is(h3,h4,p,dt,dd,button,label,summary){overflow-wrap:anywhere}',
         '[data-rk-density-lab] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible{outline:3px solid #0e6572!important;outline-offset:4px!important}',
         '[data-rk-density-lab] .rk-density-button:not(:disabled):hover{box-shadow:0 2px 7px rgba(24,52,59,.12);border-color:#0e6572!important}',
+        '[data-rk-density-lab] .rk-density-instruments{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;align-items:stretch}',
+        '[data-rk-density-lab] .rk-density-instrument{display:flex;flex-direction:column;min-width:0;margin:0;padding:12px;border:1px solid #b8cfca;border-radius:14px;background:#f3f8f4}',
+        '[data-rk-density-lab] .rk-density-instrument figcaption{font-size:13px;font-weight:750;line-height:1.6;color:#245b51;overflow-wrap:anywhere}',
+        '[data-rk-density-lab] .rk-density-instrument svg{display:block;width:100%;max-width:300px;height:auto;align-self:center;margin-top:auto}',
+        '[data-rk-density-lab] .rk-density-reading{border-top:3px solid #328779!important}',
+        '@media(forced-colors:active){[data-rk-density-lab] .rk-density-reading{border-top-color:CanvasText!important}[data-rk-density-lab] .rk-density-instrument figcaption{color:CanvasText!important}[data-rk-density-lab] .rk-density-instrument-grid{display:none}}',
         '[data-rk-density-lab] .rk-density-measure-actions button{text-align:left;display:flex;align-items:center;gap:12px;position:relative}',
         '[data-rk-density-lab] .rk-density-measure-actions button::before{display:inline-grid;place-items:center;width:27px;min-width:27px;height:27px;border:1px solid currentColor;border-radius:50%;font-size:11px;font-weight:800}',
         '[data-rk-density-lab] [data-rk-density-measure="mass"]::before{content:"1"}',
@@ -5996,7 +6742,7 @@
         '[data-rk-density-lab] [data-rk-density-trials] summary{display:list-item;padding-top:4px}',
         '[data-rk-density-lab] .rk-density-table-scroll:focus-visible{outline-offset:-3px!important}',
         '@media(forced-colors:active){[data-rk-density-lab] form{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}[data-rk-density-lab] [aria-invalid="true"]{border-color:CanvasText!important}}',
-        '@media(max-width:600px){[data-rk-density-lab]{padding:12px!important;border-radius:16px!important}[data-rk-density-lab] .rk-density-card{padding:15px!important;border-radius:13px!important}[data-rk-density-lab] .rk-density-heading-mark{display:none!important}[data-rk-density-lab] #rk-density-title{font-size:22px!important}[data-rk-density-lab] .rk-density-step-heading{font-size:16px!important;gap:9px!important}[data-rk-density-lab] .rk-density-readout-value{font-size:17px!important}[data-rk-density-lab] .rk-density-actions{gap:8px!important}[data-rk-density-lab] .rk-density-actions button{flex:1 1 150px}}',
+        '@media(max-width:600px){[data-rk-density-lab]{padding:12px!important;border-radius:16px!important}[data-rk-density-lab] .rk-density-card{padding:15px!important;border-radius:13px!important}[data-rk-density-lab] .rk-density-heading-mark{display:none!important}[data-rk-density-lab] #rk-density-title{font-size:22px!important}[data-rk-density-lab] .rk-density-step-heading{font-size:16px!important;gap:9px!important}[data-rk-density-lab] .rk-density-actions{gap:8px!important}[data-rk-density-lab] .rk-density-actions button{flex:1 1 150px}}',
         '@media(forced-colors:active){[data-rk-density-lab],[data-rk-density-lab] :is(section,div,header,h3,h4,p,span,dl,dt,dd,th,td,details,summary,button,input,select,textarea,figure,svg){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}[data-rk-density-lab] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible{outline-color:Highlight!important}[data-rk-density-lab] button:disabled{color:GrayText!important;border-color:GrayText!important}[data-rk-density-lab] button[aria-pressed="true"]{color:Highlight!important;border:2px solid Highlight!important}[data-rk-density-lab] svg text{fill:CanvasText!important}[data-rk-density-lab] svg [fill]:not([fill="none"]):not(text){fill:Canvas!important}[data-rk-density-lab] svg [stroke]:not([stroke="none"]){stroke:CanvasText!important}[data-rk-density-lab] svg .rk-density-waterbody{fill:Highlight!important;fill-opacity:.3}[data-rk-density-lab] [data-rk-density-plot] circle{fill:CanvasText!important;stroke:Canvas!important}[data-rk-density-lab] a{color:LinkText!important}}'
       ].join('')),
       h('header', { style: { display: 'flex', alignItems: 'center', gap: 18, padding: '2px 2px 8px' } },
@@ -6016,15 +6762,14 @@
           h('label', { htmlFor: 'rk-density-prediction', style: labelStyle }, tr('prediction', 'My prediction')),
           h('textarea', { id: 'rk-density-prediction', 'data-rk-density-prediction': true, value: prediction, maxLength: 2000, rows: 3, onChange: function (e) { opts.setState({ prediction: e.target.value.slice(0,2000) }); }, 'aria-describedby': 'rk-density-prediction-help', style: Object.assign({}, inputStyle, { resize: 'vertical' }) }),
           h('p', { id: 'rk-density-prediction-help', style: textStyle }, tr('prediction_hint', 'If I change ___ and keep ___ the same, I predict mass will ___ and density will ___ because ___.'))),
-        h('div', { className: 'rk-density-card', style: card }, heading('2. ' + tr('measure', 'Measure mass and volume')),
-          h('p', { style:Object.assign({}, textStyle, { fontSize:12 }) }, tr('instruments_scroll', 'On smaller screens, scroll sideways across the diagram to inspect both instruments.')),
+        h('div', { className: 'rk-density-card', 'data-rk-density-measurement-section':true, style: card }, heading('2. ' + tr('measure', 'Measure mass and volume')),
           figure(),
           h('div', { className: 'rk-density-measure-actions', role: 'group', 'aria-label': tr('measure', 'Measure mass and volume'), style: { display: 'grid', gap: 8, marginTop: 16 } },
             btn((hasMass ? '✓ ' : '') + tr('weigh', 'Weigh dry specimen'), function () { measure('mass'); }, { 'data-rk-density-measure': 'mass', 'aria-pressed': hasMass, 'aria-describedby': 'rk-density-reading-mass' + (feedback === 'measure' ? ' rk-density-feedback' : '') }),
             btn((hasBefore ? '✓ ' : '') + tr('read_before', 'Read initial water level'), function () { measure('before'); }, { 'data-rk-density-measure': 'before', 'aria-pressed': hasBefore, 'aria-describedby': 'rk-density-reading-before' + (feedback === 'measure' ? ' rk-density-feedback' : '') }),
             btn((hasAfter ? '✓ ' : '') + tr('read_after', 'Immerse specimen and read final level'), function () { measure('after'); }, { 'data-rk-density-measure': 'after', disabled: !hasBefore, 'aria-pressed': hasAfter, 'aria-describedby': 'rk-density-reading-after' + (feedback === 'measure' ? ' rk-density-feedback' : ''), style: { background: hasBefore ? '#fff' : '#e2e8f0', color: '#334155', borderColor: '#64748b' } })),
           h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,115px),1fr))', gap: 8, margin: '18px 0' }, 'data-rk-density-readings': true },
-            [[tr('mass', 'Dry specimen mass'), hasMass ? mass.toFixed(1) + ' g' : '—'], [tr('before', 'Initial water level'), hasBefore ? before.toFixed(1) + ' mL' : '—'], [tr('after', 'Water level with specimen'), hasAfter ? after.toFixed(1) + ' mL' : '—']].map(function (row, index) { return h('div', { key: index, style: { padding: '12px 10px', border: '1px solid #c8dcda', borderRadius: 10, background: '#f2f8f5' } }, h('dt', { style: { fontSize: 11, lineHeight: 1.5, color: muted, marginBottom: 6 } }, row[0]), h('dd', { id: 'rk-density-reading-' + ['mass','before','after'][index], className: 'rk-density-readout-value', style: { margin: 0, fontSize: 20, fontWeight: 800, color: '#155b60', lineHeight: 1.3, fontVariantNumeric: 'tabular-nums', letterSpacing: '-.025em' } }, row[1] === '—' ? h('span', null, h('span', { 'aria-hidden': true }, '—'), h('span', { className: 'rk-density-sr-only' }, tr('not_measured', 'Not measured'))) : row[1])); })),
+            [[tr('mass', 'Dry specimen mass'), hasMass ? mass.toFixed(1) + ' g' : '—'], [tr('before', 'Initial water level'), hasBefore ? before.toFixed(1) + ' mL' : '—'], [tr('after', 'Water level with specimen'), hasAfter ? after.toFixed(1) + ' mL' : '—']].map(function (row, index) { return h('div', { key: index, className:'rk-density-reading', style: { padding: '12px 10px', border: '1px solid #c8dcda', borderRadius: 10, background: '#f2f8f5' } }, h('dt', { style: { fontSize: 12, lineHeight: 1.6, color: muted, marginBottom: 6 } }, row[0]), h('dd', { id: 'rk-density-reading-' + ['mass','before','after'][index], className: 'rk-density-readout-value', style: { margin: 0, fontSize: 22, fontWeight: 800, color: '#155b60', lineHeight: 1.4, fontVariantNumeric: 'tabular-nums', letterSpacing: '-.025em' } }, row[1] === '—' ? h('span', null, h('span', { 'aria-hidden': true }, '—'), h('span', { className: 'rk-density-sr-only' }, tr('not_measured', 'Not measured'))) : row[1])); })),
           h('p', { style: textStyle }, tr('read_note', 'Read the bottom of the water meniscus at eye level. The sketch has 10 mL guide marks; the virtual readout supplies tenths of a milliliter. The dashed line marks the initial level after immersion.')))),
       h('form', { className: 'rk-density-card', onSubmit: check, noValidate: true, 'aria-labelledby': 'rk-density-calculate-heading', style: Object.assign({}, card, { marginTop: 18 }) }, heading('3. ' + tr('calculate', 'Calculate and explain'), 'rk-density-calculate-heading'),
         h('p', { style: { background: '#edf6f0', color: '#155b60', border: '1px solid #c4ded1', borderLeft: '4px solid #328779', borderRadius: 10, padding: '15px 18px', fontSize: 15, fontWeight: 750, lineHeight: 1.8 } }, tr('formula', 'Density = dry specimen mass ÷ (final water level − initial water level). 1 mL = 1 cm³.')),
@@ -6096,8 +6841,14 @@
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var rkFallbackLabels = {"stem.chem_balance.water":"Water","stem.rock_cycle.heat_pressure":"Heat & Pressure","stem.rocks.andesite":"Andesite","stem.rocks.apatite":"Apatite","stem.rocks.azurite":"Azurite","stem.rocks.basalt":"Basalt","stem.rocks.biotite":"Biotite (Dark Mica)","stem.rocks.breccia":"Breccia","stem.rocks.calcite":"Calcite","stem.rocks.chalk":"Chalk","stem.rocks.coal":"Coal","stem.rocks.conglomerate":"Conglomerate","stem.rocks.corundum":"Corundum","stem.rocks.diamond":"Diamond","stem.rocks.diorite":"Diorite","stem.rocks.enter_fullscreen":"View the crystal model fullscreen","stem.rocks.exit_fullscreen":"Exit fullscreen crystal model (Escape)","stem.rocks.feldspar":"Feldspar","stem.rocks.fluorite":"Fluorite","stem.rocks.formed_from_compressed_layers_of":"Formed from compressed layers of sediment","stem.rocks.formed_from_cooled_magma_or":"Formed from cooled magma or lava","stem.rocks.formed_when_existing_rocks_change":"Formed when existing rocks change under heat & pressure","stem.rocks.gabbro":"Gabbro","stem.rocks.galena":"Galena","stem.rocks.garnet":"Garnet","stem.rocks.gneiss":"Gneiss","stem.rocks.granite":"Granite","stem.rocks.graphite":"Graphite","stem.rocks.gypsum":"Gypsum","stem.rocks.halite":"Halite","stem.rocks.hardness":"Hardness","stem.rocks.hematite":"Hematite","stem.rocks.igneous":"Igneous","stem.rocks.limestone":"Limestone","stem.rocks.luster":"Luster","stem.rocks.magnetite":"Magnetite","stem.rocks.malachite":"Malachite","stem.rocks.marble":"Marble","stem.rocks.metamorphic":"Metamorphic","stem.rocks.mica_muscovite":"Mica (Muscovite)","stem.rocks.obsidian":"Obsidian","stem.rocks.olivine":"Olivine","stem.rocks.phyllite":"Phyllite","stem.rocks.pumice":"Pumice","stem.rocks.pyrite":"Pyrite","stem.rocks.quartz":"Quartz","stem.rocks.quartzite":"Quartzite","stem.rocks.rhyolite":"Rhyolite","stem.rocks.rocks":"Rocks","stem.rocks.sandstone":"Sandstone","stem.rocks.schist":"Schist","stem.rocks.sedimentary":"Sedimentary","stem.rocks.shale":"Shale","stem.rocks.siltstone":"Siltstone","stem.rocks.slate":"Slate","stem.rocks.streak":"Streak","stem.rocks.sulfur":"Sulfur","stem.rocks.talc":"Talc","stem.rocks.texture":"Texture","stem.rocks.topaz":"Topaz","stem.rocks.travertine":"Travertine","stem.rocks.tuff":"Tuff","stem.rocks.uses":"Uses"};
+      var t = function (k, fb) {
+        var fallback = fb != null ? fb : Object.prototype.hasOwnProperty.call(rkFallbackLabels, k) ? rkFallbackLabels[k] : null;
+        var value;
+        try { value = typeof ctx.t === "function" ? ctx.t(k, fallback) : null; } catch (e) { value = null; }
+        return typeof value === "string" && value.trim() && value !== k ? value : fallback != null ? fallback : k;
+      };
+      var __alloT = t;
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -6123,17 +6874,34 @@
       return (function() {
 const d = labToolData.rocks || {};
 
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, rocks: { ...prev.rocks, [key]: val } }));
+          const upd = (key, val) => updMulti({ [key]: val });
 
           const updMulti = function(obj) {
             setLabToolData(function(prev) {
               var r = Object.assign({}, (prev && prev.rocks) || {});
+              // A return to the cabinet belongs to the card opened there. A
+              // later gallery, cross-reference or activity selection supersedes it.
+              if (r.cabinetOrigin && ('selectedRock' in obj || 'selectedMineral' in obj || 'mode' in obj)) delete r.cabinetOrigin;
               Object.assign(r, obj);
               return Object.assign({}, prev, { rocks: r });
             });
           };
 
-          const mode = d.mode || 'landscape';
+          const activities = [
+            {id:'landscape', label:__alloT('stem.rocks.mode_landscape', 'Landscape')},
+            {id:'rocks', label:__alloT('stem.rocks.mode_rocks', 'Rocks')},
+            {id:'minerals', label:__alloT('stem.rocks.mode_minerals', 'Minerals')},
+            {id:'compare', label:__alloT('stem.rocks.mode_compare', 'Compare')},
+            {id:'fieldwork', label:__alloT('stem.rocks.mode_fieldwork', 'Field cases')},
+            {id:'mystery', label:__alloT('stem.rocks.mystery_rock', 'Mystery Rock'), shortLabel:__alloT('stem.rocks.mystery', 'Mystery')},
+            {id:'workbench', label:__alloT('stem.rocks.mode_workbench', 'Workbench')},
+            {id:'densityLab', label:__alloT('stem.rocks.mode_density_lab', 'Density lab')},
+            {id:'quiz', label:__alloT('stem.rocks.mode_quiz', 'Quiz')},
+            {id:'weathHunt', label:__alloT('stem.rocks.weathering_lab', 'Weathering Lab'), shortLabel:__alloT('stem.rocks.weathering', 'Weathering')},
+            {id:'notebook', label:__alloT('stem.rocks.mode_notebook', 'Notebook')}
+          ];
+          const currentActivity = activities.find(activity => activity.id === d.mode) || activities[0];
+          const mode = currentActivity.id;
 
           // Auto-track rocks viewed
           if (d.selectedRock) {
@@ -7108,6 +7876,17 @@ const d = labToolData.rocks || {};
           const rkRockCatalogue = rkCatalogue('rocks'), rkMineralCatalogue = rkCatalogue('minerals');
           const rkDetailNavigation = function (kind, specimen, catalogue) {
             var matches=catalogue.matches, index=matches.findIndex(function(item){return item.id === specimen.id;});
+            var fromCabinet = kind === 'rocks' && d.cabinetOrigin === specimen.id && !!rkCollection[specimen.id];
+            var back = function (event) {
+              if (fromCabinet) {
+                var explorer = event && event.currentTarget && event.currentTarget.closest('.rk-explorer');
+                var cabinet = explorer && explorer.querySelector('[data-rk-cabinet]');
+                if (cabinet) cabinet.open = true;
+                rkRevealSoon('#rk-collection-tile-' + specimen.id);
+                return;
+              }
+              rkRevealSoon(index >= 0 ? '#rk-' + (kind === 'rocks' ? 'rock' : 'mineral') + '-tile-' + specimen.id : '#rk-catalogue-' + kind + '-search');
+            };
             var open=function(item){
               if(!item) return;
               updMulti(kind === 'rocks' ? {selectedRock:item.id,selectedMineral:null} : {selectedMineral:item.id,selectedRock:null});
@@ -7119,7 +7898,7 @@ const d = labToolData.rocks || {};
                 label,item && h('span',null,item.label));
             };
             return h('nav',{className:'rk-detail-nav','data-rk-detail-nav':kind,'aria-label':__alloT('stem.rocks.detail_navigation','Specimen navigation')},
-              h('button',{type:'button','data-rk-back-to-catalogue':kind,onClick:function(){rkRevealSoon(index >= 0 ? '#rk-' + (kind === 'rocks' ? 'rock' : 'mineral') + '-tile-' + specimen.id : '#rk-catalogue-' + kind + '-search');}},'← ' + __alloT('stem.rocks.back_to_catalogue','Back to specimens')),
+              h('button',{type:'button','data-rk-back-to-catalogue':kind,'data-rk-back-to-collection':fromCabinet ? specimen.id : undefined,onClick:back},'← ' + (fromCabinet ? __alloT('stem.rocks.cab_back','Back to collection') : __alloT('stem.rocks.back_to_catalogue','Back to specimens'))),
               h('p',{className:'rk-detail-position','data-rk-detail-position':kind},index >= 0 ? __alloT('stem.rocks.detail_position','Specimen {position} of {total} in current results').replace('{position}',String(index + 1)).replace('{total}',String(matches.length)) : __alloT('stem.rocks.detail_outside','Outside current filters')),
               h('div',{className:'rk-detail-steps'},step('previous',index > 0 ? matches[index - 1] : null),step('next',index >= 0 ? matches[index + 1] : null)),
               index < 0 && matches.length > 0 && h('button',{type:'button','data-rk-detail-first':kind,onClick:function(){open(matches[0]);}},__alloT('stem.rocks.detail_first_match','First matching specimen') + ': ' + matches[0].label)
@@ -8266,7 +9045,7 @@ const d = labToolData.rocks || {};
           // 5xl/6xl, so this stays in-house.
           return React.createElement("div", { ref: rocksRootCleanupRef, className: "rk-explorer max-w-6xl mx-auto animate-in fade-in duration-200", "data-rk-explorer": true },
             React.createElement('style', null, RK_PRESENTATION_CSS),
-            React.createElement('a', { className:'rk-skip-link', href:'#' + ({ compare:'rk-compare-title',fieldwork:'rk-field-title',densityLab:'rk-density-title',notebook:'rk-notebook-title' }[mode] || 'rk-activity-title'),
+            React.createElement('a', { className:'rk-skip-link', href:'#' + rkActivityHeading(mode),
               onClick:function (e) { e.preventDefault(); rkRevealSoon(e.currentTarget.getAttribute('href')); } }, __alloT('stem.rocks.skip_to_activity','Skip to current activity')),
 
             // Header
@@ -8281,33 +9060,22 @@ const d = labToolData.rocks || {};
 
               React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.explore_in_3d', 'Explore in 3D') + '. ' + __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] min-h-[44px] text-[0.6875rem] font-bold px-2.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100", "data-rocks-header-action": "geology-3d" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
 
-              // Always give navigation its own row; allow labels to wrap on small screens.
-              React.createElement("nav", { className: "rk-mode-nav order-3 flex w-full flex-wrap gap-1", "data-rocks-mode-nav": "responsive", 'aria-label': __alloT('stem.rocks.activity_navigation', 'Rocks and minerals activities') },
-
-                ['landscape', 'rocks', 'minerals', 'compare', 'fieldwork', 'mystery', 'workbench', 'densityLab', 'quiz', 'weathHunt', 'notebook'].map(function (m) {
-
-                  const modeLabel = m === 'notebook' ? __alloT('stem.rocks.mode_notebook', 'Notebook') : m === 'densityLab' ? __alloT('stem.rocks.mode_density_lab', 'Density lab') : m === 'compare' ? __alloT('stem.rocks.mode_compare', 'Compare') : m === 'fieldwork' ? __alloT('stem.rocks.mode_fieldwork', 'Field cases') : m === 'landscape' ? __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? __alloT('stem.rocks.mystery_rock', 'Mystery Rock') : m === 'workbench' ? __alloT('stem.rocks.mode_workbench', 'Workbench') : m === 'weathHunt' ? __alloT('stem.rocks.weathering_lab', 'Weathering Lab') : __alloT('stem.rocks.mode_quiz', 'Quiz');
-
-                  return React.createElement("button", { "aria-label": __alloT('stem.rocks.switch_to_prefix', "Switch to ") + modeLabel + __alloT('stem.rocks.mode_suffix', " mode"),
-
-                    key: m, 'aria-pressed': mode === m, 'data-rocks-mode': m, onClick: function () {
-
-                      upd("mode", m);
-
-                      // Returning to the quiz resumes the current round.
-
-                      if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + modeLabel + ' mode.', repeat: modeLabel + ' mode.', terse: m + '.' }, { debounce: 500 }); }
-
-                    }, className: "rk-mode-button min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold " + (mode === m ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
-
-                  },
-
-                    rkActivityIcon(h, m, 18), React.createElement('span', null,
-                      m === 'mystery' ? __alloT('stem.rocks.mystery', 'Mystery') : m === 'weathHunt' ? __alloT('stem.rocks.weathering', 'Weathering') : modeLabel));
-
-                })
-
-              )
+              h(RkActivityNavigation, {
+                react: React, mode: mode, label: __alloT('stem.rocks.activity_navigation', 'Rocks and minerals activities'),
+                changeLabel: __alloT('stem.rocks.change_activity', 'Change activity'), currentLabel: currentActivity.shortLabel || currentActivity.label
+              }, activities.map(function (activity) {
+                return h('button', {
+                  type: 'button', key: activity.id, 'data-rocks-mode': activity.id, 'aria-pressed': mode === activity.id,
+                  'aria-label': __alloT('stem.rocks.switch_to_prefix', 'Switch to ') + activity.label + __alloT('stem.rocks.mode_suffix', ' mode'),
+                  className: 'rk-mode-button min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold',
+                  onClick: function () {
+                    upd('mode', activity.id);
+                    if (typeof canvasNarrate === 'function') {
+                      canvasNarrate('rocks', 'mode_switch', {first:'Switched to ' + activity.label + ' mode.', repeat:activity.label + ' mode.', terse:activity.id + '.'}, {debounce:500});
+                    }
+                  }
+                }, rkActivityIcon(h, activity.id, 18), h('span', null, activity.shortLabel || activity.label));
+              }))
 
             ),
 
@@ -8445,7 +9213,16 @@ const d = labToolData.rocks || {};
                   });
                   rkRevealSoon('#rk-specimen-study-title');
                 },
-                resume: function (mode, patch) { setLabToolData(function (prev) { var r = (prev && prev.rocks) || {}, next = Object.assign({}, r, { mode: mode }); var key = mode === 'fieldwork' ? 'fieldCases' : mode; if (patch) next[key] = Object.assign({}, r[key] || {}, patch); return Object.assign({}, prev, { rocks: next }); }); rkRevealSoon('#' + ({compare:'rk-compare-title',fieldwork:'rk-field-title',densityLab:'rk-density-title'}[mode] || 'rk-activity-title')); },
+                resume: function (mode, patch, fieldTarget) {
+                  setLabToolData(function (prev) {
+                    var r = (prev && prev.rocks) || {}, next = Object.assign({}, r, { mode: mode });
+                    var key = mode === 'fieldwork' ? 'fieldCases' : mode;
+                    if (patch) next[key] = Object.assign({}, r[key] || {}, patch);
+                    return Object.assign({}, prev, { rocks: next });
+                  });
+                  if (fieldTarget) rkFocusFieldStep(fieldTarget.event, fieldTarget.c, fieldTarget.step);
+                  else rkRevealSoon('#' + ({ compare:'rk-compare-title', fieldwork:'rk-field-title', densityLab:'rk-density-title' }[mode] || 'rk-activity-title'));
+                },
                 restore: function (pending) {
                   try {
                     var imported = rkNotebookCleanData(pending, config);
@@ -8456,6 +9233,7 @@ const d = labToolData.rocks || {};
                       // A version 1 backup predates the journal. Its absent
                       // section must not erase notes written in this session.
                       if (imported.specimenNotes !== undefined) next.specimenNotes = imported.specimenNotes;
+                      if (imported.weathHunt !== undefined) next.weathHunt = imported.weathHunt;
                       return Object.assign({}, prev, { rocks: next });
                     });
                     if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.notebook_restored', 'Saved notebook opened.'));
@@ -8818,22 +9596,22 @@ const d = labToolData.rocks || {};
                     return React.createElement("div", { key: fam, className: "mb-1.5", "data-rk-shelf": fam, "data-rk-shelf-full": full ? '1' : '0' },
                       React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide mb-0.5", style: { color: ROCK_TYPES[fam].ink } },
                         ROCK_TYPES[fam].label + ' · ' + got + ' / ' + shelf.length + (full ? ' · ✓ ' + __alloT('stem.rocks.cab_full', 'shelf complete') : '')),
-                      React.createElement("div", { className: "flex flex-wrap gap-1 rounded-lg px-1.5 pt-1.5 pb-2", style: { background: 'rgba(255,255,255,0.55)', borderBottom: '5px solid #92400e', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.12)' } },
+                      React.createElement("div", { className: "rk-cabinet-shelf rounded-lg px-1.5 pt-1.5 pb-2", style: { background: 'rgba(255,255,255,0.55)', borderBottom: '5px solid #92400e', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.12)' } },
                         shelf.map(function (r) {
                           var how = rkCollection[r.id];
                           return how
                             ? React.createElement("button", {
-                                key: r.id, type: "button", "data-rk-slot": r.id, "data-rk-slot-via": how,
+                                key: r.id, type: "button", id: 'rk-collection-tile-' + r.id, "data-rk-slot": r.id, "data-rk-slot-via": how,
                                 title: r.label + ' · ' + (VIA[how] || how),
                                 "aria-label": r.label + ', ' + __alloT('stem.rocks.cab_collected_via', 'collected with the ') + (VIA[how] || how) + '. ' + __alloT('stem.rocks.cab_open', 'Open its card.'),
-                                onClick: function () { updMulti({ selectedRock: r.id, selectedMineral: null, selectedType: (d.selectedType && d.selectedType !== r.type) ? null : d.selectedType }); sfxRockClick(); },
-                                className: "flex flex-col items-center rounded-md bg-white border border-amber-300 px-0.5 py-0.5 hover:border-amber-600", style: { width: 58 }
+                                onClick: function () { updMulti({ selectedRock: r.id, selectedMineral: null, cabinetOrigin: r.id }); sfxRockClick(); rkRevealSoon('#rk-specimen-title'); },
+                                className: "flex flex-col items-center rounded-md bg-white border border-amber-300 hover:border-amber-600"
                               }, React.createElement("span", { "aria-hidden": true }, rkRockSwatch(React.createElement, r, 32)),
-                                React.createElement("span", { className: "text-[0.5625rem] font-bold text-slate-800 leading-tight text-center truncate w-full" }, r.label))
+                                React.createElement("span", { className: "rk-cabinet-label text-slate-800 text-center" }, r.label))
                             : React.createElement("span", {
                                 key: r.id, "data-rk-slot": r.id, "data-rk-slot-via": "none", role: "img",
                                 "aria-label": __alloT('stem.rocks.cab_empty', 'An empty slot: a rock you have not identified yet.'),
-                                                                className: "flex items-center justify-center rounded-md border border-amber-200", style: { width: 58, height: 50, background: 'rgba(255,255,255,0.45)' }
+                                                                className: "flex items-center justify-center rounded-md border border-amber-200", style: { background: 'rgba(255,255,255,0.45)' }
                               }, rkRockSilhouette(React.createElement, r, 32));
                         })));
                   })));
@@ -8857,15 +9635,16 @@ const d = labToolData.rocks || {};
 
                     className: "relative p-2 rounded-xl text-center border-2 transition-all hover:scale-105 " + (tileOn ? 'shadow-lg' : 'border-slate-200'),
 
-                    style: Object.assign({ background: '#ffffff', borderTopWidth: 5, borderTopColor: rt.color }, tileOn ? { borderColor: rt.color, boxShadow: '0 0 0 3px ' + rt.color + '40' } : {})
+                    style: Object.assign({ background: '#ffffff', borderTopWidth: 3, borderTopColor: rt.color, '--rk-specimen-tint':rt.color + '10', '--rk-specimen-ink':rt.ink }, tileOn ? { borderInlineColor: rt.color, borderBottomColor: rt.color, boxShadow: '0 0 0 3px ' + rt.color + '40' } : {})
 
                   },
 
                     tileGot && React.createElement("span", { "aria-hidden": true, "data-rk-grid-got": rock.id, className: "absolute top-1 right-1 inline-flex items-center justify-center rounded-full text-white font-black", style: { width: 18, height: 18, fontSize: 11, background: '#047857' } }, "✓"),
-                    React.createElement("div", { className: "flex justify-center mb-1 rounded-lg py-1", style: { background: 'radial-gradient(circle at 50% 42%, ' + rt.color + '26 0%, ' + rt.color + '0d 45%, rgba(255,255,255,0) 72%)' } }, rkRockSwatch(React.createElement, rock, 68)),
+                    React.createElement("div", { className: "rk-specimen-art" }, rkRockSwatch(React.createElement, rock, 68)),
 
-                    React.createElement("span", { className: "block text-xs font-black leading-tight", style: { color: tileOn ? rt.ink : '#0f172a' } }, rock.label),
-                    React.createElement("span", { className: "block text-[0.625rem] font-bold text-slate-600 leading-tight mt-0.5" }, rkTextureName(rock.texture, rock.id)));
+                    React.createElement("span", { className: "rk-specimen-name", style: { color: tileOn ? rt.ink : '#0f172a' } }, rock.label),
+                    React.createElement("span", { className: "rk-specimen-caption" }, rkTextureName(rock.texture, rock.id)),
+                    React.createElement("span", { className: "rk-specimen-family" }, rt.label));
 
                 })
 
@@ -8875,7 +9654,7 @@ const d = labToolData.rocks || {};
               selRock && React.createElement("div", { className: "rk-detail-card bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: ROCK_TYPES[selRock.type].color } },
                 rkDetailNavigation('rocks',selRock,rkRockCatalogue),
 
-                                React.createElement("div", { className: "flex flex-wrap gap-4", "data-rk-rock-card": selRock.id },
+                                React.createElement("div", { className: "rk-specimen-intro flex flex-wrap gap-4", "data-rk-rock-card": selRock.id },
 
                   // Hand-lens view. This was a separate canvas renderer with its
                   // own crystal geometry, so the detail view and the grid tile
@@ -8886,14 +9665,14 @@ const d = labToolData.rocks || {};
                   // simply this at a smaller size.
 
                                     React.createElement("div", {
-                    className: "shrink-0 rounded-xl border-2 p-2 flex flex-col items-center",
+                    className: "rk-specimen-close-up shrink-0 rounded-xl border-2 p-2 flex flex-col items-center",
                     role: "img", "data-rk-hero": selRock.id,
                     "aria-label": __alloT('stem.rocks.rock_texture_close_up', "Rock texture close-up") + ' — ' + selRock.label + ', ' + rkGloss(selRock.texture, selRock.id),
-                    style: { width: 168, borderColor: ROCK_TYPES[selRock.type].color + '66', background: 'radial-gradient(circle at 50% 36%, #ffffff 0%, #ffffff 30%, ' + ROCK_TYPES[selRock.type].color + '1f 62%, ' + ROCK_TYPES[selRock.type].color + '3d 100%)' }
+                    style: { width: 220, borderColor: ROCK_TYPES[selRock.type].color + '66', background: 'radial-gradient(circle at 50% 36%, #ffffff 0%, #ffffff 30%, ' + ROCK_TYPES[selRock.type].color + '1f 62%, ' + ROCK_TYPES[selRock.type].color + '3d 100%)' }
                   }, rkRockSwatch(React.createElement, selRock, 136),
                     React.createElement("span", { className: "mt-1 w-full rounded-md bg-white border border-slate-300 px-1.5 py-0.5 text-center text-[0.625rem] font-black text-slate-800 leading-tight" }, rkTextureName(selRock.texture, selRock.id))),
 
-                  React.createElement("div", { className: "flex-1", style: { minWidth: 200 } },
+                  React.createElement("div", { className: "rk-specimen-description" },
 
                     React.createElement("h4", { id:'rk-specimen-title',tabIndex:-1,className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
 
@@ -8990,7 +9769,7 @@ const d = labToolData.rocks || {};
                     React.createElement("ul", { className: "mt-2 space-y-1.5" },
                       L.into.map(function (row) {
                         return React.createElement("li", { key: row[0], className: "flex flex-wrap items-center gap-1.5 text-[0.6875rem] text-slate-800", "data-rk-link-agent": row[0] },
-                          React.createElement("span", { className: "font-black text-slate-900 shrink-0" }, (agentIcon[row[0]] || '→') + ' ' + __alloT('stem.rocks.rlink_agent_' + row[0], RK_LINK_AGENTS[row[0]]) + ' →'),
+                          React.createElement("span", { className: "font-black text-slate-900" }, (agentIcon[row[0]] || '→') + ' ' + __alloT('stem.rocks.rlink_agent_' + row[0], RK_LINK_AGENTS[row[0]]) + ' →'),
                           row[1].map(chip),
                           React.createElement("span", { className: "text-slate-700 leading-snug" }, rkLinkInto(selRock.id, row)));
                       })
@@ -10148,7 +10927,7 @@ const d = labToolData.rocks || {};
                   React.createElement("p", { className: "text-[0.625rem] text-slate-600 mb-2" },
                     __alloT('stem.rocks.query_ai_about_prefix', "Query the AI about ") + selRock.label + __alloT('stem.rocks.query_ai_suffix', "'s geologic origin, chemical properties, or tectonic significance.")
                   ),
-                  React.createElement("div", { className: "flex gap-2" },
+                  React.createElement("div", { className: "rk-specimen-question-row flex gap-2" },
                     React.createElement("input", {
                       type: "text",
                       'aria-label': __alloT('stem.rocks.ask_petrologist_question', 'Ask the AI Petrologist a question'),
@@ -10630,12 +11409,12 @@ const d = labToolData.rocks || {};
                       // the corner and its lustre under the name: the three
                       // things a mineral key asks first, readable at a glance.
                       className: "relative p-2 rounded-xl text-center border-2 transition-all hover:scale-105 " + (mOn ? 'shadow-lg' : 'border-slate-200'),
-                      style: Object.assign({ background: '#ffffff', borderTopWidth: 5, borderTopColor: mTint }, mOn ? { borderColor: '#8b5cf6', boxShadow: '0 0 0 3px rgba(139,92,246,0.25)' } : {})
+                      style: Object.assign({ background: '#ffffff', borderTopWidth: 3, borderTopColor: mTint, '--rk-specimen-tint':mTint + '16' }, mOn ? { borderInlineColor: '#8b5cf6', borderBottomColor: '#8b5cf6', boxShadow: '0 0 0 3px rgba(139,92,246,0.25)' } : {})
                     },
-                      React.createElement("div", { className: "flex justify-center mb-1 rounded-lg py-1", style: { background: 'radial-gradient(circle at 50% 45%, ' + mTint + '33 0%, rgba(255,255,255,0) 70%)' } }, rkMineralSwatch(React.createElement, mineral, 60)),
-                      React.createElement("span", { className: "block text-xs font-black leading-tight", style: { color: mOn ? '#6d28d9' : '#0f172a', background: '#ffffff' } }, mineral.label),
-                      React.createElement("span", { className: "block text-[0.625rem] font-bold text-slate-600 leading-tight mt-0.5" }, rkLusterText(mineral)),
-                      React.createElement("span", { "aria-hidden": true, "data-rk-mineral-h": mineral.hardness, className: "absolute top-1 left-1 rounded-md text-white font-black", style: { fontSize: 10, lineHeight: '14px', padding: '0 5px', background: '#334155' } }, 'H ' + mineral.hardness));
+                      React.createElement("div", { className: "rk-specimen-art" }, rkMineralSwatch(React.createElement, mineral, 60)),
+                      React.createElement("span", { className: "rk-specimen-name", style: { color: mOn ? '#6d28d9' : '#0f172a' } }, mineral.label),
+                      React.createElement("span", { className: "rk-specimen-caption" }, rkLusterText(mineral)),
+                      React.createElement("span", { "aria-hidden": true, "data-rk-mineral-h": mineral.hardness, className: "rk-specimen-hardness" }, 'H ' + mineral.hardness));
                   })
                 ),
 
@@ -10644,9 +11423,11 @@ const d = labToolData.rocks || {};
 
                 rkDetailNavigation('minerals',selMineral,rkMineralCatalogue),
 
+                React.createElement('div', { className:'rk-specimen-intro', 'data-rk-detail-intro':true },
+
                 React.createElement("h4", { id:'rk-specimen-title',tabIndex:-1,className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
 
-                React.createElement("p", { className: "text-xs text-slate-600 font-mono mb-1" }, __alloT('stem.rocks.formula_label', "Formula: ") + selMineral.formula),
+                React.createElement("p", { className: "rk-specimen-formula font-mono" }, __alloT('stem.rocks.formula_label', "Formula: ") + selMineral.formula),
 
                 // Specimen picture beside the description.
 
@@ -10654,16 +11435,16 @@ const d = labToolData.rocks || {};
 
                   (function () {
                     var tint = /^#[0-9a-fA-F]{6}$/.test(selMineral.color || '') ? selMineral.color : '#cbd5e1';
-                    return React.createElement("div", { className: "shrink-0 rounded-xl border-2 p-2 flex flex-col items-center", "aria-hidden": true, "data-rk-mineral-hero": selMineral.id,
-                      style: { width: 148, borderColor: '#c4b5fd', background: 'radial-gradient(circle at 50% 38%, #ffffff 0%, #ffffff 28%, ' + tint + '40 70%, ' + tint + '70 100%)' } },
+                    return React.createElement("div", { className: "rk-specimen-close-up shrink-0 rounded-xl border-2 p-2 flex flex-col items-center", "aria-hidden": true, "data-rk-mineral-hero": selMineral.id,
+                      style: { width: 220, borderColor: '#c4b5fd', background: 'radial-gradient(circle at 50% 38%, #ffffff 0%, #ffffff 28%, ' + tint + '40 70%, ' + tint + '70 100%)' } },
                       rkMineralSwatch(React.createElement, selMineral, 120),
                                             React.createElement("span", { className: "mt-1 w-full rounded-md bg-white border border-slate-300 px-1.5 py-0.5 text-center text-[0.625rem] font-black text-slate-800 leading-tight" }, rkCrystalName(selMineral.crystal)),
                       rkHabitText(selMineral) && React.createElement("span", { className: "mt-0.5 w-full rounded-md px-1.5 py-0.5 text-center text-[0.625rem] font-bold text-slate-700 leading-tight", style: { background: '#ffffff' }, "data-rk-mineral-habit": selMineral.habit }, rkHabitText(selMineral)));
                   })(),
 
-                  React.createElement("div", { className: "flex-1 min-w-0" },
+                  React.createElement("div", { className: "rk-specimen-description" },
 
-                                        selMineral.desc && React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selMineral.desc),
+                                        selMineral.desc && React.createElement("p", null, selMineral.desc),
                     rkRocksWith(selMineral.id).length > 0 && React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-1.5", "data-rk-found-in": selMineral.id },
                       React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-700" }, __alloT('stem.rocks.found_in_rocks', 'Found in these rocks:')),
                       rkRocksWith(selMineral.id).map(function (x) {
@@ -10680,6 +11461,7 @@ const d = labToolData.rocks || {};
 
                 ),
 
+                ),
                 React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2", "data-rk-mineral-props": selMineral.id },
                   [
                     { label: t('stem.rocks.hardness'), value: selMineral.hardness + ' / 10', icon: '💪' },
@@ -11250,7 +12032,7 @@ const d = labToolData.rocks || {};
                   React.createElement("p", { className: "text-[0.625rem] text-slate-600 mb-2" },
                     __alloT('stem.rocks.query_ai_about_prefix', "Query the AI about ") + selMineral.label + __alloT('stem.rocks.query_ai_suffix', "'s geologic origin, chemical properties, or tectonic significance.")
                   ),
-                  React.createElement("div", { className: "flex gap-2" },
+                  React.createElement("div", { className: "rk-specimen-question-row flex gap-2" },
                     React.createElement("input", {
                       type: "text",
                       'aria-label': __alloT('stem.rocks.ask_petrologist_question', 'Ask the AI Petrologist a question'),
@@ -11583,14 +12365,15 @@ const d = labToolData.rocks || {};
 
 
               return React.createElement("div", { className: "mt-2", role: "region", 'data-rk-mystery-panel': true, "aria-label": __alloT('stem.rocks.mystery_rock_challenge_aria', "Mystery Rock challenge") },
+                React.createElement("style", null, "[data-rk-mystery-panel]{padding:20px;border:1px solid #c9d6d8;border-radius:20px;background:#f3f7f7;color:#18343b}[data-rk-mystery-panel] :is(h4,h5,p,span,button){overflow-wrap:anywhere}[data-rk-mystery-panel] :is(button,[tabindex]):focus-visible{outline:3px solid #0e6572!important;outline-offset:4px!important}[data-rk-mystery-panel] button{min-height:44px;line-height:1.45}[data-rk-mystery-intro]{padding:22px!important;background:#fff9eb!important;border-color:#b58a45!important;border-radius:16px!important}[data-rk-mystery-intro]>div{flex-wrap:wrap;align-items:flex-start;gap:10px}[data-rk-mystery-heading]{font-size:23px!important;line-height:1.3;color:#604115!important}[data-rk-mystery-intro]>div>span:last-child{margin-left:0;padding:5px 9px;background:#fff;border:1px solid #ba9967;border-radius:8px;font-size:12px;line-height:1.5}[data-rk-mystery-source]{font-size:14px!important;line-height:1.75!important;max-width:75ch}[data-rk-mystery-clues]{padding:18px!important;border-color:#b3c6c9!important;border-radius:16px!important}[data-rk-mystery-clues-title]{font-size:16px!important;line-height:1.6;margin-bottom:14px!important;color:#18343b!important}[data-rk-mystery-clue]{display:grid!important;grid-template-columns:auto minmax(0,1fr);gap:12px!important;padding:14px;margin:10px 0!important;border:1px solid #d2bd93;border-radius:12px;background:#fffbf2;font-size:14px!important;line-height:1.75!important}[data-rk-mystery-clue]>span:first-child{color:#604115!important;font-size:13px;line-height:1.8}[data-rk-mystery-candidates]{padding-top:8px}[data-rk-mystery-options-title]{font-size:17px!important;line-height:1.6;margin-bottom:12px!important;color:#18343b!important}[data-rk-mystery-left]{display:flex;gap:12px!important;align-items:flex-start;padding:15px;background:#e8f1f0;border:1px solid #9db8b7;border-radius:12px;margin-bottom:16px!important}[data-rk-mystery-left]>span:first-child{font-size:16px!important;line-height:1.6}[data-rk-mystery-left]>span:nth-child(2){font-size:13px!important;line-height:1.75;flex:1 1 250px}[data-rk-mystery-clear]{padding:9px 12px;border:1px solid #527b7c;border-radius:9px;background:#fff;color:#18343b!important;font-size:13px!important;text-align:left}[data-rk-mystery-none-left]{padding:13px;border:1px solid #9e742c;border-radius:10px;background:#fff9eb;font-size:14px!important;line-height:1.7}[data-rk-mystery-family]{padding:16px;margin-bottom:16px!important;border:1px solid #bdcdcf;border-radius:15px;background:#fff}[data-rk-mystery-family]>div:first-child{gap:10px!important;margin-bottom:14px!important}[data-rk-mystery-family]>div:first-child>h5{font-size:17px!important;line-height:1.5;margin:0}[data-rk-mystery-family]>div:first-child>span{font-size:13px!important;line-height:1.6}[data-rk-mystery-family-out]{padding:8px 12px!important;font-size:13px!important;border-radius:10px!important;max-width:100%;text-align:left}.rk-mystery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.rk-mystery-option{display:grid;grid-template-rows:1fr auto;gap:8px;min-width:0}[data-rk-mystery-tile]{padding:12px 9px!important;text-align:left!important;border-color:#9ab0b4!important;box-shadow:0 2px 5px rgba(24,52,59,.05)}[data-rk-mystery-picture]{padding:9px 3px!important;border:1px solid #c5d1d3;min-height:116px;margin-bottom:12px!important}[data-rk-mystery-tile]>span:nth-of-type(1){font-size:14px!important;line-height:1.5!important}[data-rk-mystery-tile]>span:nth-of-type(2){font-size:12px!important;line-height:1.6!important;margin-top:6px!important}[data-rk-mystery-wrong]{display:block;padding-top:8px;font-size:12px;line-height:1.5;color:#991b1b}[data-rk-mystery-cross]{position:static!important;display:flex;align-items:center;justify-content:center;gap:7px;width:100%!important;height:auto!important;min-height:44px;padding:8px;font-size:12px!important;line-height:1.5!important;border-radius:9px!important;text-align:center}[data-rk-mystery-cross]>span:first-child{font-size:17px;line-height:1}[data-rk-mystery-result]{padding:20px!important;border-color:#82a890!important;border-radius:16px!important}[data-rk-mystery-result-title]{font-size:19px!important;line-height:1.45}[data-rk-mystery-result] p{font-size:14px!important;line-height:1.75!important}@media(min-width:540px){.rk-mystery-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(min-width:1000px){.rk-mystery-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}@media(max-width:480px){[data-rk-mystery-panel]{padding:12px;border-radius:15px}[data-rk-mystery-intro],[data-rk-mystery-clues],[data-rk-mystery-family],[data-rk-mystery-result]{padding:13px!important}[data-rk-mystery-heading]{font-size:21px!important}[data-rk-mystery-clue]{display:block!important}[data-rk-mystery-clue]>span:first-child{display:block;margin-bottom:5px}[data-rk-mystery-result]>div:first-child{flex-direction:column}.rk-mystery-grid{gap:10px}[data-rk-mystery-picture]{padding:8px 0!important}}@media(prefers-reduced-motion:reduce){[data-rk-mystery-panel] *{transition:none!important;animation:none!important;transform:none!important}}@media(forced-colors:active){[data-rk-mystery-panel],[data-rk-mystery-panel] :is(div,p,h4,h5,span,button){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}[data-rk-mystery-panel] :is(button,[tabindex]):focus-visible{outline-color:Highlight!important}[data-rk-mystery-panel] [aria-pressed=true]{border:2px solid Highlight!important}[data-rk-mystery-panel] button:disabled{color:GrayText!important}[data-rk-mystery-tile][data-rk-mystery-state=wrong]{border-style:dashed!important}}"),
 
-                React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-300 p-4 mb-3" },
+                React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-300 p-4 mb-3", "data-rk-mystery-intro": true },
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                    React.createElement("span", { className: "text-2xl" }, "🔍"),
+                    React.createElement("span", { className: "text-2xl", "aria-hidden": true }, "🔍"),
 
-                    React.createElement("h4", { className: "font-bold text-sm text-amber-900" }, __alloT('stem.rocks.mystery_rock_challenge_title', "Mystery Rock Challenge")),
+                    React.createElement("h4", { className: "font-bold text-sm text-amber-900", "data-rk-mystery-heading": true }, __alloT('stem.rocks.mystery_rock_challenge_title', "Mystery Rock Challenge")),
 
                     React.createElement("span", { className: "ml-auto text-[0.6875rem] text-amber-800 font-bold" }, __alloT('stem.rocks.reading_level_label', "Reading level: ") + (gradeLevel || '5th Grade'))
 
@@ -11632,7 +12415,7 @@ const d = labToolData.rocks || {};
 
                 myst.rockId && !myst.loading && !myst.error && React.createElement("div", null,
 
-                  React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-3 mb-3" },
+                  React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-3 mb-3", "data-rk-mystery-clues": true },
 
                     React.createElement("h5", { className: "text-[0.6875rem] font-bold text-amber-800 mb-2", tabIndex: -1, 'data-rk-mystery-clues-title': true }, __alloT('stem.rocks.clues_label', "Clues") + " (" + cluesShown + "/" + clues.length + ")" + (myst.offline ? ' · ' + __alloT('stem.rocks.offline_badge', 'from the field notes, no AI') : '')),
 
@@ -11662,7 +12445,7 @@ const d = labToolData.rocks || {};
 
                     className: "p-3 rounded-xl border-2 mb-3 " + (myst.solved ? "bg-green-50 border-green-300" : "bg-slate-50 border-slate-300"),
 
-                    role: "alert"
+                    role: "alert", "data-rk-mystery-result": true
 
                   },
 
@@ -11671,7 +12454,7 @@ const d = labToolData.rocks || {};
                     // what the rock actually looks like.
                     React.createElement("div", { className: "flex gap-3 items-start" },
 
-                      React.createElement("div", { className: "shrink-0 rounded-lg border-2 border-slate-400 bg-white p-1" }, rkRockSwatch(React.createElement, mysteryRock, 56)),
+                      React.createElement("div", { className: "shrink-0 rounded-lg border-2 border-slate-400 bg-white p-1" }, rkRockSwatch(React.createElement, mysteryRock, 96)),
 
                       React.createElement("div", { className: "flex-1 min-w-0" },
 
@@ -11700,16 +12483,16 @@ const d = labToolData.rocks || {};
 
                   ),
 
-                  !myst.solved && !myst.revealed && React.createElement("div", null,
+                  !myst.solved && !myst.revealed && React.createElement("div", { "data-rk-mystery-candidates": true },
 
-                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1.5" }, __alloT('stem.rocks.click_rock_matches_clues', "Click the rock you think matches the clues:")),
+                    React.createElement("h5", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1.5", tabIndex: -1, "data-rk-mystery-options-title": true }, __alloT('stem.rocks.click_rock_matches_clues', "Click the rock you think matches the clues:")),
 
                     // How many rocks the student still thinks it could be.
                     React.createElement("div", { className: "flex flex-wrap items-center gap-x-3 gap-y-1 mb-2", "data-rk-mystery-left": mystLeft },
                       React.createElement("span", { className: "text-[0.75rem] font-black text-slate-900", role: "status", "aria-live": "polite" },
                         __alloT('stem.rocks.myst_still_possible', 'Still possible:') + ' ' + mystLeft + ' ' + __alloT('stem.rocks.myst_of', 'of') + ' ' + ROCKS.length),
                       React.createElement("span", { className: "text-[0.6875rem] text-slate-700" }, __alloT('stem.rocks.myst_cross_hint', 'Cross out the rocks a clue rules out, with ⊘ on a rock or a whole family at once.')),
-                      mystOut.length > 0 && React.createElement("button", { type: "button", "data-rk-mystery-clear": true, onClick: function () { mystSetOut([]); },
+                      mystOut.length > 0 && React.createElement("button", { type: "button", "data-rk-mystery-clear": true, onClick: function (event) { var panel = mysteryPanel(event); mystSetOut([]); focusMystery('[data-rk-mystery-options-title]', panel); },
                         className: "text-[0.6875rem] font-bold text-slate-800 underline hover:text-slate-950" }, __alloT('stem.rocks.myst_clear_out', 'Bring them all back'))
                     ),
                     mystLeft === 0 && React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-900 mb-2", "data-rk-mystery-none-left": true },
@@ -11721,18 +12504,18 @@ const d = labToolData.rocks || {};
                       const famName = ROCK_TYPES[type].label;
                       return React.createElement("div", { key: type, className: "mb-2", "data-rk-mystery-family": type + ':' + famLeft },
                         React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-1" },
-                          React.createElement("span", { className: "text-[0.75rem] font-black", style: { color: ROCK_TYPES[type].ink } }, ROCK_TYPES[type].icon + ' ' + famName),
+                          React.createElement("h5", { className: "text-[0.75rem] font-black", style: { color: ROCK_TYPES[type].ink } }, ROCK_TYPES[type].icon + ' ' + famName),
                           React.createElement("span", { className: "text-[0.6875rem] text-slate-700" }, famLeft + ' ' + __alloT('stem.rocks.myst_of', 'of') + ' ' + fam.length + ' ' + __alloT('stem.rocks.myst_still_in', 'still possible')),
                           React.createElement("button", { type: "button", "aria-pressed": famAllOut, "data-rk-mystery-family-out": type,
                             onClick: function () { mystToggleFamily(type); },
                             className: "ml-auto px-2.5 py-0.5 min-h-[28px] rounded-full border text-[0.6875rem] font-bold " + (famAllOut ? "bg-slate-700 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-800 hover:border-slate-600") },
                             (famAllOut ? '↺ ' + __alloT('stem.rocks.myst_family_back', 'Bring back all') : '⊘ ' + __alloT('stem.rocks.myst_family_out', 'Cross out all')) + ' ' + famName)
                         ),
-                        React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2", role: "group", "aria-label": __alloT('stem.rocks.rock_guess_options_aria', "Rock guess options") + ': ' + famName },
+                        React.createElement("div", { className: "rk-mystery-grid", role: "group", "aria-label": __alloT('stem.rocks.rock_guess_options_aria', "Rock guess options") + ': ' + famName },
                           fam.map(function (rock) {
                             const wasWrong = mystIsWrong(rock.id);
                             const crossed = !wasWrong && mystOut.indexOf(rock.id) !== -1;
-                            return React.createElement("div", { key: rock.id, className: "relative" },
+                            return React.createElement("div", { key: rock.id, className: "rk-mystery-option" },
                               React.createElement("button", {
                               key: rock.id,
                               onClick: function (event) { guess(rock.id, event); },
@@ -11747,12 +12530,13 @@ const d = labToolData.rocks || {};
                                                         // Same tile as the Rocks grid, so the catalogue looks the
                               // same wherever a student meets it.
                               "data-rk-mystery-tile": rock.id,
-                              className: "w-full h-full p-2 rounded-xl text-center border-2 transition-all " + (wasWrong ? "border-red-600 cursor-not-allowed" : crossed ? "border-slate-200 hover:border-amber-400" : "border-slate-200 hover:border-amber-400 hover:scale-105"),
+                              className: "w-full h-full p-2 rounded-xl text-center border-2 transition-all " + (wasWrong ? "border-red-600 cursor-not-allowed" : crossed ? "border-slate-200 hover:border-amber-400" : "border-slate-200 hover:border-amber-400"),
                               style: { background: wasWrong ? '#fef2f2' : crossed ? '#f1f5f9' : '#ffffff', borderTopWidth: 5, borderTopColor: wasWrong ? '#dc2626' : crossed ? '#cbd5e1' : ROCK_TYPES[rock.type].color }
                             },
-                              React.createElement("div", { className: "flex justify-center mb-1 rounded-lg py-1", style: { opacity: crossed ? 0.35 : 1, filter: crossed ? 'grayscale(1)' : undefined, background: 'radial-gradient(circle at 50% 42%, ' + ROCK_TYPES[rock.type].color + '26 0%, ' + ROCK_TYPES[rock.type].color + '0d 45%, rgba(255,255,255,0) 72%)' } }, rkRockSwatch(React.createElement, rock, 68)),
+                              React.createElement("div", { className: "flex justify-center mb-1 rounded-lg py-1", "data-rk-mystery-picture": true, style: { opacity: crossed ? 0.35 : 1, filter: crossed ? 'grayscale(1)' : undefined, background: 'radial-gradient(circle at 50% 42%, ' + ROCK_TYPES[rock.type].color + '26 0%, ' + ROCK_TYPES[rock.type].color + '0d 45%, rgba(255,255,255,0) 72%)' } }, rkRockSwatch(React.createElement, rock, 96)),
                               React.createElement("span", { className: "block text-xs font-black leading-tight " + (wasWrong ? "text-red-800" : crossed ? "text-slate-600 line-through" : "text-slate-900") }, (wasWrong ? '✗ ' : '') + rock.label),
-                              React.createElement("span", { className: "block text-[0.625rem] font-bold text-slate-600 leading-tight mt-0.5" }, rkTextureName(rock.texture, rock.id))),
+                              React.createElement("span", { className: "block text-[0.625rem] font-bold text-slate-600 leading-tight mt-0.5" }, rkTextureName(rock.texture, rock.id)),
+                              wasWrong && React.createElement("span", { "data-rk-mystery-wrong": true }, __alloT('stem.rocks.myst_already_wrong', 'already guessed, not it'))),
                               !wasWrong && React.createElement("button", {
                                 type: "button",
                                 "aria-pressed": crossed,
@@ -11760,8 +12544,8 @@ const d = labToolData.rocks || {};
                                 "aria-label": (crossed ? __alloT('stem.rocks.myst_bring_back', 'Bring back') : __alloT('stem.rocks.myst_cross_out', 'Cross out')) + ' ' + rock.label,
                                 title: (crossed ? __alloT('stem.rocks.myst_bring_back', 'Bring back') : __alloT('stem.rocks.myst_cross_out', 'Cross out')) + ' ' + rock.label,
                                 onClick: function () { mystToggle(rock.id); },
-                                className: "absolute top-2 right-1.5 w-7 h-7 rounded-full border text-[0.8125rem] font-black leading-none flex items-center justify-center " + (crossed ? "bg-slate-700 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-700 hover:border-slate-600")
-                              }, crossed ? '↺' : '⊘'));
+                                className: "rounded-lg border font-bold " + (crossed ? "bg-slate-700 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-700 hover:border-slate-600")
+                              }, React.createElement("span", { "aria-hidden": true }, crossed ? '↺' : '⊘'), React.createElement("span", null, crossed ? __alloT('stem.rocks.myst_bring_back', 'Bring back') : __alloT('stem.rocks.myst_cross_out', 'Cross out'))));
                           })
                         )
                       );
@@ -12378,23 +13162,23 @@ const d = labToolData.rocks || {};
                 var allRowsMatch = matchedRows === rows.length;
                 var hasProvisionalMatch = rows.some(function (row) { return row.provisional && row.matches; });
                 var matchCount = (allRowsMatch ? rows.length : matchedRows + ' / ' + rows.length) + ' ' + (rows.length === 1 ? __alloT('stem.rocks.wb_match_count_singular', 'match') : __alloT('stem.rocks.wb_matches_count', 'matches')) + (hasProvisionalMatch ? ' · ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : '');
-                var matchCountClass = "rounded-full border px-2 py-1 text-[0.625rem] font-black " + (hasProvisionalMatch ? "bg-amber-100 border-amber-300 text-amber-900" : allRowsMatch ? "bg-emerald-100 border-emerald-200 text-emerald-800" : "bg-rose-100 border-rose-200 text-rose-800");
+                var matchCountClass = "rounded-full border px-2 py-1 text-[0.875rem] font-black " + (hasProvisionalMatch ? "bg-amber-100 border-amber-300 text-amber-900" : allRowsMatch ? "bg-emerald-100 border-emerald-200 text-emerald-800" : "bg-rose-100 border-rose-200 text-rose-800");
                 var matchRows = React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2", role: "list" },
                     rows.map(function (row) {
                       var provisionalMatch = row.provisional && row.matches;
                       return React.createElement("div", { key: row.id, role: "listitem", className: "rounded-lg border p-2.5 min-w-0 " + (provisionalMatch ? "border-amber-300 bg-amber-50" : row.matches ? "border-slate-200 bg-slate-50" : "border-rose-300 bg-rose-50"), "data-wb-match-property": row.id, "data-wb-match-state": provisionalMatch ? 'provisional' : row.matches ? 'match' : 'conflict' },
                         React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                          React.createElement("p", { className: "text-[11.5px] font-black text-slate-900" }, row.label),
-                          React.createElement("span", { className: "shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-black " + (provisionalMatch ? "bg-amber-100 text-amber-900" : row.matches ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800") }, provisionalMatch ? '\u2248 ' + __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : row.matches ? '\u2713 ' + __alloT('stem.rocks.wb_matches_evidence', 'Matches evidence') : '\u00d7 ' + __alloT('stem.rocks.wb_review_conflict', 'Conflict'))
+                          React.createElement("p", { className: "text-[0.875rem] font-black text-slate-900" }, row.label),
+                          React.createElement("span", { className: "shrink-0 rounded-full px-2 py-0.5 text-[0.875rem] font-black " + (provisionalMatch ? "bg-amber-100 text-amber-900" : row.matches ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800") }, provisionalMatch ? '\u2248 ' + __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : row.matches ? '\u2713 ' + __alloT('stem.rocks.wb_matches_evidence', 'Matches evidence') : '\u00d7 ' + __alloT('stem.rocks.wb_review_conflict', 'Conflict'))
                         ),
                         React.createElement("dl", { className: "grid grid-cols-2 gap-2 mt-2" },
                           React.createElement("div", { className: "min-w-0 border-r border-slate-200 pr-2" },
-                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_unknown_observation', 'Unknown observation')),
-                            React.createElement("dd", { className: "text-[0.6875rem] font-bold text-slate-800 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.unknown)
+                            React.createElement("dt", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_unknown_observation', 'Unknown observation')),
+                            React.createElement("dd", { className: "text-[0.875rem] font-bold text-slate-800 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.unknown)
                           ),
                           React.createElement("div", { className: "min-w-0" },
-                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_candidate_reference', 'Candidate reference')),
-                            React.createElement("dd", { className: "text-[0.6875rem] font-bold text-violet-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.candidate)
+                            React.createElement("dt", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_candidate_reference', 'Candidate reference')),
+                            React.createElement("dd", { className: "text-[0.875rem] font-bold text-violet-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.candidate)
                           )
                         )
                       );
@@ -12408,7 +13192,7 @@ const d = labToolData.rocks || {};
                     React.createElement("summary", {
                       className: "list-none cursor-pointer min-h-[44px] flex flex-wrap items-center justify-between gap-2 rounded-lg px-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
                     },
-                      React.createElement("span", { className: "inline-flex items-center gap-2 text-[0.6875rem] font-black text-violet-900" },
+                      React.createElement("span", { className: "inline-flex items-center gap-2 text-[0.875rem] font-black text-violet-900" },
                         React.createElement("span", { "aria-hidden": true, className: "group-open:rotate-90 transition-transform" }, '▶'),
                         __alloT('stem.rocks.wb_review_all_matches', 'Review all measured matches')
                       ),
@@ -12423,7 +13207,7 @@ const d = labToolData.rocks || {};
                   "data-wb-match-map": context
                 },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" },
-                    React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_match_map_title', 'Evidence match map')),
+                    React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_match_map_title', 'Evidence match map')),
                     React.createElement("span", { className: matchCountClass }, matchCount)
                   ),
                   matchRows
@@ -12508,47 +13292,47 @@ const d = labToolData.rocks || {};
                 },
                   React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-start justify-between gap-2" },
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-sky-800" }, __alloT('stem.rocks.wb_faceoff_eyebrow', 'Closest look-alike still supported')),
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-sky-800" }, __alloT('stem.rocks.wb_faceoff_eyebrow', 'Closest look-alike still supported')),
                       React.createElement("h5", { id: "wb-lookalike-title", className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected.label + ' ' + __alloT('stem.rocks.wb_faceoff_vs', 'versus') + ' ' + wbFaceoffRival.label),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.6875rem] text-slate-700 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_faceoff_body_start', 'Both still fit ') + measuredMatches + (measuredMatches === 1 ? __alloT('stem.rocks.wb_faceoff_match_one', ' measured property. Use a reference difference below before treating the claim as settled.') : __alloT('stem.rocks.wb_faceoff_match_many', ' measured properties. Use a reference difference below before treating the claim as settled.')))
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] text-slate-700 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_faceoff_body_start', 'Both still fit ') + measuredMatches + (measuredMatches === 1 ? __alloT('stem.rocks.wb_faceoff_match_one', ' measured property. Use a reference difference below before treating the claim as settled.') : __alloT('stem.rocks.wb_faceoff_match_many', ' measured properties. Use a reference difference below before treating the claim as settled.')))
                     ),
-                    React.createElement("span", { className: "rounded-full border border-sky-300 bg-white px-2.5 py-1 text-[0.625rem] font-black text-sky-900 shrink-0" }, wbFaceoffSeparators.length + (wbFaceoffSeparators.length === 1 ? __alloT('stem.rocks.wb_faceoff_way_one', ' separating property') : __alloT('stem.rocks.wb_faceoff_way_many', ' separating properties')))
+                    React.createElement("span", { className: "rounded-full border border-sky-300 bg-white px-2.5 py-1 text-[0.875rem] font-black text-sky-900 shrink-0" }, wbFaceoffSeparators.length + (wbFaceoffSeparators.length === 1 ? __alloT('stem.rocks.wb_faceoff_way_one', ' separating property') : __alloT('stem.rocks.wb_faceoff_way_many', ' separating properties')))
                   ),
                   React.createElement("div", { className: "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 mt-3", role: "group", "aria-label": __alloT('stem.rocks.wb_faceoff_pair_aria', 'Selected candidate compared with its closest remaining look-alike') },
                     React.createElement("div", { className: "rounded-xl border-2 border-violet-300 bg-white p-2.5 text-center min-w-0", "data-wb-faceoff-side": "selected" },
                       React.createElement("div", { className: "mx-auto w-fit rounded-xl ring-2 ring-violet-200" }, rkMineralSwatch(React.createElement, wbSelected, 68)),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.75rem] font-black text-violet-900 mt-2", style: { overflowWrap: 'anywhere' } }, wbSelected.label),
-                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-700 mt-0.5" }, __alloT('stem.rocks.wb_faceoff_your_claim', 'Your claim'))
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] font-black text-violet-900 mt-2", style: { overflowWrap: 'anywhere' } }, wbSelected.label),
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-violet-700 mt-0.5" }, __alloT('stem.rocks.wb_faceoff_your_claim', 'Your claim'))
                     ),
-                    React.createElement("span", { className: "w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-[0.625rem] font-black shadow-sm", "aria-hidden": "true" }, __alloT('stem.rocks.wb_faceoff_vs_short', 'VS')),
+                    React.createElement("span", { className: "w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-[0.875rem] font-black shadow-sm", "aria-hidden": "true" }, __alloT('stem.rocks.wb_faceoff_vs_short', 'VS')),
                     React.createElement("div", { className: "rounded-xl border-2 border-sky-300 bg-white p-2.5 text-center min-w-0", "data-wb-faceoff-side": "rival" },
                       React.createElement("div", { className: "mx-auto w-fit rounded-xl ring-2 ring-sky-200" }, rkMineralSwatch(React.createElement, wbFaceoffRival, 68)),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.75rem] font-black text-sky-900 mt-2", style: { overflowWrap: 'anywhere' } }, wbFaceoffRival.label),
-                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-sky-800 mt-0.5" }, __alloT('stem.rocks.wb_faceoff_alternative', 'Closest alternative'))
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] font-black text-sky-900 mt-2", style: { overflowWrap: 'anywhere' } }, wbFaceoffRival.label),
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-sky-800 mt-0.5" }, __alloT('stem.rocks.wb_faceoff_alternative', 'Closest alternative'))
                     )
                   ),
                   wbFaceoffSeparators.length ? React.createElement("div", { className: "mt-3" },
-                    React.createElement("p", { className: "text-[10.5px] font-black text-slate-900 mb-2" }, __alloT('stem.rocks.wb_faceoff_distinguish', 'Properties that can distinguish this pair')),
+                    React.createElement("p", { className: "text-[0.875rem] font-black text-slate-900 mb-2" }, __alloT('stem.rocks.wb_faceoff_distinguish', 'Properties that can distinguish this pair')),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2", role: "list" }, wbFaceoffSeparators.map(function (item) {
                       return React.createElement("div", { key: item.id, role: "listitem", "data-wb-faceoff-separator": item.id, "data-wb-faceoff-test-state": item.measured ? 'refine' : 'unmeasured', className: "rounded-xl border border-slate-200 bg-white p-2.5 min-w-0" },
                         React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                          React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-900" }, item.icon + ' ' + item.label),
-                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black " + (item.measured ? "bg-amber-100 text-amber-900" : "bg-sky-100 text-sky-900") }, item.measured ? __alloT('stem.rocks.wb_faceoff_refine', 'Refine this test') : __alloT('stem.rocks.wb_faceoff_not_tested', 'Not tested yet'))
+                          React.createElement("p", { className: "text-[0.875rem] font-black text-slate-900" }, item.icon + ' ' + item.label),
+                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.875rem] font-black " + (item.measured ? "bg-amber-100 text-amber-900" : "bg-sky-100 text-sky-900") }, item.measured ? __alloT('stem.rocks.wb_faceoff_refine', 'Refine this test') : __alloT('stem.rocks.wb_faceoff_not_tested', 'Not tested yet'))
                         ),
                         React.createElement("dl", { className: "grid grid-cols-2 gap-2 mt-2" },
                           React.createElement("div", { className: "min-w-0 border-r border-slate-200 pr-2" },
-                            React.createElement("dt", { className: "text-[0.625rem] font-black text-violet-700", style: { overflowWrap: 'anywhere' } }, wbSelected.label),
-                            React.createElement("dd", { className: "text-[10.5px] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, item.a)
+                            React.createElement("dt", { className: "text-[0.875rem] font-black text-violet-700", style: { overflowWrap: 'anywhere' } }, wbSelected.label),
+                            React.createElement("dd", { className: "text-[0.875rem] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, item.a)
                           ),
                           React.createElement("div", { className: "min-w-0" },
-                            React.createElement("dt", { className: "text-[0.625rem] font-black text-sky-800", style: { overflowWrap: 'anywhere' } }, wbFaceoffRival.label),
-                            React.createElement("dd", { className: "text-[10.5px] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, item.b)
+                            React.createElement("dt", { className: "text-[0.875rem] font-black text-sky-800", style: { overflowWrap: 'anywhere' } }, wbFaceoffRival.label),
+                            React.createElement("dd", { className: "text-[0.875rem] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, item.b)
                           )
                         ),
-                        React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-2 leading-relaxed" }, item.prompt)
+                        React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-2 leading-relaxed" }, item.prompt)
                       );
                     }))
-                  ) : React.createElement("p", { className: "mt-3 rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-[10.5px] text-amber-900" }, __alloT('stem.rocks.wb_faceoff_no_separator', 'These references overlap on the available properties. Add another independent observation and keep the claim tentative.'))
+                  ) : React.createElement("p", { className: "mt-3 rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-[0.875rem] text-amber-900" }, __alloT('stem.rocks.wb_faceoff_no_separator', 'These references overlap on the available properties. Add another independent observation and keep the claim tentative.'))
                 );
               };
 
@@ -12569,16 +13353,16 @@ const d = labToolData.rocks || {};
                     React.createElement("div", { className: "flex items-start gap-3 min-w-0" },
                       React.createElement("span", { className: "shrink-0 rounded-xl border bg-white p-1 " + (unresolved ? "border-amber-200" : "border-rose-200"), "aria-hidden": "true" }, rkMineralSwatch(React.createElement, wbReviewCandidate, 54)),
                       React.createElement("div", { className: "min-w-0" },
-                        React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] " + (unresolved ? "text-amber-800" : "text-rose-800") }, __alloT('stem.rocks.wb_review_label', 'Set-aside evidence inspector')),
+                        React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] " + (unresolved ? "text-amber-800" : "text-rose-800") }, __alloT('stem.rocks.wb_review_label', 'Set-aside evidence inspector')),
                         React.createElement("h5", { id: "wb-setaside-review-title", className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, __alloT('stem.rocks.wb_review_why', 'Why review ') + wbReviewCandidate.label + '?'),
-                        React.createElement("p", { className: "text-[10.5px] sm:text-[0.6875rem] mt-1 leading-relaxed " + (unresolved ? "text-amber-900" : "text-rose-900") }, unresolved
+                        React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] mt-1 leading-relaxed " + (unresolved ? "text-amber-900" : "text-rose-900") }, unresolved
                           ? __alloT('stem.rocks.wb_review_unresolved', 'Every current observation still matches. The earlier claim was rejected, so another diagnostic test is needed.')
                           : conflicts.length + ' ' + (conflicts.length === 1 ? __alloT('stem.rocks.wb_review_conflict_one', 'measured property conflicts with this candidate.') : __alloT('stem.rocks.wb_review_conflict_many', 'measured properties conflict with this candidate.')))
                       )
                     ),
                     React.createElement("button", {
                       type: "button", onClick: function () { var returnId = wbReviewCandidate.id; wbUpdateAndFocus({ reviewId: null }, '[data-wb-candidate="' + returnId + '"]'); wbSay(__alloT('stem.rocks.wb_review_closed_sr', 'Set-aside evidence review closed.')); },
-                      className: "w-full sm:w-auto shrink-0 rounded-xl border bg-white px-3 py-2 min-h-[44px] text-[10.5px] font-black text-slate-800 hover:bg-slate-50 " + (unresolved ? "border-amber-300" : "border-rose-300"),
+                      className: "w-full sm:w-auto shrink-0 rounded-xl border bg-white px-3 py-2 min-h-[44px] text-[0.875rem] font-black text-slate-800 hover:bg-slate-50 " + (unresolved ? "border-amber-300" : "border-rose-300"),
                       "aria-label": __alloT('stem.rocks.wb_review_close_aria', 'Close evidence review for ') + wbReviewCandidate.label,
                       "data-wb-review-close": wbReviewCandidate.id
                     }, __alloT('stem.rocks.wb_review_close', 'Close review'))
@@ -12590,17 +13374,17 @@ const d = labToolData.rocks || {};
                         className: "rounded-xl border bg-white p-2.5 min-w-0 " + (row.matches ? "border-emerald-300" : "border-rose-400")
                       },
                         React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" },
-                          React.createElement("p", { className: "text-[11.5px] font-black text-slate-900" }, row.label),
-                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black " + (row.matches ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800") }, (row.matches ? '\u2713 ' + __alloT('stem.rocks.wb_review_match', 'Match') : '\u00d7 ' + __alloT('stem.rocks.wb_review_conflict', 'Conflict')))
+                          React.createElement("p", { className: "text-[0.875rem] font-black text-slate-900" }, row.label),
+                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.875rem] font-black " + (row.matches ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800") }, (row.matches ? '\u2713 ' + __alloT('stem.rocks.wb_review_match', 'Match') : '\u00d7 ' + __alloT('stem.rocks.wb_review_conflict', 'Conflict')))
                         ),
                         React.createElement("dl", { className: "grid grid-cols-2 gap-2 mt-2" },
                           React.createElement("div", { className: "min-w-0 border-r border-slate-200 pr-2" },
-                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_unknown_observation', 'Unknown observation')),
-                            React.createElement("dd", { className: "text-[0.6875rem] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.unknown)
+                            React.createElement("dt", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_unknown_observation', 'Unknown observation')),
+                            React.createElement("dd", { className: "text-[0.875rem] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.unknown)
                           ),
                           React.createElement("div", { className: "min-w-0" },
-                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_candidate_reference', 'Candidate reference')),
-                            React.createElement("dd", { className: "text-[0.6875rem] font-bold mt-0.5 " + (row.matches ? "text-emerald-900" : "text-rose-900"), style: { overflowWrap: 'anywhere' } }, row.candidate)
+                            React.createElement("dt", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_candidate_reference', 'Candidate reference')),
+                            React.createElement("dd", { className: "text-[0.875rem] font-bold mt-0.5 " + (row.matches ? "text-emerald-900" : "text-rose-900"), style: { overflowWrap: 'anywhere' } }, row.candidate)
                           )
                         )
                       );
@@ -12609,8 +13393,8 @@ const d = labToolData.rocks || {};
                   React.createElement("aside", { className: "mt-3 rounded-xl border p-2.5 flex gap-2.5 items-start " + (unresolved ? "border-amber-300 bg-white/80" : "border-rose-200 bg-white/80") },
                     React.createElement("span", { className: "text-lg leading-none", "aria-hidden": "true" }, unresolved ? wbNext.icon : '\u21b3'),
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[10.5px] font-black text-slate-900" }, unresolved ? __alloT('stem.rocks.wb_review_next_title', 'Best next distinction: ') + wbNext.title : __alloT('stem.rocks.wb_review_rule_title', 'Evidence rule: one diagnostic conflict is enough.')),
-                      React.createElement("p", { className: "text-[0.625rem] text-slate-700 mt-0.5 leading-relaxed" }, unresolved ? wbNext.detail : __alloT('stem.rocks.wb_review_rule_body', 'A supported identification must agree with every measured diagnostic property, even when several other properties match.'))
+                      React.createElement("p", { className: "text-[0.875rem] font-black text-slate-900" }, unresolved ? __alloT('stem.rocks.wb_review_next_title', 'Best next distinction: ') + wbNext.title : __alloT('stem.rocks.wb_review_rule_title', 'Evidence rule: one diagnostic conflict is enough.')),
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-700 mt-0.5 leading-relaxed" }, unresolved ? wbNext.detail : __alloT('stem.rocks.wb_review_rule_body', 'A supported identification must agree with every measured diagnostic property, even when several other properties match.'))
                     )
                   )
                 );
@@ -12657,10 +13441,10 @@ const d = labToolData.rocks || {};
                 },
                   embedded ? React.createElement("summary", { className: "cursor-pointer list-none rounded-xl bg-white/80 border border-amber-200 px-3 py-2.5 min-h-[44px] flex items-center justify-between gap-3 text-left hover:bg-white" },
                     React.createElement("span", { className: "min-w-0" },
-                      React.createElement("span", { className: "block text-[0.625rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_forecast_eyebrow', 'Plan before you test')),
-                      React.createElement("span", { className: "block text-[0.6875rem] sm:text-[0.75rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_forecast_preview_start', 'Preview ') + wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_preview_end', ' possible outcomes and make a prediction'))
+                      React.createElement("span", { className: "block text-[0.875rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_forecast_eyebrow', 'Plan before you test')),
+                      React.createElement("span", { className: "block text-[0.875rem] sm:text-[0.875rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_forecast_preview_start', 'Preview ') + wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_preview_end', ' possible outcomes and make a prediction'))
                     ),
-                    React.createElement("span", { className: "text-[0.625rem] font-black text-violet-900 shrink-0" },
+                    React.createElement("span", { className: "text-[0.875rem] font-black text-violet-900 shrink-0" },
                       React.createElement("span", { className: "group-open:hidden" }, __alloT('stem.rocks.wb_open_forecast', 'Open') + ' ▾'),
                       React.createElement("span", { className: "hidden group-open:inline" }, __alloT('stem.rocks.wb_close_forecast', 'Close') + ' ▴')
                     )
@@ -12668,11 +13452,11 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: embedded ? "mt-3" : "" },
                   React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-start justify-between gap-2" },
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_forecast_eyebrow', 'Plan before you test')),
-                      React.createElement("h4", { id: "wb-test-forecast-title", className: "text-[0.8125rem] sm:text-[0.875rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_forecast_question_start', 'How could ') + wbForecastTitleFor(wbNext.tool) + __alloT('stem.rocks.wb_forecast_question_end', ' split the shortlist?')),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.6875rem] text-slate-700 mt-1 leading-relaxed" }, wbViableCandidates.length + __alloT('stem.rocks.wb_forecast_summary_mid', ' candidates could produce ') + wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_summary_end', ' distinct outcomes. More than one possible outcome makes this a useful diagnostic test.'))
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_forecast_eyebrow', 'Plan before you test')),
+                      React.createElement("h4", { id: "wb-test-forecast-title", className: "text-[0.875rem] sm:text-[0.875rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_forecast_question_start', 'How could ') + wbForecastTitleFor(wbNext.tool) + __alloT('stem.rocks.wb_forecast_question_end', ' split the shortlist?')),
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] text-slate-700 mt-1 leading-relaxed" }, wbViableCandidates.length + __alloT('stem.rocks.wb_forecast_summary_mid', ' candidates could produce ') + wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_summary_end', ' distinct outcomes. More than one possible outcome makes this a useful diagnostic test.'))
                     ),
-                    React.createElement("span", { className: "rounded-full border border-violet-300 bg-white px-2.5 py-1 text-[0.625rem] font-black text-violet-900 shrink-0" }, wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_outcomes_badge', ' outcomes'))
+                    React.createElement("span", { className: "rounded-full border border-violet-300 bg-white px-2.5 py-1 text-[0.875rem] font-black text-violet-900 shrink-0" }, wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_outcomes_badge', ' outcomes'))
                   ),
                   React.createElement("div", { className: "mt-3 h-3 rounded-full overflow-hidden flex bg-slate-200 ring-1 ring-slate-300", role: "img", "aria-label": forecastLabel },
                     wbForecastGroups.map(function (group, i) {
@@ -12689,31 +13473,31 @@ const d = labToolData.rocks || {};
                     },
                       React.createElement("div", { className: "flex items-center gap-2 min-w-0" },
                         React.createElement("span", { className: "w-2.5 h-2.5 rounded-full shrink-0", style: { background: wbForecastPalette[i % wbForecastPalette.length] }, "aria-hidden": "true" }),
-                        React.createElement("span", { className: "text-[10.5px] font-bold text-slate-800 min-w-0 flex-1", style: { overflowWrap: 'anywhere' } }, group.label),
-                        React.createElement("span", { className: "rounded-full bg-slate-100 px-2 py-0.5 text-[0.625rem] font-black text-slate-700 shrink-0" }, group.count + __alloT('stem.rocks.wb_forecast_can_produce', ' can produce this'))
+                        React.createElement("span", { className: "text-[0.875rem] font-bold text-slate-800 min-w-0 flex-1", style: { overflowWrap: 'anywhere' } }, group.label),
+                        React.createElement("span", { className: "rounded-full bg-slate-100 px-2 py-0.5 text-[0.875rem] font-black text-slate-700 shrink-0" }, group.count + __alloT('stem.rocks.wb_forecast_can_produce', ' can produce this'))
                       ),
-                      React.createElement("p", { className: "mt-1.5 pl-[18px] text-[10.5px] text-slate-600 leading-relaxed", style: { overflowWrap: 'anywhere' } },
+                      React.createElement("p", { className: "mt-1.5 pl-[18px] text-[0.875rem] text-slate-600 leading-relaxed", style: { overflowWrap: 'anywhere' } },
                         React.createElement("span", { className: "font-black text-violet-800" }, __alloT('stem.rocks.wb_branch_keeps', 'Would keep: ')),
                         group.remainingCandidates.map(function (candidate) { return candidate.label; }).join(', ')
                       )
                     );
                   })),
                   forecastUsesTolerance ? React.createElement("p", {
-                    className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[10.5px] text-amber-900 leading-relaxed",
+                    className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[0.875rem] text-amber-900 leading-relaxed",
                     "data-wb-forecast-tolerance-note": "visible"
                   }, __alloT('stem.rocks.wb_forecast_tolerance_note', 'Bar widths show exact modeled outcomes. “Would keep” also includes near-match candidates retained by the ±0.5 Mohs tolerance, so those counts can differ.')) : null,
                   React.createElement("fieldset", { className: "mt-3 pt-3 border-t border-violet-200" },
-                    React.createElement("legend", { className: "px-1 text-[0.6875rem] font-black text-violet-900" }, __alloT('stem.rocks.wb_forecast_predict', 'Optional prediction: what do you think you will observe?')),
+                    React.createElement("legend", { className: "px-1 text-[0.875rem] font-black text-violet-900" }, __alloT('stem.rocks.wb_forecast_predict', 'Optional prediction: what do you think you will observe?')),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1" }, wbForecastGroups.map(function (group) {
                       var chosen = wbPredictionTool === wbNext.tool && wbPredictionValue === group.id;
                       return React.createElement("button", {
                         key: group.id, type: "button", "aria-pressed": chosen, "data-wb-prediction-outcome": group.id, "data-wb-prediction-branch-size": group.remainingCount,
                         "aria-label": __alloT('stem.rocks.wb_predict_aria_start', 'Predict ') + group.label + '. ' + __alloT('stem.rocks.wb_branch_would_leave', 'Would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')) + '.',
                         onClick: function () { updWb({ predictionTool: wbNext.tool, predictionValue: group.id }); wbSay(__alloT('stem.rocks.wb_prediction_saved_sr', 'Prediction saved: ') + group.label + '. ' + __alloT('stem.rocks.wb_predict_aria_mid', 'This branch would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')) + '. ' + __alloT('stem.rocks.wb_prediction_saved_sr2', 'Run the recommended test and compare the observation.')); },
-                        className: "rounded-xl border px-3 py-2.5 min-h-[48px] text-left text-[10.5px] font-black transition-all " + (chosen ? "bg-violet-100 border-violet-500 text-violet-900 ring-2 ring-violet-200" : "bg-white border-slate-300 text-slate-800 hover:border-violet-400 hover:bg-violet-50")
+                        className: "rounded-xl border px-3 py-2.5 min-h-[48px] text-left text-[0.875rem] font-black transition-all " + (chosen ? "bg-violet-100 border-violet-500 text-violet-900 ring-2 ring-violet-200" : "bg-white border-slate-300 text-slate-800 hover:border-violet-400 hover:bg-violet-50")
                       },
                         React.createElement("span", { className: "block" }, (chosen ? '✓ ' : '') + group.label),
-                        React.createElement("span", { className: "block mt-1 text-[0.625rem] font-semibold text-slate-600" }, __alloT('stem.rocks.wb_branch_would_leave', 'Would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')))
+                        React.createElement("span", { className: "block mt-1 text-[0.875rem] font-semibold text-slate-600" }, __alloT('stem.rocks.wb_branch_would_leave', 'Would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')))
                       );
                     })),
                     activePredictionBranch ? React.createElement("aside", {
@@ -12721,13 +13505,13 @@ const d = labToolData.rocks || {};
                       "data-wb-prediction-branch": activePredictionBranch.id,
                       "data-wb-prediction-remaining": activePredictionBranch.remainingCount
                     },
-                      React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_working_hypothesis', 'Working hypothesis')),
-                      React.createElement("p", { className: "text-[10.5px] text-slate-800 mt-0.5 leading-relaxed" },
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_working_hypothesis', 'Working hypothesis')),
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-800 mt-0.5 leading-relaxed" },
                         __alloT('stem.rocks.wb_branch_if', 'If ') + activePredictionBranch.label + __alloT('stem.rocks.wb_branch_then', ' occurs, ') + activePredictionBranch.remainingCount + (activePredictionBranch.remainingCount === 1 ? __alloT('stem.rocks.wb_branch_one_remains', ' candidate would remain: ') : __alloT('stem.rocks.wb_branch_many_remain', ' candidates would remain: ')) + activePredictionBranch.remainingCandidates.map(function (candidate) { return candidate.label; }).join(', ') + '.'
                       )
                     ) : null
                   ),
-                  React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_forecast_not_grade', 'A prediction is a hypothesis, not a grade. A surprising result is useful evidence.'))
+                  React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_forecast_not_grade', 'A prediction is a hypothesis, not a grade. A surprising result is useful evidence.'))
                   )
                 );
               };
@@ -12743,27 +13527,27 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex gap-3 items-start min-w-0" },
                     React.createElement("span", { className: "w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm shrink-0", "aria-hidden": "true" }, wbBusy ? '⏳' : wbNext.icon),
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.14em] " + (wbBusy ? "text-sky-800" : "text-amber-800") }, wbBusy ? __alloT('stem.rocks.wb_observing_now', 'Observation in progress') : __alloT('stem.rocks.wb_current_focus', 'Next scientific move') + ' · ' + focusTitle),
-                      React.createElement("h4", { id: "wb-action-hub-title", className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5" }, wbBusy ? wbAnimLabel : wbNext.title),
-                      React.createElement("p", { className: "text-[0.6875rem] sm:text-[11.5px] text-slate-700 mt-1 leading-relaxed" }, wbBusy ? __alloT('stem.rocks.wb_watch_change', 'Watch the specimen station, then find the observation in your notebook.') : wbNext.detail),
-                      !wbBusy && typeof wbNext.expectedRemaining === 'number' ? React.createElement("p", { className: "text-[10.5px] font-bold text-violet-900 mt-2 leading-relaxed", "data-wb-information-gain": wbNext.expectedRemaining.toFixed(1), "data-wb-ranked-tests": wbTestRankings.length },
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.14em] " + (wbBusy ? "text-sky-800" : "text-amber-800") }, wbBusy ? __alloT('stem.rocks.wb_observing_now', 'Observation in progress') : __alloT('stem.rocks.wb_current_focus', 'Next scientific move') + ' · ' + focusTitle),
+                      React.createElement("h4", { id: "wb-action-hub-title", tabIndex: -1, className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5" }, wbBusy ? wbAnimLabel : wbNext.title),
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] text-slate-700 mt-1 leading-relaxed" }, wbBusy ? __alloT('stem.rocks.wb_watch_change', 'Watch the specimen station, then find the observation in your notebook.') : wbNext.detail),
+                      !wbBusy && typeof wbNext.expectedRemaining === 'number' ? React.createElement("p", { className: "text-[0.875rem] font-bold text-violet-900 mt-2 leading-relaxed", "data-wb-information-gain": wbNext.expectedRemaining.toFixed(1), "data-wb-ranked-tests": wbTestRankings.length },
                         __alloT('stem.rocks.wb_info_gain_start', 'Best expected split: about ') + wbNext.expectedRemaining.toFixed(1) + __alloT('stem.rocks.wb_info_gain_mid', ' candidates would remain after a typical result. Compared across ') + wbTestRankings.length + __alloT('stem.rocks.wb_info_gain_end', ' useful available tests.') + ' ' + __alloT('stem.rocks.wb_info_gain_assumption', 'Estimate assumes each remaining candidate is equally likely.')
                       ) : null
                     )
                   ),
-                  !wbBusy && wbNext.tool === 'record' ? React.createElement("button", { type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-sky-800 hover:bg-sky-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.6875rem] font-black", "data-wb-open-observation": wbPendingTool, onClick: function () { wbFocusAfterUpdate('[data-wb-observe-choice]'); } }, __alloT('stem.rocks.wb_go_observe', 'Go to the observation card')) : null,
+                  !wbBusy && wbNext.tool === 'record' ? React.createElement("button", { type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-sky-800 hover:bg-sky-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.875rem] font-black", "data-wb-open-observation": wbPendingTool, onClick: function () { wbFocusAfterUpdate('[data-wb-observe-choice]'); } }, __alloT('stem.rocks.wb_go_observe', 'Go to the observation card')) : null,
                   !wbBusy && wbNext.tool !== 'claim' && wbNext.tool !== 'record' && wbNext.tool.indexOf('reconcile-') !== 0 && !wbToolsOpen ? React.createElement("button", {
-                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.6875rem] font-black",
+                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.875rem] font-black",
                     "aria-controls": "wb-tools-panel", "aria-expanded": false, "data-wb-open-recommended": wbNext.tool,
                     onClick: function () { wbUpdateAndFocus({ toolsExpanded: true }, '[data-wb-tool="' + wbNext.tool + '"]'); wbSay(__alloT('stem.rocks.wb_tools_opened_sr', 'Instrument tray opened. The recommended test is ') + wbNext.title + '.'); }
                   }, __alloT('stem.rocks.wb_open_recommended', 'Open recommended instrument')) : null,
                   !wbBusy && wbNext.tool === 'reconcile-hardness' ? React.createElement("button", {
-                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.6875rem] font-black",
+                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.875rem] font-black",
                     "data-wb-recovery-action": "hardness",
                     onClick: wbClearHardness
                   }, __alloT('stem.rocks.wb_clear_hardness', 'Clear hardness trials and retest')) : null,
                   !wbBusy && wbNext.tool === 'reconcile-evidence' ? React.createElement("button", {
-                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.6875rem] font-black",
+                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.875rem] font-black",
                     "data-wb-recovery-action": "evidence",
                     onClick: wbClearEvidence
                   }, __alloT('stem.rocks.wb_clear_recheck', 'Clear observations and recheck')) : null,
@@ -12779,19 +13563,19 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex items-start gap-2.5" },
                     React.createElement("span", { className: "w-9 h-9 rounded-xl bg-white border flex items-center justify-center text-lg shrink-0 " + (wbPredictionMatched ? "border-emerald-200" : "border-sky-200"), "aria-hidden": "true" }, wbPredictionMatched ? '✓' : '↻'),
                     React.createElement("div", { className: "min-w-0 flex-1" },
-                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.12em] " + (wbPredictionMatched ? "text-emerald-800" : "text-sky-800") }, __alloT('stem.rocks.wb_prediction_check', 'Prediction check')),
-                      React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-900 mt-0.5" }, wbPredictionMatched ? __alloT('stem.rocks.wb_prediction_matched', 'Your prediction matched the observation.') : __alloT('stem.rocks.wb_prediction_updated', 'The observation differed from your prediction—update your model.')),
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] " + (wbPredictionMatched ? "text-emerald-800" : "text-sky-800") }, __alloT('stem.rocks.wb_prediction_check', 'Prediction check')),
+                      React.createElement("p", { className: "text-[0.875rem] font-black text-slate-900 mt-0.5" }, wbPredictionMatched ? __alloT('stem.rocks.wb_prediction_matched', 'Your prediction matched the observation.') : __alloT('stem.rocks.wb_prediction_updated', 'The observation differed from your prediction—update your model.')),
                       React.createElement("dl", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" },
                         React.createElement("div", { className: "rounded-lg border border-white bg-white/80 p-2" },
-                          React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_prediction_yours', 'You predicted')),
-                          React.createElement("dd", { className: "text-[10.5px] font-bold text-violet-900 mt-0.5" }, wbPredictionExpected.label)
+                          React.createElement("dt", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_prediction_yours', 'You predicted')),
+                          React.createElement("dd", { className: "text-[0.875rem] font-bold text-violet-900 mt-0.5" }, wbPredictionExpected.label)
                         ),
                         React.createElement("div", { className: "rounded-lg border border-white bg-white/80 p-2" },
-                          React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_prediction_observed', 'You observed')),
-                          React.createElement("dd", { className: "text-[10.5px] font-bold text-slate-900 mt-0.5" }, wbPredictionActual.label)
+                          React.createElement("dt", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_prediction_observed', 'You observed')),
+                          React.createElement("dd", { className: "text-[0.875rem] font-bold text-slate-900 mt-0.5" }, wbPredictionActual.label)
                         )
                       ),
-                      React.createElement("p", { className: "text-[0.625rem] text-slate-700 mt-2 leading-relaxed" }, wbPredictionMatched ? __alloT('stem.rocks.wb_prediction_matched_body', 'Agreement supports your working model; keep checking it against other properties.') : __alloT('stem.rocks.wb_prediction_updated_body', 'Scientists do not erase surprising evidence. They use it to revise explanations and choose the next test.'))
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-700 mt-2 leading-relaxed" }, wbPredictionMatched ? __alloT('stem.rocks.wb_prediction_matched_body', 'Agreement supports your working model; keep checking it against other properties.') : __alloT('stem.rocks.wb_prediction_updated_body', 'Scientists do not erase surprising evidence. They use it to revise explanations and choose the next test.'))
                     )
                   )
                 );
@@ -12800,20 +13584,20 @@ const d = labToolData.rocks || {};
                 return React.createElement("section", { className: "rounded-2xl border border-slate-300 bg-white p-3", "aria-labelledby": "wb-evidence-rail-title", "data-wb-evidence-rail": "persistent" },
                   React.createElement("div", { className: "flex flex-wrap items-end justify-between gap-2 mb-2.5" },
                     React.createElement("div", null,
-                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.14em] text-violet-800" }, __alloT('stem.rocks.wb_rail_eyebrow', 'Persistent results')),
-                      React.createElement("h4", { id: "wb-evidence-rail-title", className: "text-[0.8125rem] font-black text-slate-900" }, __alloT('stem.rocks.wb_rail_title', 'Specimen evidence rail')),
-                      React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_rail_help', 'Each result stays visible while you compare candidates.'))
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.14em] text-violet-800" }, __alloT('stem.rocks.wb_rail_eyebrow', 'Persistent results')),
+                      React.createElement("h4", { id: "wb-evidence-rail-title", tabIndex: -1, className: "text-[0.875rem] font-black text-slate-900" }, __alloT('stem.rocks.wb_rail_title', 'Specimen evidence rail')),
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_rail_help', 'Each result stays visible while you compare candidates.'))
                     ),
-                    React.createElement("span", { className: "rounded-full bg-violet-50 border border-violet-200 px-2.5 py-1 text-[10.5px] font-black text-violet-900" }, wbEvidenceTypeCount + ' / 7 ' + __alloT('stem.rocks.wb_rail_captured', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
+                    React.createElement("span", { className: "rounded-full bg-violet-50 border border-violet-200 px-2.5 py-1 text-[0.875rem] font-black text-violet-900" }, wbEvidenceTypeCount + ' / 7 ' + __alloT('stem.rocks.wb_rail_captured', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
                   ),
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2", role: "list" }, wbRailItems.map(function (item) {
                     return React.createElement("div", { key: item.id, role: "listitem", "data-wb-rail-property": item.id, "data-wb-rail-state": item.provisional ? 'provisional' : item.caution ? 'hardness-clue' : item.derived ? 'derived' : item.done ? 'captured' : 'pending', className: "rounded-xl border p-2 min-w-0 " + (item.caution || item.provisional ? "bg-amber-50 border-amber-300" : item.done ? "bg-emerald-50 border-emerald-300" : "bg-slate-50 border-slate-200") },
                       React.createElement("div", { className: "flex items-center gap-2" },
                         wbRailGraphic(item),
                         React.createElement("span", { className: "min-w-0" },
-                          React.createElement("span", { className: "block text-[0.6875rem] font-black " + (item.caution || item.provisional ? "text-amber-900" : item.done ? "text-emerald-900" : "text-slate-700") }, (item.provisional ? '≈ ' : item.caution ? '↗ ' : item.done ? '✓ ' : '') + item.label),
-                          React.createElement("span", { className: "block text-[10.5px] font-semibold mt-0.5 " + (item.done || item.provisional ? "text-slate-800" : "text-slate-600"), style: { overflowWrap: 'anywhere' } }, item.value),
-                          item.provisional ? React.createElement("span", { className: "block text-[0.625rem] font-black text-amber-800 mt-0.5" }, __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm')) : null
+                          React.createElement("span", { className: "block text-[0.875rem] font-black " + (item.caution || item.provisional ? "text-amber-900" : item.done ? "text-emerald-900" : "text-slate-700") }, (item.provisional ? '≈ ' : item.caution ? '↗ ' : item.done ? '✓ ' : '') + item.label),
+                          React.createElement("span", { className: "block text-[0.875rem] font-semibold mt-0.5 " + (item.done || item.provisional ? "text-slate-800" : "text-slate-600"), style: { overflowWrap: 'anywhere' } }, item.value),
+                          item.provisional ? React.createElement("span", { className: "block text-[0.875rem] font-black text-amber-800 mt-0.5" }, __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm')) : null
                         )
                       )
                     );
@@ -12884,19 +13668,19 @@ const d = labToolData.rocks || {};
                   React.createElement("summary", { className: "cursor-pointer list-none min-h-[52px] px-3 sm:px-4 py-2.5 flex items-center gap-3 select-none" },
                     React.createElement("span", { className: "w-9 h-9 rounded-xl border border-violet-200 bg-white flex items-center justify-center text-lg shrink-0", "aria-hidden": "true" }, '🧭'),
                     React.createElement("span", { className: "min-w-0 flex-1" },
-                      React.createElement("span", { className: "block text-[11.5px] sm:text-[0.75rem] font-black text-violet-900" }, __alloT('stem.rocks.wb_guide_title', 'Need a property refresher? Open the visual guide.')),
-                      React.createElement("span", { className: "block text-[0.625rem] sm:text-[10.5px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_guide_summary', 'Six quick definitions, diagnostic uses, and common mix-ups.'))
+                      React.createElement("span", { className: "block text-[0.875rem] sm:text-[0.875rem] font-black text-violet-900" }, __alloT('stem.rocks.wb_guide_title', 'Need a property refresher? Open the visual guide.')),
+                      React.createElement("span", { className: "block text-[0.875rem] sm:text-[0.875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_guide_summary', 'Six quick definitions, diagnostic uses, and common mix-ups.'))
                     ),
-                    React.createElement("span", { className: "hidden sm:inline rounded-full border border-violet-200 bg-white px-2.5 py-1 text-[0.625rem] font-black text-violet-900 shrink-0" }, __alloT('stem.rocks.wb_guide_optional', 'Optional help')),
+                    React.createElement("span", { className: "hidden sm:inline rounded-full border border-violet-200 bg-white px-2.5 py-1 text-[0.875rem] font-black text-violet-900 shrink-0" }, __alloT('stem.rocks.wb_guide_optional', 'Optional help')),
                     React.createElement("span", { className: "text-violet-800 text-lg font-black transition-transform group-open:rotate-180 shrink-0", "aria-hidden": "true" }, '⌄')
                   ),
                   React.createElement("div", { className: "border-t border-violet-200 bg-white p-3 sm:p-4" },
                     React.createElement("div", { className: "flex flex-wrap items-end justify-between gap-2 mb-3" },
                       React.createElement("div", null,
-                        React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_guide_eyebrow', 'Read the evidence like a mineralogist')),
-                        React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-0.5" }, __alloT('stem.rocks.wb_guide_intro', 'Each property answers a different question. Combining them is more reliable than color alone.'))
+                        React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_guide_eyebrow', 'Read the evidence like a mineralogist')),
+                        React.createElement("p", { className: "text-[0.875rem] text-slate-700 mt-0.5" }, __alloT('stem.rocks.wb_guide_intro', 'Each property answers a different question. Combining them is more reliable than color alone.'))
                       ),
-                      React.createElement("span", { className: "rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[0.625rem] font-black text-emerald-900" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_guide_measured_count', ' of 6 confirmed'))
+                      React.createElement("span", { className: "rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[0.875rem] font-black text-emerald-900" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_guide_measured_count', ' of 6 confirmed'))
                     ),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5", role: "list", "aria-label": __alloT('stem.rocks.wb_guide_list_aria', 'Mineral property definitions and misconception guards') }, wbPropertyGuideItems.map(function (item) {
                       return React.createElement("article", {
@@ -12907,14 +13691,14 @@ const d = labToolData.rocks || {};
                           wbRenderPropertyGuideGraphic(item),
                           React.createElement("div", { className: "min-w-0 flex-1" },
                             React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                              React.createElement("h5", { className: "text-[0.75rem] font-black text-slate-900" }, item.label),
-                              React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black " + (item.provisional ? "bg-amber-100 text-amber-900" : item.done ? "bg-emerald-100 text-emerald-900" : "bg-white text-slate-700 border border-slate-200") }, item.provisional ? __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : item.done ? __alloT('stem.rocks.wb_guide_measured', 'Measured') : __alloT('stem.rocks.wb_guide_available', 'Available'))
+                              React.createElement("h5", { className: "text-[0.875rem] font-black text-slate-900" }, item.label),
+                              React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.875rem] font-black " + (item.provisional ? "bg-amber-100 text-amber-900" : item.done ? "bg-emerald-100 text-emerald-900" : "bg-white text-slate-700 border border-slate-200") }, item.provisional ? __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : item.done ? __alloT('stem.rocks.wb_guide_measured', 'Measured') : __alloT('stem.rocks.wb_guide_available', 'Available'))
                             ),
-                            React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-1 leading-relaxed" }, item.meaning)
+                            React.createElement("p", { className: "text-[0.875rem] text-slate-700 mt-1 leading-relaxed" }, item.meaning)
                           )
                         ),
-                        React.createElement("p", { className: "text-[0.625rem] font-semibold text-violet-900 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_guide_use_prefix', 'Diagnostic use: ') + item.use),
-                        React.createElement("p", { className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[10.5px] text-amber-900 leading-relaxed" }, '⚠ ' + __alloT('stem.rocks.wb_guide_guard_prefix', 'Do not mix it up: ') + item.guard)
+                        React.createElement("p", { className: "text-[0.875rem] font-semibold text-violet-900 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_guide_use_prefix', 'Diagnostic use: ') + item.use),
+                        React.createElement("p", { className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[0.875rem] text-amber-900 leading-relaxed" }, '⚠ ' + __alloT('stem.rocks.wb_guide_guard_prefix', 'Do not mix it up: ') + item.guard)
                       );
                     }))
                   )
@@ -13008,28 +13792,28 @@ const d = labToolData.rocks || {};
                     React.createElement("div", { className: "shrink-0 text-center" },
                       React.createElement("div", { className: "rounded-xl ring-2 ring-amber-200" }, rkHandSpecimenSvg(React.createElement, sp, 54, { aria: __alloT('stem.rocks.wb_specimen_aria', 'Unknown hand specimen: an irregular broken fragment.') })),
                       wb.lens ? React.createElement("div", { className: "mt-1 rounded-md bg-slate-900 p-0.5 inline-block", "data-wb-dock-porthole": "unknown" }, rkLensViewSvg(React.createElement, sp, 34, { aria: __alloT('stem.rocks.wb_lens_aria', 'Magnified patch of the specimen surface under the lamp. ') + wbSpecimenSr })) : null,
-                      React.createElement("p", { className: "text-[0.625rem] sm:text-[10.5px] font-black text-amber-900 mt-1" }, __alloT('stem.rocks.wb_compare_unknown', 'Unknown'))
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] font-black text-amber-900 mt-1" }, __alloT('stem.rocks.wb_compare_unknown', 'Unknown'))
                     ),
                     React.createElement("div", { className: "min-w-0 flex-1" },
                       React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" },
-                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_live_compare', 'Pinned live comparison')),
-                        React.createElement("span", { className: "rounded-full border px-2 py-0.5 text-[0.625rem] font-black " + wbSupportClass }, wbClaimSupport.label)
+                        React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_live_compare', 'Pinned live comparison')),
+                        React.createElement("span", { className: "rounded-full border px-2 py-0.5 text-[0.875rem] font-black " + wbSupportClass }, wbClaimSupport.label)
                       ),
-                      React.createElement("h5", { id: "wb-live-compare-title", className: "text-[0.75rem] sm:text-[0.875rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected ? __alloT('stem.rocks.wb_compare_title_selected', 'Unknown compared with ') + wbSelected.label : __alloT('stem.rocks.wb_compare_title_empty', 'Keep the unknown visible while choosing a candidate')),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.6875rem] text-slate-700 mt-0.5 leading-snug" }, wbClaimSupport.detail),
+                      React.createElement("h5", { id: "wb-live-compare-title", className: "text-[0.875rem] sm:text-[0.875rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected ? __alloT('stem.rocks.wb_compare_title_selected', 'Unknown compared with ') + wbSelected.label : __alloT('stem.rocks.wb_compare_title_empty', 'Keep the unknown visible while choosing a candidate')),
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] text-slate-700 mt-0.5 leading-snug" }, wbClaimSupport.detail),
                       rows.length ? React.createElement("div", { className: "hidden sm:flex flex-wrap gap-1.5 mt-2", role: "group", "aria-label": __alloT('stem.rocks.wb_compare_matches_aria', 'Measured properties that match the selected candidate') },
-                        rows.slice(0, 4).map(function (row) { return React.createElement("span", { key: row.id, className: "rounded-full bg-emerald-50 border border-emerald-200 px-2 py-1 text-[0.625rem] font-black text-emerald-900" }, '✓ ' + row.label); }),
-                        rows.length > 4 ? React.createElement("span", { className: "rounded-full bg-slate-100 border border-slate-200 px-2 py-1 text-[0.625rem] font-black text-slate-700" }, '+' + (rows.length - 4) + __alloT('stem.rocks.wb_compare_more', ' more')) : null
+                        rows.slice(0, 4).map(function (row) { return React.createElement("span", { key: row.id, className: "rounded-full bg-emerald-50 border border-emerald-200 px-2 py-1 text-[0.875rem] font-black text-emerald-900" }, '✓ ' + row.label); }),
+                        rows.length > 4 ? React.createElement("span", { className: "rounded-full bg-slate-100 border border-slate-200 px-2 py-1 text-[0.875rem] font-black text-slate-700" }, '+' + (rows.length - 4) + __alloT('stem.rocks.wb_compare_more', ' more')) : null
                       ) : null
                     ),
                     React.createElement("span", { className: "text-violet-700 text-lg font-black shrink-0", "aria-hidden": "true" }, '↔'),
                     wbSelected ? React.createElement("div", { className: "shrink-0 text-center" },
                       React.createElement("div", { className: "rounded-xl ring-2 ring-violet-200" }, rkMineralSwatch(React.createElement, wbSelected, 54)),
                       wb.lens ? React.createElement("div", { className: "mt-1 rounded-md bg-slate-900 p-0.5 inline-block", "data-wb-dock-porthole": wbSelected.id }, rkLensViewSvg(React.createElement, wbSelected, 34, { aria: wbSelected.label + __alloT('stem.rocks.wb_candidate_porthole_aria', ' under the lens: ') + rkLusterClassInfo(rkLusterClass(wbSelected)).sr })) : null,
-                      React.createElement("p", { className: "text-[0.625rem] sm:text-[10.5px] font-black text-violet-900 mt-1 leading-tight", style: { maxWidth: 74, overflowWrap: 'anywhere' } }, wbSelected.label)
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] font-black text-violet-900 mt-1 leading-tight", style: { maxWidth: 74, overflowWrap: 'anywhere' } }, wbSelected.label)
                     ) : React.createElement("div", { className: "shrink-0 text-center" },
                       React.createElement("div", { className: "rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-xl font-black text-slate-600", style: { width: 54, height: 54 }, "aria-hidden": "true" }, '?'),
-                      React.createElement("p", { className: "text-[0.625rem] sm:text-[10.5px] font-black text-slate-600 mt-1" }, __alloT('stem.rocks.wb_compare_candidate', 'Candidate'))
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] font-black text-slate-600 mt-1" }, __alloT('stem.rocks.wb_compare_candidate', 'Candidate'))
                     )
                   )
                 );
@@ -13047,10 +13831,10 @@ const d = labToolData.rocks || {};
                 if (!wbSelected) return null;
                 return React.createElement("div", { className: "mt-3 space-y-3", "data-wb-cer-builder": "active", "data-wb-cer-ready": wbCerReady ? 'true' : 'false' },
                   React.createElement("fieldset", { className: "rounded-xl border border-violet-200 bg-white p-3", "data-wb-cer-evidence-count": wbClaimEvidence.length },
-                    React.createElement("legend", { className: "px-1 text-[11.5px] font-black text-violet-900" }, __alloT('stem.rocks.wb_cer_step1', '1 · Choose your strongest evidence')),
+                    React.createElement("legend", { className: "px-1 text-[0.875rem] font-black text-violet-900" }, __alloT('stem.rocks.wb_cer_step1', '1 · Choose your strongest evidence')),
                     React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" },
-                      React.createElement("p", { className: "text-[0.6875rem] text-slate-700" }, __alloT('stem.rocks.wb_cer_evidence_help', 'Select at least two measured properties that best support this claim.')),
-                      React.createElement("span", { className: "rounded-full border px-2 py-1 text-[0.625rem] font-black " + (wbClaimEvidence.length >= 2 ? "bg-emerald-100 border-emerald-300 text-emerald-900" : "bg-amber-100 border-amber-300 text-amber-900") }, wbClaimEvidence.length + ' / 2 ' + __alloT('stem.rocks.wb_cer_chosen', 'chosen'))
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-700" }, __alloT('stem.rocks.wb_cer_evidence_help', 'Select at least two measured properties that best support this claim.')),
+                      React.createElement("span", { className: "rounded-full border px-2 py-1 text-[0.875rem] font-black " + (wbClaimEvidence.length >= 2 ? "bg-emerald-100 border-emerald-300 text-emerald-900" : "bg-amber-100 border-amber-300 text-amber-900") }, wbClaimEvidence.length + ' / 2 ' + __alloT('stem.rocks.wb_cer_chosen', 'chosen'))
                     ),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, wbCerRows.map(function (row) {
                       var chosen = wbClaimEvidence.indexOf(row.id) !== -1;
@@ -13068,16 +13852,16 @@ const d = labToolData.rocks || {};
                         className: "rounded-xl border p-2.5 min-h-[66px] text-left transition-all " + (chosen ? "bg-violet-100 border-violet-500 ring-2 ring-violet-200 text-violet-900" : "bg-slate-50 border-slate-300 text-slate-800 hover:border-violet-400")
                       },
                         React.createElement("span", { className: "flex items-center justify-between gap-2" },
-                          React.createElement("span", { className: "text-[11.5px] font-black" }, (chosen ? '✓ ' : '') + row.label),
-                          React.createElement("span", { className: "rounded-full bg-white border border-slate-200 px-2 py-0.5 text-[0.625rem] font-black text-slate-700" }, evidenceContextLabel)
+                          React.createElement("span", { className: "text-[0.875rem] font-black" }, (chosen ? '✓ ' : '') + row.label),
+                          React.createElement("span", { className: "rounded-full bg-white border border-slate-200 px-2 py-0.5 text-[0.875rem] font-black text-slate-700" }, evidenceContextLabel)
                         ),
-                        React.createElement("span", { className: "block text-[10.5px] font-semibold mt-1 text-slate-700", style: { overflowWrap: 'anywhere' } }, row.unknown + ' → ' + row.candidate)
+                        React.createElement("span", { className: "block text-[0.875rem] font-semibold mt-1 text-slate-700", style: { overflowWrap: 'anywhere' } }, row.unknown + ' → ' + row.candidate)
                       );
                     }))
                   ),
                   React.createElement("fieldset", { className: "rounded-xl border border-violet-200 bg-white p-3" },
-                    React.createElement("legend", { className: "px-1 text-[11.5px] font-black text-violet-900" }, __alloT('stem.rocks.wb_cer_step2', '2 · Explain why the evidence matters')),
-                    React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2" }, __alloT('stem.rocks.wb_cer_reason_help', 'Choose the reasoning that connects your observations to the mineral identity.')),
+                    React.createElement("legend", { className: "px-1 text-[0.875rem] font-black text-violet-900" }, __alloT('stem.rocks.wb_cer_step2', '2 · Explain why the evidence matters')),
+                    React.createElement("p", { className: "text-[0.875rem] text-slate-700 mb-2" }, __alloT('stem.rocks.wb_cer_reason_help', 'Choose the reasoning that connects your observations to the mineral identity.')),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" }, wbReasoningOptions.map(function (option) {
                       var chosen = wbClaimReasoning === option.id;
                       return React.createElement("button", {
@@ -13085,27 +13869,27 @@ const d = labToolData.rocks || {};
                         onClick: function () { updWb({ claimReasoning: option.id }); wbSay(__alloT('stem.rocks.wb_reason_selected_sr', 'Reasoning selected: ') + option.label + '.'); },
                         className: "rounded-xl border p-2.5 min-h-[72px] text-left transition-all " + (chosen ? "bg-violet-100 border-violet-500 ring-2 ring-violet-200 text-violet-900" : "bg-slate-50 border-slate-300 text-slate-800 hover:border-violet-400")
                       },
-                        React.createElement("span", { className: "block text-[0.6875rem] font-black" }, (chosen ? '✓ ' : '') + option.label),
-                        React.createElement("span", { className: "block text-[10.5px] mt-1 leading-snug text-slate-700" }, option.detail)
+                        React.createElement("span", { className: "block text-[0.875rem] font-black" }, (chosen ? '✓ ' : '') + option.label),
+                        React.createElement("span", { className: "block text-[0.875rem] mt-1 leading-snug text-slate-700" }, option.detail)
                       );
                     }))
                   ),
                   React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
                     React.createElement("fieldset", { className: "rounded-xl border border-slate-300 bg-white p-3", "data-wb-confidence": wbClaimConfidence || 'not-recorded' },
-                      React.createElement("legend", { className: "px-1 text-[11.5px] font-black text-slate-900" }, __alloT('stem.rocks.wb_cer_step3', '3 · Record your confidence')),
-                      React.createElement("p", { className: "text-[10.5px] text-slate-600 mb-2" }, __alloT('stem.rocks.wb_conf_help', 'This does not affect correctness; it helps you reflect afterward.')),
+                      React.createElement("legend", { className: "px-1 text-[0.875rem] font-black text-slate-900" }, __alloT('stem.rocks.wb_cer_step3', '3 · Record your confidence')),
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-600 mb-2" }, __alloT('stem.rocks.wb_conf_help', 'This does not affect correctness; it helps you reflect afterward.')),
                       React.createElement("div", { className: "grid grid-cols-3 gap-1.5" }, wbConfidenceOptions.map(function (option) {
                         var chosen = wbClaimConfidence === option.id;
                         return React.createElement("button", {
                           key: option.id, type: "button", "aria-pressed": chosen, "data-wb-cer-confidence": option.id,
                           onClick: function () { updWb({ claimConfidence: option.id }); wbSay(__alloT('stem.rocks.wb_conf_selected_sr', 'Confidence recorded: ') + option.label + '.'); },
-                          className: "rounded-lg border px-2 py-2 min-h-[46px] text-[10.5px] font-black transition-all " + (chosen ? "bg-amber-100 border-amber-400 text-amber-900" : "bg-slate-50 border-slate-300 text-slate-700 hover:border-amber-400")
+                          className: "rounded-lg border px-2 py-2 min-h-[46px] text-[0.875rem] font-black transition-all " + (chosen ? "bg-amber-100 border-amber-400 text-amber-900" : "bg-slate-50 border-slate-300 text-slate-700 hover:border-amber-400")
                         }, option.label);
                       }))
                     ),
                     React.createElement("div", { className: "rounded-xl border border-emerald-300 bg-emerald-50 p-3", "data-wb-reasoning-frame": wbCerReady ? 'complete' : 'building' },
-                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_reasoning_preview', 'Your reasoning preview')),
-                      React.createElement("p", { className: "text-[0.6875rem] font-semibold text-emerald-900 mt-1 leading-relaxed" }, wbReasoningSentence)
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_reasoning_preview', 'Your reasoning preview')),
+                      React.createElement("p", { className: "text-[0.875rem] font-semibold text-emerald-900 mt-1 leading-relaxed" }, wbReasoningSentence)
                     )
                   )
                 );
@@ -13430,17 +14214,17 @@ const d = labToolData.rocks || {};
                 var revised = rows.filter(function (r) { return r.verdict === 'revised'; }).length;
                 var mismatched = rows.filter(function (r) { return r.verdict === 'mismatch'; }).length;
                 return React.createElement("section", { className: "mt-3 rounded-xl border border-emerald-200 bg-white/80 p-2.5 text-left", "aria-labelledby": "wb-trail-title", "data-wb-debrief-history": hist.length, "data-wb-debrief-revised": revised, "data-wb-debrief-mismatched": mismatched },
-                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_trail_eyebrow', 'Reasoning trail')),
-                  React.createElement("h6", { id: "wb-trail-title", className: "text-[0.75rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_trail_title', 'How you got there')),
-                  React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-0.5 leading-relaxed" }, revised
+                  React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_trail_eyebrow', 'Reasoning trail')),
+                  React.createElement("h6", { id: "wb-trail-title", className: "text-[0.875rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_trail_title', 'How you got there')),
+                  React.createElement("p", { className: "text-[0.875rem] text-slate-700 mt-0.5 leading-relaxed" }, revised
                     ? __alloT('stem.rocks.wb_trail_revised_help', 'Looking again and revising a reading is exactly what a careful observer does. Revised readings are kept here so you can see how your thinking changed.')
                     : __alloT('stem.rocks.wb_trail_help', 'Every observation you recorded, in order, compared with the reference values for the mineral you identified.')),
                   React.createElement("ol", { className: "mt-2 space-y-1.5" }, rows.map(function (r, i) {
-                    return React.createElement("li", { key: i, "data-wb-history-verdict": r.verdict, className: "rounded-lg border px-2.5 py-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] " + (r.verdict === 'match' ? "border-emerald-200 bg-emerald-50" : r.verdict === 'revised' ? "border-slate-200 bg-slate-50" : "border-amber-300 bg-amber-50") },
-                      React.createElement("span", { className: "w-5 h-5 rounded-full text-[0.625rem] font-black flex items-center justify-center shrink-0 " + (r.verdict === 'match' ? "bg-emerald-700 text-white" : r.verdict === 'revised' ? "bg-slate-500 text-white" : "bg-amber-700 text-white"), "aria-hidden": "true" }, i + 1),
+                    return React.createElement("li", { key: i, "data-wb-history-verdict": r.verdict, className: "rounded-lg border px-2.5 py-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.875rem] " + (r.verdict === 'match' ? "border-emerald-200 bg-emerald-50" : r.verdict === 'revised' ? "border-slate-200 bg-slate-50" : "border-amber-300 bg-amber-50") },
+                      React.createElement("span", { className: "w-5 h-5 rounded-full text-[0.875rem] font-black flex items-center justify-center shrink-0 " + (r.verdict === 'match' ? "bg-emerald-700 text-white" : r.verdict === 'revised' ? "bg-slate-500 text-white" : "bg-amber-700 text-white"), "aria-hidden": "true" }, i + 1),
                       React.createElement("span", { className: "font-black text-slate-900" }, wbHistoryToolLabel(r.e) + ':'),
                       React.createElement("span", { className: "font-semibold " + (r.verdict === 'revised' ? "text-slate-600 line-through" : "text-slate-800") }, r.e.label),
-                      React.createElement("span", { className: "ml-auto rounded-full border px-2 py-0.5 text-[0.625rem] font-black " + (r.verdict === 'match' ? "border-emerald-300 bg-white text-emerald-900" : r.verdict === 'revised' ? "border-slate-300 bg-white text-slate-700" : "border-amber-400 bg-white text-amber-900") },
+                      React.createElement("span", { className: "ml-auto rounded-full border px-2 py-0.5 text-[0.875rem] font-black " + (r.verdict === 'match' ? "border-emerald-300 bg-white text-emerald-900" : r.verdict === 'revised' ? "border-slate-300 bg-white text-slate-700" : "border-amber-400 bg-white text-amber-900") },
                         r.verdict === 'match' ? '\u2713 ' + __alloT('stem.rocks.wb_trail_match', 'Matches reference') : r.verdict === 'revised' ? '\u21bb ' + __alloT('stem.rocks.wb_trail_revised', 'Revised later') : '\u26a0 ' + __alloT('stem.rocks.wb_trail_mismatch', 'Worth a second look: reference says ') + (r.ref ? r.ref.label : '?'))
                     );
                   }))
@@ -13501,10 +14285,10 @@ const d = labToolData.rocks || {};
                   className: "mt-2.5 rounded-xl border p-2.5 text-left " + (lean ? "border-emerald-300 bg-white" : "border-sky-300 bg-sky-50"),
                   "data-wb-efficiency": lean ? 'lean' : 'longer', "data-wb-efficiency-minimum": String(minimal.length), "data-wb-efficiency-used": String(used.length)
                 },
-                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide " + (lean ? "text-emerald-800" : "text-sky-800") }, __alloT('stem.rocks.wb_eff_title', 'Experimental design review')),
-                  React.createElement("p", { className: "text-[10.5px] font-bold mt-0.5 " + (lean ? "text-emerald-900" : "text-sky-900"), style: { overflowWrap: 'anywhere' } },
+                  React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide " + (lean ? "text-emerald-800" : "text-sky-800") }, __alloT('stem.rocks.wb_eff_title', 'Experimental design review')),
+                  React.createElement("p", { className: "text-[0.875rem] font-bold mt-0.5 " + (lean ? "text-emerald-900" : "text-sky-900"), style: { overflowWrap: 'anywhere' } },
                     __alloT('stem.rocks.wb_eff_used', 'Tests you ran: ') + used.length + '. ' + __alloT('stem.rocks.wb_eff_min', 'Shortest sufficient path, visible only in hindsight: ') + minimal.length + '. ' + __alloT('stem.rocks.wb_eff_which', 'That path: ') + minimal.map(wbForecastTitleFor).join(__alloT('stem.rocks.wb_eff_join', ', ')) + '.'),
-                  React.createElement("p", { className: "text-[0.625rem] mt-1 leading-relaxed " + (lean ? "text-emerald-800" : "text-sky-800") },
+                  React.createElement("p", { className: "text-[0.875rem] mt-1 leading-relaxed " + (lean ? "text-emerald-800" : "text-sky-800") },
                     lean ? __alloT('stem.rocks.wb_eff_lean', 'You matched it while the answer was still open, which is what efficient experimental design looks like.')
                       : __alloT('stem.rocks.wb_eff_longer', 'Nobody could have known it in advance, so the extra tests were not wasted. Independent properties that agree make an identification much harder to overturn.'))
                 );
@@ -13642,9 +14426,9 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex items-start gap-3" },
                     React.createElement("span", { className: "w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm shrink-0", "aria-hidden": "true" }, '📝'),
                     React.createElement("div", { className: "min-w-0 flex-1" },
-                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.14em] text-sky-800" }, __alloT('stem.rocks.wb_obs_eyebrow', 'Your observation')),
-                      React.createElement("h4", { id: "wb-observation-title", className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5" }, title),
-                      React.createElement("p", { className: "text-[0.6875rem] sm:text-[11.5px] text-slate-700 mt-1 leading-relaxed" }, help)
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.14em] text-sky-800" }, __alloT('stem.rocks.wb_obs_eyebrow', 'Your observation')),
+                      React.createElement("h4", { id: "wb-observation-title", tabIndex: -1, className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5" }, title),
+                      React.createElement("p", { className: "text-[0.875rem] sm:text-[0.875rem] text-slate-700 mt-1 leading-relaxed" }, help)
                     )
                   ),
                   isLens ? React.createElement("div", { className: "mt-3 flex flex-col sm:flex-row gap-3 items-start" },
@@ -13652,26 +14436,26 @@ const d = labToolData.rocks || {};
                       rkLensViewSvg(React.createElement, sp, 160, { animate: true, aria: __alloT('stem.rocks.wb_lens_aria', 'Magnified patch of the specimen surface under the lamp. ') + wbSpecimenSr })
                     ),
                     React.createElement("div", { className: "min-w-0 flex-1" },
-                      React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-wide text-slate-700" }, __alloT('stem.rocks.wb_obs_tilt', 'Tilt it: turn the specimen under the lamp and watch the highlight')),
-                      React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_obs_tilt_help', 'A hard mirror flash that slides is metallic. One pin-sharp point with a lit interior is glassy. A wide soft glow along layers is pearly. No crisp highlight is dull or waxy.')),
-                      React.createElement("button", { type: "button", className: "mt-2 rounded-xl border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[10.5px] font-black text-slate-800 hover:border-sky-400 hover:bg-sky-100", "aria-pressed": !!wb.view3d, "data-wb-view3d": wb.view3d ? 'on' : 'off', onClick: function () { updWb({ view3d: !wb.view3d }); wbSay(wb.view3d ? __alloT('stem.rocks.wb_3d_closed_sr', '3D specimen closed.') : __alloT('stem.rocks.wb_3d_opened_sr', '3D specimen opened below the bench. Drag or use the arrow buttons to turn it.')); } }, wb.view3d ? '🧊 ' + __alloT('stem.rocks.wb_3d_hide', 'Hide 3D specimen') : '🧊 ' + __alloT('stem.rocks.wb_3d_show', 'Turn it in 3D'))
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-700" }, __alloT('stem.rocks.wb_obs_tilt', 'Tilt it: turn the specimen under the lamp and watch the highlight')),
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-700 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_obs_tilt_help', 'A hard mirror flash that slides is metallic. One pin-sharp point with a lit interior is glassy. A wide soft glow along layers is pearly. No crisp highlight is dull or waxy.')),
+                      React.createElement("button", { type: "button", className: "mt-2 rounded-xl border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[0.875rem] font-black text-slate-800 hover:border-sky-400 hover:bg-sky-100", "aria-pressed": !!wb.view3d, "data-wb-view3d": wb.view3d ? 'on' : 'off', onClick: function () { updWb({ view3d: !wb.view3d }); wbSay(wb.view3d ? __alloT('stem.rocks.wb_3d_closed_sr', '3D specimen closed.') : __alloT('stem.rocks.wb_3d_opened_sr', '3D specimen opened below the bench. Drag or use the arrow buttons to turn it.')); } }, wb.view3d ? '🧊 ' + __alloT('stem.rocks.wb_3d_hide', 'Hide 3D specimen') : '🧊 ' + __alloT('stem.rocks.wb_3d_show', 'Turn it in 3D'))
                     )
                   ) : null,
                   isForm ? React.createElement("div", { className: "mt-3 flex flex-col sm:flex-row gap-3 items-start" },
                     React.createElement("div", { className: "shrink-0 rounded-xl bg-slate-900 p-2", "data-wb-form-specimen": "large" }, rkHandSpecimenSvg(React.createElement, sp, 150, { plate: false, aria: __alloT('stem.rocks.wb_form_large_aria', 'The unknown fragment, enlarged. ') + wbObservedFormFor(sp) })),
                     React.createElement("div", { className: "min-w-0 flex-1" },
-                      React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-wide text-slate-700" }, __alloT('stem.rocks.wb_obs_form_cue', 'Look for corners, sheets, columns or points')),
-                      React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_obs_form_cue_help', 'Right-angle steps mean box-like cleavage. Leaning faces mean rhombs. Layers that peel are sheets. A long six-sided column is a prism. Triangles meeting in points are pyramids. A thin slab is a blade. A rounded crystal of many small faces is a ball. Lumpy with no faces is massive.')),
-                      React.createElement("button", { type: "button", className: "mt-2 rounded-xl border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[10.5px] font-black text-slate-800 hover:border-sky-400 hover:bg-sky-100", "aria-pressed": !!wb.view3d, "data-wb-view3d": wb.view3d ? 'on' : 'off', onClick: function () { updWb({ view3d: !wb.view3d }); } }, wb.view3d ? '🧊 ' + __alloT('stem.rocks.wb_3d_hide', 'Hide 3D specimen') : '🧊 ' + __alloT('stem.rocks.wb_3d_show', 'Turn it in 3D'))
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-700" }, __alloT('stem.rocks.wb_obs_form_cue', 'Look for corners, sheets, columns or points')),
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-700 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_obs_form_cue_help', 'Right-angle steps mean box-like cleavage. Leaning faces mean rhombs. Layers that peel are sheets. A long six-sided column is a prism. Triangles meeting in points are pyramids. A thin slab is a blade. A rounded crystal of many small faces is a ball. Lumpy with no faces is massive.')),
+                      React.createElement("button", { type: "button", className: "mt-2 rounded-xl border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[0.875rem] font-black text-slate-800 hover:border-sky-400 hover:bg-sky-100", "aria-pressed": !!wb.view3d, "data-wb-view3d": wb.view3d ? 'on' : 'off', onClick: function () { updWb({ view3d: !wb.view3d }); } }, wb.view3d ? '🧊 ' + __alloT('stem.rocks.wb_3d_hide', 'Hide 3D specimen') : '🧊 ' + __alloT('stem.rocks.wb_3d_show', 'Turn it in 3D'))
                     )
                   ) : null,
                   isDensity ? React.createElement("dl", { className: "mt-3 grid grid-cols-2 gap-2", "data-wb-density-readings": "shown" },
                     React.createElement("div", { className: "rounded-xl border border-sky-200 bg-white p-2.5" },
-                      React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_mass', 'Balance reading (mass)')),
+                      React.createElement("dt", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_mass', 'Balance reading (mass)')),
                       React.createElement("dd", { className: "text-[0.9375rem] font-black text-slate-900 mt-0.5" }, 'm = ' + wbModeledMass.toFixed(1) + ' g')
                     ),
                     React.createElement("div", { className: "rounded-xl border border-sky-200 bg-white p-2.5" },
-                      React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_volume', 'Water displaced (volume)')),
+                      React.createElement("dt", { className: "text-[0.875rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_volume', 'Water displaced (volume)')),
                       React.createElement("dd", { className: "text-[0.9375rem] font-black text-slate-900 mt-0.5" }, 'V = ' + wbModeledVolume.toFixed(1) + ' cm³')
                     )
                   ) : null,
@@ -13685,15 +14469,15 @@ const d = labToolData.rocks || {};
                         c.tile ? React.createElement("span", { className: "shrink-0 rounded-lg overflow-hidden", "data-wb-luster-reference": c.id }, c.tile) : null,
                         c.hex !== undefined ? React.createElement("span", { className: "shrink-0 w-7 h-7 rounded-md border border-slate-400", style: { background: c.hex || 'repeating-linear-gradient(135deg,#e8e5de,#e8e5de 3px,#94a3b8 3px,#94a3b8 4px)' }, "aria-hidden": "true" }) : null,
                         React.createElement("span", { className: "min-w-0" },
-                          React.createElement("span", { className: "block text-[11.5px] font-black text-slate-900 leading-tight" }, c.label),
-                          c.hint ? React.createElement("span", { className: "block text-[0.625rem] text-slate-700 mt-0.5 leading-snug" }, c.hint) : null
+                          React.createElement("span", { className: "block text-[0.875rem] font-black text-slate-900 leading-tight" }, c.label),
+                          c.hint ? React.createElement("span", { className: "block text-[0.875rem] text-slate-700 mt-0.5 leading-snug" }, c.hint) : null
                         )
                       );
                     })
                   ),
                   React.createElement("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2" },
-                    React.createElement("p", { className: "text-[0.625rem] text-slate-700 italic" }, __alloT('stem.rocks.wb_obs_honesty', 'Record what you see, not what you expect. A misread will empty the shortlist, and you can look again.')),
-                    React.createElement("button", { type: "button", className: "rounded-lg border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[0.625rem] font-black text-slate-800 hover:bg-slate-50", "data-wb-observe-discard": wbPendingTool, disabled: wbBusy, onClick: wbDiscardTrial }, __alloT('stem.rocks.wb_obs_discard', 'Discard this trial'))
+                    React.createElement("p", { className: "text-[0.875rem] text-slate-700 italic" }, __alloT('stem.rocks.wb_obs_honesty', 'Record what you see, not what you expect. A misread will empty the shortlist, and you can look again.')),
+                    React.createElement("button", { type: "button", className: "rounded-lg border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[0.875rem] font-black text-slate-800 hover:bg-slate-50", "data-wb-observe-discard": wbPendingTool, disabled: wbBusy, onClick: wbDiscardTrial }, __alloT('stem.rocks.wb_obs_discard', 'Discard this trial'))
                   )
                 );
               };
@@ -13701,10 +14485,10 @@ const d = labToolData.rocks || {};
               // so it is available for any test, not only while the lens is open.
               var wbRenderSpecimen3d = function () {
                 if (!sp || !wb.view3d) return null;
-                if (!RK_SPECIMEN_VIEWER) return React.createElement("p", { className: "rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-[10.5px] text-slate-700", "data-wb-specimen-3d": "unavailable" }, __alloT('stem.rocks.wb_3d_unavailable', 'The 3D specimen is unavailable on this host. The lens porthole above carries the same luster evidence.'));
+                if (!RK_SPECIMEN_VIEWER) return React.createElement("p", { className: "rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-[0.875rem] text-slate-700", "data-wb-specimen-3d": "unavailable" }, __alloT('stem.rocks.wb_3d_unavailable', 'The 3D specimen is unavailable on this host. The lens porthole above carries the same luster evidence.'));
                 return React.createElement("section", { className: "rounded-2xl border border-slate-700 bg-slate-900 p-2", "aria-labelledby": "wb-3d-title", "data-wb-specimen-3d": "open" },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 px-1 pb-1.5" },
-                    React.createElement("h4", { id: "wb-3d-title", className: "text-[0.6875rem] font-black", style: { color: '#f1f5f9', background: '#0f172a' } }, '🧊 ' + __alloT('stem.rocks.wb_3d_title', 'Hand specimen under the lamp')),
+                    React.createElement("h4", { id: "wb-3d-title", className: "text-[0.875rem] font-black", style: { color: '#f1f5f9', background: '#0f172a' } }, '🧊 ' + __alloT('stem.rocks.wb_3d_title', 'Hand specimen under the lamp')),
                     React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": __alloT('stem.rocks.wb_3d_controls_aria', '3D specimen view controls') },
                       [
                         ['◀', __alloT('stem.rocks.crystal3d_left', 'Rotate left'), function () { RK_SPECIMEN_VIEWER.nudge(-0.3, 0); }],
@@ -13714,7 +14498,7 @@ const d = labToolData.rocks || {};
                         ['＋', __alloT('stem.rocks.crystal3d_in', 'Zoom in'), function () { RK_SPECIMEN_VIEWER.zoom(-0.6); }],
                         ['－', __alloT('stem.rocks.crystal3d_out', 'Zoom out'), function () { RK_SPECIMEN_VIEWER.zoom(0.6); }],
                         ['↺', __alloT('stem.rocks.crystal3d_reset', 'Reset view'), function () { RK_SPECIMEN_VIEWER.reset(); }]
-                      ].map(function (b) { return React.createElement("button", { key: b[1], type: "button", "aria-label": b[1], title: b[1], className: "w-9 h-9 min-h-[36px] rounded-lg bg-slate-800 border border-slate-600 text-[0.75rem] font-black hover:bg-slate-700", style: { color: '#f1f5f9', background: '#1e293b' }, onClick: b[2] }, b[0]); })
+                      ].map(function (b) { return React.createElement("button", { key: b[1], type: "button", "aria-label": b[1], title: b[1], className: "w-9 h-9 min-h-[36px] rounded-lg bg-slate-800 border border-slate-600 text-[0.875rem] font-black hover:bg-slate-700", style: { color: '#f1f5f9', background: '#1e293b' }, onClick: b[2] }, b[0]); })
                     )
                   ),
                   React.createElement("div", {
@@ -13723,7 +14507,7 @@ const d = labToolData.rocks || {};
                     style: { height: '260px' }, role: "img",
                     "aria-label": __alloT('stem.rocks.wb_3d_aria', 'Rotating 3D model of the unknown hand specimen under a lamp. ') + wbSpecimenSr
                   }),
-                  React.createElement("p", { className: "text-[0.625rem] px-1 pt-1.5 leading-relaxed", style: { color: '#cbd5e1', background: '#0f172a' } }, __alloT('stem.rocks.wb_3d_help', 'Drag to turn it. Watch the highlight: does it slide like a mirror, stay as one sharp point, spread as a soft glow, or never appear?'))
+                  React.createElement("p", { className: "text-[0.875rem] px-1 pt-1.5 leading-relaxed", style: { color: '#cbd5e1', background: '#0f172a' } }, __alloT('stem.rocks.wb_3d_help', 'Drag to turn it. Watch the highlight: does it slide like a mirror, stay as one sharp point, spread as a soft glow, or never appear?'))
                 );
               };
               var wbToolBtn = function (opts) {
@@ -13736,9 +14520,9 @@ const d = labToolData.rocks || {};
                   "data-wb-tool": opts.key,
                   className: "px-2.5 py-2.5 rounded-xl text-left border transition-all min-h-[52px] flex flex-col justify-center " + (opts.done ? doneTone + " cursor-default" : wbBusy ? "bg-white border-slate-300 text-slate-700 cursor-wait opacity-65" : (wbNext.tool === opts.key ? "bg-amber-50 border-amber-400 text-slate-800 ring-2 ring-amber-200 hover:bg-amber-100 rk-wb-nudge" : "bg-white border-slate-300 text-slate-800 hover:border-amber-400 hover:-translate-y-0.5 hover:shadow-md"))
                 },
-                  React.createElement("span", { className: "text-[0.75rem] font-black leading-tight" }, (opts.done ? '✓ ' : '') + opts.label),
-                  opts.meta ? React.createElement("span", { className: "text-[0.625rem] font-semibold text-slate-600 mt-1 leading-tight" }, opts.meta) : null,
-                  opts.result ? React.createElement("span", { className: "text-[0.625rem] font-black mt-1 leading-tight " + (opts.caution ? "text-amber-800" : "text-emerald-800") }, opts.result) : null
+                  React.createElement("span", { className: "text-[0.875rem] font-black leading-tight" }, (opts.done ? '✓ ' : '') + opts.label),
+                  opts.meta ? React.createElement("span", { className: "text-[0.875rem] font-semibold text-slate-600 mt-1 leading-tight" }, opts.meta) : null,
+                  opts.result ? React.createElement("span", { className: "text-[0.875rem] font-black mt-1 leading-tight " + (opts.caution ? "text-amber-800" : "text-emerald-800") }, opts.result) : null
                 );
               };
               var wbRenderMohsInterval = function () {
@@ -13772,8 +14556,8 @@ const d = labToolData.rocks || {};
                   "data-wb-mohs-recommended": recommendedRef ? recommendedRef.id : 'none'
                 },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
-                    React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-900" }, __alloT('stem.rocks.wb_mohs_constraint_title', 'Modeled hardness constraint: ') + wbHardnessLabel),
-                    React.createElement("span", { className: "text-[0.625rem] font-black " + (quality === 'narrow' ? "text-emerald-800" : quality === 'useful' ? "text-violet-800" : "text-amber-800") }, qualityLabel)
+                    React.createElement("p", { className: "text-[0.875rem] font-black text-slate-900" }, __alloT('stem.rocks.wb_mohs_constraint_title', 'Modeled hardness constraint: ') + wbHardnessLabel),
+                    React.createElement("span", { className: "text-[0.875rem] font-black " + (quality === 'narrow' ? "text-emerald-800" : quality === 'useful' ? "text-violet-800" : "text-amber-800") }, qualityLabel)
                   ),
                   React.createElement("div", { className: "mt-2 px-3" },
                     React.createElement("div", { className: "relative h-16", role: "img", "aria-label": intervalAria },
@@ -13783,10 +14567,10 @@ const d = labToolData.rocks || {};
                       React.createElement("span", { className: "absolute top-[18px] w-1 h-5 rounded bg-violet-900", style: { left: position(high) + '%', transform: 'translateX(-50%)' }, "aria-hidden": "true" }),
                       candidateGroups.map(function (group) { return React.createElement("span", { key: 'candidate-' + group.hardness, className: "absolute top-[21px] w-3 h-3 rounded-full bg-white border-[3px] border-violet-900", style: { left: position(group.hardness) + '%', transform: 'translateX(-50%)' }, "data-wb-mohs-candidate-marker": group.hardness, "data-wb-mohs-candidate-count": group.count, "aria-hidden": "true" }); }),
                       recommendedRef ? React.createElement("span", { className: "absolute top-0 text-amber-800 text-base font-black", style: { left: position(recommendedRef.h) + '%', transform: 'translateX(-50%)' }, "aria-hidden": "true", "data-wb-mohs-next-marker": recommendedRef.id }, '◆') : null,
-                      [1, 3, 5, 7, 10].map(function (tick) { return React.createElement("span", { key: tick, className: "absolute top-10 text-[0.6875rem] font-bold text-slate-700", style: { left: position(tick) + '%', transform: 'translateX(-50%)' }, "aria-hidden": "true" }, tick); })
+                      [1, 3, 5, 7, 10].map(function (tick) { return React.createElement("span", { key: tick, className: "absolute top-10 text-[0.875rem] font-bold text-slate-700", style: { left: position(tick) + '%', transform: 'translateX(-50%)' }, "aria-hidden": "true" }, tick); })
                     )
                   ),
-                  React.createElement("figcaption", { className: "flex flex-wrap gap-x-4 gap-y-1 text-[10.5px] text-slate-700" },
+                  React.createElement("figcaption", { className: "flex flex-wrap gap-x-4 gap-y-1 text-[0.875rem] text-slate-700" },
                     React.createElement("span", null, '● ' + __alloT('stem.rocks.wb_mohs_candidates_key', 'Remaining candidate hardnesses')),
                     recommendedRef ? React.createElement("span", { className: "font-bold text-amber-900" }, '◆ ' + __alloT('stem.rocks.wb_mohs_next_key', 'Recommended next reference: ') + recommendedRef.label + ' (' + recommendedRef.h + ')') : null,
                     React.createElement("span", { className: "basis-full mt-1" }, __alloT('stem.rocks.wb_mohs_rank_note', 'Mohs is an ordinal ranking; equal spacing does not mean equal increases in hardness.'))
@@ -13802,8 +14586,8 @@ const d = labToolData.rocks || {};
                 var remaining = wbCasePool.length - wbCollected.length;
                 return React.createElement("section", { className: "rounded-xl border border-slate-200 bg-white p-2.5", "data-wb-field-case": wbCaseComplete ? 'complete' : 'partial', "aria-labelledby": "wb-case-title" },
                   React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
-                    React.createElement("p", { id: "wb-case-title", className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-slate-600" }, __alloT('stem.rocks.wb_case_title', 'Field case')),
-                    React.createElement("span", { className: "rounded-full px-2.5 py-1 text-[10.5px] font-black border " + (wbCaseComplete ? "bg-emerald-100 text-emerald-900 border-emerald-300" : "bg-slate-100 text-slate-700 border-slate-300"), "data-wb-case-count": String(wbCollected.length) },
+                    React.createElement("p", { id: "wb-case-title", className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-slate-600" }, __alloT('stem.rocks.wb_case_title', 'Field case')),
+                    React.createElement("span", { className: "rounded-full px-2.5 py-1 text-[0.875rem] font-black border " + (wbCaseComplete ? "bg-emerald-100 text-emerald-900 border-emerald-300" : "bg-slate-100 text-slate-700 border-slate-300"), "data-wb-case-count": String(wbCollected.length) },
                       wbCaseComplete ? __alloT('stem.rocks.wb_case_complete', 'Case complete') : wbCollected.length + ' / ' + wbCasePool.length + ' ' + __alloT('stem.rocks.wb_case_named', 'named'))
                   ),
                   React.createElement("ul", { className: "flex flex-wrap gap-1.5", "aria-label": __alloT('stem.rocks.wb_case_aria', 'Minerals named this session') },
@@ -13815,12 +14599,12 @@ const d = labToolData.rocks || {};
                         className: "rounded-lg border border-emerald-300 bg-emerald-50 pl-1 pr-2 py-1 flex items-center gap-1.5" + (id === wb.solvedId ? " rk-wb-pop" : "")
                       },
                         React.createElement("span", { "aria-hidden": "true", className: "shrink-0 leading-none" }, rkMineralSwatch(React.createElement, caseM, 20)),
-                        React.createElement("span", { className: "text-[10.5px] font-black text-emerald-900" }, caseM.label)
+                        React.createElement("span", { className: "text-[0.875rem] font-black text-emerald-900" }, caseM.label)
                       );
                     }),
                     remaining > 0 ? React.createElement("li", { key: "wb-case-rest", "data-wb-case-slot": "empty", className: "rounded-lg border border-dashed border-slate-400 bg-slate-50 px-2 py-1 flex items-center gap-1.5" },
-                      React.createElement("span", { "aria-hidden": "true", className: "w-5 h-5 rounded border border-dashed border-slate-400 flex items-center justify-center text-[0.625rem] font-black text-slate-600" }, '?'),
-                      React.createElement("span", { className: "text-[10.5px] font-black text-slate-600" }, remaining + ' ' + __alloT('stem.rocks.wb_case_remaining', 'still unnamed'))
+                      React.createElement("span", { "aria-hidden": "true", className: "w-5 h-5 rounded border border-dashed border-slate-400 flex items-center justify-center text-[0.875rem] font-black text-slate-600" }, '?'),
+                      React.createElement("span", { className: "text-[0.875rem] font-black text-slate-600" }, remaining + ' ' + __alloT('stem.rocks.wb_case_remaining', 'still unnamed'))
                     ) : null
                   )
                 );
@@ -13842,28 +14626,39 @@ const d = labToolData.rocks || {};
                 wrong: __alloT('stem.rocks.wb_running_claim', 'That claim does not fit yet—compare the remaining evidence.')
               })[wb.anim] || '';
 
+              var wbJumpToSection = function (event) {
+                var button = event && event.currentTarget;
+                var root = button && button.closest ? button.closest('[data-rocks-workbench="mineral-identification"]') : null;
+                var selector = button && button.getAttribute('data-wb-jump');
+                var target = root && selector ? root.querySelector('[id="' + selector.slice(1) + '"]') : null;
+                if (target && typeof target.focus === 'function') {
+                  target.focus();
+                  if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'start', behavior: 'auto' });
+                }
+              };
               return React.createElement("div", { className: "space-y-4", "data-rocks-workbench": "mineral-identification", "data-wb-guided-focus": wbGuided ? 'active' : 'full', "aria-busy": wbBusy },
+                React.createElement("style", null, "[data-rocks-workbench=\"mineral-identification\"] :is(p,span,button,label,summary,dt,dd){overflow-wrap:anywhere}[data-rocks-workbench=\"mineral-identification\"] :is(p,button,label,summary,dt,dd){line-height:1.6}[data-rocks-workbench=\"mineral-identification\"] :is(button,input,select,textarea,summary){min-height:44px}[data-rocks-workbench=\"mineral-identification\"] :is(h3,h4,h5)[tabindex=\"-1\"]{scroll-margin-block:18px}[data-rocks-workbench=\"mineral-identification\"] :is(button,input,select,textarea,summary,[tabindex=\"-1\"]):focus-visible{outline:3px solid #0369a1;outline-offset:4px}[data-rocks-workbench=\"mineral-identification\"] [data-wb-section-nav]{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;padding:14px;border:1px solid #94a3b8;border-radius:16px;background:#f8fafc}[data-rocks-workbench=\"mineral-identification\"] [data-wb-jump]{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:10px 14px;border:1px solid #64748b;border-radius:10px;background:white;color:#1e293b;font-size:.875rem;font-weight:750;text-align:left}[data-rocks-workbench=\"mineral-identification\"] [data-wb-jump]:hover{border-color:#0369a1;background:#f0f9ff}[data-rocks-workbench=\"mineral-identification\"] [data-wb-jump]::after{content:\"↓\";flex-shrink:0}[data-rocks-workbench=\"mineral-identification\"] [data-wb-step]{align-items:flex-start;padding:14px;gap:10px}[data-rocks-workbench=\"mineral-identification\"] [data-wb-evidence-rail] [role=\"list\"]{grid-template-columns:repeat(auto-fit,minmax(min(100%,175px),1fr))}[data-rocks-workbench=\"mineral-identification\"] #wb-tools-content{grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr));gap:10px}[data-rocks-workbench=\"mineral-identification\"] [data-wb-tool]{padding:14px;gap:4px}[data-rocks-workbench=\"mineral-identification\"] [data-wb-observe-choice]{padding:14px;align-items:flex-start}[data-rocks-workbench=\"mineral-identification\"] [data-wb-candidate-filter]{min-width:0}[data-rocks-workbench=\"mineral-identification\"] [data-wb-forecast-branch]>div:first-child{flex-wrap:wrap}[data-rocks-workbench=\"mineral-identification\"] [data-wb-forecast-branch]>div:first-child>span:last-child{min-width:0;max-width:100%;flex-shrink:1}[data-rocks-workbench=\"mineral-identification\"] #wb-tools-panel>div:first-child{flex-wrap:wrap}[data-rocks-workbench=\"mineral-identification\"] #wb-tools-panel>div:first-child>button{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere}[data-rocks-workbench=\"mineral-identification\"] #wb-tools-panel>div:first-child>span{min-width:0;max-width:100%;flex-shrink:1}[data-rocks-workbench=\"mineral-identification\"] [data-wb-match-property]>div:first-child{flex-wrap:wrap}[data-rocks-workbench=\"mineral-identification\"] [data-wb-match-property]>div:first-child>span{min-width:0;max-width:100%;flex-shrink:1}[data-rocks-workbench=\"mineral-identification\"] [data-wb-mohs-interval]>div:nth-child(2){padding-inline:20px}[data-rocks-workbench=\"mineral-identification\"] [data-wb-mohs-interval] [role=\"img\"]{height:calc(40px + 3em)}[data-rocks-workbench=\"mineral-identification\"] [data-wb-mohs-interval] [role=\"img\"]>.top-10{white-space:nowrap;overflow-wrap:normal}@media(max-width:600px){[data-rocks-workbench=\"mineral-identification\"] [data-wb-step]{flex-direction:column;gap:8px;padding:10px}[data-rocks-workbench=\"mineral-identification\"] [data-wb-density-readings]{grid-template-columns:1fr}[data-rocks-workbench=\"mineral-identification\"] [data-wb-comparison-dock]>div{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}[data-rocks-workbench=\"mineral-identification\"] [data-wb-comparison-dock]>div>div:nth-child(1){grid-area:2/1}[data-rocks-workbench=\"mineral-identification\"] [data-wb-comparison-dock]>div>div:nth-child(2){grid-area:1/1/2/4}[data-rocks-workbench=\"mineral-identification\"] [data-wb-comparison-dock]>div>span{grid-area:2/2}[data-rocks-workbench=\"mineral-identification\"] [data-wb-comparison-dock]>div>div:nth-child(4){grid-area:2/3}[data-rocks-workbench=\"mineral-identification\"] [data-wb-comparison-dock] svg{max-width:100%;height:auto}}@media(forced-colors:active){[data-rocks-workbench=\"mineral-identification\"] [data-wb-section-nav],[data-rocks-workbench=\"mineral-identification\"] [data-wb-jump]{background:Canvas;color:CanvasText;border-color:ButtonText}[data-rocks-workbench=\"mineral-identification\"] :is(button,input,select,textarea,summary,[tabindex=\"-1\"]):focus-visible{outline-color:Highlight}}@media(prefers-reduced-motion:reduce){[data-rocks-workbench=\"mineral-identification\"] [data-wb-jump]{transition:none;scroll-behavior:auto}}"),
                 !sp ? React.createElement("section", { className: "rounded-2xl border-2 border-amber-300 p-5 sm:p-7 text-center overflow-hidden", style: { background: 'radial-gradient(circle at 50% 0%,#ffffff 0%,#fffbeb 38%,#fef3c7 100%)' }, "aria-labelledby": "wb-intro-title" },
                   React.createElement("div", { className: "mx-auto w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg", style: { fontSize: 36 }, "aria-hidden": "true" }, '🔬'),
-                  React.createElement("p", { className: "text-[0.625rem] font-black tracking-[0.18em] uppercase text-amber-800 mt-4" }, __alloT('stem.rocks.wb_intro_eyebrow', 'Evidence-first mineral identification')),
+                  React.createElement("p", { className: "text-[0.875rem] font-black tracking-[0.18em] uppercase text-amber-800 mt-4" }, __alloT('stem.rocks.wb_intro_eyebrow', 'Evidence-first mineral identification')),
                   React.createElement("h3", { id: "wb-intro-title", className: "text-xl font-black text-amber-900 mt-1" }, __alloT('stem.rocks.wb_intro_title', 'The Mineral Workbench')),
-                  React.createElement("p", { className: "text-[0.8125rem] sm:text-sm text-amber-900 max-w-xl mx-auto mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_intro_body', 'An unknown specimen, real instruments, and a field notebook. Run the tests a geologist would, watch your evidence eliminate suspects, then name the mineral.')),
+                  React.createElement("p", { className: "text-[0.875rem] sm:text-sm text-amber-900 max-w-xl mx-auto mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_intro_body', 'An unknown specimen, real instruments, and a field notebook. Run the tests a geologist would, watch your evidence eliminate suspects, then name the mineral.')),
                   React.createElement("ol", { className: "grid sm:grid-cols-3 gap-2.5 max-w-2xl mx-auto mt-5 text-left", "aria-label": __alloT('stem.rocks.wb_sequence_aria', 'Mineral identification sequence') },
                     wbSteps.map(function (step) { return React.createElement("li", { key: step.id, className: "rounded-xl border border-amber-200 bg-white/80 p-3 flex gap-2.5" },
                       React.createElement("span", { className: "w-7 h-7 rounded-full bg-amber-700 text-white text-xs font-black flex items-center justify-center shrink-0", "aria-hidden": "true" }, step.icon),
                       React.createElement("span", null,
-                        React.createElement("span", { className: "block text-[0.75rem] font-black text-amber-900" }, step.title),
-                        React.createElement("span", { className: "block text-[10.5px] text-amber-800 mt-0.5 leading-snug" }, step.detail)
+                        React.createElement("span", { className: "block text-[0.875rem] font-black text-amber-900" }, step.title),
+                        React.createElement("span", { className: "block text-[0.875rem] text-amber-800 mt-0.5 leading-snug" }, step.detail)
                       )
                     ); })
                   ),
                   React.createElement("div", { className: "mt-5 inline-flex rounded-xl border border-amber-300 bg-white/80 p-1", role: "group", "aria-label": __alloT('stem.rocks.wb_pool_aria', 'Choose the candidate set') },
                     [['standard', __alloT('stem.rocks.wb_pool_standard', 'Standard set') + ' · ' + WB_POOL.length], ['challenge', __alloT('stem.rocks.wb_pool_challenge', 'Challenge set') + ' · ' + WB_POOL_CHALLENGE.length]].map(function (opt) {
                       var on = (wb.pool || 'standard') === opt[0];
-                      return React.createElement("button", { key: opt[0], type: "button", "aria-pressed": on, "data-wb-pool": opt[0], className: "rounded-lg px-3 py-2 min-h-[40px] text-[0.6875rem] font-black " + (on ? "bg-amber-700 text-white" : "text-amber-900 hover:bg-amber-100"), onClick: function () { updWb({ pool: opt[0] }); } }, opt[1]);
+                      return React.createElement("button", { key: opt[0], type: "button", "aria-pressed": on, "data-wb-pool": opt[0], className: "rounded-lg px-3 py-2 min-h-[40px] text-[0.875rem] font-black " + (on ? "bg-amber-700 text-white" : "text-amber-900 hover:bg-amber-100"), onClick: function () { updWb({ pool: opt[0] }); } }, opt[1]);
                     })
                   ),
-                  React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-1.5" }, (wb.pool || 'standard') === 'challenge' ? __alloT('stem.rocks.wb_pool_challenge_help', 'Adds diamond, garnet, olivine, sulfur, corundum, topaz, graphite and the two copper carbonates. Several are harder than the streak plate, and three of them fizz, so neither test finishes the job alone.') : __alloT('stem.rocks.wb_pool_standard_help', 'Twelve common minerals with clearly different signatures.')),
+                  React.createElement("p", { className: "text-[0.875rem] text-amber-900 mt-1.5" }, (wb.pool || 'standard') === 'challenge' ? __alloT('stem.rocks.wb_pool_challenge_help', 'Adds diamond, garnet, olivine, sulfur, corundum, topaz, graphite and the two copper carbonates. Several are harder than the streak plate, and three of them fizz, so neither test finishes the job alone.') : __alloT('stem.rocks.wb_pool_standard_help', 'Twelve common minerals with clearly different signatures.')),
                   React.createElement("div", null,
                     React.createElement("button", { className: "mt-4 px-5 py-3 rounded-xl bg-amber-700 text-white font-black shadow-md hover:bg-amber-800 hover:-translate-y-0.5 transition-all min-h-[48px]", onClick: wbDraw }, __alloT('stem.rocks.wb_open', '🪨 Put a specimen on the bench'))
                   )
@@ -13872,10 +14667,10 @@ const d = labToolData.rocks || {};
                   // changes, giving students a stable sense of where they are.
                   React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2" },
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-slate-600" }, __alloT('stem.rocks.wb_investigation_path', 'Investigation path')),
-                      React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-0.5" }, wbGuided ? __alloT('stem.rocks.wb_guided_help', 'Guided focus keeps the current scientific task open and quiets later steps.') : __alloT('stem.rocks.wb_full_help', 'Full workbench keeps every investigation area available.'))
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-slate-600" }, __alloT('stem.rocks.wb_investigation_path', 'Investigation path')),
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-700 mt-0.5" }, wbGuided ? __alloT('stem.rocks.wb_guided_help', 'Guided focus keeps the current scientific task open and quiets later steps.') : __alloT('stem.rocks.wb_full_help', 'Full workbench keeps every investigation area available.'))
                     ),
-                  React.createElement("button", { type: "button", "data-wb-guided-toggle": wbGuided ? 'active' : 'full', className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[10.5px] font-black text-slate-800 hover:border-amber-400 hover:bg-amber-50", onClick: function () { updWb({ guided: !wbGuided, toolsExpanded: false, candidatesExpanded: false }); } }, wbGuided ? __alloT('stem.rocks.wb_show_full', 'Show full workbench') : __alloT('stem.rocks.wb_use_guided', 'Use guided focus'))
+                  React.createElement("button", { type: "button", "data-wb-guided-toggle": wbGuided ? 'active' : 'full', className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[0.875rem] font-black text-slate-800 hover:border-amber-400 hover:bg-amber-50", onClick: function () { updWb({ guided: !wbGuided, toolsExpanded: false, candidatesExpanded: false }); } }, wbGuided ? __alloT('stem.rocks.wb_show_full', 'Show full workbench') : __alloT('stem.rocks.wb_use_guided', 'Use guided focus'))
                   ),
                   React.createElement("ol", { className: "grid grid-cols-3 gap-2", "aria-label": __alloT('stem.rocks.wb_progress_aria', 'Mineral investigation progress') },
                     wbSteps.map(function (step, i) {
@@ -13891,18 +14686,30 @@ const d = labToolData.rocks || {};
                         "aria-current": current ? 'step' : undefined,
                         className: "rounded-xl border px-2.5 py-2.5 flex items-center gap-2 min-w-0 " + (complete ? "bg-emerald-50 border-emerald-300 text-emerald-900" : current ? "bg-amber-50 border-amber-400 text-amber-900 ring-2 ring-amber-100" : inProgress ? "bg-sky-50 border-sky-300 text-sky-900" : "bg-slate-50 border-slate-200 text-slate-600")
                       },
-                        React.createElement("span", { className: "w-6 h-6 rounded-full flex items-center justify-center text-[0.6875rem] font-black shrink-0 " + (complete ? "bg-emerald-700 text-white" : current ? "bg-amber-700 text-white" : inProgress ? "bg-sky-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, complete ? '✓' : step.icon),
-                        React.createElement("span", { className: "text-[10.5px] sm:text-[0.75rem] font-black leading-tight min-w-0" },
+                        React.createElement("span", { className: "w-6 h-6 rounded-full flex items-center justify-center text-[0.875rem] font-black shrink-0 " + (complete ? "bg-emerald-700 text-white" : current ? "bg-amber-700 text-white" : inProgress ? "bg-sky-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, complete ? '✓' : step.icon),
+                        React.createElement("span", { className: "text-[0.875rem] sm:text-[0.875rem] font-black leading-tight min-w-0" },
                           React.createElement("span", { className: "sm:hidden" }, step.short),
                           React.createElement("span", { className: "hidden sm:inline" }, step.title),
-                          inProgress ? React.createElement("span", { className: "block text-[0.625rem] font-bold mt-0.5" }, __alloT('stem.rocks.wb_stage_in_progress', 'In progress')) : null
+                          inProgress ? React.createElement("span", { className: "block text-[0.875rem] font-bold mt-0.5" }, __alloT('stem.rocks.wb_stage_in_progress', 'In progress')) : null
                         )
                       );
                     })
                   ),
+                  React.createElement("nav", { "aria-label": __alloT('stem.rocks.wb_investigation_path', 'Investigation path'), "data-wb-section-nav": true },
+                    [
+                      ['#wb-action-hub-title', __alloT('stem.rocks.wb_current_focus', 'Next scientific move'), true],
+                      ['#wb-observation-title', __alloT('stem.rocks.wb_obs_eyebrow', 'Your observation'), !!wbPendingTool],
+                      ['#wb-evidence-rail-title', __alloT('stem.rocks.wb_rail_title', 'Specimen evidence rail'), true],
+                      ['#wb-tools-title', __alloT('stem.rocks.wb_tray', 'Instrument tray'), true],
+                      ['#wb-notebook-title', __alloT('stem.rocks.wb_notebook', 'Field notebook'), true],
+                      ['#wb-candidates-title', __alloT('stem.rocks.wb_suspects', 'Candidate minerals'), wbCandidatesOpen]
+                    ].filter(function (item) { return item[2]; }).map(function (item) {
+                      return React.createElement("button", { key: item[0], type: "button", "data-wb-jump": item[0], onClick: wbJumpToSection }, item[1]);
+                    })
+                  ),
                   wbRenderFieldCase(),
                   wbBench,
-                  React.createElement("p", { className: "sm:hidden rounded-lg bg-slate-800 px-3 py-2 text-[0.6875rem] font-semibold text-white leading-relaxed", "data-wb-mobile-bench-caption": "readable" },
+                  React.createElement("p", { className: "sm:hidden rounded-lg bg-slate-800 px-3 py-2 text-[0.875rem] font-semibold text-white leading-relaxed", "data-wb-mobile-bench-caption": "readable" },
                     __alloT('stem.rocks.wb_unknown_mobile', 'Unknown specimen') + ' · ' + wbObservedFormFor(sp) + (wbPlateScratched ? ' · ' + __alloT('stem.rocks.wb_plate_mobile', 'No powder streak; plate groove gives H > 6.5') : '')
                   ),
                   wbRenderSpecimen3d(),
@@ -13919,10 +14726,10 @@ const d = labToolData.rocks || {};
                     React.createElement("section", { id: "wb-tools-panel", className: "rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 lg:col-span-3", "aria-labelledby": "wb-tools-title", "data-wb-tools-state": wbToolsOpen ? 'open' : 'focused' },
                       React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" },
                         React.createElement("div", null,
-                          React.createElement("h4", { id: "wb-tools-title", className: "text-[0.75rem] font-black text-slate-800 uppercase tracking-wide" }, '🧰 ' + __alloT('stem.rocks.wb_tray', 'Instrument tray')),
-                          React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_tray_help', 'Choose a property to measure. The highlighted tool is a useful next test, not a required path.'))
+                          React.createElement("h4", { id: "wb-tools-title", tabIndex: -1, className: "text-[0.875rem] font-black text-slate-800 uppercase tracking-wide" }, '🧰 ' + __alloT('stem.rocks.wb_tray', 'Instrument tray')),
+                          React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_tray_help', 'Choose a property to measure. The highlighted tool is a useful next test, not a required path.'))
                         ),
-                        wbGuided && wbStage > 0 ? React.createElement("button", { type: "button", "aria-expanded": wbToolsOpen, "aria-controls": "wb-tools-content", className: "rounded-lg border border-slate-300 bg-slate-50 px-2.5 py-2 min-h-[44px] text-[0.625rem] font-black text-slate-800 shrink-0 hover:border-amber-400 hover:bg-amber-50", onClick: function () { updWb({ toolsExpanded: !wbToolsOpen }); } }, wbToolsOpen ? __alloT('stem.rocks.wb_quiet_tools', 'Hide instruments') : __alloT('stem.rocks.wb_show_tools', 'Show all instruments')) : React.createElement("span", { className: "rounded-full bg-slate-100 px-2.5 py-1 text-[0.625rem] font-black text-slate-700 shrink-0" }, wbEvidence.length + ' ' + __alloT('stem.rocks.wb_observations', 'observations'))
+                        wbGuided && wbStage > 0 ? React.createElement("button", { type: "button", "aria-expanded": wbToolsOpen, "aria-controls": "wb-tools-content", className: "rounded-lg border border-slate-300 bg-slate-50 px-2.5 py-2 min-h-[44px] text-[0.875rem] font-black text-slate-800 shrink-0 hover:border-amber-400 hover:bg-amber-50", onClick: function () { updWb({ toolsExpanded: !wbToolsOpen }); } }, wbToolsOpen ? __alloT('stem.rocks.wb_quiet_tools', 'Hide instruments') : __alloT('stem.rocks.wb_show_tools', 'Show all instruments')) : React.createElement("span", { className: "rounded-full bg-slate-100 px-2.5 py-1 text-[0.875rem] font-black text-slate-700 shrink-0" }, wbEvidence.length + ' ' + __alloT('stem.rocks.wb_observations', 'observations'))
                       ),
                       wbToolsOpen ? React.createElement(React.Fragment, null,
                       React.createElement("div", { id: "wb-tools-content", className: "grid sm:grid-cols-2 xl:grid-cols-3 gap-2" },
@@ -13936,10 +14743,10 @@ const d = labToolData.rocks || {};
                       React.createElement("div", { className: "mt-4 pt-3 border-t border-slate-200" },
                         React.createElement("div", { className: "flex items-start justify-between gap-3 mb-2" },
                           React.createElement("div", null,
-                            React.createElement("h5", { className: "text-[0.6875rem] font-black text-slate-800 uppercase tracking-wide" }, '🪛 ' + __alloT('stem.rocks.wb_scratch_set', 'Mohs scratch reference set')),
-                            React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_scratch_help', 'Find one reference that leaves no mark and the next harder reference that scratches. A modeled near-match narrows to H ≈ the reference but should be confirmed. The porcelain reference is the same plate: a groove without powder means H > about 6.5.'))
+                            React.createElement("h5", { className: "text-[0.875rem] font-black text-slate-800 uppercase tracking-wide" }, '🪛 ' + __alloT('stem.rocks.wb_scratch_set', 'Mohs scratch reference set')),
+                            React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_scratch_help', 'Find one reference that leaves no mark and the next harder reference that scratches. A modeled near-match narrows to H ≈ the reference but should be confirmed. The porcelain reference is the same plate: a groove without powder means H > about 6.5.'))
                           ),
-                          wbHasHardnessEvidence ? React.createElement("span", { className: "rounded-lg bg-violet-50 border border-violet-200 px-2 py-1 text-[0.625rem] font-black text-violet-900 shrink-0" }, wbHardnessLabel) : null
+                          wbHasHardnessEvidence ? React.createElement("span", { className: "rounded-lg bg-violet-50 border border-violet-200 px-2 py-1 text-[0.875rem] font-black text-violet-900 shrink-0" }, wbHardnessLabel) : null
                         ),
                         wbRenderMohsInterval(),
                         React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" },
@@ -13950,30 +14757,30 @@ const d = labToolData.rocks || {};
                           })
                         )
                       ),
-                      React.createElement("p", { className: "mt-3 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-[10.5px] text-rose-900" }, '⚠️ ' + __alloT('stem.rocks.wb_safety', 'This is a virtual lab. In a physical lab, use only teacher-approved specimens, wear eye protection, avoid making dust—especially from lead-bearing minerals such as galena—wash hands, and never taste an unknown. Acid tests require teacher supervision and a tiny test area.'))
+                      React.createElement("p", { className: "mt-3 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-[0.875rem] text-rose-900" }, '⚠️ ' + __alloT('stem.rocks.wb_safety', 'This is a virtual lab. In a physical lab, use only teacher-approved specimens, wear eye protection, avoid making dust—especially from lead-bearing minerals such as galena—wash hands, and never taste an unknown. Acid tests require teacher supervision and a tiny test area.'))
                       ) : React.createElement("div", { id: "wb-tools-content", className: "rounded-xl bg-slate-50 border border-slate-200 p-3", "data-wb-tools-summary": "quiet" },
-                        React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-900" }, wbNext.tool === 'claim' ? __alloT('stem.rocks.wb_tools_quiet_claim', 'Instruments are quiet while you build the claim.') : __alloT('stem.rocks.wb_tools_quiet_compare', 'Instrument choices are tucked away while you compare evidence.')),
-                        React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_tools_quiet_help', 'Open the tray whenever another measurement would strengthen or challenge your idea.'))
+                        React.createElement("p", { className: "text-[0.875rem] font-black text-slate-900" }, wbNext.tool === 'claim' ? __alloT('stem.rocks.wb_tools_quiet_claim', 'Instruments are quiet while you build the claim.') : __alloT('stem.rocks.wb_tools_quiet_compare', 'Instrument choices are tucked away while you compare evidence.')),
+                        React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_tools_quiet_help', 'Open the tray whenever another measurement would strengthen or challenge your idea.'))
                       )
                     ),
                     // The notebook makes elimination visible as a consequence
                     // of evidence, with enough context to explain the reasoning.
                     React.createElement("aside", { className: "rounded-2xl border border-amber-300 p-3 sm:p-4 lg:col-span-2", style: { background: 'repeating-linear-gradient(180deg,#fffbeb,#fffbeb 29px,#fde68a55 30px)' }, "aria-labelledby": "wb-notebook-title" },
                       React.createElement("div", { className: "flex items-center justify-between gap-3" },
-                        React.createElement("h4", { id: "wb-notebook-title", tabIndex: -1, className: "text-[0.75rem] font-black text-amber-900 uppercase tracking-wide" }, '📓 ' + __alloT('stem.rocks.wb_notebook', 'Field notebook')),
-                        React.createElement("span", { className: "rounded-full bg-amber-100 border border-amber-300 px-2 py-0.5 text-[0.625rem] font-black text-amber-900" }, wbEvidenceTypeCount + ' / 7 ' + __alloT('stem.rocks.wb_confirmed_types_short', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
+                        React.createElement("h4", { id: "wb-notebook-title", tabIndex: -1, className: "text-[0.875rem] font-black text-amber-900 uppercase tracking-wide" }, '📓 ' + __alloT('stem.rocks.wb_notebook', 'Field notebook')),
+                        React.createElement("span", { className: "rounded-full bg-amber-100 border border-amber-300 px-2 py-0.5 text-[0.875rem] font-black text-amber-900" }, wbEvidenceTypeCount + ' / 7 ' + __alloT('stem.rocks.wb_confirmed_types_short', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
                       ),
                       React.createElement("div", { className: "mt-3", role: "group", "aria-label": __alloT('stem.rocks.wb_coverage_aria', 'Evidence coverage by property type') },
                         React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1.5" },
-                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_coverage_title', 'Evidence coverage')),
-                          React.createElement("p", { className: "text-[0.625rem] font-semibold text-amber-800" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_of_seven_types', ' of 7 confirmed property types'))
+                          React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_coverage_title', 'Evidence coverage')),
+                          React.createElement("p", { className: "text-[0.875rem] font-semibold text-amber-800" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_of_seven_types', ' of 7 confirmed property types'))
                         ),
                         React.createElement("div", { className: "grid grid-cols-2 gap-1.5", role: "list" }, wbCoverage.map(function (item) {
                           return React.createElement("div", {
                             key: item.id, "data-wb-evidence-type": item.id, "data-wb-evidence-state": item.provisional ? 'provisional' : item.done ? 'measured' : 'not-measured',
                             role: "listitem",
                             "aria-label": item.label + '. ' + (item.provisional ? __alloT('stem.rocks.wb_provisional_short', 'provisional') : item.done ? __alloT('stem.rocks.wb_confirmed_types_short', 'confirmed') : __alloT('stem.rocks.wb_rail_pending', 'Not measured')) + '.',
-                            className: "rounded-lg border px-2 py-1.5 flex items-center gap-1.5 text-[0.625rem] font-black " + (item.provisional ? "bg-amber-100 border-amber-400 text-amber-900" : item.done ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-white/70 border-amber-200 text-amber-800")
+                            className: "rounded-lg border px-2 py-1.5 flex items-center gap-1.5 text-[0.875rem] font-black " + (item.provisional ? "bg-amber-100 border-amber-400 text-amber-900" : item.done ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-white/70 border-amber-200 text-amber-800")
                           },
                             React.createElement("span", { "aria-hidden": "true" }, item.provisional ? '≈' : item.done ? '✓' : item.icon),
                             React.createElement("span", null, item.label + (item.provisional ? ' · ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
@@ -13981,39 +14788,39 @@ const d = labToolData.rocks || {};
                         }))
                       ),
                       wbEvidence.length === 0 ? React.createElement("div", { className: "rounded-xl border border-dashed border-amber-400 bg-white/70 p-4 mt-3 text-center" },
-                        React.createElement("p", { className: "text-[0.75rem] font-black text-amber-900" }, __alloT('stem.rocks.wb_notebook_empty_title', 'Your first observation goes here.')),
-                        React.createElement("p", { className: "text-[0.6875rem] text-amber-800 mt-1" }, __alloT('stem.rocks.wb_notebook_empty', 'No observations yet. Every test you run is recorded here as evidence.'))
+                        React.createElement("p", { className: "text-[0.875rem] font-black text-amber-900" }, __alloT('stem.rocks.wb_notebook_empty_title', 'Your first observation goes here.')),
+                        React.createElement("p", { className: "text-[0.875rem] text-amber-800 mt-1" }, __alloT('stem.rocks.wb_notebook_empty', 'No observations yet. Every test you run is recorded here as evidence.'))
                       ) : React.createElement("ul", { className: "space-y-2 mt-3", "aria-label": __alloT('stem.rocks.wb_notebook_list_aria', 'Recorded evidence grouped by property') }, wbEvidence.map(function (ev) {
                         var impact = wbEvidenceImpact(ev);
                         return React.createElement("li", { key: ev.k, "data-wb-evidence-impact": impact, "data-wb-evidence-certainty": ev.provisional ? 'provisional' : 'confirmed', className: "rounded-lg border p-2.5 rk-wb-pop flex gap-2 " + (ev.provisional ? "border-amber-400 bg-amber-50" : "border-amber-200 bg-white/85") },
                           React.createElement("span", { className: "w-7 h-7 rounded-lg text-[0.875rem] flex items-center justify-center shrink-0 " + (ev.provisional ? "bg-amber-100 border border-amber-400" : "bg-emerald-50 border border-emerald-300"), "aria-hidden": "true" }, ev.provisional ? '≈' : wbEvidenceIcon(ev.k)),
                           React.createElement("span", { className: "min-w-0 flex-1" },
-                            React.createElement("span", { className: "block text-[0.625rem] font-black uppercase tracking-wide text-amber-800" }, wbEvidenceKind(ev.k)),
-                            React.createElement("span", { className: "block text-[11.5px] text-amber-900 font-semibold leading-snug" }, ev.text),
-                            React.createElement("button", { type: "button", className: "mt-1 mr-1.5 inline-flex items-center rounded-full border border-amber-400 bg-white/90 px-3 py-1 min-h-[44px] text-[0.625rem] font-black text-amber-900 hover:bg-amber-100 disabled:opacity-50", "data-wb-reexamine": ev.k, disabled: wbBusy || !!wbPendingTool, "aria-label": __alloT('stem.rocks.wb_reexamine_aria', 'Look again and re-record: ') + wbEvidenceKind(ev.k), onClick: function () { wbReexamine(ev.k); } }, '👁 ' + __alloT('stem.rocks.wb_reexamine', 'Look again')),
-                            React.createElement("span", { className: "inline-block mt-1 rounded-full border px-2 py-0.5 text-[0.625rem] font-black " + (ev.provisional ? "bg-amber-100 border-amber-300 text-amber-900" : impact > 0 ? "bg-violet-50 border-violet-200 text-violet-900" : "bg-slate-50 border-slate-200 text-slate-600") }, ev.provisional ? __alloT('stem.rocks.wb_provisional_not_claim', 'Provisional model clue—confirm before using hardness in a claim') : impact > 0 ? __alloT('stem.rocks.wb_rules_out', 'Rules out ') + impact + __alloT('stem.rocks.wb_on_own', ' on its own') : __alloT('stem.rocks.wb_confirms_only', 'Confirms, but does not narrow alone'))
+                            React.createElement("span", { className: "block text-[0.875rem] font-black uppercase tracking-wide text-amber-800" }, wbEvidenceKind(ev.k)),
+                            React.createElement("span", { className: "block text-[0.875rem] text-amber-900 font-semibold leading-snug" }, ev.text),
+                            React.createElement("button", { type: "button", className: "mt-1 mr-1.5 inline-flex items-center rounded-full border border-amber-400 bg-white/90 px-3 py-1 min-h-[44px] text-[0.875rem] font-black text-amber-900 hover:bg-amber-100 disabled:opacity-50", "data-wb-reexamine": ev.k, disabled: wbBusy || !!wbPendingTool, "aria-label": __alloT('stem.rocks.wb_reexamine_aria', 'Look again and re-record: ') + wbEvidenceKind(ev.k), onClick: function () { wbReexamine(ev.k); } }, '👁 ' + __alloT('stem.rocks.wb_reexamine', 'Look again')),
+                            React.createElement("span", { className: "inline-block mt-1 rounded-full border px-2 py-0.5 text-[0.875rem] font-black " + (ev.provisional ? "bg-amber-100 border-amber-300 text-amber-900" : impact > 0 ? "bg-violet-50 border-violet-200 text-violet-900" : "bg-slate-50 border-slate-200 text-slate-600") }, ev.provisional ? __alloT('stem.rocks.wb_provisional_not_claim', 'Provisional model clue—confirm before using hardness in a claim') : impact > 0 ? __alloT('stem.rocks.wb_rules_out', 'Rules out ') + impact + __alloT('stem.rocks.wb_on_own', ' on its own') : __alloT('stem.rocks.wb_confirms_only', 'Confirms, but does not narrow alone'))
                           )
                         );
                       })),
-                      wbHasHardnessEvidence ? React.createElement("p", { className: "text-[11.5px] font-black mt-3 rounded-lg border p-2.5 " + (wbHardnessProvisional ? "text-amber-900 border-amber-300 bg-amber-50" : "text-violet-900 border-violet-200 bg-violet-50"), "data-wb-hardness-certainty": wbHardnessProvisional ? 'provisional' : 'confirmed' }, '⛏️ ' + __alloT('stem.rocks.wb_bracket', 'Hardness constraint: ') + wbHardnessLabel + (wbHardnessProvisional ? ' · ' + __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : '')) : null,
+                      wbHasHardnessEvidence ? React.createElement("p", { className: "text-[0.875rem] font-black mt-3 rounded-lg border p-2.5 " + (wbHardnessProvisional ? "text-amber-900 border-amber-300 bg-amber-50" : "text-violet-900 border-violet-200 bg-violet-50"), "data-wb-hardness-certainty": wbHardnessProvisional ? 'provisional' : 'confirmed' }, '⛏️ ' + __alloT('stem.rocks.wb_bracket', 'Hardness constraint: ') + wbHardnessLabel + (wbHardnessProvisional ? ' · ' + __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : '')) : null,
                       wbTopEvidence && wbTopEvidence.impact > 0 ? React.createElement("div", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50 p-2.5", "data-wb-diagnostic-leader": wbEvidenceKind(wbTopEvidence.ev.k) },
-                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-800" }, __alloT('stem.rocks.wb_diagnostic_title', 'Most diagnostic so far')),
-                        React.createElement("p", { className: "text-[10.5px] font-semibold text-violet-900 mt-0.5" }, wbEvidenceKind(wbTopEvidence.ev.k) + __alloT('stem.rocks.wb_diagnostic_mid', ' rules out ') + wbTopEvidence.impact + __alloT('stem.rocks.wb_diagnostic_end', ' candidates by itself. A useful test creates a strong split among possibilities.'))
+                        React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-violet-800" }, __alloT('stem.rocks.wb_diagnostic_title', 'Most diagnostic so far')),
+                        React.createElement("p", { className: "text-[0.875rem] font-semibold text-violet-900 mt-0.5" }, wbEvidenceKind(wbTopEvidence.ev.k) + __alloT('stem.rocks.wb_diagnostic_mid', ' rules out ') + wbTopEvidence.impact + __alloT('stem.rocks.wb_diagnostic_end', ' candidates by itself. A useful test creates a strong split among possibilities.'))
                       ) : null,
                       React.createElement("div", { className: "mt-4 pt-3 border-t border-amber-300" },
-                        React.createElement("div", { className: "flex justify-between gap-3 text-[0.6875rem]" },
+                        React.createElement("div", { className: "flex justify-between gap-3 text-[0.875rem]" },
                           React.createElement("span", { className: "font-black text-amber-900" }, wbRemaining + ' ' + __alloT('stem.rocks.wb_still_fit', 'still fit')),
                           React.createElement("span", { className: "font-semibold text-amber-800" }, ((wb.order || []).length - wbRemaining) + ' ' + __alloT('stem.rocks.wb_eliminated', 'eliminated'))
                         ),
                         React.createElement("div", { className: "h-2 rounded-full bg-amber-200 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": __alloT('stem.rocks.wb_elimination_progress', 'Candidate elimination progress'), "aria-valuemin": 0, "aria-valuemax": (wb.order || []).length, "aria-valuenow": (wb.order || []).length - wbRemaining, "aria-valuetext": ((wb.order || []).length - wbRemaining) + ' ' + __alloT('stem.rocks.wb_eliminated', 'eliminated') + '; ' + wbRemaining + ' ' + __alloT('stem.rocks.wb_still_fit', 'still fit') + '.' },
                           React.createElement("div", { className: "h-full rounded-full transition-all " + (wbRemaining === 0 && !wb.solvedId ? "bg-rose-500" : "bg-emerald-600"), style: { width: (((wb.order || []).length ? (((wb.order || []).length - wbRemaining) / wb.order.length) : 0) * 100) + '%' } })
                         ),
-                        React.createElement("button", { type: "button", className: "mt-3 rounded-lg border border-amber-300 bg-white/80 px-2.5 py-1.5 min-h-[40px] text-[0.625rem] font-black text-amber-900 hover:bg-white", "data-wb-pool-toggle": (wb.pool || 'standard'), "aria-pressed": (wb.pool || 'standard') === 'challenge', onClick: function () { var next = (wb.pool || 'standard') === 'challenge' ? 'standard' : 'challenge'; updWb({ pool: next }); wbSay((next === 'challenge' ? __alloT('stem.rocks.wb_pool_next_challenge_sr', 'Challenge set selected for the next unknown: ') : __alloT('stem.rocks.wb_pool_next_standard_sr', 'Standard set selected for the next unknown: ')) + (next === 'challenge' ? WB_POOL_CHALLENGE.length : WB_POOL.length) + ' ' + __alloT('stem.rocks.wb_pool_candidates_sr', 'candidates.')); } }, ((wb.pool || 'standard') === 'challenge' ? '★ ' + __alloT('stem.rocks.wb_pool_on', 'Challenge set on') : '☆ ' + __alloT('stem.rocks.wb_pool_off', 'Challenge set off')) + ' · ' + __alloT('stem.rocks.wb_pool_next', 'applies to the next unknown')),
-                        React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-3 italic" }, __alloT('stem.rocks.wb_reasoning_prompt', 'Reasoning check: why did the most diagnostic observation separate more candidates than surface color would?')),
+                        React.createElement("button", { type: "button", className: "mt-3 rounded-lg border border-amber-300 bg-white/80 px-2.5 py-1.5 min-h-[40px] text-[0.875rem] font-black text-amber-900 hover:bg-white", "data-wb-pool-toggle": (wb.pool || 'standard'), "aria-pressed": (wb.pool || 'standard') === 'challenge', onClick: function () { var next = (wb.pool || 'standard') === 'challenge' ? 'standard' : 'challenge'; updWb({ pool: next }); wbSay((next === 'challenge' ? __alloT('stem.rocks.wb_pool_next_challenge_sr', 'Challenge set selected for the next unknown: ') : __alloT('stem.rocks.wb_pool_next_standard_sr', 'Standard set selected for the next unknown: ')) + (next === 'challenge' ? WB_POOL_CHALLENGE.length : WB_POOL.length) + ' ' + __alloT('stem.rocks.wb_pool_candidates_sr', 'candidates.')); } }, ((wb.pool || 'standard') === 'challenge' ? '★ ' + __alloT('stem.rocks.wb_pool_on', 'Challenge set on') : '☆ ' + __alloT('stem.rocks.wb_pool_off', 'Challenge set off')) + ' · ' + __alloT('stem.rocks.wb_pool_next', 'applies to the next unknown')),
+                        React.createElement("p", { className: "text-[0.875rem] text-amber-900 mt-3 italic" }, __alloT('stem.rocks.wb_reasoning_prompt', 'Reasoning check: why did the most diagnostic observation separate more candidates than surface color would?')),
                         React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3" },
-                          React.createElement("button", { type: "button", disabled: wbBusy || wbEvidence.length === 0, className: "rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: wbClearEvidence, "aria-label": __alloT('stem.rocks.wb_clear', '↺ Clear evidence') + '. ' + __alloT('stem.rocks.wb_clear_aria', 'Clear observations and retest the same specimen') }, __alloT('stem.rocks.wb_clear', '↺ Clear evidence')),
-                          React.createElement("button", { type: "button", disabled: wbBusy, className: "rounded-lg border border-slate-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-slate-800 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: function () { wbDraw(); }, "aria-label": __alloT('stem.rocks.wb_swap', '🔄 New unknown') + '. ' + __alloT('stem.rocks.wb_swap_aria', 'Put away this specimen and draw a different unknown from the ' + ((wb.pool || 'standard') === 'challenge' ? 'challenge' : 'standard') + ' set') }, __alloT('stem.rocks.wb_swap', '🔄 New unknown')),
-                          React.createElement("button", { type: "button", disabled: wbBusy, className: "col-span-2 rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", "data-wb-copy-notebook": "true", onClick: wbCopyNotebook, "aria-label": __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report') + '. ' + __alloT('stem.rocks.wb_nb_copy_aria', 'Copy the field notebook as plain text for a lab report') }, '📋 ' + __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report'))
+                          React.createElement("button", { type: "button", disabled: wbBusy || wbEvidence.length === 0, className: "rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.875rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: wbClearEvidence, "aria-label": __alloT('stem.rocks.wb_clear', '↺ Clear evidence') + '. ' + __alloT('stem.rocks.wb_clear_aria', 'Clear observations and retest the same specimen') }, __alloT('stem.rocks.wb_clear', '↺ Clear evidence')),
+                          React.createElement("button", { type: "button", disabled: wbBusy, className: "rounded-lg border border-slate-300 bg-white/80 px-2 py-2 text-[0.875rem] font-black text-slate-800 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: function () { wbDraw(); }, "aria-label": __alloT('stem.rocks.wb_swap', '🔄 New unknown') + '. ' + __alloT('stem.rocks.wb_swap_aria', 'Put away this specimen and draw a different unknown from the ' + ((wb.pool || 'standard') === 'challenge' ? 'challenge' : 'standard') + ' set') }, __alloT('stem.rocks.wb_swap', '🔄 New unknown')),
+                          React.createElement("button", { type: "button", disabled: wbBusy, className: "col-span-2 rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.875rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", "data-wb-copy-notebook": "true", onClick: wbCopyNotebook, "aria-label": __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report') + '. ' + __alloT('stem.rocks.wb_nb_copy_aria', 'Copy the field notebook as plain text for a lab report') }, '📋 ' + __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report'))
                         )
                       )
                     )
@@ -14024,11 +14831,11 @@ const d = labToolData.rocks || {};
                   wbCandidatesOpen ? React.createElement("section", { id: "wb-candidates-panel", className: "rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4", "aria-labelledby": "wb-candidates-title", "data-wb-candidate-view": wbCandidateView, "data-wb-candidates-state": "open" },
                     React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-3" },
                       React.createElement("div", null,
-                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.14em] text-violet-700" }, __alloT('stem.rocks.wb_compare_board', 'Evidence comparison board')),
-                        React.createElement("h4", { id: "wb-candidates-title", className: "text-base font-black text-slate-900" }, '🕵️ ' + __alloT('stem.rocks.wb_suspects', 'Candidate minerals')),
-                        React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_candidate_help', 'Compare the unknown with the candidates still supported by every observation in your notebook.'))
+                        React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.14em] text-violet-700" }, __alloT('stem.rocks.wb_compare_board', 'Evidence comparison board')),
+                        React.createElement("h4", { id: "wb-candidates-title", tabIndex: -1, className: "text-base font-black text-slate-900" }, '🕵️ ' + __alloT('stem.rocks.wb_suspects', 'Candidate minerals')),
+                        React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_candidate_help', 'Compare the unknown with the candidates still supported by every observation in your notebook.'))
                       ),
-                      !wb.solvedId ? React.createElement("span", { className: "rounded-full bg-white border border-slate-300 px-3 py-1.5 text-[0.6875rem] font-black text-slate-800 self-start sm:self-auto", "data-wb-count": "measurement-matches" }, wbRemaining + ' / ' + (wb.order || []).length + ' ' + __alloT('stem.rocks.wb_measurement_matches', 'measurement matches')) : null
+                      !wb.solvedId ? React.createElement("span", { className: "rounded-full bg-white border border-slate-300 px-3 py-1.5 text-[0.875rem] font-black text-slate-800 self-start sm:self-auto", "data-wb-count": "measurement-matches" }, wbRemaining + ' / ' + (wb.order || []).length + ' ' + __alloT('stem.rocks.wb_measurement_matches', 'measurement matches')) : null
                     ),
                     !wb.solvedId ? React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-2.5 mb-3" },
                       React.createElement("div", { className: "grid grid-cols-3 gap-1.5", role: "group", "aria-label": __alloT('stem.rocks.wb_filter_aria', 'Choose which candidate cards to show') },
@@ -14042,32 +14849,32 @@ const d = labToolData.rocks || {};
                             key: view.id, type: "button", "aria-pressed": active, "data-wb-candidate-filter": view.id,
                             disabled: wbBusy || (view.id === 'setaside' && view.count === 0),
                             onClick: function () { updWb({ candidateView: view.id, reviewId: null }); wbSay(view.label + ': ' + view.count + __alloT('stem.rocks.wb_cards_shown_sr', ' candidate cards shown.')); },
-                            className: "rounded-lg border px-2 py-2 min-h-[44px] text-[0.625rem] sm:text-[0.6875rem] font-black transition-colors disabled:opacity-50 " + (active ? "bg-violet-700 border-violet-700 text-white" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-violet-300 hover:bg-violet-50")
+                            className: "rounded-lg border px-2 py-2 min-h-[44px] text-[0.875rem] sm:text-[0.875rem] font-black transition-colors disabled:opacity-50 " + (active ? "bg-violet-700 border-violet-700 text-white" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-violet-300 hover:bg-violet-50")
                           }, view.label + ' · ' + view.count);
                         })
                       ),
-                      React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_filter_help', 'Active shortlist cards match the current observations and have not been submitted already. Set aside preserves measurement conflicts and rejected claims for review; rejection feedback is not a physical property.')),
-                      wbCompatibleRejectedCount ? React.createElement("p", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[0.625rem] font-bold text-amber-900 leading-relaxed", role: "status", "data-wb-compatible-rejected": wbCompatibleRejectedCount }, wbCompatibleRejectedCount + ' ' + (wbCompatibleRejectedCount === 1 ? __alloT('stem.rocks.wb_compatible_rejected_one', 'rejected claim still matches the measurements.') : __alloT('stem.rocks.wb_compatible_rejected_many', 'rejected claims still match the measurements.')) + ' ' + __alloT('stem.rocks.wb_rejection_not_evidence', 'Rejection feedback is not physical evidence—run another diagnostic test.')) : null
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_filter_help', 'Active shortlist cards match the current observations and have not been submitted already. Set aside preserves measurement conflicts and rejected claims for review; rejection feedback is not a physical property.')),
+                      wbCompatibleRejectedCount ? React.createElement("p", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[0.875rem] font-bold text-amber-900 leading-relaxed", role: "status", "data-wb-compatible-rejected": wbCompatibleRejectedCount }, wbCompatibleRejectedCount + ' ' + (wbCompatibleRejectedCount === 1 ? __alloT('stem.rocks.wb_compatible_rejected_one', 'rejected claim still matches the measurements.') : __alloT('stem.rocks.wb_compatible_rejected_many', 'rejected claims still match the measurements.')) + ' ' + __alloT('stem.rocks.wb_rejection_not_evidence', 'Rejection feedback is not physical evidence—run another diagnostic test.')) : null
                     ) : null,
                     wbRemaining === 0 && !wb.solvedId ? React.createElement("aside", {
                       className: "rounded-xl border-2 border-rose-300 bg-rose-50 p-3 mb-3", role: "status", "aria-live": "polite",
                       "data-wb-impasse": wbHardnessConflict ? 'hardness-conflict' : 'no-candidate'
                     },
-                      React.createElement("p", { className: "text-[11.5px] font-black text-rose-900" }, __alloT('stem.rocks.wb_impasse_title', 'No candidate fits every observation.')),
-                      React.createElement("p", { className: "text-[10.5px] text-rose-900 mt-0.5 leading-relaxed" },
+                      React.createElement("p", { className: "text-[0.875rem] font-black text-rose-900" }, __alloT('stem.rocks.wb_impasse_title', 'No candidate fits every observation.')),
+                      React.createElement("p", { className: "text-[0.875rem] text-rose-900 mt-0.5 leading-relaxed" },
                         wbHardnessConflict
                           ? __alloT('stem.rocks.wb_impasse_hardness', 'Two scratch results cannot both be true, so the hardness bracket has closed on nothing. Clear the hardness trials and bracket again from a fresh reference.')
                           : __alloT('stem.rocks.wb_impasse_body', 'The specimen on the bench IS one of these minerals, so one record must not match what the bench actually showed. Look again at a single property; you do not have to start over.')),
                       React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" },
                         wbHardnessConflict ? React.createElement("button", {
                           type: "button", "data-wb-impasse-action": "clear-hardness", disabled: wbBusy || !!wbPendingTool,
-                          className: "rounded-full border border-rose-500 bg-white px-3 py-1 min-h-[44px] text-[0.625rem] font-black text-rose-900 hover:bg-rose-100 disabled:opacity-50",
+                          className: "rounded-full border border-rose-500 bg-white px-3 py-1 min-h-[44px] text-[0.875rem] font-black text-rose-900 hover:bg-rose-100 disabled:opacity-50",
                           onClick: wbClearHardness
                         }, __alloT('stem.rocks.wb_impasse_clear_hardness', 'Clear hardness trials and retest')) : null,
                         wbEvidence.map(function (ev) {
                           return React.createElement("button", {
                             key: ev.k, type: "button", "data-wb-impasse-reexamine": ev.k, disabled: wbBusy || !!wbPendingTool,
-                            className: "rounded-full border border-rose-300 bg-white px-3 py-1 min-h-[44px] text-[0.625rem] font-black text-rose-900 hover:bg-rose-100 disabled:opacity-50",
+                            className: "rounded-full border border-rose-300 bg-white px-3 py-1 min-h-[44px] text-[0.875rem] font-black text-rose-900 hover:bg-rose-100 disabled:opacity-50",
                             onClick: function () { wbReexamine(ev.k); }
                           }, __alloT('stem.rocks.wb_impasse_look', 'Look again: ') + wbImpasseLabel(ev.k));
                         })
@@ -14080,9 +14887,9 @@ const d = labToolData.rocks || {};
                         React.createElement("div", { className: "flex items-center gap-3 min-w-0 flex-1" },
                           React.createElement("div", { className: "shrink-0" }, rkMineralSwatch(React.createElement, wbMineral(wb.solvedId), 76)),
                           React.createElement("div", { className: "min-w-0 text-left" },
-                            React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_label', 'Investigation debrief')),
+                            React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_label', 'Investigation debrief')),
                             React.createElement("h5", { id: "wb-debrief-title", className: "text-lg font-black text-emerald-900", style: { overflowWrap: 'anywhere' } }, __alloT('stem.rocks.wb_solved', 'Identified: ') + (wbMineral(wb.solvedId) || {}).label),
-                            React.createElement("p", { className: "text-[0.6875rem] text-emerald-800 mt-0.5" }, __alloT('stem.rocks.wb_solved_body', 'Named from ') + wbEvidenceTypeCount + __alloT('stem.rocks.wb_solved_body2', ' measured property types. Solved so far: ') + (wb.solved || 0) + '.')
+                            React.createElement("p", { className: "text-[0.875rem] text-emerald-800 mt-0.5" }, __alloT('stem.rocks.wb_solved_body', 'Named from ') + wbEvidenceTypeCount + __alloT('stem.rocks.wb_solved_body2', ' measured property types. Solved so far: ') + (wb.solved || 0) + '.')
                           )
                         ),
                         React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 shrink-0" },
@@ -14092,38 +14899,38 @@ const d = labToolData.rocks || {};
                       ),
                       React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-left" },
                         React.createElement("div", { className: "rounded-xl border border-emerald-200 bg-white/80 p-2.5" },
-                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_strongest', 'Strongest discriminator')),
-                          React.createElement("p", { className: "text-[10.5px] font-bold text-emerald-900 mt-0.5" }, wbTopEvidence ? wbEvidenceKind(wbTopEvidence.ev.k) + (wbTopEvidence.impact > 0 ? __alloT('stem.rocks.wb_debrief_ruled_out', ' ruled out ') + wbTopEvidence.impact + __alloT('stem.rocks.wb_debrief_candidates', ' starting candidates.') : __alloT('stem.rocks.wb_debrief_converged', ' supported the converging evidence.')) : __alloT('stem.rocks.wb_debrief_reviewed', 'The observations were reviewed together.'))
+                          React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_strongest', 'Strongest discriminator')),
+                          React.createElement("p", { className: "text-[0.875rem] font-bold text-emerald-900 mt-0.5" }, wbTopEvidence ? wbEvidenceKind(wbTopEvidence.ev.k) + (wbTopEvidence.impact > 0 ? __alloT('stem.rocks.wb_debrief_ruled_out', ' ruled out ') + wbTopEvidence.impact + __alloT('stem.rocks.wb_debrief_candidates', ' starting candidates.') : __alloT('stem.rocks.wb_debrief_converged', ' supported the converging evidence.')) : __alloT('stem.rocks.wb_debrief_reviewed', 'The observations were reviewed together.'))
                         ),
                         React.createElement("div", { className: "rounded-xl border border-emerald-200 bg-white/80 p-2.5" },
-                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_notebook', 'Notebook summary')),
-                          React.createElement("p", { className: "text-[10.5px] font-bold text-emerald-900 mt-0.5" }, wbEvidence.length + __alloT('stem.rocks.wb_debrief_observations', ' observations across ') + wbEvidenceTypeCount + __alloT('stem.rocks.wb_debrief_types', ' property types.') + __alloT('stem.rocks.wb_debrief_chosen_prefix', ' Chosen for the claim: ') + wbClaimEvidence.length + '; ' + wbClaimReasoningLabel + '.')
+                          React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_notebook', 'Notebook summary')),
+                          React.createElement("p", { className: "text-[0.875rem] font-bold text-emerald-900 mt-0.5" }, wbEvidence.length + __alloT('stem.rocks.wb_debrief_observations', ' observations across ') + wbEvidenceTypeCount + __alloT('stem.rocks.wb_debrief_types', ' property types.') + __alloT('stem.rocks.wb_debrief_chosen_prefix', ' Chosen for the claim: ') + wbClaimEvidence.length + '; ' + wbClaimReasoningLabel + '.')
                         ),
                         React.createElement("div", { className: "rounded-xl border border-amber-300 bg-amber-50 p-2.5", "data-wb-confidence-calibration": wbClaimConfidence || 'not-recorded' },
-                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_debrief_confidence', 'Confidence calibration')),
-                          React.createElement("p", { className: "text-[10.5px] font-bold text-amber-900 mt-0.5" }, wbConfidenceLabel + '. ' + __alloT('stem.rocks.wb_debrief_evidence_level', 'Evidence level: ') + wbClaimSupport.label + '.')
+                          React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_debrief_confidence', 'Confidence calibration')),
+                          React.createElement("p", { className: "text-[0.875rem] font-bold text-amber-900 mt-0.5" }, wbConfidenceLabel + '. ' + __alloT('stem.rocks.wb_debrief_evidence_level', 'Evidence level: ') + wbClaimSupport.label + '.')
                         )
                       ),
                       wbRenderReasoningTrail(),
                       wbRenderEfficiency(),
                       wbRenderMatchMap(wbMineral(wb.solvedId), 'debrief'),
                       React.createElement("aside", { className: "mt-2.5 rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-left" },
-                        React.createElement("p", { className: "text-[10.5px] font-black text-amber-900" }, __alloT('stem.rocks.wb_debrief_guard_title', 'Field scientist reminder')),
-                        React.createElement("p", { className: "text-[0.625rem] text-amber-900 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_debrief_guard', 'Surface color alone is not enough. A reliable mineral identification combines several matching physical properties.'))
+                        React.createElement("p", { className: "text-[0.875rem] font-black text-amber-900" }, __alloT('stem.rocks.wb_debrief_guard_title', 'Field scientist reminder')),
+                        React.createElement("p", { className: "text-[0.875rem] text-amber-900 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_debrief_guard', 'Surface color alone is not enough. A reliable mineral identification combines several matching physical properties.'))
                       )
                     ) : React.createElement(React.Fragment, null,
                       wbInvalidatedSelected ? React.createElement("aside", { className: "rounded-xl border border-amber-400 bg-amber-50 p-3 mb-3 flex flex-col sm:flex-row sm:items-center gap-3", role: "status", "aria-live": "polite", "data-wb-revision": "measurement-conflict", "data-wb-invalidated-candidate": wbInvalidatedSelected.id },
                         React.createElement("span", { className: "w-9 h-9 rounded-xl bg-white border border-amber-300 flex items-center justify-center shrink-0", "aria-hidden": "true" }, '↳'),
                         React.createElement("div", { className: "min-w-0 flex-1" },
-                          React.createElement("p", { className: "text-[11.5px] font-black text-amber-900" }, __alloT('stem.rocks.wb_conflict_revision_title', 'New evidence changed your working claim.')),
-                          React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-0.5 leading-relaxed" }, wbInvalidatedSelected.label + __alloT('stem.rocks.wb_conflict_revision_mid', ' no longer fits the ') + (wbInvalidatedKind || __alloT('stem.rocks.wb_new_evidence', 'new evidence')) + __alloT('stem.rocks.wb_conflict_revision_end', ' observation. Your notebook is preserved—review what changed, then choose a supported candidate.'))
+                          React.createElement("p", { className: "text-[0.875rem] font-black text-amber-900" }, __alloT('stem.rocks.wb_conflict_revision_title', 'New evidence changed your working claim.')),
+                          React.createElement("p", { className: "text-[0.875rem] text-amber-900 mt-0.5 leading-relaxed" }, wbInvalidatedSelected.label + __alloT('stem.rocks.wb_conflict_revision_mid', ' no longer fits the ') + (wbInvalidatedKind || __alloT('stem.rocks.wb_new_evidence', 'new evidence')) + __alloT('stem.rocks.wb_conflict_revision_end', ' observation. Your notebook is preserved—review what changed, then choose a supported candidate.'))
                         ),
-                        React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-lg border border-amber-500 bg-white px-3 py-2 text-[10.5px] font-black text-amber-900 hover:bg-amber-100 shrink-0", "data-wb-review-conflict": wbInvalidatedSelected.id, onClick: function () { var invalidatedId = wbInvalidatedSelected.id; wbUpdateAndFocus({ selectedId: null, reviewId: invalidatedId, candidateView: 'setaside', claimEvidence: [], claimReasoning: null, claimConfidence: null }, '[data-wb-review-close="' + invalidatedId + '"]'); wbSay(__alloT('stem.rocks.wb_conflict_reviewing_sr', 'Reviewing the new evidence conflict for ') + wbInvalidatedSelected.label + '. ' + __alloT('stem.rocks.wb_claim_changed_sr', 'Recheck the evidence, reasoning, and confidence before making a revised claim.')); } }, __alloT('stem.rocks.wb_review_conflict_action', 'Review conflict'))
+                        React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-lg border border-amber-500 bg-white px-3 py-2 text-[0.875rem] font-black text-amber-900 hover:bg-amber-100 shrink-0", "data-wb-review-conflict": wbInvalidatedSelected.id, onClick: function () { var invalidatedId = wbInvalidatedSelected.id; wbUpdateAndFocus({ selectedId: null, reviewId: invalidatedId, candidateView: 'setaside', claimEvidence: [], claimReasoning: null, claimConfidence: null }, '[data-wb-review-close="' + invalidatedId + '"]'); wbSay(__alloT('stem.rocks.wb_conflict_reviewing_sr', 'Reviewing the new evidence conflict for ') + wbInvalidatedSelected.label + '. ' + __alloT('stem.rocks.wb_claim_changed_sr', 'Recheck the evidence, reasoning, and confidence before making a revised claim.')); } }, __alloT('stem.rocks.wb_review_conflict_action', 'Review conflict'))
                       ) : wbLastRejected ? React.createElement("aside", { className: "rounded-xl border border-rose-300 bg-rose-50 p-3 mb-3 flex gap-3 items-start", role: "status", "aria-live": "polite", "data-wb-revision": "needed" },
                         React.createElement("span", { className: "w-9 h-9 rounded-xl bg-white border border-rose-200 flex items-center justify-center shrink-0", "aria-hidden": "true" }, '↺'),
                         React.createElement("div", { className: "min-w-0" },
-                          React.createElement("p", { className: "text-[0.6875rem] font-black text-rose-900" }, __alloT('stem.rocks.wb_revise_title', 'Revise the claim—do not restart.')),
-                          React.createElement("p", { className: "text-[10.5px] text-rose-800 mt-0.5 leading-relaxed" }, wbLastRejected.label + __alloT('stem.rocks.wb_revise_body', ' shared the evidence you had, but it was not this specimen. Use ') + wbNext.title.toLowerCase() + __alloT('stem.rocks.wb_revise_body2', ' to distinguish the remaining possibilities.'))
+                          React.createElement("p", { className: "text-[0.875rem] font-black text-rose-900" }, __alloT('stem.rocks.wb_revise_title', 'Revise the claim—do not restart.')),
+                          React.createElement("p", { className: "text-[0.875rem] text-rose-800 mt-0.5 leading-relaxed" }, wbLastRejected.label + __alloT('stem.rocks.wb_revise_body', ' shared the evidence you had, but it was not this specimen. Use ') + wbNext.title.toLowerCase() + __alloT('stem.rocks.wb_revise_body2', ' to distinguish the remaining possibilities.'))
                         )
                       ) : null,
                       React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5" },
@@ -14170,12 +14977,12 @@ const d = labToolData.rocks || {};
                             // under the same lens so the unknown's porthole can be compared
                             // card by card rather than against a word.
                             wb.lens ? React.createElement("span", { className: "rounded-md bg-slate-900 p-0.5", "data-wb-candidate-porthole": m.id }, rkLensViewSvg(React.createElement, m, 34, { aria: m.label + __alloT('stem.rocks.wb_candidate_porthole_aria', ' under the lens: ') + rkLusterClassInfo(rkLusterClass(m)).sr })) : null,
-                            (out || wrong || selected) ? React.createElement("span", { className: "absolute -right-1 -bottom-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-[0.625rem] font-black " + (wrong ? "bg-rose-600" : selected ? "bg-violet-700" : "bg-slate-600"), "aria-hidden": "true" }, selected ? '✓' : '×') : null
+                            (out || wrong || selected) ? React.createElement("span", { className: "absolute -right-1 -bottom-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-[0.875rem] font-black " + (wrong ? "bg-rose-600" : selected ? "bg-violet-700" : "bg-slate-600"), "aria-hidden": "true" }, selected ? '✓' : '×') : null
                           ),
                           React.createElement("span", { className: "min-w-0 flex-1" },
-                            React.createElement("span", { className: "block text-[0.75rem] font-black leading-tight", style: { overflowWrap: 'anywhere' } }, m.label),
-                            out ? React.createElement("span", { className: "block text-[10.5px] font-black text-slate-700 mt-1" }, reviewing ? __alloT('stem.rocks.wb_reviewing_card', 'Reviewing all measured evidence') : __alloT('stem.rocks.wb_eliminated_by', 'Review why set aside · ') + mismatch) : wrong ? React.createElement("span", { className: "block text-[10.5px] font-black text-rose-800 mt-1" }, reviewing ? __alloT('stem.rocks.wb_reviewing_unresolved_card', 'Reviewing unresolved evidence') : __alloT('stem.rocks.wb_claim_rejected', 'Review rejected claim evidence')) : selected ? React.createElement("span", { className: "block text-[10.5px] font-black text-violet-800 mt-1" }, __alloT('stem.rocks.wb_selected', 'Selected for claim')) : React.createElement("span", { className: "block text-[10.5px] font-black text-emerald-800 mt-1" }, __alloT('stem.rocks.wb_still_possible', 'Still supported')),
-                            facts.length ? React.createElement("span", { className: "flex flex-wrap gap-1 mt-1.5" }, facts.slice(0, 3).map(function (fact) { return React.createElement("span", { key: fact.k, className: "rounded bg-white/80 border border-slate-200 px-1.5 py-0.5 text-[0.625rem] font-semibold text-slate-700 leading-tight" }, fact.text); })) : React.createElement("span", { className: "block text-[10.5px] text-slate-600 mt-1" }, __alloT('stem.rocks.wb_no_measured_facts', 'Run a test to compare properties'))
+                            React.createElement("span", { className: "block text-[0.875rem] font-black leading-tight", style: { overflowWrap: 'anywhere' } }, m.label),
+                            out ? React.createElement("span", { className: "block text-[0.875rem] font-black text-slate-700 mt-1" }, reviewing ? __alloT('stem.rocks.wb_reviewing_card', 'Reviewing all measured evidence') : __alloT('stem.rocks.wb_eliminated_by', 'Review why set aside · ') + mismatch) : wrong ? React.createElement("span", { className: "block text-[0.875rem] font-black text-rose-800 mt-1" }, reviewing ? __alloT('stem.rocks.wb_reviewing_unresolved_card', 'Reviewing unresolved evidence') : __alloT('stem.rocks.wb_claim_rejected', 'Review rejected claim evidence')) : selected ? React.createElement("span", { className: "block text-[0.875rem] font-black text-violet-800 mt-1" }, __alloT('stem.rocks.wb_selected', 'Selected for claim')) : React.createElement("span", { className: "block text-[0.875rem] font-black text-emerald-800 mt-1" }, __alloT('stem.rocks.wb_still_possible', 'Still supported')),
+                            facts.length ? React.createElement("span", { className: "flex flex-wrap gap-1 mt-1.5" }, facts.slice(0, 3).map(function (fact) { return React.createElement("span", { key: fact.k, className: "rounded bg-white/80 border border-slate-200 px-1.5 py-0.5 text-[0.875rem] font-semibold text-slate-700 leading-tight" }, fact.text); })) : React.createElement("span", { className: "block text-[0.875rem] text-slate-600 mt-1" }, __alloT('stem.rocks.wb_no_measured_facts', 'Run a test to compare properties'))
                           )
                         );
                       })
@@ -14184,13 +14991,13 @@ const d = labToolData.rocks || {};
                       React.createElement("section", { className: "mt-3 rounded-2xl border-2 p-3 sm:p-4 " + (wbSelected ? "border-violet-300 bg-violet-50" : "border-dashed border-slate-300 bg-white"), "aria-labelledby": "wb-claim-builder-title", "data-wb-claim-ready": wbCerReady ? 'true' : 'false', "data-wb-measurement-ready": wbClaimReady ? 'true' : 'false', "data-wb-provisional-hardness": wbHardnessProvisional ? 'true' : 'false', "data-wb-claim-strength": wbClaimSupport.id },
                         React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3" },
                           React.createElement("div", { className: "min-w-0" },
-                            React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-violet-700" }, __alloT('stem.rocks.wb_cer_label', 'Claim · Evidence · Reasoning')),
-                            React.createElement("h5", { id: "wb-claim-builder-title", className: "text-[0.8125rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected ? __alloT('stem.rocks.wb_my_claim', 'My claim: the unknown is ') + wbSelected.label : __alloT('stem.rocks.wb_choose_claim', 'Choose one supported candidate to build your claim.')),
-                            wbSelected ? React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_cer_active_help', 'Build the claim yourself: choose evidence, connect it with scientific reasoning, then record how confident you feel.')) : React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-1" }, wbCandidateView === 'setaside' ? __alloT('stem.rocks.wb_setaside_help', 'These cards are here for review. Switch to Active shortlist to select a supported claim.') : __alloT('stem.rocks.wb_choose_help', 'Selecting a card does not submit it. You will review the evidence here first.'))
+                            React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-violet-700" }, __alloT('stem.rocks.wb_cer_label', 'Claim · Evidence · Reasoning')),
+                            React.createElement("h5", { id: "wb-claim-builder-title", className: "text-[0.875rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected ? __alloT('stem.rocks.wb_my_claim', 'My claim: the unknown is ') + wbSelected.label : __alloT('stem.rocks.wb_choose_claim', 'Choose one supported candidate to build your claim.')),
+                            wbSelected ? React.createElement("p", { className: "text-[0.875rem] text-slate-700 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_cer_active_help', 'Build the claim yourself: choose evidence, connect it with scientific reasoning, then record how confident you feel.')) : React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-1" }, wbCandidateView === 'setaside' ? __alloT('stem.rocks.wb_setaside_help', 'These cards are here for review. Switch to Active shortlist to select a supported claim.') : __alloT('stem.rocks.wb_choose_help', 'Selecting a card does not submit it. You will review the evidence here first.'))
                           ),
                           React.createElement("div", { className: "sm:text-right shrink-0" },
-                            React.createElement("p", { className: "text-[10.5px] font-black mb-1.5 " + (wbCerReady && wbClaimSupport.id === 'strong' ? "text-emerald-800" : wbCerReady && wbClaimSupport.id === 'good' ? "text-violet-800" : "text-amber-800") }, wbCerStatusText),
-                            React.createElement("button", { type: "button", disabled: wbBusy || !wbSelected || !wbCerReady, onClick: wbSubmitClaim, className: "rounded-xl px-4 py-2.5 min-h-[44px] font-black text-[11.5px] transition-all " + (wbSelected && wbCerReady && !wbBusy ? "bg-violet-700 text-white hover:bg-violet-800 shadow-sm" : "bg-slate-200 text-slate-600 cursor-not-allowed"), "aria-describedby": "wb-claim-readiness" }, __alloT('stem.rocks.wb_submit_claim', 'Submit evidence-based claim'))
+                            React.createElement("p", { className: "text-[0.875rem] font-black mb-1.5 " + (wbCerReady && wbClaimSupport.id === 'strong' ? "text-emerald-800" : wbCerReady && wbClaimSupport.id === 'good' ? "text-violet-800" : "text-amber-800") }, wbCerStatusText),
+                            React.createElement("button", { type: "button", disabled: wbBusy || !wbSelected || !wbCerReady, onClick: wbSubmitClaim, className: "rounded-xl px-4 py-2.5 min-h-[44px] font-black text-[0.875rem] transition-all " + (wbSelected && wbCerReady && !wbBusy ? "bg-violet-700 text-white hover:bg-violet-800 shadow-sm" : "bg-slate-200 text-slate-600 cursor-not-allowed"), "aria-describedby": "wb-claim-readiness" }, __alloT('stem.rocks.wb_submit_claim', 'Submit evidence-based claim'))
                           )
                         ),
                         wbRenderCerBuilder(),
@@ -14198,14 +15005,14 @@ const d = labToolData.rocks || {};
                         React.createElement("p", { id: "wb-claim-readiness", className: "sr-only" }, wbCerStatusText + '. ' + wbClaimSupport.detail)
                       )
                     ),
-                    !wb.solvedId ? React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-3" }, __alloT('stem.rocks.wb_hint', 'Use Active shortlist for a focused decision. Set aside preserves eliminated and rejected cards with the property that conflicted, so evidence is never hidden from review.')) : null
+                    !wb.solvedId ? React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-3" }, __alloT('stem.rocks.wb_hint', 'Use Active shortlist for a focused decision. Set aside preserves eliminated and rejected cards with the property that conflicted, so evidence is never hidden from review.')) : null
                   ) : React.createElement("section", { className: "rounded-xl border border-slate-200 bg-slate-50 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3", "aria-labelledby": "wb-candidates-preview-title", "data-wb-candidates-state": "quiet" },
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-slate-600" }, __alloT('stem.rocks.wb_compare_later', 'Compare comes next')),
-                      React.createElement("h4", { id: "wb-candidates-preview-title", className: "text-[0.75rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_candidates_waiting', 'Candidate references are waiting for your first observation.')),
-                      React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_candidates_waiting_help', 'Collect one property first, or preview the full reference set whenever you need it.'))
+                      React.createElement("p", { className: "text-[0.875rem] font-black uppercase tracking-[0.12em] text-slate-600" }, __alloT('stem.rocks.wb_compare_later', 'Compare comes next')),
+                      React.createElement("h4", { id: "wb-candidates-preview-title", className: "text-[0.875rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_candidates_waiting', 'Candidate references are waiting for your first observation.')),
+                      React.createElement("p", { className: "text-[0.875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_candidates_waiting_help', 'Collect one property first, or preview the full reference set whenever you need it.'))
                     ),
-                    React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[10.5px] font-black text-slate-800 hover:border-violet-400 hover:bg-violet-50", onClick: function () { wbUpdateAndFocus({ candidatesExpanded: true }, '[data-wb-candidate-filter="' + wbCandidateView + '"]'); }, "aria-expanded": false, "aria-controls": "wb-candidates-panel", "data-wb-preview-candidates": "true" }, __alloT('stem.rocks.wb_preview_candidates', 'Preview candidates'))
+                    React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[0.875rem] font-black text-slate-800 hover:border-violet-400 hover:bg-violet-50", onClick: function () { wbUpdateAndFocus({ candidatesExpanded: true }, '[data-wb-candidate-filter="' + wbCandidateView + '"]'); }, "aria-expanded": false, "aria-controls": "wb-candidates-panel", "data-wb-preview-candidates": "true" }, __alloT('stem.rocks.wb_preview_candidates', 'Preview candidates'))
                   )
                 ),
                 wbRenderArchive()
@@ -14220,7 +15027,7 @@ const d = labToolData.rocks || {};
               var remaining = practice.queue.filter(function (id) { return Number.isInteger(practice.answers[id]) && QUIZ_BANK[id].options[practice.answers[id]] !== QUIZ_BANK[id].a; });
               var buttonClass = 'min-h-[44px] px-4 py-2 rounded-lg text-xs font-black bg-amber-700 text-white hover:bg-amber-800';
               var back = React.createElement('button', { type: 'button', 'data-rk-practice-return': true, className: 'min-h-[44px] px-3 py-2 rounded-lg border border-amber-700 text-xs font-bold text-amber-900 bg-white hover:bg-amber-100', onClick: rkQuizPracticeReturn }, __alloT('stem.rocks.quiz_practice_return', 'Return to round results'));
-              if (practice.done) return React.createElement('section', { className: 'mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4', 'aria-labelledby': 'rk-quiz-practice-results-title', 'data-rk-practice-done': right + '/' + practice.queue.length },
+              if (practice.done) return React.createElement('section', { className: 'rk-quiz-workspace mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4', 'aria-labelledby': 'rk-quiz-practice-results-title', 'data-rk-practice-done': right + '/' + practice.queue.length },
                 React.createElement('h4', { id: 'rk-quiz-practice-results-title', tabIndex: -1, className: 'text-base font-black text-amber-900' }, __alloT('stem.rocks.quiz_practice_complete', 'Practice complete') + ': ' + right + ' / ' + practice.queue.length),
                 React.createElement('p', { className: 'text-sm text-slate-700 mt-2' }, remaining.length ? __alloT('stem.rocks.quiz_practice_remaining', 'Questions to practise again: ') + remaining.length : __alloT('stem.rocks.quiz_practice_all_correct', 'You answered every question in this practice correctly.')),
                 React.createElement('p', { className: 'text-xs text-slate-700 mt-2' }, __alloT('stem.rocks.quiz_practice_separate', 'Practice keeps your original round results unchanged and does not award points.')),
@@ -14228,7 +15035,7 @@ const d = labToolData.rocks || {};
                   remaining.length > 0 && React.createElement('button', { type: 'button', 'data-rk-practice-retry': true, className: buttonClass, onClick: function () { rkQuizPracticeStart(remaining); } }, __alloT('stem.rocks.quiz_practice_retry', 'Practise remaining questions') + ' (' + remaining.length + ')'),
                   back));
               return React.createElement('section', {
-                className: 'mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 outline-none focus:ring-2 focus:ring-amber-600',
+                className: 'rk-quiz-workspace mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 outline-none focus:ring-2 focus:ring-amber-600',
                 role: 'region', tabIndex: 0, 'aria-labelledby': 'rk-quiz-practice-title', 'aria-describedby': 'rk-quiz-practice-help', 'data-rk-practice': practice.queue[practice.index],
                 onKeyDown: function (event) {
                   if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing)) return;
@@ -14241,23 +15048,24 @@ const d = labToolData.rocks || {};
                   React.createElement('h4', { id: 'rk-quiz-practice-title', className: 'text-base font-black text-amber-900' }, __alloT('stem.rocks.quiz_practice_title', 'Missed-question practice')),
                   React.createElement('p', { className: 'text-xs font-bold text-amber-900', 'data-rk-practice-progress': practice.index + 1 }, __alloT('stem.rocks.question_label', 'Question ') + (practice.index + 1) + ' / ' + practice.queue.length)),
                 React.createElement('p', { id: 'rk-quiz-practice-help', className: 'text-xs text-slate-700 mb-3' }, __alloT('stem.rocks.quiz_practice_keyboard', 'Use the answer buttons, or focus this practice area and press 1–4 to answer and N for next.')),
-                Array.isArray(q.show) && React.createElement('div', { className: 'flex flex-wrap gap-2 mb-3' }, q.show.map(function (id) {
+                Array.isArray(q.show) && React.createElement('div', { className: 'rk-quiz-specimens flex flex-wrap gap-2 mb-3' }, q.show.map(function (id) {
                   var sp = rkQuizSpecimen(id);
                   return sp ? React.createElement('figure', { key: id, className: 'm-0 flex flex-col items-center rounded-xl border-2 border-amber-200 bg-white p-2' },
-                    React.createElement('span', { 'aria-hidden': true }, sp.pic(76)), React.createElement('figcaption', { className: 'text-xs font-bold text-slate-800' }, sp.label)) : null;
+                    React.createElement('span', { 'aria-hidden': true }, sp.pic(96)), React.createElement('figcaption', { className: 'text-xs font-bold text-slate-800' }, sp.label)) : null;
                 })),
                 React.createElement('h5', { id: 'rk-quiz-practice-question', tabIndex: -1, className: 'text-sm font-bold text-slate-800 mb-3' }, q.q),
-                React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, q.options.map(function (option, choice) {
+                React.createElement('div', { className: 'rk-quiz-options' }, q.options.map(function (option, choice) {
                   var chosen = feedback && feedback.chosenIdx === choice, correct = feedback && option === q.a;
-                  return React.createElement('button', { key: option, type: 'button', 'data-rk-practice-answer': choice, 'aria-disabled': !!feedback,
+                  return React.createElement('button', { key: option, type: 'button', 'data-rk-practice-answer': choice, 'aria-disabled': !!feedback, 'data-rk-quiz-answer-result':correct?'correct':chosen?'chosen':feedback?'locked':'open',
                     'aria-label': __alloT('stem.rocks.answer_label', 'Answer ') + (choice + 1) + ': ' + option + (chosen ? '. ' + __alloT('stem.rocks.quiz_your_answer', 'Your answer') : '') + (correct ? '. ' + __alloT('stem.rocks.quiz_correct_answer', 'Correct answer') : ''),
                     onClick: function () { rkQuizPracticeAnswer(choice); },
-                    className: 'min-h-[44px] min-w-0 px-3 py-2 text-left text-xs font-bold rounded-lg border-2 flex items-center gap-2 ' + (correct ? 'border-green-600 bg-green-50 text-green-800' : chosen ? 'border-red-600 bg-red-50 text-red-800' : 'border-amber-700 bg-white text-slate-800 hover:border-amber-800')
-                  }, React.createElement('span', { 'aria-hidden': true, className: 'shrink-0 font-black' }, (choice + 1) + '.'),
-                    (function () { var sp = rkQuizSpecimenByLabel(option); return sp ? React.createElement('span', { 'aria-hidden': true, className: 'shrink-0' }, sp.pic(38)) : null; })(),
-                    React.createElement('span', { className: 'min-w-0 break-words' }, option,
-                      chosen && React.createElement('span', { className: 'block mt-1' }, __alloT('stem.rocks.quiz_your_answer', 'Your answer')),
-                      correct && React.createElement('span', { className: 'block mt-1' }, __alloT('stem.rocks.quiz_correct_answer', 'Correct answer'))));
+                    className: 'rk-quiz-option min-h-[44px] min-w-0 px-3 py-2 text-left text-xs font-bold rounded-lg border-2 flex items-center gap-2 ' + (correct ? 'border-green-600 bg-green-50 text-green-800' : chosen ? 'border-red-600 bg-red-50 text-red-800' : 'border-amber-700 bg-white text-slate-800 hover:border-amber-800')
+                  }, React.createElement('span', { 'aria-hidden': true, className: 'rk-quiz-answer-number' }, __alloT('stem.rocks.answer_label', 'Answer ') + (choice + 1) + ': '),
+                    React.createElement('span', { className:'rk-quiz-answer-content' },
+                    (function () { var sp = rkQuizSpecimenByLabel(option); return sp ? React.createElement('span', { 'aria-hidden': true, className: 'shrink-0' }, sp.pic(48)) : null; })(),
+                    React.createElement('span', { className: 'rk-quiz-answer-text' }, option,
+                      chosen && React.createElement('span', { className: 'block mt-1', 'data-rk-quiz-answer-state':true }, ' ' + __alloT('stem.rocks.quiz_your_answer', 'Your answer')),
+                      correct && React.createElement('span', { className: 'block mt-1', 'data-rk-quiz-answer-state':true }, ' ' + __alloT('stem.rocks.quiz_correct_answer', 'Correct answer')))));
                 })),
                 React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-rk-practice-feedback': true }, feedback && React.createElement('div', { className: 'mt-3 rounded-lg border p-3 ' + (feedback.correct ? 'bg-green-50 border-green-600 text-green-800' : 'bg-red-50 border-red-600 text-red-800') },
                   React.createElement('p', { className: 'text-sm font-black' }, feedback.correct ? __alloT('stem.rocks.correct_exclaim', 'Correct!') : __alloT('stem.rocks.incorrect', 'Incorrect.')),
@@ -14271,10 +15079,15 @@ const d = labToolData.rocks || {};
             })(),
 
             quizQ && !d.quizDone && !rkQuizPracticeActive && React.createElement("div", {
-              className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-600",
+              className: "rk-quiz-workspace mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-600", 'data-rk-quiz-active':true,
               role: "region", "aria-label": __alloT('stem.rocks.quiz_region_aria', "Rock identification quiz. Press 1 through 4 to answer, or N for next."),
               tabIndex: 0,
-              ref: function (el) { if (el && !el._rkQuizFocused) { el._rkQuizFocused = true; try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } } },
+              ref: function (el) {
+                if (!el || el._rkQuizFocused) return;
+                el._rkQuizFocused = true;
+                if (rkFocusRequests.get(rkFocusScope(el))?.mode === 'quiz') return;
+                try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+              },
               onKeyDown: function (e) {
                 // Shortcuts belong to the focused region, never its controls.
                 if (e.target !== e.currentTarget || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing)) return;
@@ -14309,37 +15122,39 @@ const d = labToolData.rocks || {};
                 }
               }
             },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+              React.createElement("div", { className: "rk-quiz-header mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "🧠 " + __alloT('stem.rocks.question_label', "Question ") + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
                 React.createElement("span", { className: "font-bold text-green-800 text-xs" }, "✔ " + (d.quizScore || 0))
               ),
               (function () {
                 var done = Object.keys(rkQuizLog).filter(function (k) { return QUIZ_BANK[k]; });
                 var rightN = done.filter(function (k) { return rkQuizLog[k] === 1; }).length;
+                var summary = __alloT('stem.rocks.quiz_map_answered', 'Answered ') + done.length + __alloT('stem.rocks.quiz_map_of', ' of ') + QUIZ_BANK.length + ', ' + rightN + __alloT('stem.rocks.quiz_map_right', ' right on the first try.');
                 return React.createElement("div", {
                   className: "flex flex-wrap gap-1 mb-3", role: "img", "data-rk-quiz-progress": (d.quizIdx || 0) + 1,
-                  "aria-label": __alloT('stem.rocks.quiz_map_answered', 'Answered ') + done.length + __alloT('stem.rocks.quiz_map_of', ' of ') + QUIZ_BANK.length + ', ' + rightN + __alloT('stem.rocks.quiz_map_right', ' right on the first try.')
+                  "aria-label": summary
                 },
+                  React.createElement('p', { className:'rk-quiz-progress-summary' }, summary),
                   QUIZ_BANK.map(function (qq, qi) {
                     var r = rkQuizLog[qi], here = qi === (d.quizIdx || 0);
                     return React.createElement("span", { key: qi, "data-rk-quiz-dot": r === 1 ? 'right' : r === 0 ? 'wrong' : 'open',
                       style: { display: 'inline-block', width: 10, height: 10, borderRadius: 9999, background: r === 1 ? '#047857' : r === 0 ? '#b91c1c' : '#ffffff', border: '1.5px solid ' + (here ? '#78350f' : r === 1 || r === 0 ? 'transparent' : '#d6b36a'), boxShadow: here ? '0 0 0 2px #fcd34d' : undefined } });
                   }));
               })(),
-              Array.isArray(quizQ.show) && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", "data-rk-quiz-show": quizQ.show.join(' ') },
+              Array.isArray(quizQ.show) && React.createElement("div", { className: "rk-quiz-specimens flex flex-wrap gap-2 mb-3", "data-rk-quiz-show": quizQ.show.join(' ') },
                 quizQ.show.map(function (sid) {
                   var sp = rkQuizSpecimen(sid);
                   if (!sp) return null;
                   return React.createElement("figure", { key: sid, className: "m-0 flex flex-col items-center rounded-xl border-2 border-amber-200 bg-white px-2 pt-1.5 pb-1", style: { minWidth: 92 } },
-                    React.createElement("span", { "aria-hidden": true }, sp.pic(76)),
+                    React.createElement("span", { "aria-hidden": true }, sp.pic(96)),
                     React.createElement("figcaption", { className: "text-[0.6875rem] font-black text-slate-800 mt-0.5" }, sp.label));
                 })),
               React.createElement("h4", { id:'rk-quiz-question',tabIndex:-1,className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
-              React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+              React.createElement("div", { className: "rk-quiz-options" },
                 quizQ.options.map(function (opt, i) {
                   const shortcut = (i + 1).toString();
                   const isChosen = d.quizFeedback && d.quizFeedback.chosenIdx === i;
-                  return React.createElement("button", { "aria-label": __alloT('stem.rocks.answer_label', "Answer ") + shortcut + ": " + opt + (isChosen ? '. ' + __alloT('stem.rocks.quiz_your_answer','Your answer') : '') + (d.quizFeedback && opt === quizQ.a ? '. ' + __alloT('stem.rocks.quiz_correct_answer','Correct answer') : ''), 'aria-disabled':!!d.quizFeedback,
+                  return React.createElement("button", { "aria-label": __alloT('stem.rocks.answer_label', "Answer ") + shortcut + ": " + opt + (isChosen ? '. ' + __alloT('stem.rocks.quiz_your_answer','Your answer') : '') + (d.quizFeedback && opt === quizQ.a ? '. ' + __alloT('stem.rocks.quiz_correct_answer','Correct answer') : ''), 'aria-disabled':!!d.quizFeedback, 'data-rk-quiz-answer-result':d.quizFeedback&&opt===quizQ.a?'correct':isChosen?'chosen':d.quizFeedback?'locked':'open',
                     key: opt, onClick: function () {
                       if (d.quizFeedback) return;
                       const correct = opt === quizQ.a;
@@ -14360,14 +15175,15 @@ const d = labToolData.rocks || {};
                       } else {
                         sfxRockCrack();
                       }
-                    }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] flex items-center gap-2 " +
+                    }, className: "rk-quiz-option px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] flex items-center gap-2 " +
                       (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : isChosen ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-600") : "transition-colors border-amber-200 bg-white text-slate-700 hover:border-amber-400")
                   },
-                    React.createElement("span", { className: "inline-flex items-center justify-center w-5 h-5 rounded text-[0.625rem] font-bold bg-amber-100 text-amber-800 shrink-0", "aria-hidden": "true" }, shortcut),
-                    (function () { var op = rkQuizSpecimenByLabel(opt); return op ? React.createElement("span", { "aria-hidden": true, className: "shrink-0", "data-rk-quiz-pic": op.id }, op.pic(38)) : null; })(),
-                    React.createElement("span", null, opt,
-                      isChosen ? React.createElement('span',{style:{display:'block',fontSize:11,marginTop:4}},__alloT('stem.rocks.quiz_your_answer','Your answer')) : null,
-                      d.quizFeedback && opt === quizQ.a ? React.createElement('span',{style:{display:'block',fontSize:11,marginTop:4}},__alloT('stem.rocks.quiz_correct_answer','Correct answer')) : null));
+                    React.createElement("span", { className: "rk-quiz-answer-number", "aria-hidden": "true" }, __alloT('stem.rocks.answer_label', 'Answer ') + shortcut + ': '),
+                    React.createElement('span', { className:'rk-quiz-answer-content' },
+                    (function () { var op = rkQuizSpecimenByLabel(opt); return op ? React.createElement("span", { "aria-hidden": true, className: "shrink-0", "data-rk-quiz-pic": op.id }, op.pic(48)) : null; })(),
+                    React.createElement("span", { className:'rk-quiz-answer-text' }, opt,
+                      isChosen ? React.createElement('span',{'data-rk-quiz-answer-state':true,style:{display:'block'}},' ' + __alloT('stem.rocks.quiz_your_answer','Your answer')) : null,
+                      d.quizFeedback && opt === quizQ.a ? React.createElement('span',{'data-rk-quiz-answer-state':true,style:{display:'block'}},' ' + __alloT('stem.rocks.quiz_correct_answer','Correct answer')) : null)));
                 })
               ),
               React.createElement('div',{role:'status','aria-live':'polite','aria-atomic':true,'data-rk-quiz-feedback':true},
@@ -14425,7 +15241,7 @@ const d = labToolData.rocks || {};
               var order = Object.keys(topics).sort(function (a, b) { return (topics[a].r / topics[a].n) - (topics[b].r / topics[b].n) || topics[b].n - topics[a].n; });
               var missed = done.filter(function (k) { return rkQuizLog[k] === 0; });
               var weakest = order.length && topics[order[0]].r < topics[order[0]].n ? order[0] : null;
-              return React.createElement("div", { className: "mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4", "data-rk-quiz-done": rightN + '/' + done.length, role: "region", "aria-label": __alloT('stem.rocks.quiz_done_title', "Round complete") },
+              return React.createElement("div", { className: "rk-quiz-workspace mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4", "data-rk-quiz-done": rightN + '/' + done.length, role: "region", "aria-label": __alloT('stem.rocks.quiz_done_title', "Round complete") },
                 React.createElement("h4", { id:'rk-quiz-results-title',tabIndex:-1,className: "text-base font-black text-amber-900" }, '🏁 ' + __alloT('stem.rocks.quiz_done_title', "Round complete") + ': ' + rightN + ' / ' + QUIZ_BANK.length),
                 React.createElement("p", { className: "text-xs text-slate-700 mt-0.5" }, __alloT('stem.rocks.quiz_done_note', "Each question counts your first answer. The ones you missed are listed below with the right answer.")),
                 React.createElement('div', { className: 'mt-3 flex flex-wrap gap-2', 'data-rk-practice-actions': true },
@@ -14436,15 +15252,18 @@ const d = labToolData.rocks || {};
                   missed.length > 0 && React.createElement('button', { type: 'button', 'data-rk-practice-start': 'all', className: 'min-h-[44px] px-3 py-2 rounded-lg bg-amber-700 text-xs font-bold text-white hover:bg-amber-800', onClick: function () { rkQuizPracticeStart(missed.map(Number)); } }, __alloT('stem.rocks.quiz_practice_missed', 'Practise all missed questions') + ' (' + missed.length + ')'),
                   weakest !== null && React.createElement('button', { type: 'button', 'data-rk-practice-start': 'topic', className: 'min-h-[44px] px-3 py-2 rounded-lg border border-amber-700 bg-white text-xs font-bold text-amber-900 hover:bg-amber-100', onClick: function () { rkQuizPracticeStart(missed.filter(function (k) { return (QUIZ_BANK[k].concept || '') === weakest; }).map(Number)); } }, __alloT('stem.rocks.quiz_practice_topic', 'Practise weakest topic') + (weakest ? ': ' + rkVocabTerm(__alloT, weakest) : ''))),
                 React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-amber-900 mt-3 mb-1" }, __alloT('stem.rocks.quiz_by_topic', "By topic, weakest first")),
-                React.createElement("ul", { className: "space-y-1" },
+                React.createElement("ul", { className: "rk-quiz-topics", role:'list' },
                   order.map(function (c) {
                     var t = topics[c], pct = t.r / t.n;
-                    return React.createElement("li", { key: c || 'none', className: "flex items-center gap-2 text-xs text-slate-800", "data-rk-quiz-topic": c },
-                      React.createElement("span", { className: "font-bold", style: { width: 120, flexShrink: 0 } }, c ? rkVocabTerm(__alloT, c) : '—'),
-                      React.createElement("span", { "aria-hidden": true, className: "flex-1 rounded-full overflow-hidden", style: { height: 8, background: '#fde68a', maxWidth: 220 } },
+                    var label = c ? rkVocabTerm(__alloT, c) : '—', queue = missed.filter(function (k) { return (QUIZ_BANK[k].concept || '') === c; }).map(Number);
+                    return React.createElement("li", { key: c || 'none', className: "rk-quiz-topic text-slate-800", "data-rk-quiz-topic": c },
+                      React.createElement('div', { className:'rk-quiz-topic-header' },
+                      React.createElement("span", { className: "font-bold" }, label),
+                      React.createElement("span", { className: "rk-quiz-topic-score" }, t.r + ' / ' + t.n)),
+                      React.createElement("span", { "aria-hidden": true, className: "rk-quiz-topic-meter" },
                         React.createElement("span", { style: { display: 'block', height: '100%', width: (pct * 100).toFixed(0) + '%', background: pct >= 0.75 ? '#047857' : pct >= 0.5 ? '#b45309' : '#b91c1c' } })),
-                      React.createElement("span", { className: "font-mono", style: { width: 44, flexShrink: 0 } }, t.r + ' / ' + t.n),
-                      c === weakest && React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black text-white", style: { background: '#b91c1c' } }, __alloT('stem.rocks.quiz_practise_next', "Practise next")));
+                      c === weakest && React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black text-white", style: { background: '#b91c1c', alignSelf:'flex-start' } }, __alloT('stem.rocks.quiz_practise_next', "Practise next")),
+                      queue.length > 0 && React.createElement('button', { type:'button', 'data-rk-practice-topic':c, 'aria-label':__alloT('stem.rocks.quiz_practice_title','Missed-question practice') + ' (' + queue.length + '): ' + label, onClick:function(){rkQuizPracticeStart(queue);} }, __alloT('stem.rocks.quiz_practice_title','Missed-question practice') + ' (' + queue.length + ')'));
                   })),
                 missed.length > 0 && React.createElement("div", { className: "mt-3" },
                   React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-amber-900 mb-1" }, __alloT('stem.rocks.quiz_revisit', "Questions to revisit")),
@@ -15292,6 +16111,19 @@ const d = labToolData.rocks || {};
       { id: 'run_3_transforms', label: 'Run the Transformation Machine 3 times', icon: '🔄', check: function(d) { return (d.transformsRun || 0) >= 3; }, progress: function(d) { return (d.transformsRun || 0) + '/3 runs'; } },
       { id: 'path_detective_4', label: 'Work through 4 Path detective cases', icon: '🔍', check: function(d) { var p = rcPathClean(d && d.rcPath); return !!p && Object.keys(p.log).length >= 4; }, progress: function(d) { var p = rcPathClean(d && d.rcPath); return (p ? Object.keys(p.log).length : 0) + '/4 cases'; } }
     ],
+    _MotionControl: function(props) {
+      var React=props.React, pair=React.useState(false), paused=pair[0];
+      function preferred(){try{return !!(typeof window!=='undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);}catch(e){return false;}}
+      var motionState=React.useState(preferred),reduced=motionState[0];
+      React.useEffect(function(){var media;try{media=typeof window!=='undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');}catch(e){}if(!media)return;var update=function(event){motionState[1](!!event.matches);};update(media);if(typeof media.addEventListener==='function')media.addEventListener('change',update);else if(typeof media.addListener==='function')media.addListener(update);return function(){if(typeof media.removeEventListener==='function')media.removeEventListener('change',update);else if(typeof media.removeListener==='function')media.removeListener(update);};},[]);
+      if(reduced)return null;
+      return React.createElement('button',{type:'button','data-rc-motion':paused?'paused':'running',className:'mb-2 rounded-lg border-2 border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900',onClick:function(event){
+        var root=event.currentTarget.closest('[data-rc-workspace]'),canvas=root && root.querySelector('canvas');
+        if(!canvas || typeof canvas._rcSetPaused!=='function')return;
+        canvas._rcSetPaused(!paused);pair[1](!paused);
+        try{if(typeof props.announce==='function')props.announce(paused?props.translate('stem.rocks.motion_resumed_sr','Scene motion resumed.'):props.translate('stem.rocks.motion_paused_sr','Scene motion paused. The cross-section is still fully readable.'));}catch(e){}
+      }},paused?props.translate('stem.rocks.motion_resume','Resume motion'):props.translate('stem.rocks.motion_pause','Pause motion'));
+    },
     render: function(ctx) {
       // rockCycle paints no ground of its own, so its chrome sits on the HOST
       // surface - a white card in light AND dark, but pure BLACK in the
@@ -15312,8 +16144,9 @@ const d = labToolData.rocks || {};
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var rcEnglishLabels = {"stem.rock_cycle.heat_pressure":"Heat & Pressure","stem.rock_cycle.melting_cooling":"Melting & Cooling","stem.rock_cycle.weathering_erosion":"Weathering & Erosion","stem.rocks.chalk":"Chalk","stem.rocks.granite":"Granite","stem.rocks.igneous":"Igneous","stem.rocks.limestone":"Limestone","stem.rocks.metamorphic":"Metamorphic","stem.rocks.sandstone":"Sandstone","stem.rocks.sedimentary":"Sedimentary","stem.rocks.slate":"Slate","stem.tools_menu.rock_cycle":"Rock Cycle"};
+      var t = function(k,fb) { var v; try { v = typeof ctx.t === 'function' ? ctx.t(k,fb) : null; } catch(e) {} return typeof v === 'string' && v.trim() && v !== k ? v : fb != null ? fb : Object.prototype.hasOwnProperty.call(rcEnglishLabels,k) ? rcEnglishLabels[k] : k; };
+      var __alloT = t;
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -15333,6 +16166,13 @@ const d = labToolData.rocks || {};
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      function rcFocusAfter(event,selector) {
+        var trigger=event && event.currentTarget, root=trigger && trigger.closest && trigger.closest('[data-rc-workspace]');
+        if(!root || typeof document==='undefined' || document.activeElement!==trigger) return;
+        var move=function(){var active=document.activeElement;if(!root.isConnected || (active!==trigger && active!==document.body))return;var target=root.querySelector(selector);if(!target || !target.getClientRects().length)return;try{target.focus({preventScroll:true});target.scrollIntoView({block:target.matches('input,select,textarea')?'center':'start',inline:'nearest',behavior:'instant'});}catch(e){target.focus();}};
+        if(typeof requestAnimationFrame==='function')requestAnimationFrame(move);else setTimeout(move,0);
+      }
+      function rcSectionJump(event,key) { rcFocusAfter(event,'[data-rc-section="'+key+'"]'); }
 
       // ── Tool body (rockCycle) ──
       return (function() {
@@ -15403,7 +16243,7 @@ const d = labToolData.rockCycle || {};
             });
           };
           const rcAgent = function (id) {
-            for (var i = 0; i < RC_AGENTS.length; i++) { if (RC_AGENTS[i].id === id) return RC_AGENTS[i]; }
+            for (var i = 0; i < RC_AGENTS.length; i++) { if (RC_AGENTS[i].id === id) return Object.assign({},RC_AGENTS[i],{short:__alloT('stem.rock_cycle.'+id,RC_AGENTS[i].short)}); }
             return null;
           };
           // Text fields only. `family` and `texture` are ids the renderer
@@ -15601,8 +16441,10 @@ const d = labToolData.rockCycle || {};
 
             var tick = 0;
             var rcAlive = true;
-            var rcMotionReduced = false;
-            try { rcMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+            var rcMotionReduced=false,rcMotionQuery=null;
+            try{rcMotionQuery=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');rcMotionReduced=!!(rcMotionQuery && rcMotionQuery.matches);}catch(e){}
+            function onRockCycleMotionChange(event){rcMotionReduced=!!event.matches;cancelRockCycleFrame();draw();}
+            if(rcMotionQuery){if(typeof rcMotionQuery.addEventListener==='function')rcMotionQuery.addEventListener('change',onRockCycleMotionChange);else if(typeof rcMotionQuery.addListener==='function')rcMotionQuery.addListener(onRockCycleMotionChange);}
 
             function isRockCycleHidden() {
               return typeof document !== 'undefined' && !!document.hidden;
@@ -15614,13 +16456,14 @@ const d = labToolData.rockCycle || {};
             }
 
             function scheduleRockCycleFrame() {
-              if (!rcAlive || rcMotionReduced || canvasEl._rcAnim || isRockCycleHidden()) return;
+              if (!rcAlive || rcMotionReduced || canvasEl.dataset.rcPaused==='true' || canvasEl._rcAnim || isRockCycleHidden()) return;
               if (typeof requestAnimationFrame !== 'function') return;
               canvasEl._rcAnim = requestAnimationFrame(draw);
             }
 
             function cleanupRockCycleCanvas() {
               rcAlive = false;
+              if(rcMotionQuery){if(typeof rcMotionQuery.removeEventListener==='function')rcMotionQuery.removeEventListener('change',onRockCycleMotionChange);else if(typeof rcMotionQuery.removeListener==='function')rcMotionQuery.removeListener(onRockCycleMotionChange);}
               cancelRockCycleFrame();
               if (canvasEl._rcSizeRetry && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._rcSizeRetry);
               canvasEl._rcSizeRetry = null;
@@ -15630,8 +16473,11 @@ const d = labToolData.rockCycle || {};
               canvasEl.removeEventListener('click', onRockCycleClick);
               canvasEl.removeEventListener('keydown', onRockCycleKey);
               if (canvasEl._rcObs) { canvasEl._rcObs.disconnect(); canvasEl._rcObs = null; }
+              if (canvasEl._rcResizeObserver) { canvasEl._rcResizeObserver.disconnect(); canvasEl._rcResizeObserver = null; }
+              if (typeof window!=='undefined') window.removeEventListener('resize',onRockCycleResize);
               if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onRockCycleVisibilityChange);
               canvasEl._rcCleanup = null;
+              canvasEl._rcSetPaused = null;
               canvasEl._rcInit = false;
             }
 
@@ -15804,11 +16650,12 @@ const d = labToolData.rockCycle || {};
 
             function draw() {
               if (!rcAlive) return;
+              var rcFreezeMotion=rcMotionReduced || canvasEl.dataset.rcPaused==='true';
               canvasEl._rcAnim = null;
               if (!canvasEl.isConnected) { cleanupRockCycleCanvas(); return; }
               if (isRockCycleHidden()) { cancelRockCycleFrame(); return; }
 
-              if (!rcMotionReduced) tick++;
+              if (!rcFreezeMotion) tick++;
 
               ctx.clearRect(0, 0, cW, cH);
 
@@ -15827,7 +16674,7 @@ const d = labToolData.rockCycle || {};
               ctx.fillRect(0, 0, W, SURF + 2 * dpr);
               for (var sti = 0; sti < rcStars.length; sti++) {
                 var st = rcStars[sti];
-                var tw = rcMotionReduced ? 0.6 : 0.45 + 0.35 * Math.sin(tick * 0.03 + st.ph);
+                var tw = rcFreezeMotion ? 0.6 : 0.45 + 0.35 * Math.sin(tick * 0.03 + st.ph);
                 ctx.fillStyle = 'rgba(255,255,255,' + tw.toFixed(3) + ')';
                 ctx.beginPath(); ctx.arc(st.x * W, st.y * H, st.r * dpr, 0, Math.PI * 2); ctx.fill();
               }
@@ -15884,7 +16731,7 @@ const d = labToolData.rockCycle || {};
               magmaGrad.addColorStop(1, 'rgba(180,20,0,0)');
               ctx.fillStyle = magmaGrad;
               ctx.fillRect(0, magmaY, cW, cH - magmaY);
-              var chX = W * 0.5, chY = H * 0.95, flick = rcMotionReduced ? 0 : Math.sin(tick * 0.05) * 0.06;
+              var chX = W * 0.5, chY = H * 0.95, flick = rcFreezeMotion ? 0 : Math.sin(tick * 0.05) * 0.06;
               var chG = ctx.createRadialGradient(chX, chY, 4 * dpr, chX, chY, W * 0.17);
               chG.addColorStop(0, 'rgba(255,237,160,0.95)'); chG.addColorStop(0.35, 'rgba(251,146,60,0.9)');
               chG.addColorStop(0.75, 'rgba(220,38,38,' + (0.55 + flick).toFixed(3) + ')'); chG.addColorStop(1, 'rgba(127,29,29,0)');
@@ -15904,7 +16751,7 @@ const d = labToolData.rockCycle || {};
               // Lava bubbles
               for (var lbi = 0; lbi < lavaPs.length; lbi++) {
                 var lp = lavaPs[lbi];
-                if (!rcMotionReduced) { lp.x += lp.vx; lp.y += lp.vy * 0.3; lp.life -= 0.005; }
+                if (!rcFreezeMotion) { lp.x += lp.vx; lp.y += lp.vy * 0.3; lp.life -= 0.005; }
                 if (lp.life <= 0 || lp.y < magmaY / dpr) {
                   lp.x = Math.random() * cW / dpr;
                   lp.y = cH * 0.92 / dpr + Math.random() * cH * 0.08 / dpr;
@@ -15946,7 +16793,7 @@ const d = labToolData.rockCycle || {};
               ctx.strokeStyle = 'rgba(147,197,253,0.7)'; ctx.lineWidth = 1.2 * dpr;
               for (var rni = 0; rni < rcRain.length; rni++) {
                 var rd = rcRain[rni];
-                if (!rcMotionReduced) { rd.y += rd.v; if (rd.y > 1) rd.y -= 1; }
+                if (!rcFreezeMotion) { rd.y += rd.v; if (rd.y > 1) rd.y -= 1; }
                 var rx = W * (0.08 + rd.x * 0.14), ry = H * (0.25 + rd.y * 0.2);
                 ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - 2 * dpr, ry + 7 * dpr); ctx.stroke();
               }
@@ -15958,7 +16805,7 @@ const d = labToolData.rockCycle || {};
               ctx.beginPath(); ctx.moveTo(0, SURF); ctx.lineTo(SHORE, SURF); ctx.stroke();
               for (var gti = 0; gti < 22; gti++) {
                 var gtx = W * 0.34 + gti * (SHORE - W * 0.34) / 22;
-                var gtSway = rcMotionReduced ? 0 : Math.sin(tick * 0.012 + gti * 0.9) * 2 * dpr;
+                var gtSway = rcFreezeMotion ? 0 : Math.sin(tick * 0.012 + gti * 0.9) * 2 * dpr;
                 ctx.strokeStyle = 'rgba(74,222,128,' + (0.45 + gti % 3 * 0.1) + ')'; ctx.lineWidth = 1 * dpr;
                 ctx.beginPath(); ctx.moveTo(gtx, SURF); ctx.lineTo(gtx + gtSway, SURF - (3 + gti % 3) * dpr); ctx.stroke();
               }
@@ -15974,7 +16821,7 @@ const d = labToolData.rockCycle || {};
               ctx.fillStyle = 'rgba(253,230,138,0.95)';
               for (var rpi = 0; rpi < rcRiverPs.length; rpi++) {
                 var rv = rcRiverPs[rpi];
-                if (!rcMotionReduced) { rv.t += rv.v; if (rv.t > 1) rv.t -= 1; }
+                if (!rcFreezeMotion) { rv.t += rv.v; if (rv.t > 1) rv.t -= 1; }
                 var rq = rvPt(rv.t);
                 ctx.beginPath(); ctx.arc(rq[0], rq[1] - 0.5 * dpr, 1.1 * dpr, 0, Math.PI * 2); ctx.fill();
               }
@@ -15985,12 +16832,12 @@ const d = labToolData.rockCycle || {};
               seaG.addColorStop(0, 'rgba(56,189,248,0.9)'); seaG.addColorStop(1, 'rgba(12,74,110,0.95)');
               ctx.fillStyle = seaG;
               ctx.beginPath(); ctx.moveTo(SHORE - 14 * dpr, SURF + 1 * dpr);
-              for (var swx = SHORE; swx <= W; swx += 6 * dpr) ctx.lineTo(swx, seaTop + (rcMotionReduced ? 0 : Math.sin(swx * 0.02 + tick * 0.05)) * 1.5 * dpr);
+              for (var swx = SHORE; swx <= W; swx += 6 * dpr) ctx.lineTo(swx, seaTop + (rcFreezeMotion ? 0 : Math.sin(swx * 0.02 + tick * 0.05)) * 1.5 * dpr);
               ctx.lineTo(W, SURF + H * 0.035); ctx.lineTo(SHORE + 30 * dpr, SURF + H * 0.035); ctx.closePath(); ctx.fill();
               ctx.fillStyle = 'rgba(253,230,138,0.8)';
               for (var sdi = 0; sdi < rcSettle.length; sdi++) {
                 var sd = rcSettle[sdi];
-                if (!rcMotionReduced) { sd.y += sd.v; if (sd.y > 1) sd.y -= 1; }
+                if (!rcFreezeMotion) { sd.y += sd.v; if (sd.y > 1) sd.y -= 1; }
                 ctx.beginPath(); ctx.arc(sd.x * W, seaTop + 2 * dpr + sd.y * H * 0.03, sd.s * dpr, 0, Math.PI * 2); ctx.fill();
               }
 
@@ -16003,7 +16850,7 @@ const d = labToolData.rockCycle || {};
               ctx.lineTo(volX + 11 * dpr, volTopY);
               ctx.quadraticCurveTo(volX + 30 * dpr, volBaseY - 30 * dpr, volX + 62 * dpr, volBaseY);
               ctx.closePath(); ctx.fill();
-              var lf = rcMotionReduced ? 0.8 : 0.7 + 0.25 * Math.sin(tick * 0.06);
+              var lf = rcFreezeMotion ? 0.8 : 0.7 + 0.25 * Math.sin(tick * 0.06);
               ctx.save(); ctx.lineCap = 'round';
               ctx.beginPath(); ctx.moveTo(volX + 4 * dpr, volTopY + 2 * dpr);
               ctx.quadraticCurveTo(volX + 16 * dpr, volTopY + (volBaseY - volTopY) * 0.35, volX + 30 * dpr, volTopY + (volBaseY - volTopY) * 0.75);
@@ -16015,7 +16862,7 @@ const d = labToolData.rockCycle || {};
               ctx.restore();
               // Crater glow
               var craterGlow = ctx.createRadialGradient(volX, volTopY + 2 * dpr, 2 * dpr, volX, volTopY + 2 * dpr, 12 * dpr);
-              craterGlow.addColorStop(0, 'rgba(255,190,60,' + (0.8 + (rcMotionReduced ? 0 : Math.sin(tick * 0.04) * 0.15)).toFixed(3) + ')'); craterGlow.addColorStop(1, 'rgba(255,50,0,0)');
+              craterGlow.addColorStop(0, 'rgba(255,190,60,' + (0.8 + (rcFreezeMotion ? 0 : Math.sin(tick * 0.04) * 0.15)).toFixed(3) + ')'); craterGlow.addColorStop(1, 'rgba(255,50,0,0)');
               ctx.fillStyle = craterGlow;
               ctx.beginPath(); ctx.ellipse(volX, volTopY + 2 * dpr, 12 * dpr, 4 * dpr, 0, 0, Math.PI * 2); ctx.fill();
               // Ash rising from the crater
@@ -16051,7 +16898,7 @@ const d = labToolData.rockCycle || {};
               var selRockId = canvasEl.dataset.selectedRock || '';
               for (var fpi = 0; fpi < flowPs.length; fpi++) {
                 var fp = flowPs[fpi];
-                if (!rcMotionReduced) { fp.t += fp.speed; if (fp.t > 1) fp.t -= 1; }
+                if (!rcFreezeMotion) { fp.t += fp.speed; if (fp.t > 1) fp.t -= 1; }
                 var proc = PROCESSES[fp.proc];
                 if (!proc) continue;
                 var fromN = nodes[proc.from];
@@ -16128,7 +16975,7 @@ const d = labToolData.rockCycle || {};
                 ctx.strokeStyle = shortcut ? 'rgba(226,232,240,0.52)' : 'rgba(226,232,240,0.78)';
                 ctx.lineWidth = (shortcut ? 1 : 1.5) * dpr;
                 ctx.setLineDash([6 * dpr, 6 * dpr]);
-                ctx.lineDashOffset = rcMotionReduced ? 0 : -tick * 0.5 * dpr;
+                ctx.lineDashOffset = rcFreezeMotion ? 0 : -tick * 0.5 * dpr;
                 ctx.stroke();
                 ctx.setLineDash([]);
                 ctx.restore();
@@ -16206,7 +17053,7 @@ const d = labToolData.rockCycle || {};
                   if (g > cBest) { cBest = g; cMid = q; }
                   return g > 16;
                 });
-                var cU = rcMotionReduced ? cMid : 0.1 + 0.8 * ((tick % 300) / 300);
+                var cU = rcFreezeMotion ? cMid : 0.1 + 0.8 * ((tick % 300) / 300);
                 var cSm = function (a, b, v) { var k = Math.max(0, Math.min(1, (v - a) / (b - a))); return k * k * (3 - 2 * k); };
                 var cInto = cSm(cMid - 0.1, cMid - 0.02, cU), cOut = cSm(cMid + 0.02, cMid + 0.1, cU);
                 var cHalf = Math.min(cInto, 1 - cOut);
@@ -16246,7 +17093,7 @@ const d = labToolData.rockCycle || {};
                 } else if (cpr.to === 'igneous') {
                   cChip(cpr.from, 1 - cInto, 1, 0);
                   if (cHalf > 0.02) {
-                    var wob = rcMotionReduced ? 0 : 0.08 * Math.sin(tick * 0.15);
+                    var wob = rcFreezeMotion ? 0 : 0.08 * Math.sin(tick * 0.15);
                     ctx.save();
                     ctx.globalAlpha = cHalf;
                     ctx.translate(cP[0] * dpr, cP[1] * dpr); ctx.scale(1 + wob, 1 - wob);
@@ -16307,7 +17154,7 @@ const d = labToolData.rockCycle || {};
                 var n = nodes[rock.id];
                 var isSel = selRockId === rock.id;
                 var radius = isSel ? 34 : 28;
-                var pulse = 1 + (rcMotionReduced ? 0 : 0.05 * Math.sin(tick * 0.04));
+                var pulse = 1 + (rcFreezeMotion ? 0 : 0.05 * Math.sin(tick * 0.04));
                 var glowGrad = ctx.createRadialGradient(n.x * dpr, n.y * dpr, radius * 0.5 * dpr, n.x * dpr, n.y * dpr, radius * 2 * dpr * pulse);
                 glowGrad.addColorStop(0, rock.color + '70');
                 glowGrad.addColorStop(0.5, rock.color + '26');
@@ -16446,7 +17293,7 @@ const d = labToolData.rockCycle || {};
                 if (jLast) {
                   ctx.save();
                   ctx.setLineDash([4 * dpr, 4 * dpr]);
-                  ctx.lineDashOffset = rcMotionReduced ? 0 : tick * 0.4 * dpr;
+                  ctx.lineDashOffset = rcFreezeMotion ? 0 : tick * 0.4 * dpr;
                   ctx.strokeStyle = 'rgba(251,146,60,0.95)'; ctx.lineWidth = 2.5 * dpr;
                   // Open at the bottom so it does not cross the family's name.
                   ctx.beginPath(); ctx.arc(ln.x * dpr, ln.y * dpr, lr * dpr, Math.PI / 2 + 0.85, Math.PI * 2.5 - 0.85); ctx.stroke();
@@ -16478,6 +17325,18 @@ const d = labToolData.rockCycle || {};
 
             draw();
 
+            function onRockCycleResize() {
+              if(!rcAlive || !canvasEl.isConnected) return;
+              var width=canvasEl.offsetWidth*2,height=canvasEl.offsetHeight*2;
+              if(!width || !height || (width===cW && height===cH)) return;
+              cW=canvasEl.width=width;cH=canvasEl.height=height;
+              nodes.igneous.x=cW*0.5/dpr;nodes.igneous.y=cH*0.15/dpr;
+              nodes.sedimentary.x=cW*0.82/dpr;nodes.sedimentary.y=cH*0.7/dpr;
+              nodes.metamorphic.x=cW*0.18/dpr;nodes.metamorphic.y=cH*0.7/dpr;
+              cancelRockCycleFrame();draw();
+            }
+            if(typeof ResizeObserver==='function'){canvasEl._rcResizeObserver=new ResizeObserver(onRockCycleResize);canvasEl._rcResizeObserver.observe(canvasEl);}else if(typeof window!=='undefined')window.addEventListener('resize',onRockCycleResize);
+            canvasEl._rcSetPaused=function(value){if(!rcAlive || !canvasEl.isConnected)return;canvasEl.dataset.rcPaused=value?'true':'false';cancelRockCycleFrame();draw();};
             canvasEl._rcCleanup = cleanupRockCycleCanvas;
             if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onRockCycleVisibilityChange);
 
@@ -16558,7 +17417,7 @@ const d = labToolData.rockCycle || {};
             // React changes the selected process and the journey through data
             // attributes; with reduced motion there is no frame loop to notice.
             if (typeof MutationObserver === 'function') {
-              canvasEl._rcObs = new MutationObserver(function () { if (rcMotionReduced && rcAlive) draw(); });
+              canvasEl._rcObs = new MutationObserver(function () { if ((rcMotionReduced || canvasEl.dataset.rcPaused==='true') && rcAlive) draw(); });
               canvasEl._rcObs.observe(canvasEl, { attributes: true, attributeFilter: ['data-selected-proc', 'data-journey', 'data-selected-rock'] });
             }
             canvasEl.addEventListener('click', onRockCycleClick);
@@ -16604,41 +17463,46 @@ const d = labToolData.rockCycle || {};
             : transformsRun < 3 ? { icon: '🔄', title: __alloT('stem.rocks.mission_test_title', 'Test the transformation machine'), detail: __alloT('stem.rocks.mission_test_detail', 'Run another pathway and compare its inputs and products.') }
             : { icon: '🧠', title: __alloT('stem.rocks.mission_explain_title', 'Explain the branching cycle'), detail: __alloT('stem.rocks.mission_explain_detail', 'Use evidence to show why the rock cycle has many valid paths.') };
 
-          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { "data-rc-workspace": true, className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
+            h('style',null,"[data-rc-workspace]{min-width:0;overflow-wrap:anywhere}[data-rc-workspace] :not(svg):not(svg *){line-height:1.5}[data-rc-workspace] select{min-height:3.5em}[data-rc-workspace] button,[data-rc-workspace] select{min-height:44px;min-width:44px;white-space:normal;overflow-wrap:anywhere}[data-rc-workspace] button:focus-visible,[data-rc-workspace] [tabindex=\"-1\"]:focus,[data-rc-workspace] canvas:focus-visible{outline:3px solid #0f172a;outline-offset:3px;box-shadow:0 0 0 5px #fff}[data-rc-workspace] [data-rc-section],[data-rc-workspace] [tabindex]{scroll-margin-block:16px}[data-rockcycle-command] ol>li>span:first-child{flex:none;white-space:nowrap}[data-rc-machine-controls]{grid-template-columns:minmax(0,1fr)}[data-rc-machine-controls]>div{min-width:0}[data-rc-workspace] svg{max-width:100%;height:auto}@media(min-width:1024px){[data-rc-machine-controls]{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}}@media(max-width:639px){[data-rc-agent-options]{grid-template-columns:minmax(0,1fr);gap:8px}[data-rc-metrics]{grid-template-columns:minmax(0,1fr)}[data-rc-metrics]>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;min-width:0;text-align:start}}@media(prefers-reduced-motion:reduce){[data-rc-workspace],[data-rc-workspace] *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}@media(forced-colors:active){[data-rc-workspace] button,[data-rc-workspace] select{border:2px solid ButtonText}[data-rc-workspace] button[aria-pressed=\"true\"]{outline:2px solid Highlight}[data-rc-workspace] button:focus-visible,[data-rc-workspace] [tabindex=\"-1\"]:focus,[data-rc-workspace] canvas:focus-visible{outline-color:Highlight;box-shadow:none}}"),
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
               React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "transition-colors grid h-10 w-10 shrink-0 place-items-center border border-slate-200 hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" + onHostInk }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rock_cycle_title', "Rock Cycle")),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-800 text-[0.6875rem] font-bold rounded-full" }, __alloT('stem.rocks.animated_badge', "ANIMATED"))
+              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-800 text-sm font-bold rounded-full" }, __alloT('stem.rocks.animated_badge', "ANIMATED"))
 
             ),
 
+            
+            h('nav',{'aria-label':__alloT('stem.rocks.rock_cycle_title','Rock Cycle'),'data-rc-navigation':true,className:'mb-4 flex flex-wrap gap-2'},
+              [['diagram',__alloT('stem.rock_cycle.canvas_badge','Rock Cycle')],['detective',__alloT('stem.rock_cycle.pd_title','Path detective')],['processes',__alloT('stem.rocks.transformation_processes','Transformation Processes')],['machine',__alloT('stem.rocks.transformation_machine_title','Rock Transformation Machine')],['quiz',__alloT('stem.rocks.quiz_mode','Quiz Mode')]].map(function(item){return h('button',{key:item[0],type:'button','data-rc-jump':item[0],className:'rounded-lg border-2 border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900',onClick:function(event){rcSectionJump(event,item[0]);}},item[1]);})),
             React.createElement("section", { "data-rockcycle-command": true, className: "relative overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-sky-50 p-4 sm:p-5 mb-4", "aria-labelledby": "rockcycle-command-title" },
               React.createElement("div", { className: "absolute -right-6 -top-8 text-8xl opacity-[0.06]", "aria-hidden": true }, "🪨"),
               React.createElement("div", { className: "relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]" },
                 React.createElement("div", null,
-                  React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.15em] text-orange-700" }, __alloT('stem.rocks.earth_systems_mission', "Earth systems mission")),
+                  React.createElement("div", { className: "text-sm font-black uppercase tracking-[0.15em] text-orange-700" }, __alloT('stem.rocks.earth_systems_mission', "Earth systems mission")),
                   React.createElement("h2", { id: "rockcycle-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-slate-900" }, nextMission.icon + " " + nextMission.title),
-                  React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed" }, nextMission.detail),
+                  React.createElement("p", { className: "mt-1 text-sm sm:text-sm text-slate-600 leading-relaxed" }, nextMission.detail),
                   // role=group is load-bearing, not decoration: a plain div maps
                   // to role=generic, which does not support an accessible name,
                   // so this aria-label was in the DOM and announced to nobody.
                   // Same shape as a role=button with no key handler — present in
                   // the markup, dead in use.
-                  React.createElement("div", { className: "mt-4 grid grid-cols-3 gap-2", role: "group", "aria-label": __alloT('stem.rocks.mission_progress_aria', "Rock cycle mission progress") },
-                    [[viewedFamilies + '/3', __alloT('stem.rocks.metric_families', 'Families')], [d.selectedProcess ? '1/1' : '0/1', __alloT('stem.rocks.metric_process', 'Process')], [transformsRun + '/3', __alloT('stem.rocks.metric_transforms', 'Transforms')]].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[0.625rem] font-bold text-slate-600" }, metric[1])); })
+                  React.createElement("div", { "data-rc-metrics": true, className: "mt-4 grid grid-cols-3 gap-2", role: "group", "aria-label": __alloT('stem.rocks.mission_progress_aria', "Rock cycle mission progress") },
+                    [[viewedFamilies + '/3', __alloT('stem.rocks.metric_families', 'Families')], [d.selectedProcess ? '1/1' : '0/1', __alloT('stem.rocks.metric_process', 'Process')], [transformsRun + '/3', __alloT('stem.rocks.metric_transforms', 'Transforms')]].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-sm font-bold text-slate-600" }, metric[1])); })
                   )
                 ),
                 React.createElement("aside", { className: "rounded-xl border border-sky-200 bg-sky-50 p-4", "aria-label": __alloT('stem.rocks.evidence_route_aria', "Rock cycle evidence route") },
-                  React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-sky-800" }, __alloT('stem.rocks.evidence_route', "Evidence route")),
-                  React.createElement("ol", { className: "mt-2 space-y-2 text-[0.6875rem] text-slate-700" }, [__alloT('stem.rocks.evidence_step_observe', 'Observe texture and composition'), __alloT('stem.rocks.evidence_step_connect', 'Connect process to energy and time'), __alloT('stem.rocks.evidence_step_explain', 'Explain more than one valid pathway')].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-800" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
+                  React.createElement("div", { className: "text-sm font-black uppercase tracking-wide text-sky-800" }, __alloT('stem.rocks.evidence_route', "Evidence route")),
+                  React.createElement("ol", { className: "mt-2 space-y-2 text-sm text-slate-700" }, [__alloT('stem.rocks.evidence_step_observe', 'Observe texture and composition'), __alloT('stem.rocks.evidence_step_connect', 'Connect process to energy and time'), __alloT('stem.rocks.evidence_step_explain', 'Explain more than one valid pathway')].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-800" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
                 )
               )
             ),
 
+            h(window.StemLab._registry.rockCycle._MotionControl,{React:React,translate:__alloT,announce:announceToSR}),
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg mb-3", style: { height: "420px" } },
 
               // The label here used to read "Rock sample close-up of igneous —
@@ -16648,7 +17512,7 @@ const d = labToolData.rockCycle || {};
               // a magma chamber. A screen-reader user was told about a picture
               // that is not on the screen, and told to click it. role=img also
               // contradicted tabIndex=0 — an image is not a focus stop.
-              React.createElement("canvas", { ref: rockCycleCanvasRef, role: "application", tabIndex: 0,
+              React.createElement("canvas", { ref: rockCycleCanvasRef, role: "application", tabIndex: 0, "data-rc-section": "diagram",
                 "aria-label": __alloT('stem.rocks.rc_canvas_aria',
                   "Rock cycle diagram: an Earth cross-section with a magma chamber below. Three rock family nodes — igneous at the top, metamorphic at lower left, sedimentary at lower right — are joined by six curved arrows, one per transformation pathway.")
                   + " " + __alloT('stem.rocks.rc_canvas_keys', "Press 1 for igneous, 2 for sedimentary, 3 for metamorphic.")
@@ -16683,7 +17547,7 @@ const d = labToolData.rockCycle || {};
               className: "rounded-xl border-2 border-sky-300 bg-sky-50 p-3 sm:p-4 mb-3"
             },
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" },
-                React.createElement("h4", { id: "rc-path-title", className: "text-sm font-black text-sky-900" }, "🔍 " + __alloT('stem.rock_cycle.pd_title', 'Path detective')),
+                React.createElement("h4", { id: "rc-path-title", tabIndex: -1, "data-rc-section": "detective", className: "text-sm font-black text-sky-900" }, "🔍 " + __alloT('stem.rock_cycle.pd_title', 'Path detective')),
                 rcPath && (function () {
                   var firstTry = Object.keys(rcPath.log).filter(function (k) { return rcPath.log[k] === 1; }).length;
                   var solvedN = Object.keys(rcPath.log).length;
@@ -16698,24 +17562,24 @@ const d = labToolData.rockCycle || {};
               ),
 
               !rcPath && React.createElement("div", null,
-                React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" },
+                React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed mb-2" },
                   __alloT('stem.rock_cycle.pd_intro', 'Read what happened to a real rock, then click the arrow it took on the diagram. The story holds the clues.')),
                 React.createElement("button", { type: "button", "data-rc-path-start": true,
-                  onClick: function () { updMulti({ rcPath: { on: true, i: 0, picks: [], shown: false, log: {}, done: false } }); sfxRockClick(); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors" },
+                  onClick: function (event) { rcFocusAfter(event,'[data-rc-path-story]'); updMulti({ rcPath: { on: true, i: 0, picks: [], shown: false, log: {}, done: false } }); sfxRockClick(); },
+                  className: "px-3 py-1.5 rounded-lg text-sm font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors" },
                   "🔍 " + __alloT('stem.rock_cycle.pd_start', 'Start a case'))
               ),
 
               rcPath && rcPath.done && (function () {
                 var firstTry = Object.keys(rcPath.log).filter(function (k) { return rcPath.log[k] === 1; }).length;
-                return React.createElement("div", { "data-rc-path-summary": firstTry },
+                return React.createElement("div", { "data-rc-path-summary": firstTry, tabIndex: -1 },
                   React.createElement("p", { className: "text-sm font-bold text-slate-900 mb-1" },
                     __alloT('stem.rock_cycle.pd_done', 'You traced all {total} paths, {k} on the first try.').replace('{total}', RC_PATH_CASES.length).replace('{k}', firstTry)),
-                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" },
+                  React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed mb-2" },
                     __alloT('stem.rock_cycle.pd_done_note', 'Every arrow was used, the shortcuts too. What decides the path is what happens to the rock, not a fixed order.')),
                   React.createElement("button", { type: "button", "data-rc-path-again": true,
-                    onClick: function () { updMulti({ rcPath: { on: true, i: 0, picks: [], shown: false, log: {}, done: false } }); sfxRockClick(); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors" },
+                    onClick: function (event) { rcFocusAfter(event,'[data-rc-path-story]'); updMulti({ rcPath: { on: true, i: 0, picks: [], shown: false, log: {}, done: false } }); sfxRockClick(); },
+                    className: "px-3 py-1.5 rounded-lg text-sm font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors" },
                     "🔄 " + __alloT('stem.rock_cycle.pd_again', 'Play again')));
               })(),
 
@@ -16731,12 +17595,12 @@ const d = labToolData.rockCycle || {};
                   React.createElement("div", { className: "flex items-start gap-3 mb-2" },
                     React.createElement("div", { className: "shrink-0 rounded-lg border border-slate-300 bg-white p-1", "aria-hidden": true }, look ? rkRockSwatch(h, look, 48) : null),
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-slate-700" },
+                      React.createElement("p", { className: "text-sm font-black uppercase tracking-wide text-slate-700" },
                         __alloT('stem.rock_cycle.pd_case', 'Case {n}').replace('{n}', rcPath.i + 1) + ' · ' + sp.label),
-                      React.createElement("p", { className: "text-sm text-slate-900 leading-relaxed", "data-rc-path-story": c.id }, rcPathStory(c, over)))),
-                  !over && React.createElement("p", { className: "text-[0.6875rem] font-bold text-sky-900 mb-1.5" },
+                      React.createElement("p", { className: "text-sm text-slate-900 leading-relaxed", "data-rc-path-story": c.id, tabIndex: -1 }, rcPathStory(c, over)))),
+                  !over && React.createElement("p", { className: "text-sm font-bold text-sky-900 mb-1.5" },
                     __alloT('stem.rock_cycle.pd_ask', 'Which arrow did it take? Click it on the diagram, or choose here:')),
-                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-2", role: "group", "aria-label": __alloT('stem.rock_cycle.pd_choices', 'The six arrows') },
+                  React.createElement("div", { "data-rc-path-choices": true, className: "grid gap-1.5 mb-2", style: { gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,16rem),1fr))" }, role: "group", "aria-label": __alloT('stem.rock_cycle.pd_choices', 'The six arrows') },
                     PROCESSES.map(function (pr, k) {
                       var isAns = over && k === c.ans, isWrong = wrong.indexOf(k) >= 0;
                       return React.createElement("button", { key: k, type: "button", "data-rc-path-pick": k + (isAns ? ':answer' : isWrong ? ':wrong' : ''),
@@ -16744,34 +17608,34 @@ const d = labToolData.rockCycle || {};
                         "aria-label": rcFamilyLabel(pr.from) + ' → ' + rcFamilyLabel(pr.to) + ', ' + pr.label
                           + (isWrong ? '. ' + __alloT('stem.rock_cycle.pd_not_this', 'Not this one.') : isAns ? '. ' + __alloT('stem.rock_cycle.pd_this_one', 'This one.') : ''),
                         onClick: function () { rcPathPick(k); },
-                        className: "min-w-0 flex items-center gap-1.5 p-1.5 rounded-lg border-2 text-left transition-colors "
+                        className: "min-w-0 flex flex-wrap items-center gap-1.5 p-1.5 rounded-lg border-2 text-left transition-colors "
                           + (isAns ? 'bg-emerald-50 border-emerald-600' : isWrong ? 'bg-red-50 border-red-600' : 'bg-white border-slate-300 hover:border-sky-600') },
                         rcFamilyChip(h, 'pd' + k + 'f', pr.from, 20),
-                        React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-700", "aria-hidden": true }, "→"),
+                        React.createElement("span", { className: "text-sm font-black text-slate-700", "aria-hidden": true }, "→"),
                         rcFamilyChip(h, 'pd' + k + 't', pr.to, 20),
-                        React.createElement("span", { className: "min-w-0 text-[0.6875rem] font-bold text-slate-800 leading-tight break-words" }, pr.label),
-                        (isWrong || isAns) && React.createElement("span", { className: "ml-auto text-xs font-black " + (isAns ? 'text-emerald-800' : 'text-red-800'), "aria-hidden": true }, isAns ? '✓' : '✗'));
+                        React.createElement("span", { className: "min-w-0 text-sm font-bold text-slate-800 leading-tight break-words", style: { flex: "1 1 12rem" } }, pr.label),
+                        (isWrong || isAns) && React.createElement("span", { className: "ml-auto text-sm font-black " + (isAns ? 'text-emerald-800' : 'text-red-800'), "aria-hidden": true }, isAns ? '✓' : '✗'));
                     })),
                   React.createElement("div", { "aria-live": "polite", "data-rc-path-feedback": fb },
                     fb === 'right' && React.createElement("div", { className: "rounded-lg border border-emerald-300 bg-emerald-50 p-2.5" },
-                      React.createElement("p", { className: "text-xs font-black text-emerald-900 mb-0.5" }, "✓ " + __alloT('stem.rock_cycle.pd_right', 'Right!') + (rcPath.picks.length === 1 ? ' ' + __alloT('stem.rock_cycle.pd_first_try', 'First try.') : '')),
-                      React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" }, rcPathWhy(c)),
-                      React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-1" }, __alloT('stem.rock_cycle.pd_clues_marked', 'The clues are marked in the story. Watch the arrow on the diagram.'))),
+                      React.createElement("p", { className: "text-sm font-black text-emerald-900 mb-0.5" }, "✓ " + __alloT('stem.rock_cycle.pd_right', 'Right!') + (rcPath.picks.length === 1 ? ' ' + __alloT('stem.rock_cycle.pd_first_try', 'First try.') : '')),
+                      React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed" }, rcPathWhy(c)),
+                      React.createElement("p", { className: "text-sm text-slate-700 mt-1" }, __alloT('stem.rock_cycle.pd_clues_marked', 'The clues are marked in the story. Watch the arrow on the diagram.'))),
                     fb === 'shown' && React.createElement("div", { className: "rounded-lg border border-amber-300 bg-amber-50 p-2.5" },
-                      React.createElement("p", { className: "text-xs font-black text-amber-900 mb-0.5" },
+                      React.createElement("p", { className: "text-sm font-black text-amber-900 mb-0.5" },
                         __alloT('stem.rock_cycle.pd_it_took', 'It took {from} → {to}, by {process}.').replace('{from}', rcFamilyLabel(ansP.from)).replace('{to}', rcFamilyLabel(ansP.to)).replace('{process}', ansP.label)),
-                      React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" }, rcPathWhy(c))),
+                      React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed" }, rcPathWhy(c))),
                     fb === 'hint' && React.createElement("div", { className: "rounded-lg border border-red-300 bg-red-50 p-2.5" },
-                      React.createElement("p", { className: "text-xs font-black text-red-800 mb-0.5" }, "✗ " + __alloT('stem.rock_cycle.pd_not_yet', 'Not that one.')),
-                      React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" }, rcPathHint(c, last, wrong.length)))),
+                      React.createElement("p", { className: "text-sm font-black text-red-800 mb-0.5" }, "✗ " + __alloT('stem.rock_cycle.pd_not_yet', 'Not that one.')),
+                      React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed" }, rcPathHint(c, last, wrong.length)))),
                   React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" },
                     !over && wrong.length >= 2 && React.createElement("button", { type: "button", "data-rc-path-show": true,
                       onClick: function () { var np = rcPathReveal(rcPath); if (np !== rcPath) updMulti({ rcPath: np, selectedProcess: ansP }); },
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 border-amber-600 bg-white text-amber-900 hover:bg-amber-50 transition-colors" },
+                      className: "px-3 py-1.5 rounded-lg text-sm font-bold border-2 border-amber-600 bg-white text-amber-900 hover:bg-amber-50 transition-colors" },
                       __alloT('stem.rock_cycle.pd_show', 'Show me')),
                     over && React.createElement("button", { type: "button", "data-rc-path-next": true,
-                      onClick: function () { updMulti({ rcPath: rcPathNext(rcPath) }); sfxRockClick(); },
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors" },
+                      onClick: function (event) { rcFocusAfter(event,'[data-rc-path-story],[data-rc-path-summary]'); updMulti({ rcPath: rcPathNext(rcPath) }); sfxRockClick(); },
+                      className: "px-3 py-1.5 rounded-lg text-sm font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors" },
                       rcPath.i + 1 >= RC_PATH_CASES.length ? __alloT('stem.rock_cycle.pd_finish', 'See how you did') : __alloT('stem.rock_cycle.pd_next', 'Next case') + ' →')));
               })()
             ),
@@ -16780,9 +17644,9 @@ const d = labToolData.rockCycle || {};
 
               ROCKS.map(function (rock) {
 
-                return React.createElement("button", { key: rock.id, onClick: function () { upd('selectedRock', rock.id); setLabToolData(function (prev) { var rc = prev.rockCycle || {}; var v = Object.assign({}, rc.rcViewed); v[rock.id] = true; return Object.assign({}, prev, { rockCycle: Object.assign({}, rc, { rcViewed: v }) }); }); },
+                return React.createElement("button", { key: rock.id, "aria-pressed": d.selectedRock === rock.id, onClick: function () { upd('selectedRock', rock.id); setLabToolData(function (prev) { var rc = prev.rockCycle || {}; var v = Object.assign({}, rc.rcViewed); v[rock.id] = true; return Object.assign({}, prev, { rockCycle: Object.assign({}, rc, { rcViewed: v }) }); }); },
 
-                  className: "px-3 py-2 rounded-lg text-xs font-bold transition-all " + (d.selectedRock === rock.id ? 'text-white shadow-md scale-105' : 'border hover:opacity-80'),
+                  className: "px-3 py-2 rounded-lg text-sm font-bold transition-all " + (d.selectedRock === rock.id ? 'text-white shadow-md scale-105' : 'border'),
 
                   style: { backgroundColor: d.selectedRock === rock.id ? rock.ink : rock.color + (isContrast ? '55' : '15'), borderColor: rock.ink, color: (d.selectedRock === rock.id || isContrast) ? '#ffffff' : rock.ink }
 
@@ -16812,7 +17676,7 @@ const d = labToolData.rockCycle || {};
                   React.createElement("h4", { className: "text-lg font-black tracking-tight", style: { color: sel.ink } },
                     __alloT('stem.rocks.family_rocks_heading', '{family} Rocks').replace('{family}', sel.label)),
 
-                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, sel.examples)
+                  React.createElement("p", { className: "text-sm text-slate-600" }, sel.examples)
 
                 )
 
@@ -16824,25 +17688,25 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.hardness_word', "Hardness")),
+                  React.createElement("p", { className: "text-sm font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.hardness_word', "Hardness")),
 
-                  React.createElement("p", { className: "text-xs font-bold", style: { color: sel.ink } }, sel.hardness)
-
-                ),
-
-                React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
-
-                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.crystals_label', "Crystals")),
-
-                  React.createElement("p", { className: "text-xs font-bold", style: { color: sel.ink } }, sel.crystals)
+                  React.createElement("p", { className: "text-sm font-bold", style: { color: sel.ink } }, sel.hardness)
 
                 ),
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.real_uses_label', "Real Uses")),
+                  React.createElement("p", { className: "text-sm font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.crystals_label', "Crystals")),
 
-                  React.createElement("p", { className: "text-xs font-bold", style: { color: sel.ink } }, sel.uses)
+                  React.createElement("p", { className: "text-sm font-bold", style: { color: sel.ink } }, sel.crystals)
+
+                ),
+
+                React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
+
+                  React.createElement("p", { className: "text-sm font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.real_uses_label', "Real Uses")),
+
+                  React.createElement("p", { className: "text-sm font-bold", style: { color: sel.ink } }, sel.uses)
 
                 )
 
@@ -16850,7 +17714,7 @@ const d = labToolData.rockCycle || {};
 
               React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
-                React.createElement("p", { className: "text-xs text-amber-800 italic" }, "\uD83D\uDCA1 " + sel.funFact)
+                React.createElement("p", { className: "text-sm text-amber-800 italic" }, "\uD83D\uDCA1 " + sel.funFact)
 
               )
 
@@ -16858,7 +17722,7 @@ const d = labToolData.rockCycle || {};
 
             React.createElement("div", { className: "mb-3" },
 
-              React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1" + onHostInk }, "\u2194\uFE0F " + __alloT('stem.rocks.transformation_processes', "Transformation Processes")),
+              React.createElement("h4", { tabIndex: -1, "data-rc-section": "processes", className: "text-sm font-black text-slate-800 mb-2" + onHostInk }, "\u2194\uFE0F " + __alloT('stem.rocks.transformation_processes', "Transformation Processes")),
 
               // This panel used to render only the first three PROCESSES \u2014 the
               // steps of the simple loop. The three DIRECT branches (igneous \u2192
@@ -16875,7 +17739,7 @@ const d = labToolData.rockCycle || {};
               // left/right is wrong at every size. Ordering is the only claim
               // that survives a reflow, and each branch already carries a
               // visible "direct branch" tag to point at instead.
-              React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2" + onHostInk },
+              React.createElement("p", { className: "text-sm text-slate-700 mb-2" + onHostInk },
                 __alloT('stem.rocks.processes_intro', "Every pathway is real. The first three are the familiar loop; the last three are marked direct branch and skip a step entirely.")),
 
               React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" },
@@ -16889,15 +17753,15 @@ const d = labToolData.rockCycle || {};
                   // flagged. Fallback to the raw id keeps the panel renderable.
                   var fromRock = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS, proc.from) : null;
                   var toRock = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS, proc.to) : null;
-                  var processFromTo = (fromRock ? fromRock.label : proc.from) + " \u2192 " + (toRock ? toRock.label : proc.to);
+                  var processFromTo = rcFamilyLabel(proc.from) + " \u2192 " + rcFamilyLabel(proc.to);
 
                   // A "direct branch" skips the familiar loop order entirely.
                   var isBranch = i >= 3;
 
-                  return React.createElement("button", { key: i, onClick: function () { upd('selectedProcess', proc); },
+                  return React.createElement("button", { key: i, type: "button", "data-rc-process": i, onClick: function () { upd('selectedProcess', proc); },
 
                     "aria-pressed": !!isActive,
-                    "aria-label": processFromTo + " by " + proc.label + (isBranch ? " — a direct branch" : ""),
+                    "aria-label": proc.label + ". " + processFromTo + (isBranch ? ". " + __alloT('stem.rocks.process_direct_branch','direct branch') : ""),
 
                     className: "min-w-0 p-2 rounded-lg text-left border transition-colors " + (isActive ? 'bg-orange-100 border-orange-500 shadow-md' : 'bg-slate-50 border-slate-200 hover:bg-orange-50 active:scale-[0.97]')
 
@@ -16910,13 +17774,13 @@ const d = labToolData.rockCycle || {};
                     // transformation machine uses.
                     React.createElement("div", { className: "flex items-center gap-1 my-1" },
                       rcFamilyChip(h, 'pf' + i, proc.from, 22),
-                      React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-600" }, "→"),
+                      React.createElement("span", { className: "text-sm font-black text-slate-600" }, "→"),
                       rcFamilyChip(h, 'pt' + i, proc.to, 22)
                     ),
 
-                    React.createElement("p", { className: "text-[0.6875rem] text-slate-700 break-words" }, processFromTo),
+                    React.createElement("p", { className: "text-sm text-slate-700 break-words" }, processFromTo),
 
-                    isBranch && React.createElement("p", { className: "text-[0.625rem] font-bold text-violet-800 mt-0.5" }, __alloT('stem.rocks.process_direct_branch', "direct branch"))
+                    isBranch && React.createElement("p", { className: "text-sm font-bold text-violet-800 mt-0.5" }, __alloT('stem.rocks.process_direct_branch', "direct branch"))
 
                   );
 
@@ -16932,10 +17796,10 @@ const d = labToolData.rockCycle || {};
                   React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip(h, 'selFrom', d.selectedProcess.from, 40)),
                   React.createElement("div", { className: "text-center" },
                     React.createElement("div", { className: "text-lg leading-none", "aria-hidden": true }, d.selectedProcess.emoji),
-                    React.createElement("div", { className: "text-[0.6875rem] font-black text-orange-800" }, "→")
+                    React.createElement("div", { className: "text-sm font-black text-orange-800" }, "→")
                   ),
                   React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip(h, 'selTo', d.selectedProcess.to, 40)),
-                  React.createElement("p", { className: "text-xs font-black text-orange-900 ml-1" }, d.selectedProcess.label)
+                  React.createElement("p", { className: "text-sm font-black text-orange-900 ml-1" }, d.selectedProcess.label)
                 ),
 
                 React.createElement("p", { className: "text-sm text-orange-900 leading-relaxed" }, d.selectedProcess.desc)
@@ -16945,7 +17809,7 @@ const d = labToolData.rockCycle || {};
             ),
 
             // ── Branching-network + common-myths note ──
-            React.createElement("div", { className: "mt-3 p-3 rounded-lg border border-violet-200 bg-violet-50 text-[0.75rem] text-violet-900 leading-relaxed" },
+            React.createElement("div", { className: "mt-3 p-3 rounded-lg border border-violet-200 bg-violet-50 text-sm text-violet-900 leading-relaxed" },
               React.createElement("p", { className: "font-bold mb-1" }, "🔀 " + __alloT('stem.rocks.branching_network_title', "A branching network, not a one-way circle")),
               React.createElement("p", { className: "mb-2" }, __alloT('stem.rocks.branching_network_body', "ANY rock can become ANY other rock — the diagram's 6 arrows show every path. Which one happens depends on the process (the geological agent), not on a fixed order.")),
               React.createElement("p", { className: "font-bold mb-1" }, "⚠ " + __alloT('stem.rocks.common_myths', "Common myths")),
@@ -16991,9 +17855,10 @@ const d = labToolData.rockCycle || {};
                 return a === b ? 'stay' : RC_LOOP[a] === b ? 'loop' : 'branch';
               };
               var nextOf = function (rec) { return rec && RC_NEXT[rec.fromId] ? RC_NEXT[rec.fromId][rec.agentId] || null : null; };
-              var rcKeepGoing = function () {
+              var rcKeepGoing = function (event) {
                 var nx = nextOf(result);
                 if (!nx) return;
+                rcFocusAfter(event,'[data-rc-machine] select');
                 // A run from somewhere else starts a new journey.
                 var base = journey.length && journey[journey.length - 1].to === result.fromId ? journey : [];
                 updMulti({ rcJourney: base.concat([{ from: result.fromId, agent: result.agentId, to: nx }]), startingRock: nx, geologicalAgent: null,
@@ -17220,76 +18085,82 @@ const d = labToolData.rockCycle || {};
 
               var chip = function (key, label, value) {
                 return h('div', { key: key, className: 'rounded-lg bg-white border border-orange-200 px-2.5 py-1.5' },
-                  h('div', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-orange-800' }, label),
-                  h('div', { className: 'text-[0.6875rem] font-semibold text-slate-800 leading-snug' }, value)
+                  h('div', { className: 'text-sm font-black uppercase tracking-wide text-orange-800' }, label),
+                  h('div', { className: 'text-sm font-semibold text-slate-800 leading-snug' }, value)
                 );
               };
 
               return React.createElement("div", { "data-rc-machine": true, className: "mt-4 border-t border-slate-200 pt-3" },
-                React.createElement("p", { className: "text-xs font-black text-orange-800 mb-1 flex items-center gap-1.5" + onHostInk },
-                  React.createElement("span", { "aria-hidden": true }, "🔄"),
+                React.createElement("h4", { tabIndex: -1, "data-rc-section": "machine", className: "text-sm font-black text-orange-800 mb-2" + onHostInk },
+                  React.createElement("span", { "aria-hidden": true, style: { marginInlineEnd: "0.375rem" } }, "🔄"),
                   React.createElement("span", null, __alloT('stem.rocks.transformation_machine_title', "Rock Transformation Machine"))
                 ),
-                React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-3" + onHostInk },
+                React.createElement("p", { className: "text-sm text-slate-700 mb-3" + onHostInk },
                   __alloT('stem.rocks.transformation_machine_intro2', "Load a named rock specimen, choose an agent of change, and run the machine. Each pairing produces a specific named product with its real conditions, timescale and field evidence.")
                 ),
 
                 // ── Controls ──
-                React.createElement("div", { className: "grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] mb-3" },
+                React.createElement("div", { "data-rc-machine-controls": true, className: "grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] mb-3" },
                   React.createElement("div", null,
-                    React.createElement("label", { htmlFor: "rc-machine-specimen", className: "block text-[0.625rem] font-bold text-slate-700 uppercase mb-1" + onHostInk }, __alloT('stem.rocks.starting_specimen', "Starting specimen")),
+                    React.createElement("label", { htmlFor: "rc-machine-specimen", className: "block text-sm font-bold text-slate-700 uppercase mb-1" + onHostInk }, __alloT('stem.rocks.starting_specimen', "Starting specimen")),
                     React.createElement("select", {
                       id: "rc-machine-specimen",
                       value: mSpecId,
                       disabled: running,
                       onChange: function (e) { upd("startingRock", e.target.value); sfxRockClick(); },
-                      className: "w-full p-1.5 text-xs border border-slate-500 rounded-lg bg-white font-bold text-slate-800 disabled:opacity-60"
+                      className: "w-full p-1.5 text-sm border border-slate-500 rounded-lg bg-white font-bold text-slate-800 disabled:opacity-60"
                     },
                       RC_SPECIMENS.map(function (s) {
-                        return React.createElement("option", { key: s.id, value: s.id }, s.label + ' (' + s.family + ')');
+                        return React.createElement("option", { key: s.id, value: s.id }, rcSpecimen(s.id).label + ' (' + rcFamilyLabel(s.family) + ')');
                       })
                     )
                   ),
                   React.createElement("div", null,
-                    React.createElement("span", { id: "rc-agent-label", className: "block text-[0.625rem] font-bold text-slate-700 uppercase mb-1" + onHostInk }, __alloT('stem.rocks.geological_agent', "Geological Agent")),
-                    React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "group", "aria-labelledby": "rc-agent-label" },
+                    React.createElement("span", { id: "rc-agent-label", className: "block text-sm font-bold text-slate-700 uppercase mb-1" + onHostInk }, __alloT('stem.rocks.geological_agent', "Geological Agent")),
+                    React.createElement("div", { "data-rc-agent-options": true, className: "grid grid-cols-3 gap-1", role: "group", "aria-labelledby": "rc-agent-label" },
                       RC_AGENTS.map(function (agent) {
                         var isSel = d.geologicalAgent === agent.id;
                         return React.createElement("button", {
                           key: agent.id,
+                          "data-rc-agent": agent.id,
                           type: "button",
                           disabled: running,
                           "aria-pressed": isSel,
                           onClick: function () { upd("geologicalAgent", agent.id); sfxRockClick(); },
-                          className: "px-1 py-1.5 rounded text-[0.625rem] font-black text-center border transition-colors disabled:opacity-60 " +
+                          className: "px-1 py-1.5 rounded text-sm font-black text-center border transition-colors disabled:opacity-60 " +
                             (isSel ? "bg-orange-700 border-orange-800 text-white" : "bg-white border-slate-300 text-slate-700 hover:border-orange-500 hover:bg-orange-50")
-                        }, agent.icon + ' ' + agent.short);
+                        }, agent.icon + ' ' + rcAgent(agent.id).short);
                       })
                     )
                   ),
-                  React.createElement("div", { className: "flex items-end gap-1" },
+                  React.createElement("div", { "data-rc-machine-actions": true, className: "grid gap-2 min-w-0", style: { gridColumn: "1 / -1", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,16rem),1fr))" } },
                     React.createElement("button", {
                       type: "button",
-                      disabled: running || !mAgent,
+                      disabled: !mAgent,
+                      "aria-disabled": running || !mAgent,
+                      "aria-busy": running,
+                      "data-rc-run": true,
                       onClick: runMachine,
-                      className: "flex-1 px-3 py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded-lg text-xs transition-colors disabled:opacity-50 active:scale-[0.97]"
+                      className: "flex-1 px-3 py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded-lg text-sm transition-colors disabled:opacity-50 active:scale-[0.97]"
                     }, running ? __alloT('stem.rocks.transforming_ellipsis', "Transforming...") : "⚡ " + __alloT('stem.rocks.transform_btn', "Transform!")),
                     (result || running) && React.createElement("button", {
                       type: "button",
+                      "data-rc-reset": true,
                       title: __alloT('stem.rocks.machine_reset', "Reset machine"),
                       "aria-label": __alloT('stem.rocks.machine_reset', "Reset machine"),
-                      onClick: function () {
+                      onClick: function (event) {
+                        rcFocusAfter(event,'[data-rc-machine] select');
                         rcStopTransformTimer();
                         updMulti({ transformationAnimActive: false, transformationProgress: 0, transformationResult: null, transformationRun: null });
                         sfxRockClick();
                       },
-                      className: "px-2 py-1.5 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 transition-colors"
-                    }, "↺")
+                      className: "min-w-0 max-w-full px-2 py-1.5 rounded-lg text-sm font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 transition-colors"
+                    }, React.createElement("span", { "aria-hidden": true }, "↺"), " ", __alloT('stem.rocks.machine_reset', "Reset machine"))
                   )
                 ),
 
                 // ── Pairing preview (before the run, so the choice is legible) ──
-                mPreview && !result && !running && React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2" + onHostInk },
+                mPreview && !result && !running && React.createElement("p", { className: "text-sm text-slate-700 mb-2" + onHostInk },
                   React.createElement("span", { className: "font-bold text-slate-900" + onHostInk }, mSpec.label),
                   " + " + (mAgent ? mAgent.short : '') + " → ",
                   React.createElement("span", { className: "font-bold text-orange-800" + onHostInk }, mPreview.product)
@@ -17307,7 +18178,7 @@ const d = labToolData.rockCycle || {};
                     return React.createElement("span", { key: key, className: "inline-flex flex-col items-center gap-0.5", "data-rc-journey-rock": id + (now ? ':now' : '') },
                       React.createElement("svg", { width: 44, height: 34, viewBox: '0 0 44 34', "aria-hidden": true, className: "rounded-md", style: { outline: now ? '2px solid #c2410c' : 'none', outlineOffset: 2 } },
                         rcSwatch(h, 'jr' + key, sp.texture, sp.family, 1, 1, 42, 32, 1)),
-                      React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-900 leading-none" }, sp.label));
+                      React.createElement("span", { className: "text-sm font-black text-slate-900 leading-none" }, sp.label));
                   };
                   var parts = [chip(ids[0], 'c0', ids.length === 1)];
                   journey.forEach(function (st, i) {
@@ -17317,27 +18188,27 @@ const d = labToolData.rockCycle || {};
                       title: (rec ? rec.product + ' · ' + rec.time : '') },
                       React.createElement("span", { className: "text-base leading-none", "aria-hidden": true }, ag ? ag.icon : ''),
                       React.createElement("span", { "aria-hidden": true, className: "text-lg font-black leading-none", style: { color: kind === 'branch' ? '#7c3aed' : '#c2410c' } }, '\u2192'),
-                      React.createElement("span", { className: "text-[0.625rem] font-bold leading-none " + (kind === 'branch' ? "text-violet-800" : kind === 'stay' ? "text-slate-600" : "text-orange-800") },
+                      React.createElement("span", { className: "text-sm font-bold leading-none " + (kind === 'branch' ? "text-violet-800" : kind === 'stay' ? "text-slate-600" : "text-orange-800") },
                         kind === 'branch' ? __alloT('stem.rock_cycle.jr_shortcut', 'shortcut') : kind === 'stay' ? __alloT('stem.rock_cycle.jr_stay', 'same family') : __alloT('stem.rock_cycle.jr_loop', 'next in the loop'))));
                     parts.push(chip(st.to, 'c' + (i + 1), i === journey.length - 1));
                   });
                   return React.createElement("div", { className: "mb-2 rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 via-amber-50 to-violet-50 p-2.5", "data-rc-journey": journey.length + ':' + (full ? 'full' : 'part'),
                     role: "group", "aria-label": __alloT('stem.rock_cycle.jr_title', 'Your rock\'s journey') + ': ' + ids.map(function (id) { return rcSpecimen(id).label; }).join(', ') },
                     React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-1.5" },
-                      React.createElement("span", { className: "text-xs font-black text-orange-900" }, "\u{1F9ED} " + __alloT('stem.rock_cycle.jr_title', 'Your rock\'s journey')),
-                      React.createElement("span", { className: "text-[0.6875rem] text-slate-700" }, journey.length + ' ' + (journey.length === 1 ? __alloT('stem.rock_cycle.jr_step', 'step') : __alloT('stem.rock_cycle.jr_steps', 'steps')) + ', ' + __alloT('stem.rock_cycle.jr_each_time', 'each taking thousands to millions of years')),
+                      React.createElement("span", { className: "text-sm font-black text-orange-900" }, "\u{1F9ED} " + __alloT('stem.rock_cycle.jr_title', 'Your rock\'s journey')),
+                      React.createElement("span", { className: "text-sm text-slate-700" }, journey.length + ' ' + (journey.length === 1 ? __alloT('stem.rock_cycle.jr_step', 'step') : __alloT('stem.rock_cycle.jr_steps', 'steps')) + ', ' + __alloT('stem.rock_cycle.jr_each_time', 'each taking thousands to millions of years')),
                       React.createElement("button", { type: "button", "data-rc-journey-reset": true, onClick: function () { upd('rcJourney', []); sfxRockClick(); },
-                        className: "ml-auto text-[0.6875rem] font-bold text-slate-800 underline hover:text-slate-950" }, __alloT('stem.rock_cycle.jr_new', 'Start a new journey'))),
+                        className: "ml-auto text-sm font-bold text-slate-800 underline hover:text-slate-950" }, __alloT('stem.rock_cycle.jr_new', 'Start a new journey'))),
                     React.createElement("div", { className: "flex flex-wrap items-end gap-1" }, parts),
-                    React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2 text-[0.6875rem]" },
+                    React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2 text-sm" },
                       ['igneous', 'sedimentary', 'metamorphic'].map(function (f) {
                         var been = !!fams[f];
                         var rt = ROCKS.find(function (r) { return r.id === f; });
                         return React.createElement("span", { key: f, "data-rc-journey-fam": f + ':' + (been ? 'yes' : 'no'), className: "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-bold " + (been ? "bg-white border-slate-400 text-slate-900" : "bg-white/50 border-dashed border-slate-300 text-slate-600") },
                           (been ? '\u2714 ' : '') + (rt ? rt.label : f));
                       })),
-                    full ? React.createElement("p", { className: "mt-1.5 text-xs font-black text-emerald-800", "data-rc-journey-full": true }, "\u{1F504} " + __alloT('stem.rock_cycle.jr_full', 'A full trip: your rock has been igneous, sedimentary and metamorphic.')) : null,
-                    shortcuts > 0 ? React.createElement("p", { className: "mt-1 text-[0.6875rem] text-violet-900 leading-snug", "data-rc-journey-shortcuts": shortcuts },
+                    full ? React.createElement("p", { className: "mt-1.5 text-sm font-black text-emerald-800", "data-rc-journey-full": true }, "\u{1F504} " + __alloT('stem.rock_cycle.jr_full', 'A full trip: your rock has been igneous, sedimentary and metamorphic.')) : null,
+                    shortcuts > 0 ? React.createElement("p", { className: "mt-1 text-sm text-violet-900 leading-snug", "data-rc-journey-shortcuts": shortcuts },
                       __alloT('stem.rock_cycle.jr_shortcuts', 'Shortcuts the one-way loop leaves out:') + ' ' + shortcuts + '. ' + __alloT('stem.rock_cycle.jr_shortcuts_why', 'Rock can skip a family: it does not have to go round in order.')) : null);
                 })(),
 
@@ -17356,7 +18227,7 @@ const d = labToolData.rockCycle || {};
                   },
                     React.createElement("div", { className: "bg-orange-700 h-full transition-all duration-100", style: { width: prog + '%' } })
                   ),
-                  stageText && React.createElement("p", { className: "mt-1 text-[0.6875rem] font-semibold text-slate-700" },
+                  stageText && React.createElement("p", { className: "mt-1 text-sm font-semibold text-slate-700" },
                     React.createElement("span", { className: "text-orange-800 font-black" }, (stageIdx + 1) + '/4 '), stageText)
                 ),
 
@@ -17364,40 +18235,41 @@ const d = labToolData.rockCycle || {};
                 result && React.createElement("div", { className: "p-3 bg-orange-50 border border-orange-300 rounded-lg animate-in slide-in-from-bottom" },
                   React.createElement("div", { className: "flex items-start gap-2 mb-2" },
                     React.createElement("span", { className: "text-2xl leading-none", "aria-hidden": true }, result.family === 'igneous' ? '🌋' : result.family === 'sedimentary' ? '🏖' : '💎'),
-                    React.createElement("div", null,
+                    React.createElement("div", { style: { minWidth: 0, flex: "1 1 0%" } },
                       React.createElement("p", { className: "text-sm font-black text-orange-900" }, (result.fromLabel || mSpec.label) + " → " + result.product),
-                      React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-700" }, result.process)
+                      React.createElement("p", { className: "text-sm font-bold text-slate-700" }, result.process)
                     )
                   ),
                   React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2" },
                     chip('cond', __alloT('stem.rocks.machine_conditions', "Conditions"), result.conditions),
                     chip('time', __alloT('stem.rocks.machine_timescale', "Timescale"), result.time)
                   ),
-                  React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed mb-2" },
+                  React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed mb-2" },
                     React.createElement("span", { className: "font-black text-orange-900" }, __alloT('stem.rocks.machine_what_changes', "What changes: ")), result.change),
-                  React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" },
+                  React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed" },
                     React.createElement("span", { className: "font-black text-orange-900" }, __alloT('stem.rocks.machine_how_you_know', "How you'd know: ")), result.evidence),
-                  result.caveat && React.createElement("p", { className: "mt-2 text-[0.6875rem] text-slate-800 leading-relaxed bg-white border border-slate-300 rounded-lg p-2" },
+                  result.caveat && React.createElement("p", { className: "mt-2 text-sm text-slate-800 leading-relaxed bg-white border border-slate-300 rounded-lg p-2" },
                     React.createElement("span", { className: "font-black text-slate-900" }, __alloT('stem.rocks.machine_model_limit', "Model limit: ")), result.caveat),
                   nextOf(result)
                     ? React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2", "data-rc-keep-going": nextOf(result) },
-                        React.createElement("button", { type: "button", onClick: rcKeepGoing,
-                          className: "px-3 py-1.5 min-h-[36px] rounded-lg bg-orange-700 hover:bg-orange-800 text-white text-xs font-black" },
+                        React.createElement("button", { type: "button", "data-rc-continue": true, onClick: rcKeepGoing,
+                          className: "px-3 py-1.5 min-h-[36px] rounded-lg bg-orange-700 hover:bg-orange-800 text-white text-sm font-black" },
                           "\u21AA " + __alloT('stem.rock_cycle.jr_keep_going', 'Keep going with') + ' ' + rcSpecimen(nextOf(result)).label),
-                        React.createElement("span", { className: "text-[0.6875rem] text-slate-700" }, __alloT('stem.rock_cycle.jr_keep_hint', 'Put what it became back in the machine and follow one rock round the cycle.')))
-                    : React.createElement("p", { className: "mt-2 text-[0.6875rem] text-slate-800 leading-snug", "data-rc-journey-end": result.fromId + '>' + result.agentId },
+                        React.createElement("span", { className: "text-sm text-slate-700" }, __alloT('stem.rock_cycle.jr_keep_hint', 'Put what it became back in the machine and follow one rock round the cycle.')))
+                    : React.createElement("p", { className: "mt-2 text-sm text-slate-800 leading-snug", "data-rc-journey-end": result.fromId + '>' + result.agentId },
                         React.createElement("span", { className: "font-black" }, result.product + ': '),
                         __alloT('stem.rock_cycle.jr_end', 'the machine has no specimen for this rock, so a journey stops here. Try another agent.'))
                 ),
 
                 // Specimen note keeps the dropdown meaningful even before a run.
-                !result && React.createElement("p", { className: "text-[0.6875rem] text-slate-700" + onHostInk },
+                !result && React.createElement("p", { className: "text-sm text-slate-700" + onHostInk },
                   React.createElement("span", { className: "font-bold text-slate-900" + onHostInk }, mSpec.label + ': '), mSpec.note)
               );
             })(),
 
             React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3" },
-              React.createElement("button", { "aria-label": __alloT('stem.rocks.start_rock_cycle_quiz_aria', "Start rock cycle quiz"),
+              h('h4',{tabIndex:-1,'data-rc-section':'quiz',className:'mb-2 text-sm font-black text-slate-800'},__alloT('stem.rocks.quiz_mode','Quiz Mode')),
+              React.createElement("button", { type: "button", "aria-label": (_rcQuizSafe ? __alloT('stem.rocks.next_question','Next Question') : __alloT('stem.rocks.start_rock_cycle_quiz_aria','Start rock cycle quiz')), "data-rc-quiz": true,
                 onClick: function () {
                   var RC_QS = [
                     {
@@ -17525,10 +18397,10 @@ const d = labToolData.rockCycle || {};
                   if (!rcPool.length) { rcAsked = []; rcPool = RC_QS; }
                   var q = rcPool[Math.floor(Math.random() * rcPool.length)];
                   upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, wrongFeedback: q.wrongFeedback, concept: q.concept, answered: false, score: (_rcQuizSafe && typeof _rcQuizSafe === 'object' && typeof _rcQuizSafe.score === 'number' ? _rcQuizSafe.score : 0), asked: rcAsked.concat([q.q]) });
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (_rcQuizSafe ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
-              }, _rcQuizSafe ? "🔄 " + __alloT('stem.rocks.next_question', "Next Question") : "🧠 " + __alloT('stem.rocks.quiz_mode', "Quiz Mode")),
+                }, className: "px-3 py-1.5 rounded-lg text-sm font-bold " + (_rcQuizSafe ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
+              }, _rcQuizSafe ? "🔄 " + __alloT('stem.rocks.next_question', "Next Question") : "🧠 " + __alloT('stem.rocks.start_rock_cycle_quiz_aria', "Start rock cycle quiz")),
 
-              _rcQuizSafe && _rcQuizSafe.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-800" }, "⭐ " + _rcQuizSafe.score + " " + __alloT('stem.rocks.correct_count_suffix', "correct")),
+              _rcQuizSafe && _rcQuizSafe.score > 0 && React.createElement("span", { className: "ml-2 text-sm font-bold text-emerald-800" }, "⭐ " + _rcQuizSafe.score + " " + __alloT('stem.rocks.correct_count_suffix', "correct")),
 
               _rcQuizSafe && React.createElement("div", { className: "mt-2 bg-orange-50 rounded-lg p-3 border border-orange-200" },
                 React.createElement("p", { className: "text-sm font-bold text-orange-800 mb-2" }, _rcQuizSafe.q),
@@ -17555,7 +18427,7 @@ const d = labToolData.rockCycle || {};
                   })
                 ),
                 _rcQuizSafe.answered && React.createElement("div", { className: "mt-3 space-y-2 animate-in slide-in-from-bottom-1" },
-                  React.createElement("div", { className: "p-3 rounded-lg text-xs leading-relaxed bg-white border border-slate-200 text-slate-700" },
+                  React.createElement("div", { className: "p-3 rounded-lg text-sm leading-relaxed bg-white border border-slate-200 text-slate-700" },
                     _rcQuizSafe.wrongFeedback ? _rcQuizSafe.wrongFeedback[_rcQuizSafe.opts.indexOf(_rcQuizSafe.chosen)] : (_rcQuizSafe.chosen === _rcQuizSafe.a ? __alloT('stem.rocks.correct_exclaim', 'Correct!') : __alloT('stem.rocks.incorrect', 'Incorrect.'))
                   ),
                   _rcQuizSafe.concept && ROCKS_VOCAB[_rcQuizSafe.concept] && (function() {
@@ -17563,8 +18435,8 @@ const d = labToolData.rockCycle || {};
                     var studied = (rState.vocabLookedUp || []).indexOf(_rcQuizSafe.concept) !== -1;
                     return React.createElement("div", { className: "p-2.5 rounded-lg bg-orange-100 border border-orange-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3" },
                       React.createElement("div", { className: "flex-1" },
-                        React.createElement("p", { className: "text-xs font-bold text-orange-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + rkVocabTerm(__alloT, _rcQuizSafe.concept)),
-                        React.createElement("p", { className: "text-[0.625rem] text-slate-600 mt-0.5 leading-relaxed" }, rkVocabDef(__alloT, _rcQuizSafe.concept))
+                        React.createElement("p", { className: "text-sm font-bold text-orange-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + rkVocabTerm(__alloT, _rcQuizSafe.concept)),
+                        React.createElement("p", { className: "text-sm text-slate-600 mt-0.5 leading-relaxed" }, rkVocabDef(__alloT, _rcQuizSafe.concept))
                       ),
                       !studied && React.createElement("button", {
                         onClick: function() {
@@ -17615,7 +18487,7 @@ const d = labToolData.rockCycle || {};
                           if (typeof awardStemXP === 'function') awardStemXP(5, 'Concept studied: ' + _rcQuizSafe.concept);
                           if (typeof addToast === 'function') addToast('📖 Concept studied: ' + _rcQuizSafe.concept + ' (+5 RP)', 'success');
                         },
-                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[0.625rem] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
+                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-sm shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                       }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
                     );
                   })()
@@ -17623,7 +18495,7 @@ const d = labToolData.rockCycle || {};
               )
             ),
 
-            React.createElement("button", { "aria-label": __alloT('stem.rocks.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
+            React.createElement("button", { "aria-label": __alloT('stem.rocks.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
 
           );
       })();

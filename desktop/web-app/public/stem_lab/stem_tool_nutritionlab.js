@@ -3706,6 +3706,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlH('p', { style: muted }, scaled.valid ? String(servings) + ' servings · follow your recipe one step at a time' : 'Follow your recipe one step at a time')),
         typeof props.onClose === 'function' && nlBtn({ type: 'button', variant: 'secondary', onClick: props.onClose }, 'Leave cooking mode')),
       nlH('p', { style: muted }, 'This checklist stays open until you leave this recipe. Leaving cooking mode or switching tools clears its progress. Your saved recipe and meal plan stay unchanged.'),
+      props.portions && nlH('div', { style: { padding: 12, background: '#f0fdfa', borderRadius: 8 } },
+        nlH('h3', { style: { fontSize: 16, color: '#115e59', margin: 0 } }, props.roundLabel ? props.roundLabel + ' · Portions for your meals' : 'Portions for your meals'),
+        nlH('ul', { style: { paddingLeft: 20, overflowWrap: 'anywhere' } }, props.portions.map(function(portion, i) {
+          return nlH('li', { key: i, style: { margin: '6px 0', whiteSpace: 'pre-wrap' } }, portion.label, portion.notes && ' — ' + portion.notes);
+        }))),
       nlH('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { minHeight: 24, fontSize: 13, color: '#115e59', margin: '10px 0' } }, notice || (steps.length ? count + ' of ' + steps.length + ' steps checked.' : 'No cooking steps are saved for this recipe.')),
       nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 18, alignItems: 'start' } },
         nlH('div', { style: { minWidth: 0 } },
@@ -3756,15 +3761,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
   function nlRecipeTakeaway(recipe, targetServings) {
     var saved = nlRecipeSnapshot(recipe), scaled = nlRecipeScale(recipe, targetServings);
     var target = nlRecipeServings(targetServings);
-    var lines = [saved.name, 'Original recipe: ' + (saved.servings === null ? 'servings not set' : saved.servings + ' servings'),
-      'Preparing: ' + (target === null ? 'servings need review' : target + ' servings')];
+    var lines = [saved.name, 'Original recipe: ' + (saved.servings === null ? 'servings not set' : saved.servings + (saved.servings === 1 ? ' serving' : ' servings')),
+      'Preparing: ' + (target === null ? 'servings need review' : target + (target === 1 ? ' serving' : ' servings'))];
     if (saved.cuisine.trim()) lines.push('Cuisine: ' + saved.cuisine);
     if (String(saved.time).trim()) {
       var minutes = Number(saved.time), knownTime = Number.isFinite(minutes) && minutes >= 0 && minutes <= 1440;
       lines.push('Recipe time (as saved): ' + String(saved.time) + (knownTime ? ' minutes' : ' (review time)'));
     }
     if (saved.tags.trim()) lines.push('Tags: ' + saved.tags);
-    lines.push('', scaled.valid ? 'Ingredients for ' + target + ' servings:' : 'Ingredient amounts need review:');
+    lines.push('', scaled.valid ? 'Ingredients for ' + target + (target === 1 ? ' serving:' : ' servings:') : 'Ingredient amounts need review:');
     if (scaled.valid) {
       if (!scaled.items.length) lines.push('No ingredients saved.');
       scaled.items.forEach(function(item) { lines.push('- ' + item.text + (item.manual ? ' [review amount]' : '')); });
@@ -3774,8 +3779,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     lines.push('', 'Cooking steps (as saved):', saved.steps || 'No cooking steps saved.');
     if (saved.notes) lines.push('', 'Recipe notes:', saved.notes);
     lines.push('', 'Only ingredient amounts scale. Review marked lines; cooking times and temperatures stay as saved.');
-    var safeName = saved.name.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-').replace(/[.\s]+$/g, '').slice(0, 72).replace(/[.\s]+$/g, '') || 'untitled';
+    var safeName = nlRecipeSafeName(saved.name);
     return { text: lines.join('\n') + '\n', filename: 'recipe-' + safeName + (target === null ? '-review-amounts' : '-' + target + '-servings') + '.txt' };
+  }
+
+  function nlRecipeSafeName(name) {
+    return name.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-').replace(/[.\s]+$/g, '').slice(0, 72).replace(/[.\s]+$/g, '') || 'untitled';
+  }
+
+  function nlCookingPrepTakeaway(recipe, rounds, prepared, plan) {
+    var saved = nlRecipeSnapshot(recipe);
+    prepared = Array.isArray(prepared) ? prepared : [];
+    var lines = ['Prep sheet — ' + saved.name];
+    if (plan && typeof plan.name === 'string' && plan.name.trim()) lines.push('Meal plan: ' + plan.name);
+    if (plan && typeof plan.weekOf === 'string' && plan.weekOf.trim()) lines.push('Week of: ' + plan.weekOf);
+    lines.push(rounds.length + (rounds.length === 1 ? ' cooking round' : ' cooking rounds'),
+      'Prepared marks reflect this copy of the sheet.');
+    rounds.forEach(function(round, index) {
+      var mark = prepared.indexOf(index) >= 0 ? '[x] Prepared' : '[ ] To prepare';
+      lines.push('', 'Round ' + (index + 1) + ' of ' + rounds.length + ' · ' + mark,
+        'Meal portions for this round:');
+      round.portions.forEach(function(portion) {
+        lines.push('- ' + portion.label);
+        if (portion.notes) lines.push('  Meal notes: ' + portion.notes);
+      });
+      lines.push('', nlRecipeTakeaway(recipe, round.servings).text);
+    });
+    return { text: lines.join('\n'), filename: 'prep-sheet-' + nlRecipeSafeName(saved.name) + '.txt' };
   }
 
   function NutritionRecipeTakeaway(props) {
@@ -3783,17 +3813,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var ns = R_NL.useState(''), notice = ns[0], setNotice = ns[1];
     var cs = R_NL.useState(false), copying = cs[0], setCopying = cs[1];
     var request = R_NL.useRef(0);
-    var result = nlRecipeTakeaway(props.recipe, props.servings);
+    var prepSheet = Array.isArray(props.rounds);
+    var title = prepSheet ? 'Prep sheet' : 'Recipe', noun = title.toLowerCase();
+    var result = prepSheet ? nlCookingPrepTakeaway(props.recipe, props.rounds, props.prepared, props.plan) : nlRecipeTakeaway(props.recipe, props.servings);
     R_NL.useEffect(function() { request.current += 1; setCopying(false); setNotice(''); return function() { request.current += 1; }; }, [result.text]);
     function copy() {
       var token = ++request.current;
-      setCopying(true); setNotice('Copying recipe…');
+      setCopying(true); setNotice('Copying ' + noun + '…');
       function finish(message) { if (request.current === token) { setCopying(false); setNotice(message); } }
       try {
         var writer = window.StemLab && window.StemLab.writeClipboard;
         var operation = typeof writer === 'function' ? writer(result.text) : navigator.clipboard.writeText(result.text);
-        Promise.resolve(operation).then(function(ok) { finish(ok === false ? 'Clipboard copy was unavailable. Download the recipe or select the preview instead.' : 'Recipe copied.'); }).catch(function() { finish('Clipboard copy was unavailable. Download the recipe or select the preview instead.'); });
-      } catch (e) { finish('Clipboard copy was unavailable. Download the recipe or select the preview instead.'); }
+        Promise.resolve(operation).then(function(ok) { finish(ok === false ? 'Clipboard copy was unavailable. Download the ' + noun + ' or select the preview instead.' : title + ' copied.'); }).catch(function() { finish('Clipboard copy was unavailable. Download the ' + noun + ' or select the preview instead.'); });
+      } catch (e) { finish('Clipboard copy was unavailable. Download the ' + noun + ' or select the preview instead.'); }
     }
     function download() {
       request.current += 1; setCopying(false);
@@ -3801,19 +3833,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       try {
         url = URL.createObjectURL(new Blob([result.text], { type: 'text/plain;charset=utf-8' }));
         anchor = document.createElement('a'); anchor.href = url; anchor.download = result.filename;
-        document.body.appendChild(anchor); anchor.click(); setNotice('Recipe text download started.');
-      } catch (e) { setNotice('The recipe download could not start. Copy the recipe or select the preview instead.'); }
+        document.body.appendChild(anchor); anchor.click(); setNotice(title + ' text download started.');
+      } catch (e) { setNotice('The ' + noun + ' download could not start. Copy the ' + noun + ' or select the preview instead.'); }
       finally { if (anchor && anchor.parentNode) anchor.parentNode.removeChild(anchor); if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000); }
     }
-    return nlH('details', { 'data-nutrition-recipe-takeaway': '', style: { margin: '14px 0', border: '1px solid #cbd5e1', borderRadius: 10, padding: 12, minWidth: 0, color: '#0f172a', background: '#fff' } },
-      nlH('summary', { style: { fontSize: 14, fontWeight: 800, color: '#115e59', cursor: 'pointer' } }, 'Take this recipe with you'),
-      nlH('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#475569' } }, 'Keep a text copy with the servings shown above, ingredient amounts, and saved cooking steps. Review-marked quantities stay visible.'),
+    return nlH('details', { 'data-nutrition-recipe-takeaway': '', 'data-nutrition-prep-takeaway': prepSheet ? '' : undefined, style: { margin: '14px 0', border: '1px solid #cbd5e1', borderRadius: 10, padding: 12, minWidth: 0, color: '#0f172a', background: '#fff' } },
+      nlH('summary', { style: { fontSize: 14, fontWeight: 800, color: '#115e59', cursor: 'pointer' } }, 'Take this ' + noun + ' with you'),
+      nlH('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#475569' } }, prepSheet ? 'Keep each round’s ingredients, meal portions, notes, and prepared marks together in a text file. The saved recipe instructions are included with every round.' : 'Keep a text copy with the servings shown above, ingredient amounts, and saved cooking steps. Review-marked quantities stay visible.'),
       nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-        nlBtn({ type: 'button', variant: 'secondary', disabled: copying, onClick: copy }, copying ? 'Copying recipe…' : 'Copy recipe text'),
-        nlBtn({ type: 'button', onClick: download }, 'Download recipe text')),
+        nlBtn({ type: 'button', variant: 'secondary', disabled: copying, onClick: copy }, copying ? 'Copying ' + noun + '…' : 'Copy ' + noun + ' text'),
+        nlBtn({ type: 'button', onClick: download }, 'Download ' + noun + ' text')),
       nlH('p', { role: 'status', 'aria-live': 'polite', style: { fontSize: 12, minHeight: 18, color: '#115e59', lineHeight: 1.6 } }, notice),
-      nlH('details', null, nlH('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#115e59' } }, 'Preview recipe text'),
-        nlH('pre', { 'aria-label': 'Recipe text preview', tabIndex: 0, style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontFamily: 'inherit', fontSize: 12, lineHeight: 1.7, maxHeight: 360, overflow: 'auto', background: '#f8fafc', padding: 12, border: '1px solid #e2e8f0', borderRadius: 8 } }, result.text)));
+      nlH('details', null, nlH('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#115e59' } }, 'Preview ' + noun + ' text'),
+        nlH('pre', { 'aria-label': title + ' text preview', tabIndex: 0, style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontFamily: 'inherit', fontSize: 12, lineHeight: 1.7, maxHeight: 360, overflow: 'auto', background: '#f8fafc', padding: 12, border: '1px solid #e2e8f0', borderRadius: 8 } }, result.text)));
   }
 
   function NutritionRecipeSchedule(props) {
@@ -4009,6 +4041,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
   }
 
 
+  function nlRecipeIngredientWords(value) {
+    return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  }
+  function nlRecipeIngredientQuery(value) {
+    var terms = [], seen = Object.create(null);
+    if (typeof value !== 'string' || value.length > 600) return { valid: false, terms: terms, error: 'Use up to 600 characters for ingredient searches.' };
+    value.split(/\r?\n/).forEach(function(line) {
+      var text = line.trim(), key = nlRecipeIngredientWords(text);
+      if (key && !seen[key]) { seen[key] = true; terms.push({ text: text, key: key }); }
+    });
+    var error = terms.length > 12 ? 'Use up to 12 different ingredient searches, one per line.' : value.trim() && !terms.length ? 'Enter ingredient words, one per line.' : '';
+    return { valid: !error, terms: terms, error: error };
+  }
+  function nlRecipeIngredientMatches(recipe, query) {
+    var lines = nlRecipeSnapshot(recipe).ingredients.split(/\r?\n/).map(function(line) { return ' ' + nlRecipeIngredientWords(line) + ' '; });
+    var matched = [], missing = [];
+    query.terms.forEach(function(term) {
+      (lines.some(function(line) { return line.indexOf(' ' + term.key + ' ') >= 0; }) ? matched : missing).push(term.text);
+    });
+    return { matched: matched, missing: missing };
+  }
+  function nlRecipeMatchesIngredientQuery(recipe, query, mode) {
+    if (!query.valid) return false;
+    if (!query.terms.length) return true;
+    var result = nlRecipeIngredientMatches(recipe, query);
+    return mode === 'any' ? result.matched.length > 0 : result.missing.length === 0;
+  }
+  function NutritionRecipeIngredientFinder(props) {
+    var openState = R_NL.useState(!!props.value.trim()), open = openState[0], setOpen = openState[1];
+    var helpId = R_NL.useId();
+    var fieldRef = R_NL.useRef(null);
+    var muted = { fontSize: 12, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #475569)' };
+    return nlH('details', { 'data-nutrition-ingredient-finder': '', open: open, onToggle: function(e) { setOpen(e.currentTarget.open); }, style: { padding: 12, marginTop: 12, border: '1px solid #94a3b8', borderRadius: 10, color: 'var(--allo-stem-text, #0f172a)' } },
+      nlH('summary', { style: { cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, 'Find recipes by ingredients' + (props.query.terms.length ? ' · ' + props.query.terms.length + ' searches' : '')),
+      nlH('p', { id: helpId, style: muted }, 'Enter up to 12 ingredients you want to use, one per line. Matches use ingredient text, including alternatives and optional ingredients. Names and steps are not searched here; amounts and availability are not checked.'),
+      nlH('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, minWidth: 0 } }, 'Ingredients to find (one per line)', nlH('textarea', { ref: fieldRef, value: props.value, onChange: function(e) { props.onChange(e.target.value); }, rows: 3, maxLength: 600, placeholder: 'broth\nbeans', 'aria-label': 'Ingredients to find (one per line)', 'aria-describedby': helpId, 'aria-invalid': !props.query.valid, 'aria-errormessage': !props.query.valid ? helpId + '-error' : undefined, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: 'var(--allo-stem-text, #0f172a)', background: 'var(--allo-stem-panel, #ffffff)', resize: 'vertical', fontFamily: 'inherit' } })),
+      nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'end', marginTop: 10 } },
+        nlH('label', { style: { display: 'grid', gap: 4, fontSize: 12, fontWeight: 700, minWidth: 0, flex: '1 1 200px' } }, 'Ingredient matching', nlSelect({ value: props.mode, onChange: function(e) { props.onMode(e.target.value); }, 'aria-label': 'Ingredient matching' }, [{ value: 'all', label: 'Every ingredient search' }, { value: 'any', label: 'Any ingredient search' }])),
+        nlBtn({ type: 'button', variant: 'secondary', disabled: !props.value && props.mode === 'all', onClick: function() { props.onChange(''); props.onMode('all'); if (fieldRef.current) fieldRef.current.focus(); } }, 'Clear ingredient searches')),
+      !props.query.valid && nlH('p', { id: helpId + '-error', role: 'status', style: muted }, props.query.error));
+  }
+  function NutritionRecipeIngredientMatchNote(props) {
+    if (!props.query.valid || !props.query.terms.length) return null;
+    var result = nlRecipeIngredientMatches(props.recipe, props.query);
+    return nlH('div', { id: props.id, style: { fontSize: 12, lineHeight: 1.6, color: '#115e59', margin: '8px 0', overflowWrap: 'anywhere' } },
+      nlH('div', null, 'Matches: ' + result.matched.join(' · ')),
+      result.missing.length > 0 && nlH('div', null, 'No text match: ' + result.missing.join(' · ')));
+  }
+
   // 31) PersonalRecipeBox — save go-to recipes
   function PersonalRecipeBox(props) {
     if (!R_NL) return null;
@@ -4023,6 +4104,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var form = fresh();
     if (editorDraft) Object.keys(form).forEach(function(key) { var value = editorDraft.form[key]; if (typeof value === 'string' || typeof value === 'number' && Number.isFinite(value)) form[key] = String(value); });
     var editing = editorDraft && ((typeof editorDraft.editingId === 'string' && editorDraft.editingId.length > 0) || (typeof editorDraft.editingId === 'number' && Number.isFinite(editorDraft.editingId))) ? editorDraft.editingId : null;
+    var scaledCopy = editorDraft && editorDraft.scaledCopy;
+    var hasScaledCopy = !!editorDraft && Object.prototype.hasOwnProperty.call(editorDraft, 'scaledCopy');
+    var validScaledCopy = hasScaledCopy && editing === null && scaledCopy && typeof scaledCopy === 'object' && !Array.isArray(scaledCopy) && typeof scaledCopy.sourceName === 'string' && scaledCopy.sourceName.trim() && nlRecipeServings(scaledCopy.originalServings) !== null && nlRecipeServings(scaledCopy.targetServings) !== null && Array.isArray(scaledCopy.manualLines) && scaledCopy.manualLines.length <= 500 && scaledCopy.manualLines.every(function(line) { return typeof line === 'string'; });
+    var scaledReviewKey = JSON.stringify([form.servings, form.ingredients, form.steps, form.time]);
+    var scaledReviewDone = !!validScaledCopy && scaledCopy.reviewedFor === scaledReviewKey;
     var editorState = R_NL.useState(function() { return !!editorDraft || !recipes.length; }), editorOpen = editorState[0], setEditorOpen = editorState[1];
     var discardedState = R_NL.useState(null), discardedDraft = discardedState[0], setDiscardedDraft = discardedState[1];
     var editorRef = R_NL.useRef(null), focusEditor = R_NL.useRef(false);
@@ -4030,10 +4116,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var qs = R_NL.useState(''); var search = qs[0]; var setSearch = qs[1];
     var filterState = R_NL.useState('all'), recipeFilter = filterState[0], setRecipeFilter = filterState[1];
     var sortState = R_NL.useState('recent'), recipeSort = sortState[0], setRecipeSort = sortState[1];
+    var ingredientState = R_NL.useState(''), ingredientSearch = ingredientState[0], setIngredientSearch = ingredientState[1];
+    var ingredientModeState = R_NL.useState('all'), ingredientMode = ingredientModeState[0], setIngredientMode = ingredientModeState[1];
+    var ingredientQuery = nlRecipeIngredientQuery(ingredientSearch);
+    var ingredientMatchId = R_NL.useId();
     var filterControl = R_NL.useRef(null);
     var ns = R_NL.useState(''); var notice = ns[0]; var setNotice = ns[1];
     var ss = R_NL.useState(''); var servings = ss[0]; var setServings = ss[1];
     var us = R_NL.useState(null); var removed = us[0]; var setRemoved = us[1];
+    var editUndoState = R_NL.useState(null), savedEditUndo = editUndoState[0], setSavedEditUndo = editUndoState[1];
+    var editUndoButton = R_NL.useRef(null), recipeHeading = R_NL.useRef(null), editUndoFocus = R_NL.useRef('');
+    var editUndoDescription = R_NL.useId();
     var cookState = R_NL.useState(null), cooking = cookState[0], setCooking = cookState[1];
     var scheduleState = R_NL.useState(null), scheduling = scheduleState[0], setScheduling = scheduleState[1];
     var scheduleTrigger = R_NL.useRef(null), scheduleReturnFocus = R_NL.useRef(false);
@@ -4043,10 +4136,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     R_NL.useEffect(function() { if (!cooking && cookReturnFocus.current && cookTrigger.current) { cookTrigger.current.focus(); cookReturnFocus.current = false; } }, [cooking]);
     R_NL.useEffect(function() {
       if (focusEditor.current && editorRef.current) {
-        var control = editorRef.current.querySelector(editorOpen ? 'input' : 'summary');
+        var control = editorRef.current.querySelector(editorOpen ? '[aria-label="Recipe name"]' : 'summary');
         if (control) { control.focus(); focusEditor.current = false; }
       }
     });
+    R_NL.useEffect(function() {
+      var target = editUndoFocus.current === 'undo' ? editUndoButton.current : editUndoFocus.current === 'heading' ? recipeHeading.current : null;
+      if (target) { target.focus(); editUndoFocus.current = ''; }
+    }, [savedEditUndo, view]);
     var selected = recipes.find(function(r) { return r.id === view; });
     var ink = { color: 'var(--allo-stem-text, #0f172a)' };
     var muted = { fontSize: 12, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #475569)' };
@@ -4090,6 +4187,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       writeDraft({ form: { name: snapshot.name, cuisine: snapshot.cuisine, time: snapshot.time == null ? '' : String(snapshot.time), servings: snapshot.servings == null ? '' : String(snapshot.servings), ingredients: snapshot.ingredients, steps: snapshot.steps, tags: snapshot.tags, notes: snapshot.notes }, editingId: recipe.id, original: JSON.stringify(snapshot) });
       setNotice('Editing ' + snapshot.name + '. Your original stays saved until you save changes.');
     }
+    function makeScaledDraft(recipe, target) {
+      if (!canPersist) { setNotice('Saving is unavailable in this view.'); return; }
+      if (rawDraft != null) {
+        setScheduling(null); setView(null); setEditorOpen(true); focusEditor.current = true;
+        setNotice('Save or discard your current recipe draft before making a scaled copy. Your existing draft has been kept.'); return;
+      }
+      var snapshot = nlRecipeSnapshot(recipe), count = nlRecipeServings(target), scaled = nlRecipeScale(recipe, target);
+      if (!scaled.valid || count === null) { setNotice(scaled.error || 'Enter a valid serving count before making a copy.'); return; }
+      var lines = snapshot.ingredients.split(/\r?\n/).map(function(line) { return line.trim(); }).filter(Boolean);
+      var manualLines = scaled.items.filter(function(item) { return item.manual; }).map(function(item) { return item.ingredient; });
+      var baseName = snapshot.name + ' (' + count + (count === 1 ? ' serving)' : ' servings)'), nextName = baseName, suffix = 2;
+      while (recipes.some(function(r) { return r.name === nextName; })) nextName = baseName + ' (copy ' + suffix++ + ')';
+      var review = { sourceName: snapshot.name, originalServings: snapshot.servings, targetServings: count, manualLines: manualLines, reviewedFor: null };
+      if (typeof recipe.id === 'string' && recipe.id || typeof recipe.id === 'number' && Number.isFinite(recipe.id)) review.sourceId = recipe.id;
+      writeDraft({ editingId: null, form: { name: nextName, cuisine: snapshot.cuisine, time: snapshot.time == null ? '' : String(snapshot.time), servings: String(count), ingredients: scaled.items.map(function(item, index) { return item.manual ? lines[index] : item.text; }).join('\n'), steps: snapshot.steps, tags: snapshot.tags, notes: snapshot.notes }, scaledCopy: review });
+      setScheduling(null); setView(null); setEditorOpen(true); focusEditor.current = true;
+      setNotice('Scaled recipe draft created. Review the ingredients and cooking instructions before saving a separate recipe. The original is unchanged.');
+    }
+    function scaledCopyReview() {
+      if (!hasScaledCopy) return null;
+      if (!validScaledCopy) return nlH('p', { role: 'status', style: muted }, 'This scaled recipe draft has unreadable review details. Your draft has been kept. Discard it to start a new copy.');
+      return nlH('section', { 'aria-label': 'Scaled recipe draft review', 'data-nutrition-scaled-copy': '', style: { padding: 12, border: '1px solid #0d9488', borderRadius: 10, background: '#f0fdfa', color: '#0f172a', marginBottom: 14, minWidth: 0, overflowWrap: 'anywhere' } },
+        nlH('h3', { style: { fontSize: 15, color: '#115e59', margin: '0 0 8px' } }, 'Review your scaled recipe copy'),
+        nlH('p', { style: { fontSize: 13, lineHeight: 1.6 } }, 'Created from ' + scaledCopy.sourceName + ': ' + scaledCopy.originalServings + ' → ' + scaledCopy.targetServings + ' servings. Your original recipe stays saved.'),
+        nlH('p', { style: { fontSize: 13, lineHeight: 1.6 } }, 'Recognized ingredient quantities were scaled. Cooking steps, times, and temperatures were copied as written. Review them for this batch before saving.'),
+        scaledCopy.manualLines.length > 0 && nlH('details', { style: { margin: '10px 0' } },
+          nlH('summary', { style: { cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, 'Review ' + scaledCopy.manualLines.length + ' unchanged ingredient ' + (scaledCopy.manualLines.length === 1 ? 'line' : 'lines')),
+          nlH('p', { style: { fontSize: 13, lineHeight: 1.6 } }, 'These lines were copied without changing their quantities. Adjust them in Ingredients if needed.'),
+          nlH('ul', { 'aria-label': 'Unchanged ingredient lines to review', style: { paddingLeft: 20, fontSize: 13, lineHeight: 1.7 } }, scaledCopy.manualLines.map(function(line, index) { return nlH('li', { key: index }, line); }))),
+        nlH('label', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, lineHeight: 1.6, cursor: 'pointer' } },
+          nlH('input', { type: 'checkbox', checked: scaledReviewDone, onChange: function(e) { writeDraft(Object.assign({}, editorDraft, { scaledCopy: Object.assign({}, scaledCopy, { reviewedFor: e.target.checked ? scaledReviewKey : null }) })); }, style: { width: 18, height: 18, flexShrink: 0, marginTop: 2, accentColor: '#047857' } }), 'I reviewed the ingredient quantities, servings, steps, and cooking time for this copy.'),
+        nlH('p', { style: { fontSize: 12, lineHeight: 1.6, marginBottom: 0 } }, 'Changes to Ingredients, Original recipe servings, Steps, or Recipe time require another review.'));
+    }
     var originalMatches = editing === null ? [] : recipes.filter(function(r) { return r.id === editing; });
     var originalRecipe = originalMatches.length === 1 ? originalMatches[0] : null;
     var editingConflict = editing !== null && (!originalRecipe || typeof editorDraft.original !== 'string' || editorDraft.original !== JSON.stringify(nlRecipeSnapshot(originalRecipe)));
@@ -4099,6 +4229,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       if (!form.name.trim()) { setNotice('Add a recipe name before saving.'); return; }
       if (!String(form.time).trim() || !Number.isFinite(minutes) || minutes < 0 || minutes > 1440) { setNotice('Recipe time must be a number from 0 to 1440 minutes.'); return; }
       if (!String(form.servings).trim() || !Number.isFinite(count) || count <= 0 || count > 100) { setNotice('Recipe servings must be greater than 0 and no more than 100.'); return; }
+      if (hasScaledCopy && (!validScaledCopy || !scaledReviewDone)) { setNotice('Review the scaled recipe quantities and cooking instructions before saving this copy.'); return; }
       var previous = asNew ? null : originalRecipe;
       if (!asNew && editingConflict) { setNotice('The saved recipe changed or was removed while you were editing. Save your draft as a new recipe to keep both versions.'); return; }
       if (rawDraft != null && !editorDraft) { setNotice('The saved draft could not be read. Clear that unreadable draft before starting a new one.'); return; }
@@ -4111,14 +4242,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         while (records.some(function(r) { return r && r.id === id; })) id = baseId + '-' + suffix++;
         base = Object.assign({}, base, { id: id, date: nl_today() });
         if (asNew && editing !== null) base.copiedFromRecipeId = editing;
+        if (validScaledCopy && (typeof scaledCopy.sourceId === 'string' && scaledCopy.sourceId || typeof scaledCopy.sourceId === 'number' && Number.isFinite(scaledCopy.sourceId))) base.copiedFromRecipeId = scaledCopy.sourceId;
       }
       var recipe = Object.assign({}, base, form, { name: form.name.trim(), time: minutes, servings: count });
       var next = previous ? records.map(function(r) { return r === previous ? recipe : r; }) : [recipe].concat(records);
+      var changes = null;
+      if (previous) {
+        try {
+          changes = Object.keys(form).filter(function(key) { return !Object.prototype.hasOwnProperty.call(previous, key) || !Object.is(previous[key], recipe[key]); }).map(function(key) {
+            var before = previous[key];
+            if (before && typeof before === 'object') before = JSON.parse(JSON.stringify(before));
+            return { key: key, before: before, hadBefore: Object.prototype.hasOwnProperty.call(previous, key), after: recipe[key] };
+          });
+        } catch (e) { changes = null; }
+      }
       if (!persist(next, { editorDraft: null })) return;
-      setLocalDraft(null); setDiscardedDraft(null); setEditorOpen(false); setServings(String(count)); setView(recipe.id); setNotice(previous ? 'Recipe changes saved.' : 'Recipe saved to your box.');
+      if (previous && changes === null) setSavedEditUndo(null);
+      if (changes && changes.length) { setSavedEditUndo({ id: recipe.id, name: recipe.name, changes: changes }); editUndoFocus.current = 'undo'; }
+      setLocalDraft(null); setDiscardedDraft(null); setEditorOpen(false); setServings(String(count)); setView(recipe.id); setNotice(previous ? 'Recipe changes saved.' + (changes && changes.length ? ' Undo recipe changes is available until you leave Recipe Box.' : changes === null ? ' Undo is unavailable for this record.' : '') : validScaledCopy ? 'Scaled recipe saved as a separate recipe. The original is unchanged.' : 'Recipe saved to your box.');
+    }
+    function undoRecipeChanges() {
+      if (!savedEditUndo) return;
+      if (rawDraft != null) { setNotice('Save or discard your current recipe draft before undoing saved recipe changes.'); return; }
+      var matches = recipes.filter(function(r) { return r.id === savedEditUndo.id; });
+      if (matches.length !== 1) { setNotice('The edited recipe is no longer available or cannot be identified uniquely. Undo was not applied.'); return; }
+      var target = matches[0];
+      if (savedEditUndo.changes.some(function(change) { return !Object.prototype.hasOwnProperty.call(target, change.key) || !Object.is(target[change.key], change.after); })) {
+        setNotice('This recipe changed again after saving. Undo was not applied; your current recipe is kept.'); return;
+      }
+      var restored = Object.assign({}, target);
+      savedEditUndo.changes.forEach(function(change) { if (change.hadBefore) restored[change.key] = change.before; else delete restored[change.key]; });
+      var restoredRecords = records.map(function(r) { return r === target ? restored : r; });
+      if (!persist(restoredRecords)) return;
+      setSavedEditUndo(null); setView(restored.id); setServings(String(nlRecipeSnapshot(restored).servings || '')); setScheduling(null); editUndoFocus.current = 'heading'; setNotice('Recipe changes undone. Later favorites and unrelated edits were kept.');
+    }
+    function editUndoControl() {
+      return savedEditUndo && nlH('div', { 'data-nutrition-recipe-edit-undo': '', style: { marginBottom: 14, padding: 12, border: '1px solid #0d9488', borderRadius: 10 } },
+        nlH('p', { id: editUndoDescription, style: Object.assign({}, muted, { margin: '0 0 8px', overflowWrap: 'anywhere' }) }, 'Last saved edit: ' + savedEditUndo.name + '. Undo is available until you leave Recipe Box.'),
+        nlBtn({ type: 'button', ref: editUndoButton, 'aria-describedby': editUndoDescription, onClick: undoRecipeChanges, variant: 'secondary' }, 'Undo recipe changes'));
     }
     function remove(recipe) {
-      if (persist(records.filter(function(r) { return r !== recipe; }))) { setRemoved({ recipe: recipe, index: records.indexOf(recipe) }); setNotice(recipe.name + ' removed. You can undo this removal.'); }
+      if (persist(records.filter(function(r) { return r !== recipe; }))) { if (savedEditUndo && savedEditUndo.id === recipe.id) setSavedEditUndo(null); setRemoved({ recipe: recipe, index: records.indexOf(recipe) }); setNotice(recipe.name + ' removed. You can undo this removal.'); }
     }
     function undo() {
       if (!removed) return;
@@ -4166,9 +4330,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var recipe = nlRecipeSnapshot(selected), scaled = nlRecipeScale(selected, servings);
       return nlH('div', { style: { padding: 14 }, 'data-nutrition-recipe-box': '' },
         nlBtn({ type: 'button', onClick: function() { setScheduling(null); setView(null); setNotice(''); }, variant: 'ghost' }, '← Back to recipe box'),
-        nlH('h2', { style: { fontSize: 22, fontWeight: 900, color: '#0f766e', marginTop: 12, overflowWrap: 'anywhere' } }, recipe.name),
+        nlH('h2', { ref: recipeHeading, tabIndex: -1, style: { fontSize: 22, fontWeight: 900, color: '#0f766e', marginTop: 12, overflowWrap: 'anywhere' } }, recipe.name),
         nlH('p', { style: muted }, (recipe.cuisine ? recipe.cuisine + ' · ' : '') + (sortTime(selected) === Infinity ? 'Time not set' : recipe.time + ' min') + ' · Original recipe: ' + (recipe.servings || 'servings not set')),
-        status, actions(selected, scaled.valid ? Number(servings) : undefined),
+        status, editUndoControl(), actions(selected, scaled.valid ? Number(servings) : undefined),
         scheduling && nlH(NutritionRecipeSchedule, { recipe: scheduling.recipe, servings: scheduling.servings, onPlanRecipe: props.onPlanRecipe, onClose: function() { scheduleReturnFocus.current = true; setScheduling(null); } }),
         nlCard(null,
           nlH('h3', { style: { fontSize: 16, color: '#0f766e', margin: '0 0 8px' } }, 'Ingredients'),
@@ -4176,6 +4340,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           scaled.valid ? nlH('ul', { 'aria-label': 'Scaled ingredients', style: { paddingLeft: 20, fontSize: 13, lineHeight: 1.8, color: 'var(--allo-stem-text, #0f172a)' } }, scaled.items.map(function(item, index) { return nlH('li', { key: index }, item.text); })) : nlH('p', { role: 'status', style: muted }, scaled.error),
           !recipe.ingredients.trim() && nlH('p', { style: muted }, 'No ingredients saved yet. Edit this recipe to add them.'),
           nlH('p', { style: muted }, 'Quantity changes are a preview. Your original ingredients stay saved. Review lines without clear quantities; cooking times and temperatures do not scale automatically.'),
+          nlH('div', { style: { margin: '12px 0' } },
+            nlBtn({ type: 'button', variant: 'secondary', disabled: !scaled.valid || !canPersist, onClick: function() { makeScaledDraft(selected, servings); } }, 'Edit a scaled copy'),
+            nlH('p', { style: muted }, 'Turn these quantities into a separate recipe draft. Review it before saving to your Recipe Box.')),
           nlH('details', null, nlH('summary', { style: { cursor: 'pointer', fontSize: 12, color: '#0f766e' } }, 'Original ingredients'), nlH('div', { style: { whiteSpace: 'pre-wrap', fontSize: 13, marginTop: 8, overflowWrap: 'anywhere', color: 'var(--allo-stem-text, #0f172a)' } }, recipe.ingredients || 'No ingredients saved.'))
         ),
         nlCard(null, nlH('h3', { style: { fontSize: 16, color: '#0f766e', margin: '0 0 8px' } }, 'Steps'), nlH('div', { style: { whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.8, overflowWrap: 'anywhere', color: 'var(--allo-stem-text, #0f172a)' } }, recipe.steps || 'No steps saved yet.')),
@@ -4194,7 +4361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var date = new Date(recipe.date + 'T12:00:00Z');
       return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === recipe.date ? date.getTime() : -Infinity;
     }
-    var visible = recipes.filter(function(r) { var s = nlRecipeSnapshot(r); return (recipeFilter !== 'favorites' || r.favorite === true) && [s.name, s.cuisine, s.tags, s.ingredients].join(' ').toLowerCase().indexOf(search.trim().toLowerCase()) >= 0; });
+    var visible = recipes.filter(function(r) { var s = nlRecipeSnapshot(r); return nlRecipeMatchesIngredientQuery(r, ingredientQuery, ingredientMode) && (recipeFilter !== 'favorites' || r.favorite === true) && [s.name, s.cuisine, s.tags, s.ingredients].join(' ').toLowerCase().indexOf(search.trim().toLowerCase()) >= 0; });
     visible.sort(function(a, b) {
       var difference = recipeSort === 'name' ? a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }) : recipeSort === 'time' ? sortTime(a) - sortTime(b) : sortDate(b) - sortDate(a);
       return difference || recipes.indexOf(a) - recipes.indexOf(b);
@@ -4202,6 +4369,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', { style: { padding: 14 }, 'data-nutrition-recipe-box': '' },
       nlSection('My Recipe Box', 'Save, adapt, and plan meals you enjoy making', '#0d9488'),
       status,
+      editUndoControl(),
       removed && nlBtn({ type: 'button', onClick: undo, variant: 'secondary' }, 'Undo recipe removal'),
       discardedDraft && nlBtn({ type: 'button', onClick: restoreDraft, variant: 'secondary', style: { marginBottom: 10 } }, 'Undo draft discard'),
       rawDraft != null && !editorDraft && nlCard(null,
@@ -4214,6 +4382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('p', { style: muted }, canPersist ? 'Your draft is saved as you type. Leave this tool and return to continue; saving adds it to your Recipe Box.' : 'Saving is unavailable in this view. Changes will last only while this editor stays open.'),
         editingConflict && nlH('p', { role: 'status', style: { fontSize: 13, lineHeight: 1.6, color: '#92400e' } }, 'The saved recipe changed or was removed while you were editing. Save this draft as a new recipe to keep both versions.'),
         nlH('h2', { style: { fontSize: 16, margin: '0 0 12px', color: '#0f766e' } }, editing === null ? 'Recipe details' : 'Edit recipe'),
+        scaledCopyReview(),
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
           field('name', 'Recipe name'),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 170px), 1fr))', gap: 10 } }, field('cuisine', 'Cuisine'), field('time', 'Recipe time (minutes)', false, { type: 'number', min: 0, max: 1440, step: 'any' }), field('servings', 'Original recipe servings', false, { type: 'number', min: 0.25, max: 100, step: 'any' })),
@@ -4221,26 +4390,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           field('steps', 'Steps (one per line)', true, { rows: 4 }),
           field('tags', 'Tags (comma-separated)'), field('notes', 'Recipe notes', true, { rows: 2 }),
           nlH('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-            nlBtn({ type: 'button', onClick: save }, editing === null ? '+ Save recipe' : 'Save recipe changes'),
+            nlBtn({ type: 'button', disabled: hasScaledCopy && !scaledReviewDone, onClick: save }, editing === null ? '+ Save recipe' : 'Save recipe changes'),
             editingConflict && nlBtn({ type: 'button', onClick: function() { save(true); }, variant: 'secondary' }, 'Save draft as new recipe'),
             editorDraft && nlBtn({ type: 'button', onClick: discardDraft, variant: 'ghost' }, editing !== null ? 'Cancel editing' : 'Discard recipe draft')))
       ),
       nlH('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #0f172a)' } }, 'Search my recipes', nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, 'aria-label': 'Search my recipes', placeholder: 'Name, ingredient, cuisine, or tag' })),
+      nlH(NutritionRecipeIngredientFinder, { value: ingredientSearch, onChange: setIngredientSearch, mode: ingredientMode, onMode: setIngredientMode, query: ingredientQuery }),
       nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 10, marginTop: 12 } },
         nlH('label', { ref: filterControl, style: { display: 'grid', gap: 4, fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #0f172a)' } }, 'Show recipes', nlSelect({ value: recipeFilter, onChange: function(e) { setRecipeFilter(e.target.value); }, 'aria-label': 'Show saved recipes' }, [{ value: 'all', label: 'All saved recipes' }, { value: 'favorites', label: 'Favorites only' }])),
         nlH('label', { style: { display: 'grid', gap: 4, fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #0f172a)' } }, 'Sort recipes', nlSelect({ value: recipeSort, onChange: function(e) { setRecipeSort(e.target.value); }, 'aria-label': 'Sort saved recipes' }, [{ value: 'recent', label: 'Recently added' }, { value: 'name', label: 'Name A–Z' }, { value: 'time', label: 'Shortest time first' }]))),
       nlH('p', { style: muted, role: 'status' }, visible.length + ' of ' + recipes.length + ' saved recipes shown'),
       !recipes.length ? nlEmpty('Your recipe box is empty. Add a recipe above or save a starter recipe from the library.') : !visible.length ? nlH('div', null,
         nlEmpty(recipeFilter === 'favorites' ? 'No favorite recipes match. Mark a recipe as a favorite or show all recipes.' : 'No recipes match this search. Try another name or ingredient.'),
-        nlBtn({ type: 'button', variant: 'secondary', onClick: function() { setSearch(''); setRecipeFilter('all'); } }, 'Clear saved recipe filters')) :
-        nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 10 } }, visible.map(function(r) {
+        nlBtn({ type: 'button', variant: 'secondary', onClick: function() { setSearch(''); setRecipeFilter('all'); setIngredientSearch(''); setIngredientMode('all'); } }, 'Clear saved recipe filters')) :
+        nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 10 } }, visible.map(function(r, index) {
           var item = nlRecipeSnapshot(r);
           return nlH('article', { key: r.id, style: { padding: 12, borderRadius: 10, background: '#f0fdfa', border: '1px solid #99f6e4', minWidth: 0 } },
             nlH('h3', { style: { fontSize: 15, color: '#0f766e', margin: '0 0 8px', overflowWrap: 'anywhere' } }, item.name),
             nlH('p', { style: { fontSize: 12, color: '#115e59', lineHeight: 1.6 } }, (item.cuisine ? item.cuisine + ' · ' : '') + (sortTime(r) === Infinity ? 'Time not set' : item.time + ' min') + ' · serves ' + (item.servings || '?')),
             item.tags && nlH('p', { style: { fontSize: 12, color: '#115e59', overflowWrap: 'anywhere' } }, item.tags),
+            nlH(NutritionRecipeIngredientMatchNote, { id: ingredientMatchId + '-' + index, recipe: r, query: ingredientQuery }),
             nlH('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              nlBtn({ type: 'button', onClick: function() { open(r); }, 'aria-label': 'Open recipe ' + item.name, variant: 'secondary' }, 'Open recipe'),
+              nlBtn({ type: 'button', onClick: function() { open(r); }, 'aria-label': 'Open recipe ' + item.name, 'aria-describedby': ingredientQuery.valid && ingredientQuery.terms.length ? ingredientMatchId + '-' + index : undefined, variant: 'secondary' }, 'Open recipe'),
               favoriteButton(r),
               nlBtn({ type: 'button', onClick: function() { edit(r); }, 'aria-label': 'Edit recipe ' + item.name, variant: 'secondary' }, 'Edit'),
               nlBtn({ type: 'button', onClick: function() { copyRecipe(r); }, 'aria-label': 'Make a copy of recipe ' + item.name, variant: 'secondary' }, 'Make a copy'),
@@ -4791,6 +4962,257 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
   }
 
 
+  function nlCookingRounds(portions, limitText, recipe) {
+    var hasLimit = limitText.trim() !== '';
+    var limit = hasLimit ? nlRecipeServings(limitText) : 100;
+    if (limit === null) return { error: 'Enter a round limit greater than 0 and no more than 100 servings.' };
+    // Compare in whole units of the smallest decimal so 0.1 + 0.2 fits 0.3,
+    // and a true excess over the limit never disappears through rounding.
+    var decimals = portions.map(function(portion) { return portion.servings; }).concat(limit).map(function(value) {
+      var parts = String(value).split('e'), mantissa = parts[0], dot = mantissa.indexOf('.');
+      return { digits: mantissa.replace('.', ''), places: (dot < 0 ? 0 : mantissa.length - dot - 1) - Number(parts[1] || 0) };
+    });
+    var places = decimals.reduce(function(max, decimal) { return Math.max(max, decimal.places); }, 0);
+    var units = decimals.map(function(decimal) { return BigInt(decimal.digits + '0'.repeat(places - decimal.places)); });
+    var capacity = units.pop(), sum = units.reduce(function(a, b) { return a + b; }, BigInt(0));
+    function servings(count) { return Number(count.toString() + 'e-' + places); }
+    if (!hasLimit && sum > capacity) return { error: 'This batch is over 100 servings. Set a limit to cook it in rounds, or select fewer meals.' };
+    var rounds = [], current, used = BigInt(0);
+    for (var i = 0; i < portions.length; i++) {
+      var portion = portions[i];
+      if (units[i] > capacity) return { error: portion.label + ' exceeds your limit. Raise the limit or deselect this meal.' };
+      if (!current || used + units[i] > capacity) {
+        current = { portions: [] };
+        rounds.push(current);
+        used = BigInt(0);
+      }
+      used += units[i];
+      current.servings = servings(used);
+      current.portions.push(portion);
+    }
+    for (var j = 0; j < rounds.length; j++) {
+      var round = rounds[j];
+      round.scale = nlRecipeScale(recipe, round.servings);
+      if (!round.scale.valid) return { error: round.scale.error };
+    }
+    return { rounds: rounds, total: servings(sum) };
+  }
+
+  function NutritionCookingRounds(props) {
+    var rounds = props.rounds, split = rounds.length > 1;
+    var doneState = R_NL.useState([]), prepared = doneState[0], setPrepared = doneState[1];
+    function togglePrepared(index) {
+      setPrepared(function(previous) {
+        return previous.indexOf(index) < 0 ? previous.concat(index) : previous.filter(function(other) { return other !== index; });
+      });
+    }
+    return nlH('div', null,
+      split && nlH('p', { style: { fontSize: 13, color: '#475569' } }, 'Mark a round prepared when you finish. Select it again to undo. Changing the grouping starts a fresh checklist.'),
+      split && nlH('p', { role: 'status', style: { fontWeight: 700, color: '#115e59' } }, prepared.length + ' of ' + rounds.length + ' rounds prepared'),
+      rounds.map(function(round, index) {
+        var number = index + 1, label = 'Round ' + number + ' of ' + rounds.length, done = prepared.indexOf(index) >= 0;
+        return nlH('section', { key: index, 'aria-label': split ? label : 'Combined batch', style: split ? { margin: '10px 0', padding: 12, border: '1px solid #99f6e4', borderRadius: 8 } : {} },
+          split && nlH('h4', { style: { color: '#115e59', margin: '0 0 6px' } }, label + ' · ' + round.servings + (round.servings === 1 ? ' serving' : ' servings') + (done ? ' · Prepared' : '')),
+          split && nlH('ul', { style: { paddingLeft: 20, whiteSpace: 'pre-wrap' } }, round.portions.map(function(portion) {
+            return nlH('li', { key: portion.index }, portion.label, portion.notes && ' — ' + portion.notes);
+          })),
+          nlH(split ? 'h5' : 'h4', { style: { fontSize: 14, margin: '12px 0 4px' } }, split ? 'Ingredients for this round' : 'Ingredients for this batch'),
+          nlH('ul', { style: { paddingLeft: 20 } }, round.scale.items.map(function(item, i) {
+            return nlH('li', { key: i }, item.text, item.manual && round.scale.factor === 1 ? ' (review amount)' : '');
+          })),
+          nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+            nlBtn({ type: 'button', onClick: function(event) { props.onCook(props.recipe, round.servings, round.portions, event.currentTarget, split ? label : ''); } }, split ? 'Start cooking round ' + number : 'Start batch cooking'),
+            split && nlBtn({ type: 'button', variant: done ? 'success' : 'secondary', 'aria-pressed': done, onClick: function() { togglePrepared(index); } }, 'Mark round ' + number + ' prepared')));
+      }),
+      nlH(NutritionRecipeTakeaway, { recipe: props.recipe, rounds: rounds, prepared: prepared, plan: props.plan }));
+  }
+
+  function NutritionBatchChoice(props) {
+    var group = props.group;
+    var state = R_NL.useState([]), selected = state[0], setSelected = state[1];
+    var portions = group.portions.filter(function(portion) { return selected.indexOf(portion.index) !== -1; });
+    var limitState = R_NL.useState(''), limitText = limitState[0], setLimitText = limitState[1];
+    var plan = portions.length >= 2 && nlCookingRounds(portions, limitText, group.recipe);
+    var hint = { fontSize: 13, lineHeight: 1.5, color: '#475569' };
+    function toggle(index) {
+      setSelected(function(previous) {
+        return previous.indexOf(index) < 0 ? previous.concat(index) : previous.filter(function(key) { return key !== index; });
+      });
+    }
+    return nlH('fieldset', { style: { minWidth: 0, margin: '10px 0', padding: 12, border: '1px solid #94a3b8', borderRadius: 8, background: '#fff', overflowWrap: 'anywhere' } },
+      nlH('legend', { style: { fontWeight: 700, color: '#115e59' } }, group.recipe.name),
+      nlH('details', { style: hint },
+        nlH('summary', { style: { cursor: 'pointer' } }, 'Review the saved recipe'),
+        nlH('p', null, 'Original yield: ' + group.recipe.servings + (group.recipe.servings === 1 ? ' serving' : ' servings')),
+        nlH('p', { style: { whiteSpace: 'pre-wrap' } }, group.recipe.ingredients),
+        nlH('p', { style: { whiteSpace: 'pre-wrap' } }, group.recipe.steps),
+        group.recipe.notes && nlH('p', { style: { whiteSpace: 'pre-wrap' } }, group.recipe.notes)),
+      group.portions.map(function(portion) {
+        return nlH('label', { key: portion.index, style: { display: 'flex', alignItems: 'baseline', gap: 8, padding: '6px 0', cursor: 'pointer' } },
+          nlH('input', { type: 'checkbox', checked: selected.indexOf(portion.index) !== -1, onChange: function() { toggle(portion.index); } }),
+          nlH('span', null, portion.label, portion.notes && nlH('span', { style: Object.assign({}, hint, { display: 'block', whiteSpace: 'pre-wrap' }) }, portion.notes)));
+      }),
+      plan && nlH('label', { style: { display: 'grid', gap: 4, margin: '12px 0', maxWidth: 370 } },
+        nlH('strong', null, 'Maximum servings per cooking round'),
+        nlInput({ type: 'text', inputMode: 'decimal', 'aria-label': 'Maximum servings per cooking round', placeholder: 'Optional', value: limitText,
+          style: { maxWidth: 140 }, onChange: function(e) { setLimitText(e.target.value); } }),
+        nlH('span', { style: hint }, 'Leave blank for one batch. With a limit, each meal stays together and rounds follow the order shown.')),
+      nlH('p', { role: 'status', style: hint }, !plan ? 'Choose at least two meals to see the batch amounts.' :
+        plan.error || portions.length + ' meals · ' + plan.total + (plan.total === 1 ? ' serving' : ' servings') + ' to prepare' +
+          (plan.rounds.length > 1 ? ' in ' + plan.rounds.length + ' rounds' : '')),
+      plan && !plan.error && nlH('div', null,
+        nlH('p', { style: hint }, 'Check ingredient amounts marked for review. Follow the original cooking instructions for time and temperature.'),
+        nlH(NutritionCookingRounds, { key: JSON.stringify(plan.rounds.map(function(round) { return round.portions.map(function(p) { return p.index; }); })),
+          rounds: plan.rounds, recipe: group.recipe, onCook: props.onCook, plan: props.plan })));
+  }
+
+  function NutritionMealServings(props) {
+    var selectionState = R_NL.useState({ fingerprint: props.fingerprint, indexes: [] }), selection = selectionState[0], setSelection = selectionState[1];
+    var countState = R_NL.useState('2'), countText = countState[0], setCountText = countState[1];
+    var previewState = R_NL.useState(null), preview = previewState[0], setPreview = previewState[1];
+    var noticeState = R_NL.useState(''), notice = noticeState[0], setNotice = noticeState[1];
+    var sent = R_NL.useRef(false), ownChange = R_NL.useRef(null), helpId = R_NL.useId();
+    var indexes = selection.fingerprint === props.fingerprint ? selection.indexes : [];
+    var chosen = props.entries.filter(function(entry) { return indexes.indexOf(entry.index) >= 0; });
+    var count = nlRecipeServings(countText), problem = count === null ? 'Enter servings greater than 0 and no more than 100.' : chosen.length > 42 ? 'Choose up to 42 meals for one serving change.' : '';
+    var prepared = [];
+    chosen.forEach(function(entry) {
+      var scaled = nlRecipeScale(entry.meal && entry.meal.recipeSnapshot, count);
+      if (!scaled.valid && !problem) problem = nlRecipeSnapshot(entry.meal && entry.meal.recipeSnapshot).name + ': ' + scaled.error;
+      prepared.push({ entry: entry, scaled: scaled });
+    });
+    var validPreview = preview && preview.fingerprint === props.fingerprint && preview.servings === count && !problem;
+    var muted = { fontSize: 13, lineHeight: 1.6, color: '#475569' };
+    function title(value, fallback) { return typeof value === 'string' && value ? value.charAt(0).toUpperCase() + value.slice(1) : fallback; }
+    function label(entry) { var meal = entry.meal; return nlRecipeSnapshot(meal && meal.recipeSnapshot).name + ' · ' + title(meal && meal.day, 'Day not set') + ' ' + title(meal && meal.meal, 'Meal not set'); }
+    function choose(next) { setSelection({ fingerprint: props.fingerprint, indexes: next }); setPreview(null); setNotice(''); sent.current = false; }
+    R_NL.useEffect(function() {
+      if (selection.fingerprint !== props.fingerprint) {
+        setSelection({ fingerprint: props.fingerprint, indexes: [] }); setPreview(null); sent.current = false;
+        if (ownChange.current !== props.fingerprint) setNotice('Your draft changed. Choose the meals again before changing servings.');
+      }
+      ownChange.current = null;
+    }, [props.fingerprint]);
+    function apply() {
+      if (!validPreview || sent.current) return;
+      sent.current = true;
+      try {
+        var result = props.onResize(preview);
+        if (result && result.ok) { ownChange.current = result.fingerprint; setSelection({ fingerprint: result.fingerprint, indexes: [] }); setPreview(null); }
+        else sent.current = false;
+        setNotice(result && result.message ? result.message : 'The serving change could not be confirmed. Review your draft before trying again.');
+      } catch (e) { sent.current = false; setNotice('The serving change could not be confirmed. Review your draft before trying again.'); }
+    }
+    return nlH('details', { 'data-nutrition-meal-servings': '', style: { padding: 12, margin: '12px 0', border: '1px solid #99f6e4', borderRadius: 10, background: '#f0fdfa', minWidth: 0, overflowWrap: 'anywhere' } },
+      nlH('summary', { ref: props.summaryRef, style: { fontWeight: 700, color: '#115e59', cursor: 'pointer' } }, 'Change servings for several meals'),
+      nlH('p', { id: helpId, style: muted }, 'Choose meals and preview their ingredient quantities at a new serving count. Changes apply to this draft; create a new shopping list for updated quantities. Follow the saved recipe for cooking times and temperatures.'),
+      nlH('fieldset', { style: { minWidth: 0, padding: 10, border: '1px solid #cbd5e1', borderRadius: 8 } },
+        nlH('legend', { style: { fontWeight: 700 } }, 'Meals to resize'),
+        props.entries.map(function(entry) {
+          var meal = entry.meal, readable = meal && typeof meal === 'object' && !Array.isArray(meal), current = nlRecipeServings(meal && meal.servings);
+          return nlH('label', { key: entry.key, style: { display: 'flex', alignItems: 'start', gap: 10, padding: '8px 0', overflowWrap: 'anywhere' } },
+            nlH('input', { type: 'checkbox', disabled: !readable, checked: indexes.indexOf(entry.index) >= 0, 'aria-label': 'Select servings meal ' + (entry.index + 1) + ': ' + label(entry), onChange: function() { choose(indexes.indexOf(entry.index) < 0 ? indexes.concat(entry.index) : indexes.filter(function(i) { return i !== entry.index; })); }, style: { width: 19, height: 19, flexShrink: 0, accentColor: '#047857' } }),
+            nlH('span', { style: { minWidth: 0 } }, readable ? label(entry) : 'This meal entry could not be read.', readable && nlH('span', { style: Object.assign({}, muted, { display: 'block' }) }, current === null ? 'Servings not set' : current + ' servings')));
+        })),
+      nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, margin: '10px 0' } },
+        nlBtn({ type: 'button', variant: 'secondary', onClick: function() { choose(props.entries.filter(function(e) { return e.meal && typeof e.meal === 'object' && !Array.isArray(e.meal); }).map(function(e) { return e.index; })); } }, 'Select all meals for servings'),
+        nlBtn({ type: 'button', variant: 'secondary', onClick: function() { choose([]); } }, 'Clear serving selection')),
+      nlH('label', { style: { display: 'block', maxWidth: 260, fontWeight: 700 } }, 'New servings per selected meal', nlInput({ type: 'number', min: 0, max: 100, step: 'any', value: countText, 'aria-label': 'New servings per selected meal', 'aria-describedby': helpId, 'aria-invalid': count === null, onChange: function(e) { setCountText(e.target.value); setPreview(null); setNotice(''); sent.current = false; } })),
+      nlH('p', { role: 'status', style: muted }, chosen.length + (chosen.length === 1 ? ' meal selected' : ' meals selected')),
+      problem && nlH('p', { role: 'status', style: muted }, problem),
+      !validPreview && nlBtn({ type: 'button', disabled: !chosen.length || !!problem || props.fingerprint === null, style: { opacity: chosen.length && !problem && props.fingerprint !== null ? 1 : 0.55 }, onClick: function() { setPreview({ context: props.context, fingerprint: props.fingerprint, indexes: chosen.map(function(entry) { return entry.index; }), servings: count }); sent.current = false; } }, 'Preview serving changes'),
+      validPreview && nlH('section', { 'aria-label': 'Serving change preview', style: { padding: 12, background: '#fff', borderRadius: 8, overflowWrap: 'anywhere' } },
+        nlH('h4', { style: { color: '#115e59', marginTop: 0 } }, 'Review planned servings'),
+        nlH('ol', { style: { paddingLeft: 20 } }, prepared.map(function(item) { var entry = item.entry, previous = nlRecipeServings(entry.meal.servings); return nlH('li', { key: entry.key, style: { marginBottom: 10 } }, label(entry) + ' · ' + (previous === null ? 'Not set' : previous) + ' → ' + count + ' servings',
+          nlH('details', { style: { marginTop: 6 } }, nlH('summary', { style: { cursor: 'pointer' } }, 'Ingredients at ' + count + ' servings'), nlH('ul', { style: { paddingLeft: 20 } }, item.scaled.items.map(function(ingredient, i) { return nlH('li', { key: i }, ingredient.text); })))) ; })),
+        nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, nlBtn({ type: 'button', onClick: apply }, 'Apply serving changes'), nlBtn({ type: 'button', variant: 'secondary', onClick: function() { setPreview(null); setNotice('Preview canceled.'); } }, 'Cancel serving changes'))),
+      nlH('p', { role: 'status', 'aria-live': 'polite', style: muted }, notice));
+  }
+
+  function NutritionMealMove(props) {
+    var initial = { fingerprint: props.fingerprint, indexes: [] };
+    var ss = R_NL.useState(initial), selection = ss[0], setSelection = ss[1];
+    var ts = R_NL.useState({ day: 'monday', meal: '' }), target = ts[0], setTarget = ts[1];
+    var ps = R_NL.useState(null), preview = ps[0], setPreview = ps[1];
+    var ns = R_NL.useState(''), notice = ns[0], setNotice = ns[1];
+    var sent = R_NL.useRef(false), ownChange = R_NL.useRef(null);
+    var days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    var slots = ['breakfast', 'lunch', 'dinner', 'snack'];
+    var indexes = selection.fingerprint === props.fingerprint ? selection.indexes : [];
+    var chosen = props.entries.filter(function(entry) { return indexes.indexOf(entry.index) >= 0; });
+    var validPreview = preview && preview.fingerprint === props.fingerprint;
+    var muted = { fontSize: 13, lineHeight: 1.6, color: '#475569' };
+    R_NL.useEffect(function() {
+      if (selection.fingerprint !== props.fingerprint) {
+        setSelection({ fingerprint: props.fingerprint, indexes: [] }); setPreview(null); sent.current = false;
+        if (ownChange.current !== props.fingerprint) setNotice('Your draft changed. Choose the meals again before moving them.');
+      }
+      ownChange.current = null;
+    }, [props.fingerprint]);
+    function title(value, fallback) { return typeof value === 'string' && value ? value.charAt(0).toUpperCase() + value.slice(1) : fallback; }
+    function label(entry) {
+      var meal = entry.meal;
+      return nlRecipeSnapshot(meal && meal.recipeSnapshot).name + ' · ' + title(meal && meal.day, 'Day not set') + ' ' + title(meal && meal.meal, 'Meal not set');
+    }
+    function choose(next) {
+      setSelection({ fingerprint: props.fingerprint, indexes: next }); setPreview(null); setNotice(''); sent.current = false;
+    }
+    function changeTarget(key, value) {
+      var patch = {}; patch[key] = value; setTarget(Object.assign({}, target, patch)); setPreview(null); setNotice(''); sent.current = false;
+    }
+    function apply() {
+      if (!validPreview || sent.current) return;
+      sent.current = true;
+      try {
+        var result = props.onMove(preview);
+        if (result && result.ok) {
+          ownChange.current = result.fingerprint;
+          setSelection({ fingerprint: result.fingerprint, indexes: [] }); setPreview(null);
+        } else sent.current = false;
+        setNotice(result && result.message ? result.message : 'The move could not be confirmed. Review your draft before trying again.');
+      } catch (e) { sent.current = false; setNotice('The move could not be confirmed. Review your draft before trying again.'); }
+    }
+    return nlH('details', { 'data-nutrition-meal-move': '', style: { padding: 12, margin: '12px 0', border: '1px solid #99f6e4', borderRadius: 10, background: '#f0fdfa', minWidth: 0 } },
+      nlH('summary', { ref: props.summaryRef, style: { fontWeight: 700, color: '#115e59', cursor: 'pointer' } }, 'Move several meals'),
+      nlH('p', { style: muted }, 'Choose the meals you want to reschedule, then preview their new day and meal slot. Your saved recipes, servings, and meal notes travel with them.'),
+      nlH('fieldset', { style: { minWidth: 0, padding: 10, border: '1px solid #cbd5e1', borderRadius: 8 } },
+        nlH('legend', { style: { fontWeight: 700 } }, 'Meals to move'),
+        props.entries.map(function(entry) {
+          var meal = entry.meal, readable = meal && typeof meal === 'object' && !Array.isArray(meal);
+          return nlH('label', { key: entry.key, style: { display: 'flex', alignItems: 'start', gap: 10, padding: '8px 0', overflowWrap: 'anywhere' } },
+            nlH('input', { type: 'checkbox', disabled: !readable, checked: indexes.indexOf(entry.index) >= 0,
+              'aria-label': 'Select meal ' + (entry.index + 1) + ': ' + label(entry),
+              onChange: function() { choose(indexes.indexOf(entry.index) < 0 ? indexes.concat(entry.index) : indexes.filter(function(i) { return i !== entry.index; })); } }),
+            nlH('span', { style: { minWidth: 0 } }, readable ? label(entry) : 'This meal entry could not be read.',
+              readable && nlH('span', { style: Object.assign({}, muted, { display: 'block', whiteSpace: 'pre-wrap' }) },
+                typeof meal.servings === 'string' || typeof meal.servings === 'number' && Number.isFinite(meal.servings) ? String(meal.servings) + ' servings' : 'Servings not set',
+                typeof meal.notes === 'string' && meal.notes && ' · ' + meal.notes)));
+        })),
+      nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, margin: '10px 0' } },
+        nlBtn({ type: 'button', variant: 'secondary', onClick: function() { choose(props.entries.filter(function(e) { return e.meal && typeof e.meal === 'object' && !Array.isArray(e.meal); }).map(function(e) { return e.index; })); } }, 'Select all meals to move'),
+        nlBtn({ type: 'button', variant: 'secondary', onClick: function() { choose([]); } }, 'Clear meals to move')),
+      nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 10 } },
+        nlH('label', { style: { display: 'grid', gap: 4, fontWeight: 700 } }, 'New day',
+          nlSelect({ 'aria-label': 'New day for selected meals', value: target.day, style: { width: '100%' }, onChange: function(e) { changeTarget('day', e.target.value); } }, days.map(function(day) { return { value: day, label: title(day) }; }))),
+        nlH('label', { style: { display: 'grid', gap: 4, fontWeight: 700 } }, 'Meal slot',
+          nlSelect({ 'aria-label': 'Meal slot for selected meals', value: target.meal, style: { width: '100%' }, onChange: function(e) { changeTarget('meal', e.target.value); } },
+            [{ value: '', label: 'Keep each meal’s slot' }].concat(slots.map(function(slot) { return { value: slot, label: title(slot) }; }))))),
+      nlH('p', { role: 'status', style: muted }, chosen.length + (chosen.length === 1 ? ' meal selected' : ' meals selected')),
+      !validPreview && nlBtn({ type: 'button', disabled: !chosen.length || props.fingerprint === null,
+        style: { opacity: chosen.length && props.fingerprint !== null ? 1 : 0.55 }, onClick: function() {
+        setPreview({ fingerprint: props.fingerprint, context: props.context, indexes: indexes.slice(), day: target.day, meal: target.meal }); sent.current = false;
+      } }, 'Preview meal moves'),
+      validPreview && nlH('section', { 'aria-label': 'Meal move preview', style: { padding: 12, background: '#fff', borderRadius: 8, overflowWrap: 'anywhere' } },
+        nlH('h4', { style: { color: '#115e59', marginTop: 0 } }, 'Review the new schedule'),
+        nlH('ol', { style: { paddingLeft: 20 } }, chosen.map(function(entry) {
+          return nlH('li', { key: entry.key, style: { marginBottom: 8 } }, label(entry) + ' → ' + title(target.day) + ' ' + title(target.meal || entry.meal.meal, 'Meal not set'));
+        })),
+        nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          nlBtn({ type: 'button', onClick: apply }, 'Apply meal moves'),
+          nlBtn({ type: 'button', variant: 'secondary', onClick: function() { setPreview(null); setNotice('Preview canceled.'); } }, 'Cancel meal moves'))),
+      nlH('p', { role: 'status', 'aria-live': 'polite', style: muted }, notice));
+  }
+
   // 34) PersonalMealPrepPlanner — weekly prep schedule
   function PersonalMealPrepPlanner(props) {
     if (!R_NL) return null;
@@ -4816,6 +5238,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var recipeSavingState = R_NL.useState(null), recipeSaving = recipeSavingState[0], setRecipeSaving = recipeSavingState[1];
     var recipeSavingTrigger = R_NL.useRef(null), recipeSavingSession = R_NL.useRef(0);
     var copiedUndoState = R_NL.useState(null), copiedUndo = copiedUndoState[0], setCopiedUndo = copiedUndoState[1];
+    var moveUndoState = R_NL.useState(null), moveUndo = moveUndoState[0], setMoveUndo = moveUndoState[1];
+    var moveVersionState = R_NL.useState(0), moveVersion = moveVersionState[0], setMoveVersion = moveVersionState[1];
+    var moveUndoButton = R_NL.useRef(null), moveSummary = R_NL.useRef(null);
+    var servingUndoState = R_NL.useState(null), servingUndo = servingUndoState[0], setServingUndo = servingUndoState[1];
+    var servingVersionState = R_NL.useState(0), servingVersion = servingVersionState[0], setServingVersion = servingVersionState[1];
+    var servingUndoButton = R_NL.useRef(null), servingSummary = R_NL.useRef(null);
     var savedSearchState = R_NL.useState(''), savedSearch = savedSearchState[0], setSavedSearch = savedSearchState[1];
     var reuseDatesState = R_NL.useState({}), reuseDates = reuseDatesState[0], setReuseDates = reuseDatesState[1];
     var swapHeading = R_NL.useRef(null), swapTrigger = R_NL.useRef(null);
@@ -4868,7 +5296,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       }
       return matches.length === 1 ? matches[0] : -1;
     }
-    function resetSwap() { setSwapping(null); setSwapUndo(null); setAdaptation(null); setRecipeSaving(null); setCopiedUndo(null); }
+    function resetSwap() { setSwapping(null); setSwapUndo(null); setAdaptation(null); setRecipeSaving(null); setCopiedUndo(null); setMoveUndo(null); setServingUndo(null); }
+    function moveContext() { return JSON.stringify([draft.id, draft.editingId, draft.weekOf]); }
+    function resizeMeals(request) {
+      if (unreadableDraft || mealFingerprint(meals) === null) return { ok: false, message: 'Review the unreadable draft before changing servings.' };
+      if (adaptation || swapping || recipeSaving) return { ok: false, message: 'Finish or cancel the open recipe action before changing servings.' };
+      if (!request || request.context !== moveContext() || request.fingerprint !== mealFingerprint(meals)) return { ok: false, message: 'Your draft changed. Preview the serving changes again.' };
+      var count = nlRecipeServings(request.servings);
+      if (count === null) return { ok: false, message: 'Enter servings greater than 0 and no more than 100.' };
+      if (!Array.isArray(request.indexes) || !request.indexes.length) return { ok: false, message: 'Choose meals before changing servings.' };
+      var indexes = request.indexes.filter(function(index, i, all) { return all.indexOf(index) === i; });
+      if (indexes.length > 42) return { ok: false, message: 'Choose up to 42 meals for one serving change.' };
+      if (indexes.some(function(index) { var meal = meals[index]; return !Number.isInteger(index) || index < 0 || index >= meals.length || !meal || typeof meal !== 'object' || Array.isArray(meal) || !nlRecipeScale(meal.recipeSnapshot, count).valid; })) return { ok: false, message: 'Review the saved recipe for every selected meal before changing servings.' };
+      var changes = [], resizedMeals = meals.slice();
+      indexes.forEach(function(index) {
+        var meal = meals[index]; if (nlRecipeServings(meal.servings) === count) return;
+        changes.push({ index: index, id: meal.id, byId: uniqueMealId(meal), before: meal, after: count });
+        resizedMeals[index] = Object.assign({}, meal, { servings: count });
+      });
+      if (!changes.length) return { ok: false, message: 'These meals already have the selected serving count.' };
+      if (!setDraft({ meals: resizedMeals })) return { ok: false, message: 'The draft could not accept these serving changes.' };
+      resetSwap(); var fingerprint = mealFingerprint(resizedMeals);
+      setServingUndo({ context: moveContext(), changes: changes, fingerprint: fingerprint });
+      setTimeout(function() { if (servingUndoButton.current) servingUndoButton.current.focus(); }, 0);
+      var message = 'Servings updated for ' + changes.length + (changes.length === 1 ? ' meal.' : ' meals.'); setNotice(message + ' Undo serving changes is available.');
+      return { ok: true, fingerprint: fingerprint, message: message };
+    }
+    function undoMealServings() {
+      if (!servingUndo) return;
+      if (unreadableDraft || servingUndo.context !== moveContext()) { setNotice('This is a different draft. Undo serving changes was not applied.'); return; }
+      if (servingUndo.changes.some(function(change) { return !change.byId; }) && servingUndo.fingerprint !== mealFingerprint(meals)) { setNotice('These imported entries changed. Undo serving changes was not applied.'); return; }
+      var targets = servingUndo.changes.map(function(change) { if (!change.byId) return change.index; var matches = []; meals.forEach(function(meal, i) { if (meal && meal.id === change.id) matches.push(i); }); return matches.length === 1 ? matches[0] : -1; });
+      if (targets.some(function(index, i) { return index < 0 || !meals[index] || !Object.is(meals[index].servings, servingUndo.changes[i].after); })) { setNotice('A selected meal was removed or its servings changed again. Undo serving changes was not applied.'); return; }
+      var restored = meals.slice();
+      servingUndo.changes.forEach(function(change, i) { var meal = Object.assign({}, meals[targets[i]]); if (Object.prototype.hasOwnProperty.call(change.before, 'servings')) meal.servings = change.before.servings; else delete meal.servings; restored[targets[i]] = meal; });
+      if (setDraft({ meals: restored })) { setServingUndo(null); setServingVersion(function(version) { return version + 1; }); setNotice('Serving changes undone.'); setTimeout(function() { if (servingSummary.current) servingSummary.current.focus(); }, 0); }
+    }
+    function moveMeals(request) {
+      if (unreadableDraft) return { ok: false, message: 'Review or clear the unreadable draft before moving meals.' };
+      if (mealFingerprint(meals) === null) return { ok: false, message: 'These meals could not be read safely. Review your draft before moving them.' };
+      if (adaptation || swapping || recipeSaving) return { ok: false, message: 'Finish or cancel the open recipe action before moving meals.' };
+      if (!request || request.context !== moveContext() || request.fingerprint !== mealFingerprint(meals)) return { ok: false, message: 'Your draft changed. Preview these meals again before moving them.' };
+      if (days.indexOf(request.day) < 0 || request.meal !== '' && slots.indexOf(request.meal) < 0) return { ok: false, message: 'Choose a valid day and meal slot.' };
+      if (!Array.isArray(request.indexes) || !request.indexes.length) return { ok: false, message: 'Choose at least one meal to move.' };
+      var indexes = request.indexes.filter(function(index, position, list) { return list.indexOf(index) === position; });
+      if (indexes.some(function(index) { return !Number.isInteger(index) || index < 0 || index >= meals.length || !meals[index] || typeof meals[index] !== 'object' || Array.isArray(meals[index]); })) return { ok: false, message: 'Some selected meals could not be read. Choose the meals again.' };
+      var changes = [], nextMeals = meals.slice();
+      indexes.forEach(function(index) {
+        var meal = meals[index], next = Object.assign({}, meal, { day: request.day });
+        if (request.meal) next.meal = request.meal;
+        var keys = ['day', 'meal'].filter(function(key) { return meal[key] !== next[key]; });
+        if (!keys.length) return;
+        changes.push({ index: index, id: meal.id, byId: uniqueMealId(meal), before: meal, after: next, keys: keys });
+        nextMeals[index] = next;
+      });
+      if (!changes.length) return { ok: false, message: 'These meals are already on the selected schedule.' };
+      if (!setDraft({ meals: nextMeals })) return { ok: false, message: 'The draft could not accept these moves.' };
+      resetSwap();
+      var fingerprint = mealFingerprint(nextMeals);
+      setMoveUndo({ context: moveContext(), changes: changes, fingerprint: fingerprint });
+      setTimeout(function() { if (moveUndoButton.current) moveUndoButton.current.focus(); }, 0);
+      var message = changes.length + (changes.length === 1 ? ' meal moved.' : ' meals moved.');
+      setNotice(message + ' Undo meal moves is available.');
+      return { ok: true, fingerprint: fingerprint, message: message };
+    }
+    function undoMealMoves() {
+      if (!moveUndo) return;
+      if (moveUndo.context !== moveContext() || unreadableDraft) { setNotice('This is a different draft. Undo meal moves was not applied.'); return; }
+      var usesPositions = moveUndo.changes.some(function(change) { return !change.byId; });
+      if (usesPositions && moveUndo.fingerprint !== mealFingerprint(meals)) { setNotice('These imported meal entries changed. Undo meal moves was not applied.'); return; }
+      var targets = moveUndo.changes.map(function(change) {
+        if (!change.byId) return change.index;
+        var matches = [];
+        meals.forEach(function(meal, index) { if (meal && meal.id === change.id) matches.push(index); });
+        return matches.length === 1 ? matches[0] : -1;
+      });
+      if (targets.some(function(index, position) {
+        var change = moveUndo.changes[position], meal = meals[index];
+        return index < 0 || !meal || change.keys.some(function(key) { return meal[key] !== change.after[key]; });
+      })) { setNotice('A moved meal was removed or rescheduled again. Undo meal moves was not applied.'); return; }
+      var restored = meals.slice();
+      moveUndo.changes.forEach(function(change, position) {
+        var meal = Object.assign({}, meals[targets[position]]);
+        change.keys.forEach(function(key) {
+          if (Object.prototype.hasOwnProperty.call(change.before, key)) meal[key] = change.before[key];
+          else delete meal[key];
+        });
+        restored[targets[position]] = meal;
+      });
+      if (setDraft({ meals: restored })) {
+        setMoveUndo(null); setNotice('Meal moves undone.');
+        setMoveVersion(function(version) { return version + 1; });
+        setTimeout(function() { if (moveSummary.current) moveSummary.current.focus(); }, 0);
+      }
+    }
     function beginRecipeSave(meal, plan, event) {
       if (adaptation || swapping) { setNotice('Apply or cancel your recipe changes before saving a recipe to your box.'); return; }
       var snapshot = nlRecipeSnapshot(meal.recipeSnapshot);
@@ -5035,13 +5556,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       return bd.localeCompare(ad) || a.index - b.index;
     });
     function sortedMeals(list) {
-      return list.map(function(meal, index) { return { meal: meal, index: index }; }).sort(function(a, b) {
+      var occurrences = new Map();
+      return list.map(function(meal, index) {
+        var id = meal && meal.id, key = 'row-' + index;
+        if ((typeof id === 'string' && id) || (typeof id === 'number' && Number.isFinite(id))) {
+          var occurrence = occurrences.get(id) || 0;
+          occurrences.set(id, occurrence + 1);
+          key = JSON.stringify([id, occurrence]);
+        }
+        return { meal: meal, index: index, key: key };
+      }).sort(function(a, b) {
         var ad = days.indexOf(a.meal && a.meal.day), bd = days.indexOf(b.meal && b.meal.day);
         var am = slots.indexOf(a.meal && a.meal.meal), bm = slots.indexOf(b.meal && b.meal.meal);
         return (ad < 0 ? 7 : ad) - (bd < 0 ? 7 : bd) || (am < 0 ? 4 : am) - (bm < 0 ? 4 : bm) || a.index - b.index;
       });
     }
-    function overview(list) {
+    function batchChoices(sorted, plan) {
+      var groups = new Map();
+      sorted.forEach(function(entry) {
+        var meal = entry.meal, source = meal && meal.recipeSnapshot;
+        if (!source || typeof source.name !== 'string' || !source.name.trim() || typeof source.ingredients !== 'string' || !source.ingredients.trim()) return;
+        var recipe = nlRecipeSnapshot(source), servings = nlRecipeServings(meal.servings);
+        if (servings === null || recipe.servings === null || !recipe.steps.trim() || days.indexOf(meal.day) < 0 || slots.indexOf(meal.meal) < 0) return;
+        var signature = JSON.stringify([recipe.name, recipe.servings, recipe.ingredients, recipe.steps, recipe.notes, String(recipe.time)]);
+        if (!groups.has(signature)) groups.set(signature, { recipe: recipe, signature: signature, portions: [] });
+        groups.get(signature).portions.push({ index: entry.index, servings: servings, notes: str(meal.notes),
+          label: name(meal.day) + ' ' + meal.meal + ' · ' + servings + (servings === 1 ? ' serving' : ' servings') });
+      });
+      var repeated = Array.from(groups.values()).filter(function(group) { return group.portions.length >= 2; });
+      if (!repeated.length) return null;
+      return nlH('details', { style: { margin: '14px 0 0', padding: 12, background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 8 } },
+        nlH('summary', { style: { cursor: 'pointer', fontWeight: 700, color: '#115e59' } }, 'Cook repeated recipes together'),
+        nlH('p', { style: { fontSize: 13, lineHeight: 1.6 } }, 'Choose meals that use the same saved recipe. Preview the combined ingredients, then take each meal’s portions into guided cooking.'),
+        repeated.map(function(group) {
+          return nlH(NutritionBatchChoice, { key: JSON.stringify([plan.id, plan.editingId, plan.weekOf, group.signature, group.portions]), group: group, plan: plan,
+            onCook: function(recipe, total, portions, trigger, roundLabel) {
+              cookingTrigger.current = trigger;
+              setCooking({ recipe: recipe, servings: total, portions: portions, roundLabel: roundLabel });
+            } });
+        }));
+    }
+    function overview(list, plan) {
       var sorted = sortedMeals(list), unscheduled = sorted.filter(function(entry) { return !entry.meal || days.indexOf(entry.meal.day) < 0; });
       return nlH('section', { 'aria-label': 'Week at a glance', style: { margin: '14px 0 18px', padding: 14, background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 12 } },
         nlH('h3', { style: { fontSize: 16, fontWeight: 800, color: '#115e59', margin: '0 0 4px' } }, 'Week at a glance'),
@@ -5056,7 +5611,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             })) : nlH('p', { style: { fontSize: 12, color: '#64748b', margin: 0 } }, 'Open'));
         })),
         unscheduled.length > 0 && nlH('div', { role: 'group', 'aria-label': 'Unscheduled meals', style: { marginTop: 10, color: '#78350f', fontSize: 13 } },
-          nlH('strong', null, 'Unscheduled meals'), nlH('p', null, 'Choose a day for: ' + unscheduled.map(function(entry) { return recipeName(entry.meal); }).join(', '))));
+          nlH('strong', null, 'Unscheduled meals'), nlH('p', null, 'Choose a day for: ' + unscheduled.map(function(entry) { return recipeName(entry.meal); }).join(', '))),
+        batchChoices(sorted, plan));
     }
     function reusePlan(plan, chosenDate) {
       if (draftHasWork()) { setNotice('Save or finish your current draft before reusing another plan.'); return; }
@@ -5112,10 +5668,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       resetSwap();
       setNotice(existing ? 'Meal plan updated. Existing shopping lists stay unchanged.' : 'Meal plan saved. Create its shopping list below.');
     }
-    function mealCard(m, index, editable, savedPlan) {
+    function mealCard(entry, editable, savedPlan) {
+      var m = entry.meal, index = entry.index;
       var title = recipeName(m), safe = m && typeof m === 'object' ? m : {};
       var scaled = nlRecipeScale(safe.recipeSnapshot, safe.servings);
-      return nlH('article', { key: safe.id || index, 'data-meal-id': safe.id || index, style: { padding: 12, border: '1px solid #99f6e4', borderRadius: 10, background: '#f0fdfa', marginBottom: 8, color: '#0f172a' } },
+      return nlH('article', { key: entry.key, 'data-meal-id': str(safe.id) || index, style: { padding: 12, border: '1px solid #99f6e4', borderRadius: 10, background: '#f0fdfa', marginBottom: 8, color: '#0f172a' } },
         nlH('div', { style: { fontSize: 11, fontWeight: 800, color: '#115e59', textTransform: 'uppercase' } }, name(safe.day) + ' · ' + name(safe.meal)),
         nlH('h4', { style: { fontSize: 15, fontWeight: 800, margin: '4px 0' } }, title),
         editable ? nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'end' } },
@@ -5143,10 +5700,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlH('p', { style: { whiteSpace: 'pre-wrap', lineHeight: 1.7, overflowWrap: 'anywhere' } }, safe.recipeSnapshot.steps),
           typeof safe.recipeSnapshot.notes === 'string' && safe.recipeSnapshot.notes.trim() && nlH('p', { style: { whiteSpace: 'pre-wrap', color: '#475569', lineHeight: 1.6 } }, safe.recipeSnapshot.notes)));
     }
-    return nlH('section', { ref: plannerRef, 'aria-label': 'My Meal Planner', 'data-nutrition-meal-planner': '', style: { padding: 14, maxWidth: 1100, margin: '0 auto' } },
-      cooking && nlH(NutritionRecipeCookMode, { recipe: cooking.recipe, servings: cooking.servings, onClose: function() {
+    return nlH('section', { ref: plannerRef, tabIndex: -1, 'aria-label': 'My Meal Planner', 'data-nutrition-meal-planner': '', style: { padding: 14, maxWidth: 1100, margin: '0 auto' } },
+      cooking && nlH(NutritionRecipeCookMode, { recipe: cooking.recipe, servings: cooking.servings, portions: cooking.portions, roundLabel: cooking.roundLabel, onClose: function() {
         setCooking(null);
-        setTimeout(function() { if (cookingTrigger.current && cookingTrigger.current.isConnected) cookingTrigger.current.focus(); }, 0);
+        setTimeout(function() {
+          var target = cookingTrigger.current && cookingTrigger.current.isConnected ? cookingTrigger.current : plannerRef.current;
+          if (target) target.focus();
+        }, 0);
       } }),
       nlH('div', { hidden: !!cooking },
       nlSection('My Meal Planner', 'Recipes → a flexible week → a shopping checklist', '#0f766e'),
@@ -5188,13 +5748,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlBtn({ onClick: addMeal }, 'Add meal to draft')),
         nlH('h3', { style: { fontSize: 15, fontWeight: 700, marginBottom: 10 } }, meals.length + (meals.length === 1 ? ' meal' : ' meals') + ' in your draft'),
         !meals.length && nlEmpty('Choose a recipe above or start with a freeform meal note below.'),
-        meals.length > 0 && overview(meals),
+        meals.length > 0 && overview(meals, draft),
+        !unreadableDraft && meals.length > 0 && nlH(NutritionMealServings, { key: 'servings:' + moveContext() + ':' + servingVersion, context: moveContext(), entries: sortedMeals(meals), fingerprint: mealFingerprint(meals), onResize: resizeMeals, summaryRef: servingSummary }),
+        servingUndo && nlBtn({ type: 'button', ref: servingUndoButton, variant: 'secondary', onClick: undoMealServings }, 'Undo serving changes'),
+        !unreadableDraft && meals.length > 0 && nlH(NutritionMealMove, { key: moveContext() + ':' + moveVersion, context: moveContext(), entries: sortedMeals(meals), fingerprint: mealFingerprint(meals), onMove: moveMeals, summaryRef: moveSummary }),
+        moveUndo && nlBtn({ type: 'button', ref: moveUndoButton, variant: 'secondary', onClick: undoMealMoves }, 'Undo meal moves'),
         swapPanel(),
         adaptation && nlH(NutritionRecipeAdaptation, { key: adaptation.session, recipe: adaptation.value.recipeSnapshot, servings: adaptation.value.servings, onApply: applyAdaptation, onCancel: function() { closeAdaptation(); setNotice('Recipe changes canceled. Your planned meal is unchanged.'); } }),
         recipeSaving && nlH(NutritionPlannedRecipeSave, { key: recipeSaving.session, recipe: recipeSaving.recipe, onSave: function(recipe, chosenName) { return props.onSavePlannedRecipe(recipe, chosenName, recipeSaving.context); }, onCancel: closeRecipeSave }),
         swapUndo && nlBtn({ variant: 'secondary', style: { marginBottom: 12 }, onClick: undoSwap }, swapUndo.label || 'Undo recipe swap'),
         copiedUndo && nlBtn({ variant: 'secondary', style: { marginBottom: 12 }, onClick: undoCopiedMeals }, 'Undo copied meals'),
-        nlH('div', { style: grid }, sortedMeals(meals).map(function(entry) { return mealCard(entry.meal, entry.index, true); })),
+        nlH('div', { style: grid }, sortedMeals(meals).map(function(entry) { return mealCard(entry, true); })),
         nlH('details', { open: ['monThu', 'tuFri', 'weMo', 'snacks'].some(function(k) { return str(draft[k]); }) ? true : undefined, style: { margin: '12px 0' } },
           nlH('summary', { style: { fontWeight: 700, cursor: 'pointer', padding: '8px 0' } }, 'Freeform meals and prep notes'),
           [['monThu', 'Mon/Thu meals'], ['tuFri', 'Tue/Fri meals'], ['weMo', 'Wednesday meal'], ['snacks', 'Snacks and prep notes']].map(function(pair) {
@@ -5234,8 +5798,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlH('h3', { style: { fontSize: 16, fontWeight: 800, color: '#115e59', overflowWrap: 'anywhere' } }, str(plan.name).trim() || 'Week of ' + str(plan.weekOf)),
           str(plan.name).trim() && nlH('p', { style: { fontSize: 13, color: '#475569' } }, 'Week of ' + str(plan.weekOf)),
           nlH('p', { style: { fontSize: 12, color: '#475569', marginBottom: 12 } }, plannedMeals.length + (plannedMeals.length === 1 ? ' meal' : ' meals') + ' · Prep ' + name(plan.prepDay) + ' · ' + str(plan.prepTime) + ' minutes'),
-          plannedMeals.length > 0 && overview(plannedMeals),
-          nlH('div', { style: grid }, sortedMeals(plannedMeals).map(function(entry) { return mealCard(entry.meal, entry.index, false, plan); })),
+          plannedMeals.length > 0 && overview(plannedMeals, plan),
+          nlH('div', { style: grid }, sortedMeals(plannedMeals).map(function(entry) { return mealCard(entry, false, plan); })),
           [['monThu', 'Mon/Thu'], ['tuFri', 'Tue/Fri'], ['weMo', 'Wednesday'], ['snacks', 'Snacks / notes']].map(function(pair) { return str(plan[pair[0]]) ? nlH('p', { key: pair[0], style: { fontSize: 13, whiteSpace: 'pre-wrap' } }, nlH('strong', null, pair[1] + ': '), str(plan[pair[0]])) : null; }),
           nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
             nlBtn({ 'aria-label': 'Edit plan for week of ' + str(plan.weekOf), onClick: function() {
@@ -11649,6 +12213,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var ss = R_NL.useState(''); var search = ss[0]; var setSearch = ss[1];
     var ts = R_NL.useState('all'); var tag = ts[0]; var setTag = ts[1];
     var ms = R_NL.useState('all'); var maxTime = ms[0]; var setMaxTime = ms[1];
+    var ingredientState = R_NL.useState(''), ingredientSearch = ingredientState[0], setIngredientSearch = ingredientState[1];
+    var ingredientModeState = R_NL.useState('all'), ingredientMode = ingredientModeState[0], setIngredientMode = ingredientModeState[1];
+    var ingredientQuery = nlRecipeIngredientQuery(ingredientSearch);
+    var ingredientMatchId = R_NL.useId();
     var ps = R_NL.useState(null); var picked = ps[0]; var setPicked = ps[1];
     var ns = R_NL.useState(''); var notice = ns[0]; var setNotice = ns[1];
     var zs = R_NL.useState('1'); var servings = zs[0]; var setServings = zs[1];
@@ -11665,7 +12233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var visible = NUTRITION_KIT_RECIPE_SEED.filter(function(r) {
       var matchSearch = !search.trim() || (r.name + ' ' + r.cuisine + ' ' + r.tags + ' ' + r.ingredients).toLowerCase().indexOf(search.trim().toLowerCase()) >= 0;
       var matchTag = tag === 'all' || (r.tags || '').toLowerCase().split(',').map(function(t) { return t.trim(); }).indexOf(tag.toLowerCase()) >= 0;
-      return matchSearch && matchTag && (maxTime === 'all' || Number(r.time) <= Number(maxTime));
+      return matchSearch && matchTag && nlRecipeMatchesIngredientQuery(r, ingredientQuery, ingredientMode) && (maxTime === 'all' || Number(r.time) <= Number(maxTime));
     });
     if (cooking) return nlH(NutritionRecipeCookMode, { recipe: cooking.recipe, servings: cooking.servings, onClose: function() { setCooking(null); } });
     if (picked) {
@@ -11698,17 +12266,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlSection('Recipe Library', NUTRITION_KIT_RECIPE_SEED.length + ' starter recipes to make your own', '#0d9488'),
       nlH('p', { style: muted }, 'Find a recipe, adjust the amount, then save it to your box or use it in a meal plan.'),
       nlH('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #0f172a)' } }, 'Search starter recipes', nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, 'aria-label': 'Search starter recipes', placeholder: 'Name, ingredient, or cuisine' })),
+      nlH(NutritionRecipeIngredientFinder, { value: ingredientSearch, onChange: setIngredientSearch, mode: ingredientMode, onMode: setIngredientMode, query: ingredientQuery }),
       nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 10, marginTop: 12 } },
         nlH('label', { style: { display: 'grid', gap: 4, fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #0f172a)' } }, 'Recipe category', nlSelect({ value: tag, onChange: function(e) { setTag(e.target.value); }, 'aria-label': 'Recipe category' }, allTags.map(function(t) { return { value: t, label: t === 'all' ? 'All categories' : t }; }))),
         nlH('label', { style: { display: 'grid', gap: 4, fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #0f172a)' } }, 'Recipe time', nlSelect({ value: maxTime, onChange: function(e) { setMaxTime(e.target.value); }, 'aria-label': 'Recipe time' }, [{ value: 'all', label: 'Any time' }, { value: '15', label: '15 minutes or less' }, { value: '30', label: '30 minutes or less' }, { value: '60', label: '60 minutes or less' }]))),
       nlH('p', { style: muted, role: 'status' }, visible.length + ' of ' + NUTRITION_KIT_RECIPE_SEED.length + ' starter recipes shown'),
-      !visible.length && nlH('div', null, nlEmpty('No recipes match these filters. Try a different ingredient or widen the time filter.'), nlBtn({ type: 'button', onClick: function() { setSearch(''); setTag('all'); setMaxTime('all'); }, variant: 'secondary' }, 'Clear recipe filters')),
+      !visible.length && nlH('div', null, nlEmpty('No recipes match these filters. Try a different ingredient or widen the time filter.'), nlBtn({ type: 'button', onClick: function() { setSearch(''); setTag('all'); setMaxTime('all'); setIngredientSearch(''); setIngredientMode('all'); }, variant: 'secondary' }, 'Clear recipe filters')),
       nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 10 } },
-        visible.map(function(r) {
-          return nlH('button', { key: r.id, type: 'button', onClick: function() { setPicked(r); setServings(String(r.servings)); setNotice(''); }, 'aria-label': 'Open starter recipe ' + r.name, style: { textAlign: 'left', padding: 14, borderRadius: 10, background: '#f0fdfa', border: '1px solid #5eead4', borderLeft: '4px solid #0d9488', cursor: 'pointer', minWidth: 0 } },
+        visible.map(function(r, index) {
+          return nlH('button', { key: r.id, type: 'button', onClick: function() { setPicked(r); setServings(String(r.servings)); setNotice(''); }, 'aria-label': 'Open starter recipe ' + r.name, 'aria-describedby': ingredientQuery.valid && ingredientQuery.terms.length ? ingredientMatchId + '-' + index : undefined, style: { textAlign: 'left', padding: 14, borderRadius: 10, background: '#f0fdfa', border: '1px solid #5eead4', borderLeft: '4px solid #0d9488', cursor: 'pointer', minWidth: 0 } },
             nlH('strong', { style: { fontSize: 15, color: '#0f766e', overflowWrap: 'anywhere' } }, r.name),
             nlH('div', { style: { fontSize: 12, color: '#115e59', marginTop: 6 } }, r.cuisine + ' · ' + r.time + ' min · serves ' + r.servings),
             nlH('div', { style: { fontSize: 12, color: '#115e59', marginTop: 6, overflowWrap: 'anywhere' } }, r.tags),
+            nlH(NutritionRecipeIngredientMatchNote, { id: ingredientMatchId + '-' + index, recipe: r, query: ingredientQuery }),
             saved(r) && nlH('div', { style: { fontSize: 12, fontWeight: 700, color: '#166534', marginTop: 6 } }, '✓ Saved in Recipe Box'));
         })),
       nlEvidenceFooter('Starter recipes are editable ideas. Check ingredient labels and adapt recipes for your household. Saving a starter creates your own copy; your edits do not change the library.')

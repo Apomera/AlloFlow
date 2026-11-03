@@ -1,6 +1,9 @@
 // Reviewed custom specimen rigs added after the shared lofted-fish catalog.
 // Explicit inventories keep the earlier geometry/draw budgets unchanged.
 export const POST_MERGE_PARTS = {
+  "acropora_clathrata": ["colony"],
+  "acropora_humilis": ["colony"],
+  "acropora_millepora": ["colony"],
   "leaf_scorpionfish": [
     "leaf-body-and-fins"
   ],

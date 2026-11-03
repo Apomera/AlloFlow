@@ -902,6 +902,7 @@
   GW_CLARITY_CSS += '.theme-contrast .gw-root .gw-notebook-tabs button[aria-selected="true"],[data-stem-theme="contrast"] .gw-root .gw-notebook-tabs button[aria-selected="true"]{text-decoration:underline!important;text-underline-offset:4px;text-decoration-thickness:2px}@media(forced-colors:active){.gw-root .gw-notebook-tabs button[aria-selected="true"]{text-decoration:underline!important;text-underline-offset:4px;text-decoration-thickness:2px}}';
   GW_CLARITY_CSS += '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] #gw-retrieval-prompt{font-size:16px!important;line-height:1.6}';
   GW_CLARITY_CSS += [
+    '.gw-root .gw-action-bar button[aria-disabled="true"]{border-style:dashed!important;cursor:default!important}',
     '@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root.gw-root[data-hud-panel="inventory"][data-touch-active="true"]>.gw-coordinate-hud{display:none!important}}',
     '#geoworld-fs-workspace.gw-root[data-hud-panel="inventory"]:not([data-hud-hidden="true"])>.gw-inventory-panel{display:flex!important}',
     '#geoworld-fs-workspace.gw-root[data-hud-panel="inventory"]>:is(.gw-measure-card,.gw-coordinate-hud){display:none!important}',
@@ -8675,11 +8676,19 @@
       // looked blank. Keeping the callback identity stable (useCallback with no deps,
       // reading live values off gwRuntimeRef) means it only fires on real mount/unmount.
       var gwRuntimeRef = React.useRef({});
+      var gwViewportRef = React.useRef(null);
+      var gwInitTimerRef = React.useRef(null);
       var gwContainerRef = React.useCallback(function (node) {
         var rt = gwRuntimeRef.current || {};
+        clearTimeout(gwInitTimerRef.current);
+        gwInitTimerRef.current = null;
+        gwViewportRef.current = node;
         if (node) {
           if (!window[engineKey] && rt.threeReady && typeof rt.initEngine === 'function') {
-            setTimeout(function () { if (!window[engineKey]) gwRuntimeRef.current.initEngine(node); }, 100);
+            gwInitTimerRef.current = setTimeout(function () {
+              gwInitTimerRef.current = null;
+              if (gwViewportRef.current === node && node.isConnected && !window[engineKey]) gwRuntimeRef.current.initEngine(node);
+            }, 100);
           }
         } else if (window[engineKey] && typeof rt.destroyEngine === 'function') {
           rt.destroyEngine();
@@ -9634,7 +9643,7 @@
 
       // ── Initialize 3D engine ──
       function initEngine(container) {
-        if (!window.THREE || !container || window[engineKey] || window[engineKey + '_failed']) return;
+        if (!window.THREE || !container || container !== gwViewportRef.current || !container.isConnected || window[engineKey] || window[engineKey + '_failed']) return;
         try {
         var THREE = window.THREE;
 
@@ -11436,7 +11445,13 @@
               if(!BLOCK_SHAPES.some(function(s){return s.id===shape;}))return failure('shape','Choose a shape from the palette.');
               if(typeof rotation!=='number' || Math.floor(rotation)!==rotation || rotation<0 || rotation>3)return failure('rotation','Rotation must be a quarter turn from 0 to 3.');
               var bk=key(b);if(addMap[bk])return failure('duplicate','The operation includes a cell twice.');
-              if(engine.blocks[bk] && !removeMap[bk])return failure('occupied','A block is in the way. Adjust the preview before building.');
+              if (engine.blocks[bk] && !removeMap[bk]) {
+                var occupant = engine.blocks[bk].userData || {};
+                var contents = 'one of your blocks';
+                if (occupant.gwGroundProxy || occupant._measurementLayer === 'ground') contents = 'protected ground';
+                else if (occupant._lessonBlock || (occupant._measurementLayer && occupant._measurementLayer !== 'student')) contents = 'a protected lesson block';
+                return failure('occupied', 'A block is in the way. X ' + b.x + ', Y ' + b.y + ', Z ' + b.z + ' contains ' + contents + '. Adjust the placement and preview again.');
+              }
               addMap[bk]=true;added.push({x:b.x,y:b.y,z:b.z,type:b.type,shape:shape,rotation:rotation});
             }
             var current=engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).filter(function(k){return !(engine.blocks[k].userData || {}).gwGroundProxy;}).length;
@@ -15526,8 +15541,10 @@
       }
 
       function undoMobileBlockAction() {
-        if (engine.undo) engine.undo();
-        if (addToast) addToast('\u21A9\uFE0F Undo', 'info');
+        if (changeBuildHistory('undo') && addToast) addToast('\u21A9\uFE0F Undo', 'info');
+      }
+      function redoMobileBlockAction() {
+        if (changeBuildHistory('redo') && addToast) addToast('\u21AA\uFE0F Redo', 'info');
       }
 
       // AI-generated lessons are keyed 'ai_<timestamp>' (saved to My Lessons) or the
@@ -15859,6 +15876,15 @@
         { flag: showPeerWorlds,   key: 'showPeerWorlds',   label: __alloT('stem.geometryworld.class_worlds', 'Class Worlds'),          emoji: '🌐' }
       ];
       var openModals = OPEN_MODALS.filter(function(m) { return m.flag; });
+      var historyUnavailable = !worldActive || openModals.length>0 || !!d.showcaseActive || !!(engine && (engine._destroyed || engine._pendingWorldTransition));
+      var undoCount = engine && Array.isArray(engine._undoStack) ? engine._undoStack.length : 0;
+      var redoCount = engine && Array.isArray(engine._redoStack) ? engine._redoStack.length : 0;
+      function changeBuildHistory(action) {
+        var live = window[engineKey], stack = live && live[action==='undo'?'_undoStack':'_redoStack'];
+        if (live!==engine || historyUnavailable || !live || live._destroyed || live._pendingWorldTransition ||
+            !Array.isArray(stack) || !stack.length || typeof live[action]!=='function') return false;
+        return live[action]();
+      }
       function closeAllModals() {
         if (showSaveRecovery && engine && engine.stayInCurrentWorld) { engine.stayInCurrentWorld(); return; }
         reflectionNotebookRef.current = null;
@@ -17752,20 +17778,21 @@
             }, renderWorkspaceAction(el, tool.id, tool.label));
           }),
           engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, backdropFilter: 'blur(4px)' } }, '\uD83D\uDCCF GRID'),
-          // Undo — conditional
-          engine._undoStack && engine._undoStack.length > 0 && el('button', {
-            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_undo_last_action', 'Undo last action'), 'data-gw-utility':'undo',
+          // History controls stay in place when the last action is used.
+          el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_undo_last_action', 'Undo last action')+'. '+undoCount+' action'+(undoCount===1?'':'s')+' available.', 'data-gw-utility':'undo',
+            'aria-disabled':historyUnavailable || !undoCount?'true':'false','aria-keyshortcuts':'Control+Z Meta+Z',
             style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
-            onClick: function() { if (engine.undo) engine.undo(); },
-            title: 'Undo (Ctrl+Z) — ' + engine._undoStack.length + ' actions'
-          }, renderWorkspaceAction(el,'undo','Undo',engine._undoStack.length)),
-          // Redo — conditional
-          engine._redoStack && engine._redoStack.length > 0 && el('button', {
-            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_redo_last_action', 'Redo last action'), 'data-gw-utility':'redo',
+            onClick: function() { changeBuildHistory('undo'); },
+            title: 'Undo (Ctrl+Z) — ' + undoCount + ' action'+(undoCount===1?'':'s')
+          }, renderWorkspaceAction(el,'undo','Undo',undoCount)),
+          el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_redo_last_action', 'Redo last action')+'. '+redoCount+' action'+(redoCount===1?'':'s')+' available.', 'data-gw-utility':'redo',
+            'aria-disabled':historyUnavailable || !redoCount?'true':'false','aria-keyshortcuts':'Control+Y Meta+Y Control+Shift+Z Meta+Shift+Z',
             style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
-            onClick: function() { if (engine.redo) engine.redo(); },
-            title: 'Redo (Ctrl+Y or Ctrl+Shift+Z) — ' + engine._redoStack.length + ' actions'
-          }, renderWorkspaceAction(el,'redo','Redo',engine._redoStack.length)),
+            onClick: function() { changeBuildHistory('redo'); },
+            title: 'Redo (Ctrl+Y or Ctrl+Shift+Z) — ' + redoCount + ' action'+(redoCount===1?'':'s')
+          }, renderWorkspaceAction(el,'redo','Redo',redoCount)),
           // Home (return to spawn)
           worldActive && el('button', {
             type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_return_to_spawn_point', 'Return to spawn point'),
@@ -17856,7 +17883,8 @@
             MEASURING_TOOLS.map(function(tool) { return touchActionButton(tool.id, tool.id, tool.label, tool.title, fromMore(function() { var live = window[engineKey]; if (live && live[tool.action]) live[tool.action](); })); }),
             touchActionButton('match', 'match', 'Match', __alloT('stem.geometryworld.match_aimed_block', 'Match aimed block'), fromMore(function() { var live = window[engineKey]; if (live && live.matchAimedBlock) live.matchAimedBlock(); })),
             touchActionButton('fly', 'fly', engine.flyMode ? 'Walk' : 'Fly', __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode'), fromMore(toggleFlyMode), { 'aria-pressed': engine.flyMode ? 'true' : 'false' }),
-            touchActionButton('undo', 'undo', 'Undo', __alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action'), fromMore(undoMobileBlockAction), { disabled: !engine._undoStack || engine._undoStack.length === 0 }),
+            touchActionButton('undo', 'undo', 'Undo', __alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action'), fromMore(undoMobileBlockAction), { disabled: historyUnavailable || !undoCount, 'aria-keyshortcuts':'Control+Z Meta+Z' }),
+            touchActionButton('redo', 'redo', 'Redo', __alloT('stem.geometryworld.a11y_redo_last_action', 'Redo last action'), fromMore(redoMobileBlockAction), { disabled: historyUnavailable || !redoCount, 'aria-keyshortcuts':'Control+Y Meta+Y Control+Shift+Z Meta+Shift+Z' }),
             touchActionButton('home', 'home', 'Home', __alloT('stem.geometryworld.a11y_return_to_spawn_point', 'Return to spawn point'), fromMore(returnToSpawnPoint)),
             touchActionButton('clear', 'clear', 'Clear', __alloT('stem.geometryworld.a11y_clear_my_placed_blocks', 'Clear my placed blocks'), fromMore(clearMyPlacedBlocks)),
             touchActionButton('hide', 'hide', 'Hide', 'Hide controls', function() { setHudHidden(true); })

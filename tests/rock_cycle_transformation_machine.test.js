@@ -182,7 +182,8 @@ describe('rock cycle transformation machine', () => {
     // Mid-run the button relabels to "Transforming..." and disables itself.
     const midRun = findButtonByText(treeFor(store), 'Transforming');
     expect(midRun).toBeTruthy();
-    expect(midRun.props.disabled).toBe(true);
+    expect(midRun.props['aria-disabled']).toBe(true);
+    expect(midRun.props.disabled).toBe(false);
     midRun.props.onClick(); // must be a no-op, not a second timer
 
     vi.advanceTimersByTime(3000);

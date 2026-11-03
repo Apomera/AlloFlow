@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const pack = JSON.parse(readFileSync('allopacks/illustrated/crew_norms_grade6_8.allopack.json', 'utf8'));
+const pack = JSON.parse(readFileSync('allopacks/current/crew_norms_grade6_8.allopack.json', 'utf8'));
 const singleton = pack.history.find((resource) => resource.type === 'image');
 const panel = singleton.data.visualPlan.panels[0];
 const legacyUrl = 'data:image/png;base64,bGVnYWN5';

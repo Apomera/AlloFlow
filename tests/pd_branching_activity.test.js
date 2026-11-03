@@ -115,7 +115,7 @@ describe('worker + pipeline parity', () => {
     const store = {};
     return worker.fetch(new Request('https://worker.test/submitPd', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    }), { PD_SUBMISSIONS: { async put(k, v, o) { store[k] = v; }, async get(k) { return store[k] ?? null; } } });
+    }), { SUBMIT_RATE: { async get() { return null; }, async put() {} }, PD_SUBMISSIONS: { async put(k, v, o) { store[k] = v; }, async get(k) { return store[k] ?? null; } } });
   }
   function submission(activity) {
     return { pd_module: moduleWith(activity), credit: null, affirmations: { author_or_authorized: true, no_pii: true, license_agreed: true, age_eligible: true } };

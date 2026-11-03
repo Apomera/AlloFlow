@@ -22,11 +22,13 @@ const ROOT = process.cwd();
 const GUIDE_PATH = process.env.CREW_GUIDE_PATH ? resolve(process.env.CREW_GUIDE_PATH) : resolve(ROOT, 'docs', 'CREW_LAUNCH_TEACHER_GUIDE.md');
 const guide = readFileSync(GUIDE_PATH, 'utf8');
 
-const packs = readdirSync(resolve(ROOT, 'allopacks'))
+// allopacks/current/ titles carry the edition label; the guide names the week by its base title.
+const EDITION = new RegExp(' ' + String.fromCharCode(0x2014) + ' Illustrated Edition$');
+const packs = readdirSync(resolve(ROOT, 'allopacks', 'current'))
   .filter((f) => /^crew_.*\.allopack\.json$/.test(f))
-  .map((f) => JSON.parse(readFileSync(resolve(ROOT, 'allopacks', f), 'utf8')))
+  .map((f) => JSON.parse(readFileSync(resolve(ROOT, 'allopacks', 'current', f), 'utf8')))
   .map((p) => {
-    const m = p.allopack.title.match(/^Crew Launch Week (\d+): (.+)$/);
+    const m = p.allopack.title.replace(EDITION, '').match(/^Crew Launch Week (\d+): (.+)$/);
     const of = (t) => p.history.find((r) => r.type === t);
     const directions = of('directions').data.body;
     const links = [...directions.matchAll(/\[([^\]]+)\]\(#sel-hub\/([A-Za-z]+)\?station=/g)].map((x) => ({ text: x[1], id: x[2] }));
@@ -93,7 +95,9 @@ describe('Crew Launch teacher guide', () => {
   });
 
   it('promises the resource count the packs actually load', () => {
-    const counts = new Set(packs.map((p) => p.pack.history.length));
+    // The illustrated edition adds image companions (illustrations, visual references) beside the
+    // ten resources the guide lists; the guide's count is of those ten.
+    const counts = new Set(packs.map((p) => p.pack.history.filter((r) => r.type !== 'image').length));
     expect(counts.size).toBe(1);
     const n = [...counts][0];
     const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];

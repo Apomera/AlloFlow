@@ -14,7 +14,7 @@ describe('Glossary flashcard definition read-aloud controls', () => {
     expect(source.match(/handleGlossarySpeak\(generatedContent\?\.data\[flashcardIndex\], 'definition',[^\n]+ 'fc-front-def'/g)).toHaveLength(1);
     expect(source.match(/handleGlossarySpeak\(generatedContent\?\.data\[flashcardIndex\], 'definition',[^\n]+ 'fc-back-def'/g)).toHaveLength(1);
     expect(source.match(/handleUncachedGlossarySpeak\(def, `fc-back-def-\$\{standardDeckLang\}`, glossaryHasBaseMetadata\(generatedContent, generatedContent\.data\[flashcardIndex\]\) \? [^;]+ : undefined\);/g)).toHaveLength(1);
-    expect(source.match(/handleUncachedGlossarySpeak\(generatedContent\.data\[flashcardIndex\]\.etymology, 'fc-back-etym', glossaryHasBaseMetadata\(generatedContent, generatedContent\.data\[flashcardIndex\]\) \? [^;]+ : undefined\);/g)).toHaveLength(1);
+    expect(source.match(/handleUncachedGlossarySpeak\(currentFlashcardOrigin\.text, 'fc-back-etym', currentFlashcardOrigin\.language\);/g)).toHaveLength(1);
     expect(source.match(/handleUncachedGlossarySpeak\(transDef, 'fc-back-def', glossaryHasBaseMetadata\(generatedContent, generatedContent\.data\[flashcardIndex\]\) \? [^;]+ : undefined\);/g)).toHaveLength(1);
   });
 

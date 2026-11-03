@@ -958,7 +958,7 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(tentative).toContain('data-wb-claim-strength="tentative"');
     expect(tentative).toContain('sm:sticky sm:top-2');
     expect(tentative).toContain('Tentative claim permitted');
-    expect(tentative).toContain('Unknown compared with stem.rocks.calcite');
+    expect(tentative).toContain('Unknown compared with Calcite');
     expect(tentative).toMatch(/data-wb-step="claim" data-wb-step-state="current"/);
 
     expect(strong).toContain('data-wb-claim-strength="strong"');
@@ -1093,7 +1093,7 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     });
     const unselected = workbench({ lens: 'glassy', streakDone: true, streakObs: 'powder-white' });
     expect(markup).toContain('Claim · Evidence · Reasoning');
-    expect(markup).toContain('My claim: the unknown is stem.rocks.calcite');
+    expect(markup).toContain('My claim: the unknown is Calcite');
     expect(markup).toContain('data-wb-candidate-state="selected"');
     expect(markup).toContain('aria-pressed="true"');
     expect(markup).toContain('data-wb-claim-ready="true"');
@@ -1196,7 +1196,7 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(markup).toContain('data-wb-confidence="very"');
     expect(markup).toContain('data-wb-cer-confidence="very"');
     expect(markup).toContain('data-wb-reasoning-frame="complete"');
-    expect(markup).toContain('The unknown matches stem.rocks.calcite on luster and acid reaction');
+    expect(markup).toContain('The unknown matches Calcite on luster and acid reaction');
   });
 
   it('labels CER evidence by whether it is shared with or can refine a look-alike', () => {
@@ -1294,7 +1294,7 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(markup).toContain('data-wb-revision="measurement-conflict"');
     expect(markup).toContain('data-wb-invalidated-candidate="calcite"');
     expect(markup).toContain('New evidence changed your working claim.');
-    expect(markup).toContain('stem.rocks.calcite no longer fits the acid reaction observation.');
+    expect(markup).toContain('Calcite no longer fits the acid reaction observation.');
     expect(markup).toContain('Review conflict');
     expect(markup).not.toContain('data-wb-candidate-state="selected"');
 

@@ -7,12 +7,392 @@ and hypervelocity debris shielding.
 Existing crew-shift activities, learning checks, keyboard navigation,
 reduced-motion behavior and diagram alternatives remain.
 
+The **3-D Station** view includes an **Inspect a visiting spacecraft** group.
+Choose Dragon, Progress or Cygnus, or click their visible meshes, to frame
+the craft and its attachment port. Drag and zoom inspect the same scene.
+The camera adapts its framing to the viewport, and a caption identifies the
+craft and port. These schematic visitors illustrate docking and berthing
+arrangements. Their inspection is separate from module discovery.
+Dragon’s illustrative capsule has a rounded, closed shell with a blunt neck
+that meets the docking connector. Its shoulder joins the existing solar trunk.
+The trunk has smoother curvature and a schematic navy solar-cell pattern with
+fine contacts and darker seams. Its reflective surface responds to daylight
+and eclipse lighting. The visiting-craft controls frame the complete assembly.
+Cygnus’s round fans have smooth perimeters and a schematic radial cell pattern
+with concentric divisions. The ten raised structural ribs remain visible over
+the cell faces, and both fans share the same reflective coating.
+
+Progress’s two rectangular solar wings now show navy photovoltaic cells,
+fine contacts, four framed bays and a restrained outer frame. Both wings
+reuse one cached atlas and private reflective coating. The layout is an
+illustration, not an exact count of flight cells.
+
+The **Component field guide** covers 29 topics: all 13 selectable modules,
+Prichal, solar arrays and tracking joints, iROSA, cooling, power storage,
+shielding, external carriers, robotics, gyroscopes, docking interfaces,
+AMS-02, relay communications, the three visitors and Earth/orbit context. Each entry includes a
+purpose, milestone or scientific cycle, mechanism, human or engineering
+connection, model limitations and links to primary references. Module
+choices follow the map selection. Hardware reading is local UI state;
+**Frame in 3D** appears only for an existing module or camera target.
+
+The historical six-iROSA arrangement represents the 2021–2023 upgrade
+campaign. Visitor positions are illustrative. The guide distinguishes the
+94 m truss from the span across extended arrays, docking from berthing,
+and real hardware from classroom models. It qualifies the 2023 water
+recovery demonstration and the simulator’s 80% CMG caution margin, and
+corrects the Columbus organism example and separate Nauka/Prichal dates.
+Module skins, blueprint envelopes and functional sketches remain schematic.
+
+**Zvezda’s solar wings** now appear as a fixed deployed pair with navy cell
+faces, pale backs, raised frames and short attachment hubs. The two panels
+share one geometry and borrow the existing schematic Progress cell atlas;
+one vertex-coloured mesh batches their frames and mounts. Materials remain
+private to the pair, so cutaway changes cannot recolor the visiting spacecraft.
+These illustrative wings do not alter the U.S. solar-array tracking, generation,
+orbital clock or saved-state model. NASA gives the real combined span as
+97.5 feet (about 29.7 m); this schematic station is not uniformly to scale.
+
+**Inspect Zvezda wings**, ordinary Zvezda framing and the guide’s **Frame in 3D**
+fit the actual transformed hull and wing bounds together. Resizing refits that
+view; orbit direction is retained. Manual zoom keeps the target context, while
+Pan and Home use the existing exit behavior. The source-linked guide includes
+the early electrical-power role and labels the docking date as 26 July 2000 UTC.
+
+All successful guide **Frame in 3D** actions now focus their owning canvas and
+bring that map into view. Keyboard arrows can immediately orbit it after framing.
+Unavailable canvases or handlers remain no-ops, and one map cannot focus another.
+
+References: [NASA Zvezda facts](https://www.nasa.gov/international-space-station/zvezda-service-module/)
+and [NASA assembly history](https://www.nasa.gov/history/space-station-20th-zvezda-service-module-reaches-iss/).
+
+During Z1 inspection, the selected module’s floating badge, leader and corner
+brackets are hidden so they cannot cover the dish. The selected module remains
+in the HUD, native picker and screen-reader status, and its saved state is
+unchanged. Manual zoom keeps this dedicated inspection context. Home, Pan and
+ordinary module framing restore the normal selection annotation.
+
+**Inspect Z1 antenna** frames an added schematic framework above Unity. One
+merged, vertex-colored mesh contains an open frame, a coupling and four mounting
+spokes, four schematic CMG enclosures, equipment covers, a gimballed support and
+a shallow Ku-band reflector. Its feed sits at the ideal paraboloid focus and
+three thin rods support it. The dish has a pale front, a darker rear and a raised
+rim. The fixed orientation is a display pose, not a tracking solution or a full
+antenna inventory. Existing station meshes, textures and materials are preserved.
+
+The camera uses the actual transformed bounds, a zenith-facing exterior constraint and a
+bounded zoom range. Mesh picking, the toolbar and the field guide open the same
+communications focus without changing module selection, discovery, saved settings
+or orbital physics. The caption and accessible target name survive manual zoom;
+ordinary Pan, Home and module framing exit the inspection. The new mesh stays
+opaque in its inspection when the rest of the station is in cutaway.
+
+The new field-guide topic includes a local **How does a signal get home?** study.
+Three controls highlight the station antenna, a relay satellite and an Earth
+terminal in a two-way schematic. These are three locations connected by two
+radio legs; terrestrial networks continue the route to mission teams and
+researchers. The study distinguishes Ku-band and S-band roles, reflector/feed
+physics and geosynchronous relay geometry. It records Z1's 11 October 2000 launch,
+14 October attachment to Unity and temporary P6 support before the 2007 move.
+NASA and JAXA references are linked. Coverage, bandwidth, radio power and network
+latency are not simulated.
+
+The reflector study adds native **Receive** and **Transmit** controls. Four
+sample paths reverse along the same geometry: parallel incoming directions
+reflect to the focus, or energy from the feed reflects outward along the axis.
+A curved surface, focus ring, arrowheads, text description and HTML legend
+provide complementary cues. The cross-section uses the 3-D model’s schematic
+radius-to-focus ratio; it does not claim measured ISS antenna dimensions.
+The direction and relay-node choices are independent local reading state.
+Changing them leaves the camera, module selection, saved data and physics intact.
+The explanation distinguishes the geometric focus from the physical feed and
+support rods, and identifies diffraction, finite beam width, sidelobes, blockage
+and losses as omitted from the ray drawing. See [NASA’s reflector explanation](https://science.nasa.gov/learn/basics-of-space-flight/chapter6-5/),
+[NASA/JPL’s antenna lesson](https://www.jpl.nasa.gov/edu/resources/lesson-plan/catching-a-whisper-from-space/)
+and [NRAO’s antenna chapter](https://www.cv.nrao.edu/~sransom/web/Ch3.html).
+
+The existing Systems communications explanation no longer gives an incorrect
+few-hundred-kilometre ground horizon. It identifies White Sands and Guam, states
+the circular/equatorial/prograde conditions for geostationary appearance and
+labels the existing computed light-time example as an ideal propagation-only
+lower bound. Its constants and calculations are unchanged. The older gyro guide
+now identifies the schematic enclosures while retaining its scalar-model and
+classroom-threshold limitations.
+
+**Inspect Quest** frames the airlock's two-chamber exterior. A larger inboard
+equipment lock, narrower outboard crew lock and connecting shoulder replace
+the generic cylinder. The original hull coating is retained with axial texture
+coordinates tied to actual length. A single private hardware mesh supplies
+fitted handrails, seams, a closed Earth-facing hatch and four rounded gas
+containers representing the 2001 delivery set. Proportions and tank positions
+are schematic. This is a historical illustration, not a current gas inventory.
+
+Quest keeps its original position, orientation and selectable-module identity.
+Both new meshes stay within the original radius and axial endpoints. Its generic
+caps, rails, collars and seams are replaced; the cutaway core follows a scaled
+copy of the new chamber profile so it cannot protrude through the narrower
+crew lock. The generic interior texture remains illustrative. No other module
+geometry or coating, separate interior scene or pressure-laboratory model changes.
+The replacement removes six meshes/geometries and two materials without
+adding a texture. The historical Kibo geometry gate now excludes only the eight
+deliberately replaced Quest records while retaining the unchanged 88-record
+baseline fingerprint and a negative mutation check.
+
+Exterior inspection uses the combined hull/hardware bounds, an outboard-side
+camera guard and a bounded zoom range. Both parts remain opaque and Quest's
+core is hidden during exterior inspection, including when another module stays
+selected in cutaway. Ordinary focus, pan, Home and other targets restore the
+regular hull/core/hardware visibility. Module selection and XP retain their
+usual behavior when clicking the hull or hardware; the new inspection controls
+and study do not write them. Target text and screen-reader status identify Quest
+after zooming clears the fitted-view flag.
+
+The **Why two chambers?** study highlights the equipment lock, separating
+bulkhead/internal hatch and crew lock. It explains independent isolation without
+claiming the equipment lock always remains at nominal cabin pressure. For a
+uniform pressure difference across a flat area, the approximate net hatch force
+is `Δp × A`; microgravity does not remove that load. Highlighting regions does
+not operate a hatch or animate a pressure cycle. NASA references separate this
+general engineering principle from the historical module's configuration.
+
+History distinguishes the 12 July 2001 Atlantis launch, 15 July attachment to
+Unity and the three Gernhardt/Reilly spacewalks that outfitted Quest. The initial
+gas installation had two oxygen and two nitrogen tanks. The study deliberately
+avoids an unqualified first-spacewalk calendar date where agency accounts use
+different time conventions. Its six primary links cover the module, mission,
+assembly history, technical context, gas pressure and general hatch principles.
+
+**Inspect Kibo platform** opens the new Exposed Facility at the Japanese
+laboratory's outboard end. Its merged structural pallet has underside supports,
+three generic payload housings, six illustrative service-interface markers,
+recessed connector faces and a short laboratory attachment. Positions and
+proportions are schematic; the boxes do not identify real experiments or a
+current manifest. The original Kibo hull, endcaps, rails and selection anchor
+are unchanged. One private geometry and material add one mesh and no texture.
+
+The shallow platform fits between the existing hull and the full solar-array
+sweep. The actual array/iROSA vertex envelope, including cant and feather
+extrema, ends at station-X -3.110981; the new geometry starts at -3.0. Its
+forward edge at Z -2.85 remains clear of the radiator's Z -2.725 bound.
+These are model-space clearance checks, not measurements of flight hardware.
+The close camera frames the actual platform bounds and stays on its outboard
+side after zooming. Ordinary module focus, pan and Home restore the usual
+camera behavior. A focused platform remains visible in cutaway without
+changing the selected module or saved settings. Clicking it inspects hardware
+without adding a module discovery or XP award.
+
+Kibo's **One laboratory, two environments** study compares the pressurized
+module, equipment airlock and exposed platform. Its three controls highlight
+diagram regions; no pressure cycle or hatch sequence is simulated. Microgravity
+is present both inside and outside. A separate services line distinguishes
+power, data and coolant from the equipment-transfer route. The study separates
+the mechanism attaching the whole platform from the equipment interfaces
+serving payloads, and Kibo's JEMRMS from Canadarm2. The real twelve attachment
+locations include system and temporary-storage positions, so they are not
+described as twelve available experiment bays. Large payloads and the platform
+itself did not pass through the equipment airlock.
+
+NASA and JAXA sources support the staged assembly history: the main laboratory's
+31 May 2008 launch, the platform's 15 July 2009 launch and its attachment at
+23:40 UTC on 18 July / 08:40 JST on 19 July. The two dates identify the same
+installation, not separate attachment events. The separate interior scene,
+saved design and all orbital, arm and station-system physics remain unchanged.
+
+Selecting **Destiny** also opens a study of its Earth-observation window.
+**Inspect science window** frames the dark nadir pane, gasket and shallow
+metallic rim from the Earth-facing side. The close view supports ordinary
+orbit, pan, zoom and resize; **Fit station** returns to the overview.
+While focused on the window, close orbit stays on its outward side to keep
+the camera outside the intact pressure hull.
+The window uses reflected scene lighting, including in eclipse. It replaces
+the generic buried luminous beads previously repeated inside module hulls.
+The blueprints likewise show one labeled Destiny window instead of invented
+rows of cyan ports. Cupola keeps its separate seven-window treatment.
+
+**Inspect Cupola** frames the exterior of the Earth-facing observation module.
+Its earlier painted hemisphere is replaced by a faceted structural mesh with
+six actual trapezoidal openings and a circular nadir opening, raised gaskets,
+recessed glazing and a circular attachment flange. All seven dark panes share
+one private, merged glass mesh; they use scene lighting without emission.
+The primary Cupola remains the original module-selection and framing anchor,
+at its original position and rotation. Both meshes fit the previous radius.
+The pane shapes, proportions, frames and glazing are schematic, with one
+opaque visual surface per window. No flight optical properties are simulated.
+
+The inspection camera uses the combined exterior bounds and starts on the
+Earth-facing side. Its close orbit remains outside that side after zooming;
+ordinary module framing, pan, Home and other inspection targets leave the
+close mode. Resizing a fitted view preserves the orbit direction. The map's
+existing generic cutaway interior remains illustrative; the separate interior
+scene is unchanged. In ordinary cutaway the glazing fades with Cupola's hull.
+Exterior inspection keeps both frame and glazing opaque and hides Cupola's
+generic core, including when a different module remains selected. Leaving the
+close view restores the regular cutaway appearance. Selection and the global
+cutaway setting remain unchanged. Glazing also participates in module picking,
+including clicks through the frame openings.
+
+Cupola's field-guide entry adds a **Seven views, layered protection** study.
+Its four controls highlight the cabin-side scratch pane, the two pressure
+panes together, the outer debris pane and the separate shutter. Four glass
+panes are always visible in the cross-section. The pressure pair provides
+redundancy; the external shutter supplies additional protection and thermal
+control. It is separate from the cabin pressure seal. Diagram spacing and
+thicknesses are exaggerated, and its selections remain local to the study.
+
+The history separates the 8 February 2010 STS-130 launch, 15 February final
+installation on Tranquility's Earth-facing port and 17 February first opening
+of the shutters. NASA and dated ESA reports support the sequence; ESA's
+structure and materials pages support the window stack. Real dimensions in
+the guide describe hardware, not a calibrated scale conversion from the
+schematic mesh. In particular, ESA's 2.955 m maximum includes exterior
+protection and fixtures, rather than just the bare pressure structure.
+
+The study explains the approximately 51 cm optical aperture and WORF's
+April 2010 arrival, instrument mounting, power, command, data and cooling.
+It distinguishes the protective external shutter and the historical removal
+of Destiny's scratch pane from Cupola's pane arrangement, with NASA references.
+The dark pane is a surface representation over the intact schematic hull;
+its axial placement and rim dimensions are illustrative. The shutter,
+internal instruments and optical behaviour are not simulated.
+
+**Inspect AMS-02** frames the cosmic-ray instrument on the zenith side of
+S3. Its covered housing, stepped support, thermal faces and small equipment
+boxes replace the earlier three-piece placeholder. The instrument uses one
+merged mesh and no new textures. Its dimensions and surface details are
+schematic. Clicking the instrument also opens this view, without creating
+a station-module discovery or changing an operations experiment.
+
+Choose **Alpha Magnetic Spectrometer (AMS-02)** in the Component field guide
+for the particle-physics study. Positive and negative charge controls produce
+opposed circular paths; the transverse-momentum slider changes their radius
+at fixed magnetic field and charge magnitude. The field points out of the
+page and particles enter downward, so positive charge bends left. Dots show
+idealized positions on nine evenly spaced guides; they refer to the tracker
+configuration flown in 2011, not measured events or actual layer spacing.
+The study explains how the magnet, silicon tracker and other detectors
+contribute different measurements, and why charge sign alone does not
+identify a particle as antimatter.
+
+The history distinguishes the 16 May 2011 launch from installation on
+19 May, and describes the four 2019–2020 spacewalks that renewed the tracker's
+carbon-dioxide cooling system. This was not a repair to a superconducting
+magnet: the flown instrument uses a permanent magnet. Primary NASA and AMS
+collaboration references accompany the explanations.
+
+**Inspect grapple hand** opens a close view of the trainer's free Latching
+End Effector. A recessed mouth, three snare cables and small latch housings
+replace the solid capped cylinder. Smoother, muted white booms suggest the
+real arm's thermal covers. The hand keeps its original tip reference and
+nominal envelope; its detailed dimensions and wire routing are schematic.
+
+This close view follows the hand's position and orientation while the
+existing arm simulation continues. It preserves the viewing offset in the
+hand's frame, uses a bounded close-zoom range, and keeps the camera on the
+mouth's outward side. Pan, Home, module focus and other inspection views
+leave following. Construction overlays are hidden in the close view and
+restored from their existing settings afterward; the motion controls remain
+available. Arm pose, target, elapsed time and experiment settings are preserved.
+
+The Canadarm2 component guide includes an **Align → Snare → Seat** study.
+Its three conceptual cable paths tighten around a shaft with clearance;
+the wider head stays behind them, and a carriage draws the compatible
+fixture into its seat. This distinguishes capture from rigidization and
+latching. The diagram controls are local reading state and do not actuate
+the 3D hand or calculate capture forces.
+
+NASA and CSA references accompany the mechanism and assembly history:
+Canadarm2 attached on 22 April 2001 after its 19 April launch, the Mobile
+Base installed on 10 June 2002, and Dextre installed on 18 March 2008.
+The explanation distinguishes the real seven-joint arm and equivalent hands,
+walking between powered grapple fixtures, the separate rail-mounted Mobile
+Base and Dextre's maintenance role. The existing fixed-base, two-link planar
+trainer remains explicit.
+
+Selected-module captions use a leader that stays attached to the module’s
+projected position. Slim amber corner brackets frame the selected hull with
+a dark outline that stays readable against white surfaces and the night sky.
+The brackets follow the hull’s projected bounds as the camera moves and keep
+a fixed stroke width on phones and close views. Captions fit inside the 3D
+canvas beneath its status display. When the selected module is outside the
+view, **Center selected**
+returns the camera to it. Hover names also stay inside the canvas and clear
+when their module becomes selected.
+
+The **3D compass** shows the positive station axes with arrows that shorten
+as they point along the line of sight. A dot identifies an axis pointing
+toward the viewer, and a cross identifies one pointing away. Dashed arrows
+tilt away. The compass uses station and camera rotation, so zooming or
+centering another module preserves its directions. **Read the 3D compass**
+explains the schematic frame and symbols. A text alternative gives the
+current end-on or across-view direction for each axis.
+
+Exterior shield panels have restrained edge relief, small fasteners and flush
+access covers. Raised handrails define the hardware above the panel surfaces.
+The decorative skins are schematic and reuse the existing texture sizes.
+
+The camera has **Orbit** and **Pan** drag actions. Choose Pan to slide a close
+inspection with one finger or the mouse. **Shift + drag** and **Shift + arrow
+keys** also pan, while ordinary arrow keys orbit and two-finger pinch zooms.
+Panning moves the camera and its pivot together, preserving the viewing angle
+and range. It releases automatic framing and uses a custom pivot, which remains
+in place during later orbit, zoom and resize. Travel stops at the scene bounds
+and Earth-side camera floor. **F**, **Fit station** and **Reset view** restore
+a subject-centered view. Camera movement clears old hover captions.
+
 ## Operations investigation notebook
 
 The Integrated view supports an independent-trial workflow: predict, record a
 baseline, change a control, and compare the evidence. Recording evaluates one
 92-minute orbit from the displayed starting conditions. It does not feed the
 final battery, temperature, air or momentum state into a subsequent orbit.
+
+The Power lab and an empty investigation notebook offer **Start the eclipse
+investigation**. The guide asks how ten more minutes in shadow affect minimum
+battery reserve. Students predict an outcome, record a 35-minute baseline,
+change eclipse duration to 45 minutes, and record the second trial. The guide
+uses the same 21 other controls for both runs and checks them before recording.
+It needs two free notebook slots. Progress persists with the project, and a
+restore action recovers the guided setup if a working control changes.
+
+The results show both saved minimum reserves and their difference in percentage
+points. The chart action compares the two battery trajectories at the time of
+the longer eclipse's minimum. Students write their explanation in the second
+trial's reflection and finish the guide after adding their own words.
+
+**What powered the station during the extra ten minutes?** compares both
+saved setups from minute 47, when the longer eclipse begins, to minute 57,
+when the shorter eclipse begins. Each card shows the reserve at both ends
+of the interval and how much demand the arrays and battery supplied in kWh.
+It also shows unmet demand if the battery runs empty. The battery contribution
+measures energy delivered to the loads after discharge losses. The chart
+shortcut opens the paired readings at minute 52, when the trials are in
+different lighting phases.
+
+In the Power lab, **Plan the starting battery for a 25% reserve** finds the
+lowest whole-percent starting charge that keeps reserve at or above 25%
+throughout the 92-minute orbit. The table compares the current setup, that
+setting and the next lower setting using the existing power model. If full
+charge falls below the target, the planner shows its achievable minimum.
+Trying a setting applies it to the working battery and pauses the orbit at
+minute zero. During the guided eclipse investigation, students can try the
+new starting charge after recording the second trial.
+
+**Plan the array angle for a 25% reserve** holds the starting battery, crew,
+research demand and eclipse duration fixed. It finds the lowest whole-degree
+alignment that meets the same rule and shows what happens one degree lower.
+For example, with a full battery, 11 crew, 100% research and a 45-minute
+eclipse, 7° reaches a minimum of 24.956% and 8° reaches 26.043%. If even
+90° falls short, the table shows that minimum. **Try** applies the angle and
+pauses the working orbit at minute zero. Recorded trials keep their settings.
+
+**Plan research within the 25% reserve** finds the highest research slider
+setting the orbit can sustain at its current starting charge, array angle,
+crew size and eclipse duration. With seven crew, 35% charge, a 90° array and
+a 45-minute eclipse, 55% research leaves a minimum reserve of 25.02%.
+The next slider step, 60%, leaves 24.22%. If even 0% research falls short,
+the planner distinguishes a low starting battery from the power needed by
+the crew and station. Trying a workload changes the research slider and
+restarts the working orbit at minute zero with playback paused.
 
 Each saved trial contains a versioned snapshot of the 22 integrated controls,
 including initial battery and cabin temperature, local air mixing and vent
@@ -123,6 +503,15 @@ setup changes. Reference boundaries may include an initial reading already
 outside the range and do not independently decide the full-orbit flight rules.
 The disclosure stays compact when closed and supports keyboard access, phone
 layouts and forced colors.
+
+**Use this reading in my reflection** previews a sentence with the chart time,
+metric, source names, values, units and signed difference. Students choose a
+saved trial and explicitly append the sentence. The comparison trial is the
+default destination when two distinct saved trials are selected. A changed
+source, setup, measurement or cursor requires a fresh capture. The preview
+accounts for the destination's latest text and the 1200-character reflection
+limit. After an append, focus moves to the chosen editor with the caret at
+the end so the student can continue writing.
 
 "Download comparison CSV" preserves the paired trajectories separately from
 the notebook's recorded summaries. Its rectangular table has two rows at every
@@ -1904,6 +2293,32 @@ departure altitude discards the old transfer state.
 `node dev-tools/space_station_enhancement_qa.cjs --serve` provides a local
 working-tree preview. `--capture` exercises the actual browser implementation
 and saves desktop/mobile screenshots under `reports/space-station-enhancement-qa`.
+
+`node dev-tools/space_station_map_quest_qa.cjs --selftest` checks the Quest gate's
+mutation guards. Run it with `--widths=1440,390 --out=<directory>` for real
+two-chamber geometry, nadir hatch, historical gas-set markers, module picking,
+exterior camera, cutaway restoration, local study, source links, accessibility
+and strict cleanup. One real map and a DOM ownership sentinel verify both new
+controls; a bounded source mutant proves that a document-wide lookup is rejected.
+`tests/space_station_map_quest.test.js` covers the real profile, closed ends,
+core containment, retained finish, private resources, UV density and camera path.
+
+`node dev-tools/space_station_map_kibo_qa.cjs --selftest` checks the Kibo gate's
+mutation guards. Run it with `--widths=1440,390 --out=<directory>` for native
+platform geometry/picking, close camera, local environment study, source links,
+accessibility and cleanup. It owns an ephemeral preview and records its process
+IDs and endpoint before testing. `tests/space_station_map_kibo.test.js` covers
+the geometry, actual attachment, complete array sweep envelope and camera paths.
+
+`node dev-tools/space_station_map_cupola_qa.cjs --selftest` checks the Cupola
+native gate against deliberate mutations. Running it with `--widths=1440,390`
+starts an owned ephemeral preview and checks the actual seven-pane exterior,
+native picking, close orbit/zoom/resize, cutaway restoration, local protection
+study, source links, accessibility and resource disposal. Use `--out=<directory>`
+to keep each run's report and screenshots separate. Its launch receipts record
+the owned supervisor, worker, Chromium process and preview endpoint before
+testing. `tests/space_station_map_cupola.test.js` independently checks the real
+frame apertures, pane arrangement, bounds, private resources and camera paths.
 
 With that preview running at port 4179,
 `node dev-tools/space_station_map_framing_qa.cjs --widths=1440,390` checks fitted

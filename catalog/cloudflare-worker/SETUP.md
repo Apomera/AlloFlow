@@ -1,3 +1,5 @@
+> Historical setup notes: follow [the current private-intake README](README.md) first. The November 2026 local security update requires SUBMIT_RATE for all public intake and COMMUNITY_SUBMISSIONS for lessons/corrections. The old GitHub intake, query-token bug reader and automatic correction fallback instructions below are superseded. This file is not evidence of current deployment.
+
 # Bug-report KV setup — quick steps
 
 One-time setup so bug reports save to a **private** Cloudflare KV store (not the public repo).

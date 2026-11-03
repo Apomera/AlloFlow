@@ -57,6 +57,11 @@ describe('Print Lab download-first Submit',()=>{
 });
 
 describe('Print Lab asynchronous download feedback',()=>{
+  it('offers another download when the browser cannot hash the final STL for review',async()=>{
+    const app=mount(),out=exporting();out.P.sha256Hex.mockResolvedValueOnce('');click(action(app,'package'));await flush();
+    expect(feedback(app).dataset.printDownloadState).toBe('error');expect(feedback(app).textContent).toContain('could not verify the STL');expect(out.archives).toHaveLength(0);expect(out.download).not.toHaveBeenCalled();
+    click(action(app,'stl'));await flush();expect(out.download).toHaveBeenCalledOnce();
+  });
   it('keeps the active button focused and prevents duplicate or competing preparations',async()=>{
     const app=mount(),out=exporting();click(action(app,'package'));expect(document.activeElement).toBe(action(app,'package'));expect(action(app,'package').disabled).toBe(false);expect(action(app,'package').getAttribute('aria-disabled')).toBe('true');expect(feedback(app).textContent).toContain('Preparing the print package');
     click(action(app,'package'));click(action(app,'stl'));click(action(app,'handoff'));await flush();expect(out.jobs).toHaveLength(1);expect(window.StemLab.ensureThree).toHaveBeenCalledOnce();expect(out.P.sha256Hex).toHaveBeenCalledOnce();

@@ -2090,7 +2090,7 @@
     return null;
   }
 
-  // XLSX parse — caller provides the SheetJS namespace (window.XLSX). The
+  // XLSX parse - caller provides the captured SheetJS namespace. The
   // wrapper extracts a single sheet's CSV and delegates to parseTextTable,
   // so the parse path stays deterministic + golden-master-pinnable. If
   // SheetJS is missing or read fails, returns an empty parsed table with
@@ -2125,22 +2125,64 @@
   // first one chosen, and only inside a browser — Node tests never
   // touch the network because they call the pure parsers directly.
   var _xlsxLoadPromise = null;
+  var _xlsxCaptured = null;
+  var _XLSX_VERSION = '0.20.3';
+  var _XLSX_INTEGRITY = 'sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT';
+  var _XLSX_URLS = [
+    'https://alloflow-cdn.pages.dev/runtime_assets/document/sheetjs-0.20.3/xlsx.full.min.js',
+    'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js'
+  ];
+  function currentXLSX(value) {
+    return value && value.version === _XLSX_VERSION && typeof value.read === 'function'
+      && value.utils && typeof value.utils.sheet_to_csv === 'function' ? value : null;
+  }
   function lazyLoadXLSX(cdnUrl) {
     if (typeof window === 'undefined') return Promise.resolve(null);
-    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (cdnUrl && _XLSX_URLS.indexOf(cdnUrl) === -1) return Promise.reject(new Error('Unapproved SheetJS source'));
+    // Keep the accepted instance even if another tool later overwrites the global.
+    var ready = currentXLSX(_xlsxCaptured) || currentXLSX(window.XLSX);
+    if (ready) { _xlsxCaptured = ready; return Promise.resolve(ready); }
     if (_xlsxLoadPromise) return _xlsxLoadPromise;
-    var url = cdnUrl || 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
-    _xlsxLoadPromise = new Promise(function (resolve, reject) {
-      try {
-        var s = document.createElement('script');
-        s.src = url;
-        s.async = true;
-        s.crossOrigin = 'anonymous';
-        s.onload = function () { resolve(window.XLSX || null); };
-        s.onerror = function () { _xlsxLoadPromise = null; reject(new Error('Could not load SheetJS from ' + url)); };
-        document.head.appendChild(s);
-      } catch (e) { _xlsxLoadPromise = null; reject(e); }
+    if (typeof document === 'undefined' || !document.head) return Promise.reject(new Error('SheetJS requires a browser document'));
+    var urls = cdnUrl ? [cdnUrl].concat(_XLSX_URLS.filter(function (url) { return url !== cdnUrl; })) : _XLSX_URLS;
+    var pending = new Promise(function (resolve, reject) {
+      function attempt(index) {
+        if (index >= urls.length) { reject(new Error('Could not load the approved SheetJS version from either source')); return; }
+        var script = null, timer = null, finished = false;
+        function finish(loaded) {
+          if (finished) return;
+          finished = true;
+          if (timer !== null) clearTimeout(timer);
+          if (script) {
+            script.onload = null; script.onerror = null;
+            try { script.remove(); } catch (_) {}
+          }
+          if (loaded) resolve(loaded); else attempt(index + 1);
+        }
+        try {
+          script = document.createElement('script');
+          // Set SRI before src/attachment; a successful event still requires the pinned API/version.
+          script.integrity = _XLSX_INTEGRITY;
+          script.crossOrigin = 'anonymous'; script.referrerPolicy = 'no-referrer';
+          script.async = true;
+          script.onload = function () { finish(currentXLSX(window.XLSX)); };
+          script.onerror = function () { finish(null); };
+          script.src = urls[index];
+          timer = setTimeout(function () { finish(null); }, 6000);
+          document.head.appendChild(script);
+        } catch (_) { finish(null); }
+      }
+      attempt(0);
     });
+    var tracked = pending.then(function (loaded) {
+      if (_xlsxLoadPromise === tracked) _xlsxLoadPromise = null;
+      _xlsxCaptured = loaded;
+      return loaded;
+    }, function (error) {
+      if (_xlsxLoadPromise === tracked) _xlsxLoadPromise = null;
+      throw error;
+    });
+    _xlsxLoadPromise = tracked;
     return _xlsxLoadPromise;
   }
 
@@ -2840,7 +2882,7 @@
                 }
                 if (isWorkbookIngestType(fileType)) {
                   lazyLoadXLSX().then(function (XLSX) {
-                    file.arrayBuffer().then(function (buf) {
+                    return file.arrayBuffer().then(function (buf) {
                       stageParsedTable(parseWorkbookSheet(XLSX, buf), file.name, fileType);
                     });
                   }).catch(function (err) {
@@ -3085,7 +3127,7 @@
                     } else if (docType === 'docx') {
                       lazyLoadMammoth().then(function (mammoth) { return file.arrayBuffer().then(function (buf) { return extractDocxText(mammoth, buf); }); }).then(land).catch(function (err) { setBench({ error: 'Could not load mammoth.js: ' + (err && err.message ? err.message : 'unknown') + '. Try saving the Word doc as plain text.' }); });
                     } else if (docType === 'xlsx') {
-                      lazyLoadXLSX().then(function (XLSX) { return file.arrayBuffer().then(function (buf) { return parseWorkbookSheet(XLSX, buf); }); }).then(land);
+                      lazyLoadXLSX().then(function (XLSX) { return file.arrayBuffer().then(function (buf) { return parseWorkbookSheet(XLSX, buf); }); }).then(land).catch(function () { setBench({ error: 'Could not load the approved spreadsheet parser. Try saving the sheet as CSV instead.' }); });
                     } else {
                       file.text().then(function (text) { land(parseTextTable(text)); });
                     }

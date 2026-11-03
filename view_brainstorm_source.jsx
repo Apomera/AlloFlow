@@ -156,7 +156,18 @@ function ActivityResponseField(props) {
 }
 
 function ActivityAnswersNote(props) {
-  return <p className="text-xs text-slate-600 mb-3">{activityT(props.t, 'brainstorm.answers_saved_note', 'Write your answers below. They are saved with your work.')}</p>;
+  const state = props.studentWorkStatus;
+  const messages = {
+    saving: ['brainstorm.answers_saving', 'Saving your answers…'],
+    saved: ['brainstorm.answers_saved', 'Your answers are saved on this device.'],
+    error: ['brainstorm.answers_save_error', 'Your answers could not be saved. Keep this page open and try again.'],
+    conflict: ['brainstorm.answers_save_conflict', 'Your answers are not saved yet. Review the conflicting changes above.']
+  };
+  const message = messages[state] || ['brainstorm.answers_ready', 'Write your answers below.'];
+  return <div className="text-xs text-slate-700 mb-3">
+    <p role="status" aria-live="polite" aria-atomic="true">{activityT(props.t, message[0], message[1])}</p>
+    {state === 'error' && typeof props.onRetrySave === 'function' && <button type="button" onClick={props.onRetrySave} className="mt-2 min-h-11 rounded-lg border border-slate-500 px-3 py-2 font-bold focus-visible:ring-2 focus-visible:ring-indigo-600">{activityT(props.t, 'studio_response.retry_save', 'Try saving again')}</button>}
+  </div>;
 }
 
 function ActivityArtifactSummary(props) {
@@ -251,7 +262,7 @@ function DiscussionKitBody(props) {
         <span className="text-[11px] font-bold uppercase tracking-wider bg-cyan-50 text-cyan-900 border border-cyan-200 rounded-full px-2.5 py-0.5">{protocolLabel}</span>
         {item.grouping ? <span className="text-xs text-slate-600">{activityDisplayText(item.grouping)}</span> : null}
       </div>
-      {answering ? <ActivityAnswersNote t={t} /> : null}
+      {answering ? <ActivityAnswersNote t={t} studentWorkStatus={props.studentWorkStatus} onRetrySave={props.onRetrySave} /> : null}
       {item.openingQuestion ? (
         <div className="mb-4">
           <p className="text-sm font-semibold text-slate-800 bg-cyan-50/60 border border-cyan-100 rounded-lg p-3 whitespace-pre-line">{activityDisplayText(item.openingQuestion)}</p>
@@ -372,7 +383,7 @@ function JigsawBody(props) {
       {checks.length ? (
         <div className="mb-3">
           <h5 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">{t('brainstorm.accountability_check') || 'Show what you learned (everyone answers)'}</h5>
-          {answering ? <ActivityAnswersNote t={t} /> : null}
+          {answering ? <ActivityAnswersNote t={t} studentWorkStatus={props.studentWorkStatus} onRetrySave={props.onRetrySave} /> : null}
           <ol className="list-decimal ml-5 text-sm text-slate-700 space-y-1">
             {checks.map(function (c, aIdx) { return <li key={aIdx}>{activityDisplayText(c && c.q)}{answering ? <ActivityResponseField t={t} answers={props.answers} onAnswer={props.onAnswer} responseKey={activityResponseKey(item, 'check', c && c.q)} question={activityDisplayText(c && c.q)} /> : null}</li>; })}
           </ol>
@@ -435,9 +446,9 @@ function BrainstormView(props) {
                                  {isTeacherMode && isEditingBrainstorm && ['discussion', 'jigsaw'].includes(idea.kind) ? (
                                      <ActivityStructuredEditor item={idea} t={t} onChange={(field, value) => handleBrainstormChange(idx, field, value)} />
                                  ) : idea.kind === 'discussion' ? (
-                                     <DiscussionKitBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} answers={learnerAnswers} onAnswer={onAnswer} />
+                                     <DiscussionKitBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} answers={learnerAnswers} onAnswer={onAnswer} studentWorkStatus={props.studentWorkStatus} onRetrySave={props.onRetrySave} />
                                  ) : idea.kind === 'jigsaw' ? (
-                                     <JigsawBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} answers={learnerAnswers} onAnswer={onAnswer} />
+                                     <JigsawBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} answers={learnerAnswers} onAnswer={onAnswer} studentWorkStatus={props.studentWorkStatus} onRetrySave={props.onRetrySave} />
                                  ) : isEditingBrainstorm ? (
                                      <>
                                         <div className="flex items-center gap-2 mb-2">

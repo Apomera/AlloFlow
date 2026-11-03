@@ -185,7 +185,7 @@ test.describe('Weather Systems — live forecast review', () => {
   test('undoes removing a snapshot without changing its captured data', async ({ page }) => {
     await mount(page);
     const saved = await save(page);
-    await studio(page).getByRole('button', { name: /^Remove(?: snapshot)?$/, exact: true }).first().click();
+    await studio(page).getByRole('button', { name: /^Remove, saved forecast /, exact: true }).first().click();
     expect(await page.evaluate(() => (window as any).__toolData.weatherSystems.liveForecastCheckpoints)).toEqual([]);
     await studio(page).getByRole('button', { name: 'Undo remove forecast snapshot', exact: true }).click();
     expect(await page.evaluate(() => (window as any).__toolData.weatherSystems.liveForecastCheckpoints)).toEqual(saved);
@@ -226,20 +226,29 @@ test.describe('Weather Systems — live forecast review', () => {
       await route.fulfill({ json: payload });
     });
     try {
-      await studio(page).getByRole('button', { name: 'Open checkpoint hour', exact: true }).click();
+      await studio(page).getByRole('button', { name: /^Open checkpoint hour, saved forecast / }).click();
       await expect.poll(() => requests.length).toBe(1);
       const request = new URL(requests[0]);
       expect(request.searchParams.get('latitude')).toBe(String(location.latitude));
       expect(request.searchParams.get('longitude')).toBe(String(location.longitude));
-      await expect(page.getByRole('heading', { name: 'Immersive 3D Weather Space', exact: true })).toBeVisible();
+      await expect(studio(page)).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Immersive 3D Weather Space', exact: true })).toHaveCount(0);
       expect(await page.evaluate(() => {
         const d = (window as any).__toolData.weatherSystems;
-        return { tab: d.tab, mode: d.immersiveSceneMode, source: d.immersiveDataSource, loading: d.liveWeatherLoading };
-      })).toEqual({ tab: 'immersive', mode: 'geographic', source: 'live', loading: true });
+        return { tab: d.tab, loading: d.liveWeatherLoading, live: d.liveWeather,
+          timeline: d.liveWeatherTimeline, index: d.liveWeatherTimelineIndex, snapshots: d.liveForecastCheckpoints };
+      })).toEqual({ tab: 'forecast', loading: true,
+        live: live(13, { label: 'Boston, Massachusetts', latitude: 42.3601, longitude: -71.0589 }),
+        timeline: [point(13, 'current'), point(14, 'forecast', { temperature: 31 })], index: 0, snapshots: saved });
     } finally {
       releaseResponse();
     }
     await expect.poll(() => page.evaluate(() => (window as any).__toolData.weatherSystems.liveWeatherLoading)).toBe(false);
+    await expect(page.getByRole('heading', { name: 'Immersive 3D Weather Space', exact: true })).toBeVisible();
+    expect(await page.evaluate(() => {
+      const d = (window as any).__toolData.weatherSystems;
+      return { tab: d.tab, mode: d.immersiveSceneMode, source: d.immersiveDataSource };
+    })).toEqual({ tab: 'immersive', mode: 'geographic', source: 'live' });
     const state = await page.evaluate(() => {
       const d = (window as any).__toolData.weatherSystems;
       return { live: d.liveWeather, selected: d.liveWeatherTimeline[d.liveWeatherTimelineIndex], snapshots: d.liveForecastCheckpoints };

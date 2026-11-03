@@ -2568,7 +2568,32 @@ const createExport = deps => {
           }
         } else if (type === 'glossary') {
           const entries = Array.isArray(item.data) ? item.data : [];
-          const hasTrans = entries.some(entry => entry.translations && Object.keys(entry.translations).length > 0);
+          const glossaryRows = entries.map(entry => {
+            const values = entry.translations;
+            const languages = values && typeof values === 'object' && !Array.isArray(values) ? Object.keys(values) : [];
+            const translations = languages.map(language => {
+              const value = _flashcardTranslation(entry, language);
+              return value.usable ? {
+                language,
+                label: _glossaryLanguageLabel(language),
+                text: value.spoken
+              } : null;
+            }).filter(Boolean);
+            const labels = new Map();
+            translations.forEach(({
+              label
+            }) => labels.set(label, (labels.get(label) || 0) + 1));
+            return {
+              term: entry.term || entry.word || '',
+              definition: entry.def || entry.definition || entry.meaning || '',
+              translations: translations.map(({
+                language,
+                label,
+                text
+              }) => (label ? label + (labels.get(label) > 1 ? ' (' + language + ')' : '') + ': ' : '') + text).join('\n')
+            };
+          });
+          const hasTrans = glossaryRows.some(entry => !!entry.translations);
           const header = hasTrans ? [{
             text: t('export.term_col'),
             options: {
@@ -2608,10 +2633,9 @@ const createExport = deps => {
           const pages = [];
           let page = [],
             pageLines = 0;
-          entries.forEach(entry => {
-            const translations = hasTrans && entry.translations ? Object.values(entry.translations).join(' / ') : '';
-            const row = hasTrans ? [entry.term || '', entry.def || '', translations] : [entry.term || '', entry.def || ''];
-            const rowLines = Math.max(1, ...row.map(cell => Math.ceil(String(cell).length / (hasTrans ? 34 : 48))));
+          glossaryRows.forEach(entry => {
+            const row = hasTrans ? [entry.term, entry.definition, entry.translations] : [entry.term, entry.definition];
+            const rowLines = Math.max(1, ...row.map(cell => String(cell).split(/\r?\n/).reduce((lines, line) => lines + Math.max(1, Math.ceil(line.length / (hasTrans ? 34 : 48))), 0)));
             if (page.length && (page.length >= 7 || pageLines + rowLines > 10)) {
               pages.push(page);
               page = [];
@@ -4129,7 +4153,7 @@ const createExport = deps => {
     }
   };
   const _glossarySourceLanguage = (resource, item, field) => {
-    const explicit = [item && item[field], item && item.baseLanguage, item && item.termLanguage].find(value => typeof value === 'string' && value.trim());
+    const explicit = [item && item[field], field === 'termLanguage' && item?.wordLanguage, item && item.baseLanguage, item && item.termLanguage].find(value => typeof value === 'string' && value.trim());
     if (explicit) return explicit.trim();
     const resolve = typeof window !== 'undefined' && window.AlloModules?.TextPipelineHelpers?.getGlossaryBaseLanguage;
     if (typeof resolve === 'function') return resolve(resource);
@@ -4195,22 +4219,97 @@ const createExport = deps => {
       addToast
     } = liveRef.current;
     if (!generatedContent || generatedContent.type !== 'glossary') return;
+    const uiLabel = (key, fallback, params) => {
+      const translated = _gxText(key, '', params);
+      const usable = translated.trim() && translated.trim() !== key;
+      let fallbackText = fallback;
+      Object.keys(params || {}).forEach(name => {
+        fallbackText = String(fallbackText).split('{' + name + '}').join(String(params[name] == null ? '' : params[name]));
+      });
+      const text = usable ? translated : fallbackText,
+        isFallback = !usable || text === fallbackText;
+      const language = isFallback ? 'en' : _exportLanguage(),
+        direction = isFallback ? 'ltr' : _exportDirection();
+      return {
+        text,
+        language,
+        attrs: ' lang="' + _escapeExportText(language) + '" dir="' + direction + '"'
+      };
+    };
+    const uiText = (key, fallback, params) => uiLabel(key, fallback, params).text;
     const audioOptions = exportOptions && typeof exportOptions === 'object' ? exportOptions : {};
     const cleanText = text => _escapeExportText(_glossaryPlainText(text));
     const cards = Array.isArray(generatedContent.data) ? generatedContent.data.filter(item => item && item.term) : [];
     if (!cards.length) {
-      if (addToast) addToast(t('flashcards.export_empty') || 'Add glossary terms before exporting flashcards.', 'info');
+      if (addToast) addToast(uiText('flashcards.export_empty', 'Add glossary terms before exporting flashcards.'), 'info');
       return;
     }
     // lang/dir for a card side written in a named language ("Arabic"), from
     // the host's language utilities. A name they do not know comes back as
-    // English, so it gets dir="auto" and no lang rather than a wrong one.
+    // English, so unknown names explicitly clear the inherited UI language.
     const sourceLanguage = (item, field) => _glossarySourceLanguage(generatedContent, item, field);
     const languageLabel = _glossaryLanguageLabel;
+    const languageKey = value => _glossaryLanguageInfo(value).tag.toLowerCase() || value.trim().toLowerCase();
+    const deckTitle = typeof generatedContent.title === 'string' ? generatedContent.title.trim() : '';
+    // A teacher's title may use a different language from the interface or the words.
+    const titleLanguage = typeof generatedContent.titleLanguage === 'string' && generatedContent.titleLanguage.trim() ? _glossaryLanguageInfo(generatedContent.titleLanguage) : {
+      tag: '',
+      dir: 'auto'
+    };
+    const titleAttrs = `lang="${_escapeExportText(titleLanguage.tag)}" dir="${titleLanguage.dir}"`;
+    const titleText = _escapeExportText(deckTitle);
     const sideLangAttrs = languageName => {
       if (!languageName) return ' lang="en" dir="ltr"';
       const info = _glossaryLanguageInfo(languageName);
-      return (info.tag ? ' lang="' + _escapeExportText(info.tag) + '"' : '') + ' dir="' + info.dir + '"';
+      return ' lang="' + _escapeExportText(info.tag) + '" dir="' + info.dir + '"';
+    };
+    const renderWordOrigin = (item, definitionLanguage) => {
+      const saved = item.etymologyByLang;
+      const passages = saved && typeof saved === 'object' && !Array.isArray(saved) ? Object.entries(saved).filter(([language, prose]) => language.trim() && typeof prose === 'string' && prose.trim()) : [];
+      const preferred = passages.find(([language]) => language === definitionLanguage) || passages.find(([language]) => languageKey(language) === languageKey(definitionLanguage));
+      const prose = preferred ? preferred[1] : item.etymology;
+      if (typeof prose !== 'string' || !prose.trim()) return '';
+      // The legacy prose may also be saved under its original language.
+      const original = preferred || passages.find(([, text]) => text.trim() === prose.trim());
+      const {
+        tag,
+        dir
+      } = _glossaryLanguageInfo(original ? original[0] : definitionLanguage);
+      const originLabel = uiLabel('glossary.etymology_label', 'Word roots');
+      return `<div class="etym-text"><strong class="lang-label"${originLabel.attrs}><span aria-hidden="true">📜</span> ${_escapeExportText(originLabel.text)}:</strong><span lang="${_escapeExportText(tag)}" dir="${dir}">${cleanText(prose)}</span></div>`;
+    };
+    const rootLocaleText = (saved, legacy, language) => {
+      const entries = saved && typeof saved === 'object' && !Array.isArray(saved) ? Object.entries(saved).filter(([key, text]) => key.trim() && typeof text === 'string' && text.trim()) : [];
+      const preferred = entries.find(([key]) => key === language) || entries.find(([key]) => languageKey(key) === languageKey(language));
+      if (preferred) return {
+        text: preferred[1],
+        language: preferred[0]
+      };
+      const text = typeof legacy === 'string' ? legacy : '';
+      const original = entries.find(([, value]) => value.trim() === text.trim());
+      return {
+        text,
+        language: original ? original[0] : ''
+      };
+    };
+    const renderRoot = (root, definitionLanguage) => {
+      const label = rootLocaleText(root.langByLocale, root.lang, definitionLanguage);
+      const meaning = rootLocaleText(root.meaningByLang, root.meaning, definitionLanguage);
+      // Origin names can themselves be localized. Only a recognized saved
+      // name identifies the root's language; the gloss has its own locale.
+      const originNames = [root.lang, ...Object.values(root.langByLocale && typeof root.langByLocale === 'object' && !Array.isArray(root.langByLocale) ? root.langByLocale : {})];
+      const origin = originNames.map(_glossaryLanguageInfo).find(info => info.tag) || {
+        tag: '',
+        dir: 'auto'
+      };
+      const attrs = language => {
+        const {
+          tag,
+          dir
+        } = _glossaryLanguageInfo(language);
+        return ` lang="${_escapeExportText(tag)}" dir="${dir}"`;
+      };
+      return `<span class="root-chip"><bdi class="root-form" lang="${_escapeExportText(origin.tag)}" dir="${origin.dir}">${cleanText(root.root || '')}</bdi>${label.text ? ` <bdi class="root-language"${attrs(label.language)}>(${cleanText(label.text)})</bdi>` : ''}${meaning.text ? ` = <bdi class="root-meaning"${attrs(meaning.language)}>${cleanText(meaning.text)}</bdi>` : ''}</span>`;
     };
     // No usable description (none, or one written for an earlier picture): name the
     // picture by its term rather than hide it. Only a decorative picture is silent.
@@ -4282,13 +4381,14 @@ const createExport = deps => {
             .def-text { font-size: 0.8125rem; color: #475569; line-height: 1.4; }
             .def-trans { font-size: 0.8125rem; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
             .def-text, .def-trans { width: 100%; }
-            .def-text[dir], .def-text > span[dir], .def-trans > span[dir] { display: block; text-align: start; white-space: pre-wrap; }
-            .def-text > .lang-label, .def-trans > .lang-label { display: block; text-align: start; margin-bottom: 5px; }
-            .etym-text { font-size: 0.6875rem; color: #4338ca; font-style: italic; line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
+            .def-text[dir], .def-text > span[dir], .def-text > q[dir], .def-trans > span[dir], .etym-text > span[dir] { display: block; text-align: start; white-space: pre-wrap; }
+            .def-text > .lang-label, .def-trans > .lang-label, .etym-text > .lang-label { display: block; text-align: start; margin-bottom: 5px; }
+            .etym-text { font-size: 0.8125rem; color: #334155; line-height: 1.5; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
+            .etym-related { font-size: 0.75rem; color: #475569; line-height: 1.5; margin-top: 8px; width: 100%; text-align: start; overflow-wrap: anywhere; }
             .etym-roots { margin-top: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; width: 100%; }
-            .root-chip { font-size: 0.625rem; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 2px 6px; border-radius: 999px; font-style: normal; }
-            .root-chip b { font-weight: 700; }
-            .root-chip i { font-size: 0.5625rem; color: #6366f1; text-transform: uppercase; font-style: normal; letter-spacing: 0.03em; margin: 0 2px; }
+            .root-chip { font-size: 0.625rem; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 2px 6px; border-radius: 0.75rem; }
+            .root-form { font-weight: 700; }
+            .root-language { font-size: 0.5625rem; color: #6366f1; text-transform: uppercase; letter-spacing: 0.03em; margin: 0 2px; }
             .set-header {
                 background: #f1f5f9; color: #334155;
                 padding: 15px; margin: 40px 0 20px 0;
@@ -4296,6 +4396,11 @@ const createExport = deps => {
                 border: 1px solid #e2e8f0;
                 page-break-after: avoid;
             }
+            .language-alias { font-size: 0.85em; font-weight: inherit; color: #475569; text-transform: none; letter-spacing: normal; white-space: normal; overflow-wrap: anywhere; }
+            .set-title { display: block; overflow-wrap: anywhere; }
+            .set-caption { display: block; margin-top: 0.375rem; font-size: 0.875rem; overflow-wrap: anywhere; }
+            .picture-credits { overflow-wrap: anywhere; text-align: start; }
+            .picture-credits ul { padding-inline-start: 1.5em; }
             @media screen {
                 .card-container { border-style: solid; border-radius: 12px; box-shadow: 0 2px 8px rgba(15,23,42,.05); }
                 .def-text, .def-trans { font-size: 0.9375rem; line-height: 1.55; }
@@ -4311,11 +4416,15 @@ const createExport = deps => {
             }
         `;
     const titleKey = isLanguageMode ? 'flashcards.print_title_language' : 'flashcards.print_title_standard';
+    const titleLabel = uiLabel(titleKey, isLanguageMode ? 'Language Study Flashcards' : 'Flashcard Generator');
+    const instructionsLabel = uiLabel('flashcards.print_instructions', 'Instructions: Print single-sided. Cut along the dashed borders. Fold in the middle to create double-sided cards.');
+    const printLabel = uiLabel('common.print', 'Print');
+    const foldLabel = uiLabel('flashcards.fold_guide', 'FOLD HERE');
     let htmlBody = `
             <div class="no-print" style="background: #eef2ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; border: 1px solid #c7d2fe;">
-                <h1 style="margin-top:0; color: #3730a3; font-family: sans-serif;">${_escapeExportText(t(titleKey))}</h1>
-                <p style="color: #4338ca; font-family: sans-serif;">${_escapeExportText(t('flashcards.print_instructions'))}</p>
-                <button onclick="window.print()" style="background: #4f46e5; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; font-family: sans-serif;">${_escapeExportText(t('common.print'))}</button>
+                <h1${titleLabel.attrs} style="margin-top:0; color: #3730a3; font-family: sans-serif;">${_escapeExportText(titleLabel.text)}</h1>
+                <p${instructionsLabel.attrs} style="color: #4338ca; font-family: sans-serif;">${_escapeExportText(instructionsLabel.text)}</p>
+                <button${printLabel.attrs} onclick="window.print()" style="background: #4f46e5; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; font-family: sans-serif;">${_escapeExportText(printLabel.text)}</button>
             </div>
         `;
     const allLanguages = new Set();
@@ -4327,8 +4436,13 @@ const createExport = deps => {
       }
     });
     const languagesList = Array.from(allLanguages);
+    const targetLabelCounts = new Map();
+    languagesList.forEach(language => {
+      const label = languageLabel(language);
+      targetLabelCounts.set(label, (targetLabelCounts.get(label) || 0) + 1);
+    });
     if (isLanguageMode && languagesList.length === 0) {
-      const message = t('flashcards.no_translations') || 'No translated flashcards are available to export.';
+      const message = uiText('flashcards.no_translations', 'No translated flashcards are available to export.');
       if (typeof addToast === 'function') addToast(message, 'error');else if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'error');
       return;
     }
@@ -4381,9 +4495,14 @@ const createExport = deps => {
     };
     const renderSet = (lang = null, setCards = cards) => {
       const sourceLabels = [...new Set(setCards.map(item => languageLabel(sourceLanguage(item, 'termLanguage'))))].join(' / ');
-      const targetLabel = languageLabel(lang);
-      const header = lang ? isLanguageMode ? `${sourceLabels} ⟷ ${targetLabel}` : targetLabel : sourceLabels;
-      htmlBody += `<h2 class="set-header">${_escapeExportText(header)} ${_escapeExportText(t('flashcards.set_header'))}</h2>`;
+      const targetName = languageLabel(lang);
+      const targetAlias = targetLabelCounts.get(targetName) > 1 ? lang : '';
+      const targetLabel = targetName + (targetAlias ? ' (' + targetAlias + ')' : '');
+      const targetLabelHtml = _escapeExportText(targetName) + (targetAlias ? ' <span class="language-alias">(<bdi lang="" dir="auto">' + _escapeExportText(targetAlias) + '</bdi>)</span>' : '');
+      const header = lang ? isLanguageMode ? `${_escapeExportText(sourceLabels)} ⟷ ${targetLabelHtml}` : targetLabelHtml : _escapeExportText(sourceLabels);
+      const setHeader = uiLabel('flashcards.set_header', 'Study Set');
+      const setLabel = `${header} <span${setHeader.attrs}>${_escapeExportText(setHeader.text)}</span>`;
+      htmlBody += `<h2 class="set-header">${titleText ? `<bdi class="set-title" ${titleAttrs}>${titleText}</bdi><span class="set-caption">${setLabel}</span>` : setLabel}</h2>`;
       setCards.forEach(item => {
         let transTerm = "";
         let transDef = "";
@@ -4398,7 +4517,6 @@ const createExport = deps => {
         const definitionLanguage = sourceLanguage(item, 'definitionLanguage');
         const termLabel = languageLabel(termLanguage),
           definitionLabel = languageLabel(definitionLanguage);
-        const languageKey = value => _glossaryLanguageInfo(value).tag.toLowerCase() || value.trim().toLowerCase();
         const showDefinitionLanguage = !!_glossaryPlainText(item.def || item.definition).trim() && languageKey(definitionLanguage) !== languageKey(termLanguage);
         const termAttrs = sideLangAttrs(termLanguage),
           definitionAttrs = sideLangAttrs(definitionLanguage);
@@ -4411,22 +4529,25 @@ const createExport = deps => {
                         <div class="def-text"${definitionAttrs}>${cleanText(item.def || item.definition)}</div>
                     `;
           backContent = `
-                        <div class="lang-label">${_escapeExportText(targetLabel)}</div>
+                        <div class="lang-label">${targetLabelHtml}</div>
                         <div class="primary-text"${tr}>${cleanText(transTerm)}</div>
                         <div class="def-text"${tr}>${cleanText(transDef)}</div>
                     `;
         } else {
           frontContent = `
-                        <div class="cut-guide">${_escapeExportText(t('flashcards.fold_guide'))}</div>
                         <div class="lang-label">${_escapeExportText(termLabel)}</div>
                         <div class="primary-text"${termAttrs}>${cleanText(item.term)}</div>
-                        ${transTerm ? `<div class="secondary-text"${tr}>${cleanText(transTerm)}</div><div class="lang-label" style="margin-top:2px;">${_escapeExportText(targetLabel)}</div>` : ''}
+                        ${transTerm ? `<div class="secondary-text"${tr}>${cleanText(transTerm)}</div><div class="lang-label" style="margin-top:2px;">${targetLabelHtml}</div>` : ''}
                     `;
+          const contextSentence = typeof item.contextSentence === 'string' ? item.contextSentence.trim() : '';
+          const quoteLanguage = typeof item.contextSentenceLanguage === 'string' && item.contextSentenceLanguage.trim() || definitionLanguage;
+          const contextLabel = contextSentence ? uiLabel('glossary.context_sentence_label', 'In the text:') : null;
+          const quote = contextSentence ? `<div class="def-text" data-context-sentence style="margin-top:8px;"><strong class="lang-label"${contextLabel.attrs}>${_escapeExportText(contextLabel.text)}</strong> <q${sideLangAttrs(quoteLanguage)}>${cleanText(contextSentence)}</q></div>` : '';
           backContent = `
                         <div class="def-text"><strong class="lang-label">${_escapeExportText(definitionLabel)}:</strong> <span${definitionAttrs}>${cleanText(item.def || item.definition)}</span></div>
-                        ${transDef ? `<div class="def-trans"><strong class="lang-label">${_escapeExportText(targetLabel)}:</strong> <span${tr}>${cleanText(transDef)}</span></div>` : ''}${typeof item.contextSentence === 'string' && item.contextSentence.trim() ? `<div class="def-text" data-context-sentence style="margin-top:8px;"><strong>${_escapeExportText(_gxText('glossary.context_sentence_label', 'In the text:'))}</strong> <q${definitionAttrs}>${cleanText(item.contextSentence.trim())}</q></div>` : ''}
-                        ${item.etymology ? `<div class="etym-text">📜 <strong>${_escapeExportText(t('glossary.etymology_label') || 'Roots')}:</strong> ${cleanText(item.etymology)}</div>` : ''}
-                        ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => `<span class="root-chip"><b>${cleanText(r.root || '')}</b>${r.lang ? ` <i>(${cleanText(r.lang)})</i>` : ''}${r.meaning ? ` = ${cleanText(r.meaning)}` : ''}</span>`).join(' ')}</div>${(() => {
+                        ${transDef ? `<div class="def-trans"><strong class="lang-label">${targetLabelHtml}:</strong> <span${tr}>${cleanText(transDef)}</span></div>` : ''}${quote}
+                        ${renderWordOrigin(item, definitionLanguage)}
+                        ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => renderRoot(r, definitionLanguage)).join(' ')}</div>${(() => {
             const seen = new Set();
             const allRel = [];
             item.roots.forEach(r => {
@@ -4438,20 +4559,21 @@ const createExport = deps => {
                 }
               });
             });
-            return allRel.length > 0 ? `<div class="etym-related"><strong>${_escapeExportText(t('export.related_words_label') || 'Related words:')}</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : '';
+            const relatedLabel = allRel.length ? uiLabel('export.related_words_label', 'Related words:') : null;
+            return allRel.length > 0 ? `<div class="etym-related"><strong lang="${_escapeExportText(relatedLabel.language)}" dir="auto">${_escapeExportText(relatedLabel.text)}</strong> ${allRel.slice(0, 6).map(w => `<bdi lang="" dir="auto">${cleanText(w)}</bdi>`).join(', ')}</div>` : '';
           })()}` : ''}
                     `;
         }
         if (audioIds.size) {
           const clips = sideClips(item, lang);
           const term = String(item.term);
-          frontContent += audioButton(clips.front, _gxText('flashcards.play_term', 'Play {term}', {
+          frontContent += audioButton(clips.front, uiText('flashcards.play_term', 'Play {term}', {
             term
           }));
-          backContent = audioButton(clips.back, isLanguageMode ? _gxText('flashcards.play_translation', 'Play {term} in {lang}', {
+          backContent = audioButton(clips.back, isLanguageMode ? uiText('flashcards.play_translation', 'Play {term} in {lang}', {
             term,
             lang: targetLabel
-          }) : _gxText('flashcards.play_definition', 'Play the definition of {term}', {
+          }) : uiText('flashcards.play_definition', 'Play the definition of {term}', {
             term
           })) + backContent;
         }
@@ -4473,8 +4595,9 @@ const createExport = deps => {
           frontContent = '<figure class="card-picture"><img' + imgSource + ' alt="' + _escapeExportText(alt) + '"' + (alt ? '' : ' role="presentation"') + '>' + (creditText ? '<figcaption>' + _escapeExportText(creditText) + '</figcaption>' : '') + '</figure>' + frontContent;
         }
         htmlBody += `
-                    <div class="card-container">
+                    <div class="card-container${isLanguageMode ? '' : ' fold-card'}">
                         <div class="card-side front">${frontContent}</div>
+                        ${isLanguageMode ? '' : `<div class="cut-guide"><span${foldLabel.attrs}>${_escapeExportText(foldLabel.text)}</span></div>`}
                         <div class="card-side back">${backContent}</div>
                     </div>
                 `;
@@ -4487,12 +4610,13 @@ const createExport = deps => {
     const listedCredits = new Set();
     const creditEntries = pictureCredits.map(credit => {
       const where = [];
-      if (/^https:\/\//i.test(credit.licenseUrl || '')) where.push((t('flashcards.credit_license') || 'License') + ': ' + credit.licenseUrl);
-      if (/^https?:\/\//i.test(credit.url || '')) where.push((t('flashcards.credit_source') || 'Source') + ': ' + credit.url);
+      if (/^https:\/\//i.test(credit.licenseUrl || '')) where.push(uiText('flashcards.credit_license', 'License') + ': ' + credit.licenseUrl);
+      if (/^https?:\/\//i.test(credit.url || '')) where.push(uiText('flashcards.credit_source', 'Source') + ': ' + credit.url);
       return cardCreditLine(credit) + (where.length ? ' (' + where.join('; ') + ')' : '');
     }).filter(line => line && !listedCredits.has(line) && listedCredits.add(line));
     if (creditEntries.length) {
-      htmlBody += '<section class="picture-credits" data-picture-credits style="page-break-before: always;"><h2>' + _escapeExportText(t('flashcards.picture_credits') || 'Picture credits') + '</h2><ul>' + creditEntries.map(line => '<li>' + _escapeExportText(line) + '</li>').join('') + '</ul></section>';
+      const creditLabel = uiLabel('flashcards.picture_credits', 'Picture credits');
+      htmlBody += '<section class="picture-credits" data-picture-credits style="page-break-before: always;"><h2' + creditLabel.attrs + '>' + _escapeExportText(creditLabel.text) + '</h2><ul>' + creditEntries.map(line => '<li>' + _escapeExportText(line) + '</li>').join('') + '</ul></section>';
     }
     const fullHtml = `
             <!DOCTYPE html>
@@ -4500,7 +4624,7 @@ const createExport = deps => {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>${_escapeExportText(t(titleKey) || 'Flashcards')} - ${_escapeExportText(new Date().toLocaleDateString())}</title>
+                ${titleText ? `<title ${titleAttrs}>${titleText}</title>` : `<title${titleLabel.attrs}>${_escapeExportText(titleLabel.text)} - ${_escapeExportText(new Date().toLocaleDateString())}</title>`}
                 <style>
                     body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #1e293b; }
                     @page { margin: 12mm; }
@@ -4531,22 +4655,22 @@ const createExport = deps => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${t('export.filenames.flashcards')}-${mode}-${Date.now()}.html`;
+      link.download = `${uiText('export.filenames.flashcards', 'flashcards')}-${mode}-${Date.now()}.html`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       // Revoking in the same tick can cancel the download in some browsers.
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       try {
-        if (typeof window.alloAnnounce === 'function') window.alloAnnounce(t('flashcards.export_done') || 'Flashcards downloaded.');
+        if (typeof window.alloAnnounce === 'function') window.alloAnnounce(uiText('flashcards.export_done', 'Flashcards downloaded.'));
       } catch (_) {}
-      if (audioOptions.includeAudio !== false && audioIndex.staleLanguageClips.size && typeof addToast === 'function') addToast(audioIndex.staleLanguageClips.size === 1 ? _gxText('flashcards.audio_language_stale_one', '1 recording was left out because its saved language no longer matches the card. Refresh the audio to include it.') : _gxText('flashcards.audio_language_stale', '{count} recordings were left out because their saved language no longer matches the cards. Refresh the audio to include them.', {
+      if (audioOptions.includeAudio !== false && audioIndex.staleLanguageClips.size && typeof addToast === 'function') addToast(audioIndex.staleLanguageClips.size === 1 ? uiText('flashcards.audio_language_stale_one', '1 recording was left out because its saved language no longer matches the card. Refresh the audio to include it.') : uiText('flashcards.audio_language_stale', '{count} recordings were left out because their saved language no longer matches the cards. Refresh the audio to include them.', {
         count: audioIndex.staleLanguageClips.size
       }), 'info');
-      if (incompleteCards && typeof addToast === 'function') addToast(incompleteCards === 1 ? _gxText('flashcards.translation_skipped_one', '1 card was skipped because its translation is missing.') : _gxText('flashcards.translation_skipped', '{count} cards were skipped because their translations are missing.', {
+      if (incompleteCards && typeof addToast === 'function') addToast(incompleteCards === 1 ? uiText('flashcards.translation_skipped_one', '1 card was skipped because its translation is missing.') : uiText('flashcards.translation_skipped', '{count} cards were skipped because their translations are missing.', {
         count: incompleteCards
       }), 'info');
-      if (audioSkipped && typeof addToast === 'function') addToast(audioSkipped === 1 ? _gxText('flashcards.audio_capped_one', '1 recording was left out to keep the file under 20 MB.') : _gxText('flashcards.audio_capped', '{count} recordings were left out to keep the file under 20 MB.', {
+      if (audioSkipped && typeof addToast === 'function') addToast(audioSkipped === 1 ? uiText('flashcards.audio_capped_one', '1 recording was left out to keep the file under 20 MB.') : uiText('flashcards.audio_capped', '{count} recordings were left out to keep the file under 20 MB.', {
         count: audioSkipped
       }), 'info');
     };
@@ -4600,7 +4724,8 @@ const createExport = deps => {
   const _flashcardReaderHead = (settings, font) => {
     const lib = window.AlloModules.UIFontLibrary;
     const stacked = Number(settings.baseFontSize) >= 24;
-    const layout = 'body{overflow-wrap:break-word}.cut-guide{position:static;transform:none;align-self:center;order:-1;margin:0 0 8px}' + (stacked ? '.card-container{flex-direction:column}.front{border-inline-end:0;border-bottom:2px dashed #cbd5e1}' : '');
+    const foldLayout = stacked ? '.fold-card{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:1fr auto 1fr}.fold-card>.front{border-bottom:0}' + '.fold-card>.cut-guide{display:flex;align-items:center;gap:0.375rem}.fold-card>.cut-guide::before,.fold-card>.cut-guide::after{content:"";flex:1;border-block-start:2px dashed #777}' : '.fold-card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto 1fr}.fold-card>.cut-guide{grid-area:1/1/2/3}.fold-card>.card-side{grid-row:2}';
+    const layout = 'body{overflow-wrap:break-word}.cut-guide{position:static;transform:none;text-align:center;overflow-wrap:anywhere}.cut-guide>span{min-width:0}' + (stacked ? '.card-container{flex-direction:column}.front{border-inline-end:0;border-bottom:2px dashed #cbd5e1}' : '') + '@media print,screen and (min-width:561px){' + foldLayout + '}';
     return (font.head || '') + '<style data-reader-settings>' + (font.css || '') + '\n' + lib.readerExportCss(settings) + '\n' + layout + '</style>';
   };
 
@@ -5153,7 +5278,10 @@ const createExport = deps => {
       reviewList.replaceChildren();
       missingBacks.forEach(item => {
         const row = ui.el('li', '', '', reviewList);
-        ui.el('bdi', '', _gxOneLine(item.term), row).setAttribute('dir', 'auto');
+        const term = ui.el('bdi', '', _gxOneLine(item.term), row);
+        const info = _glossaryLanguageInfo(_glossarySourceLanguage(liveRef.current?.generatedContent, item, 'termLanguage'));
+        term.setAttribute('lang', info.tag || '');
+        term.setAttribute('dir', info.dir);
       });
       summary.dataset.empty = String(!ready);
       exportButton.disabled = !ready;
@@ -5195,16 +5323,22 @@ const createExport = deps => {
     select.setAttribute('aria-describedby', summary.id);
     select.addEventListener('change', sync);
     ui.el('option', '', _gxText('export.word_list_back_definition', 'Definition'), select).value = 'definition';
-    languages.forEach(lang => {
-      ui.el('option', '', _gxText('export.word_list_back_translation', '{lang} translation', {
-        lang: _glossaryLanguageLabel(lang)
-      }), select).value = lang;
+    const choiceLanguages = languages.slice();
+    if (typeof initial.back === 'string' && initial.back && initial.back !== 'definition' && !choiceLanguages.includes(initial.back)) choiceLanguages.push(initial.back);
+    const backChoices = choiceLanguages.map(language => ({
+      language,
+      label: _gxText('export.word_list_back_translation', '{lang} translation', {
+        lang: _glossaryLanguageLabel(language)
+      })
+    }));
+    const labelCounts = new Map();
+    backChoices.forEach(choice => labelCounts.set(choice.label, (labelCounts.get(choice.label) || 0) + 1));
+    backChoices.forEach(({
+      language,
+      label
+    }) => {
+      ui.el('option', '', labelCounts.get(label) > 1 ? label + ' (' + language + ')' : label, select).value = language;
     });
-    if (typeof initial.back === 'string' && initial.back && initial.back !== 'definition' && !languages.includes(initial.back)) {
-      ui.el('option', '', _gxText('export.word_list_back_translation', '{lang} translation', {
-        lang: _glossaryLanguageLabel(initial.back)
-      }), select).value = initial.back;
-    }
     select.value = initial.back || 'definition';
     ui.dialog.appendChild(note);
     ui.dialog.appendChild(summary);

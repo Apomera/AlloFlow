@@ -262,6 +262,8 @@ function announceAnnotationMove(message) {
     live = document.createElement('div');
     live.id = 'allo-annotation-move-status';
     live.className = 'sr-only';
+    // Standalone players scope their utility CSS; keep this body-level live region hidden.
+    live.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
     live.setAttribute('role', 'status');
     live.setAttribute('aria-live', 'polite');
     live.setAttribute('aria-atomic', 'true');
@@ -350,6 +352,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
   const palette = NOTE_COLORS[a.color] || NOTE_COLORS.yellow;
   const [expanded, setExpanded] = React.useState(!a.content);
   const [draft, setDraft] = React.useState(a.content || '');
+  React.useEffect(function () { setDraft(a.content || ''); }, [a.content]);
   const taRef = React.useRef(null);
   // Drag-tracking ref hoisted to the top of the component so it's not
   // called conditionally (Rules of Hooks). Set by the drag handler when
@@ -1910,6 +1913,494 @@ function removeAnnotation(annotations, id) {
   return annotations.filter(function (a) { return a && a.id !== id; });
 }
 
+// Card highlights use text offsets inside named passages. The rendered DOM can
+// split a word into several nodes for Bionic Reading without changing its text.
+const CARD_TEXT_FIELD = '$card';
+function cardTextIndex(content) {
+  const doc = content.ownerDocument;
+  const nodes = [], fields = new Map(), parts = [];
+  // Identify duplicate field names before indexing so they cannot silently
+  // select the wrong element. Text offsets are counted once for the whole card.
+  for (const el of content.querySelectorAll('[data-allo-highlight-field]')) {
+    const key = el.getAttribute('data-allo-highlight-field');
+    if (key && key !== CARD_TEXT_FIELD && key.length <= 160) fields.set(key, fields.has(key) ? null : { el, start: null, end: null });
+  }
+  const walker = doc.createTreeWalker(content, 4 /* SHOW_TEXT */);
+  let node, length = 0;
+  while ((node = walker.nextNode())) {
+    if (!node.length) continue;
+    let nearestField = CARD_TEXT_FIELD;
+    const end = length + node.length;
+    for (let el = node.parentElement; el && el !== content; el = el.parentElement) {
+      const key = el.getAttribute('data-allo-highlight-field'), field = fields.get(key);
+      if (!field || field.el !== el) continue;
+      if (nearestField === CARD_TEXT_FIELD) nearestField = key;
+      if (field.start === null) field.start = length;
+      field.end = end;
+    }
+    nodes.push({ node, start: length, end, field: nearestField });
+    parts.push(node.data);
+    length = end;
+  }
+  fields.set(CARD_TEXT_FIELD, { start: 0, end: length });
+  const offsetAt = (container, offset) => {
+    const range = doc.createRange();
+    range.selectNodeContents(content);
+    range.setEnd(container, offset);
+    return range.toString().length;
+  };
+  const endpoint = (offset, endPoint) => {
+    const run = nodes.find(n => endPoint ? n.start < offset && offset <= n.end : n.start <= offset && offset < n.end);
+    return run ? { field: run.field, offset: offset - fields.get(run.field).start } : null;
+  };
+  return { text: parts.join(''), nodes, fields, offsetAt, endpoint };
+}
+
+function validCardAnchor(anchor) {
+  const point = p => p && typeof p.field === 'string' && p.field.length > 0 && p.field.length <= 160 && Number.isInteger(p.offset) && p.offset >= 0 && p.offset <= 200000;
+  return anchor && anchor.version === 1 && point(anchor.start) && point(anchor.end) && typeof anchor.quote === 'string' && anchor.quote.length <= 65536 && !!anchor.quote.trim();
+}
+
+function captureCardAnchor(content, range, index) {
+  if (!content.contains(range.startContainer) || !content.contains(range.endContainer)) return null;
+  const first = index.offsetAt(range.startContainer, range.startOffset);
+  const last = index.offsetAt(range.endContainer, range.endOffset);
+  const anchor = { version: 1, start: index.endpoint(first, false), end: index.endpoint(last, true), quote: index.text.slice(first, last) };
+  return validCardAnchor(anchor) ? anchor : null;
+}
+
+function anchoredTextOffsets(index, anchor) {
+  const first = index.fields.get(anchor.start.field), last = index.fields.get(anchor.end.field);
+  if (!first || !last || first.start === null || last.start === null) return null; // Hidden on this face.
+  const start = first.start + anchor.start.offset, end = last.start + anchor.end.offset;
+  const inFields = (s, e) => s >= first.start && s < first.end && e > last.start && e <= last.end && s < e;
+  if (inFields(start, end) && index.text.slice(start, end) === anchor.quote) return { start, end };
+  // If text was inserted or its whitespace changed, recover only an unambiguous
+  // match in the original fields. Never substitute a different nearby phrase.
+  return uniqueCardQuote(index.text, anchor.quote, first.start, last.end, inFields);
+}
+
+// A legacy highlight only stored a display label. Count every occurrence,
+// including overlapping and whitespace-equivalent matches. Ambiguity leaves
+// the existing geometry alone rather than attaching it to an arbitrary word.
+function uniqueCardQuote(text, quote, start, end, accepts) {
+  if (end <= start || !quote.trim()) return null;
+  const canonical = [], rawOffsets = [];
+  for (let i = start; i < end; i++) {
+    const ch = /\s/u.test(text[i]) ? ' ' : text[i];
+    if (ch === ' ' && canonical[canonical.length - 1] === ' ') continue;
+    rawOffsets.push(i);
+    canonical.push(ch);
+  }
+  rawOffsets.push(end);
+  const haystack = canonical.join(''), needle = quote.replace(/\s+/gu, ' ');
+  let result = null;
+  for (let i = haystack.indexOf(needle); i >= 0; i = haystack.indexOf(needle, i + 1)) {
+    const s = rawOffsets[i], e = rawOffsets[i + needle.length];
+    if (accepts && !accepts(s, e)) continue;
+    if (result) return null;
+    result = { start: s, end: e };
+  }
+  return result;
+}
+
+function cardHighlightRects(host, index, anchor) {
+  const selection = anchoredTextOffsets(index, anchor);
+  if (!selection) return [];
+  const hostBox = host.getBoundingClientRect();
+  const left = hostBox.left + host.clientLeft - host.scrollLeft;
+  const top = hostBox.top + host.clientTop - host.scrollTop;
+  const range = host.ownerDocument.createRange(), boxes = [];
+  // Ask for text-node rects only. A Range enclosing inline markup also emits
+  // element boxes that can paint a duplicate, darker highlight over the text.
+  for (const run of index.nodes) {
+    if (run.end <= selection.start) continue;
+    if (run.start >= selection.end) break;
+    range.setStart(run.node, Math.max(selection.start, run.start) - run.start);
+    range.setEnd(run.node, Math.min(selection.end, run.end) - run.start);
+    for (const r of range.getClientRects()) {
+      if (r.width > 0 && r.height > 0) boxes.push({ x: r.left - left, y: r.top - top, w: r.width, h: r.height });
+    }
+  }
+  boxes.sort((a, b) => Math.abs(a.y - b.y) < 1 ? a.x - b.x : a.y - b.y);
+  const lines = [];
+  for (const box of boxes) {
+    const prev = lines[lines.length - 1];
+    if (prev && Math.abs(prev.y - box.y) < 1 && Math.abs(prev.h - box.h) < 1 && box.x <= prev.x + prev.w + 1 && box.x >= prev.x - 1) {
+      prev.w = Math.max(prev.w, box.x + box.w - prev.x);
+    } else lines.push(box);
+  }
+  return lines;
+}
+
+function recoverableLegacyHighlight(a) {
+  // At 500 characters the suite may have truncated its display label, so this
+  // is not evidence of the complete original quote. Do not guess from prefixes.
+  return a && a.kind === 'highlight' && !a.anchor && typeof a.text === 'string' && a.text.length < 500 && !!a.text.trim() && Array.isArray(a.rects) && a.rects.length > 0;
+}
+function cardHighlightCandidate(a) {
+  return a && a.kind === 'highlight' && (validCardAnchor(a.anchor) || recoverableLegacyHighlight(a));
+}
+function sameHighlightBounds(oldRects, currentRects) {
+  if (!oldRects.length || !currentRects.length) return false;
+  const bounds = rects => rects.reduce((b, r) => [Math.min(b[0], r.x), Math.min(b[1], r.y), Math.max(b[2], r.x + r.w), Math.max(b[3], r.y + r.h)], [Infinity, Infinity, -Infinity, -Infinity]);
+  const oldBox = bounds(oldRects), nextBox = bounds(currentRects);
+  // Legacy rectangles were rounded and measured from the border, so allow
+  // a few pixels. A merely nearby word on an incomplete face is insufficient.
+  return oldBox.every((edge, i) => Math.abs(edge - nextBox[i]) <= 3);
+}
+function legacyCardAnchor(content, host, index, a, cache) {
+  if (cache.has(a)) return cache.get(a);
+  const match = uniqueCardQuote(index.text, a.text, 0, index.text.length);
+  if (!match) return null;
+  const anchor = { version: 1, start: index.endpoint(match.start, false), end: index.endpoint(match.end, true), quote: index.text.slice(match.start, match.end) };
+  if (!validCardAnchor(anchor)) return null;
+  const rects = cardHighlightRects(host, index, anchor);
+  if (!rects.length) return null;
+  if (content.dataset.alloHighlightComplete !== 'true' && !sameHighlightBounds(a.rects, rects)) return null;
+  cache.set(a, anchor);
+  return anchor;
+}
+
+function measureCardHighlights(content, host, annotations, snapshot, recoveryCache) {
+  if (!content || !host || !annotations.some(cardHighlightCandidate)) return annotations;
+  const index = cardTextIndex(content);
+  const measured = annotations.map(a => {
+    if (!cardHighlightCandidate(a)) return a;
+    const anchor = validCardAnchor(a.anchor) ? a.anchor : legacyCardAnchor(content, host, index, a, recoveryCache);
+    if (!anchor) return a;
+    const rects = cardHighlightRects(host, index, anchor);
+    if (!rects.length && snapshot) return a.anchor ? a : { ...a, anchor }; // Keep the last known export geometry for hidden phrases.
+    if (a.anchor === anchor && Array.isArray(a.rects) && a.rects.length === rects.length && rects.every((r, i) => a.rects[i] && ['x', 'y', 'w', 'h'].every(k => Math.abs(a.rects[i][k] - r[k]) < 0.1))) return a;
+    return { ...a, anchor, rects };
+  });
+  return measured.every((a, i) => a === annotations[i]) ? annotations : measured;
+}
+
+function useCardHighlightLayout(content, host, annotations, recoveryCache) {
+  const [display, setDisplay] = React.useState(null);
+  React.useLayoutEffect(() => {
+    if (!content || !host || !annotations.some(cardHighlightCandidate)) { setDisplay(null); return; }
+    const doc = content.ownerDocument, win = doc.defaultView;
+    let disposed = false, frame = 0;
+    const measure = () => {
+      frame = 0;
+      if (!disposed) setDisplay(measureCardHighlights(content, host, annotations, false, recoveryCache));
+    };
+    const schedule = () => { if (!disposed && !frame) frame = win.requestAnimationFrame(measure); };
+    measure();
+    const resize = win.ResizeObserver ? new win.ResizeObserver(schedule) : null;
+    if (resize) { resize.observe(content); resize.observe(host); }
+    const mutations = new win.MutationObserver(schedule);
+    mutations.observe(content, { subtree: true, childList: true, characterData: true, attributes: true });
+    // Font, spacing and Bionic settings can change on the stage or an ancestor
+    // without changing the card's outer dimensions. Exclude the overlay itself.
+    for (let el = host; el; el = el.parentElement) mutations.observe(el, { attributes: true, attributeFilter: ['class', 'style', 'dir', 'lang', 'data-awp-reading-theme'] });
+    win.addEventListener('resize', schedule);
+    content.addEventListener('load', schedule, true); // Images can move text without changing the stage size.
+    if (doc.fonts) { doc.fonts.ready.then(schedule); doc.fonts.addEventListener('loadingdone', schedule); }
+    return () => {
+      disposed = true;
+      if (frame) win.cancelAnimationFrame(frame);
+      resize?.disconnect(); mutations.disconnect();
+      win.removeEventListener('resize', schedule); content.removeEventListener('load', schedule, true);
+      doc.fonts?.removeEventListener('loadingdone', schedule);
+    };
+  }, [content, host, annotations, recoveryCache]);
+  return display || annotations;
+}
+
+// The whole suite for a surface outside the main resource view (Present &
+// Export): the same toolbar, overlay, drawing, voice notes, list and undo, with
+// its own tool state. The caller keeps the annotations (`annotations` +
+// `onChange`); `layerEl` holds the overlay inside `hostEl`, the element the
+// coordinates are measured against.
+function Workspace(props) {
+  const hostEl = props.hostEl || null;
+  const layerEl = props.layerEl || hostEl;
+  const annotations = Array.isArray(props.annotations) ? props.annotations : [];
+  const contentEl = props.contentEl || null;
+  const localRecovery = React.useRef(null);
+  if (!localRecovery.current) localRecovery.current = new WeakMap();
+  const recoveryCache = props.recoveryCache || localRecovery.current;
+  const displayAnnotations = useCardHighlightLayout(contentEl, hostEl, annotations, recoveryCache);
+  const isTeacher = props.isTeacher !== false;
+  const authorName = props.authorName || '';
+  const tt = typeof props.t === 'function' ? props.t : function (k) { return k; };
+  const say = function (key, fallback) { let v; try { v = tt(key); } catch (_) { v = ''; } return v && v !== key ? v : fallback; };
+  const toast = typeof props.onToast === 'function' ? props.onToast : function () {};
+  const [mode, setMode] = React.useState('');
+  const [stickerType, setStickerType] = React.useState('star');
+  const [noteColor, setNoteColor] = React.useState('yellow');
+  const [highlightColor, setHighlightColor] = React.useState('yellow');
+  const [noteTemplate, setNoteTemplate] = React.useState('');
+  const [drawColor, setDrawColor] = React.useState('red');
+  const [drawWidth, setDrawWidth] = React.useState(4);
+  const [drawShape, setDrawShape] = React.useState('free');
+  const [showList, setShowList] = React.useState(false);
+  const [recording, setRecording] = React.useState(null);
+  const history = props.historyStore || new Map();
+  if (!history.has(props.documentKey)) history.set(props.documentKey, []);
+  const undoRef = React.useRef(history.get(props.documentKey));
+  const [undoCount, setUndoCount] = React.useState(undoRef.current.length);
+  const latest = React.useRef(annotations);
+  latest.current = annotations;
+  const aliveRef = React.useRef(true);
+  const recorderRef = React.useRef(null);
+  const requestRef = React.useRef(null);
+  const inputRef = React.useRef(null);
+  const timersRef = React.useRef({ tick: null, cap: null });
+  // The key travels with every update, including asynchronous microphone cleanup.
+  const emit = function (next) { latest.current = next; if (typeof props.onChange === 'function') props.onChange(next, props.documentKey); };
+  const canEdit = function (a) { return !!a && (isTeacher || a.author === 'student'); };
+  const commit = function (next) {
+    if (next === latest.current || (next.length === latest.current.length && next.every(function (a, i) { return a === latest.current[i]; }))) return;
+    undoRef.current.push(latest.current);
+    if (undoRef.current.length > 50) undoRef.current.shift();
+    setUndoCount(undoRef.current.length);
+    emit(next);
+  };
+  const undo = function () {
+    if (recorderRef.current || requestRef.current) { toast(say('toasts.cancel_active_recording_before_undoing', 'Stop or cancel the recording before undoing.'), 'warning'); return; }
+    const prev = undoRef.current.pop();
+    setUndoCount(undoRef.current.length);
+    if (prev) emit(prev);
+  };
+  const clearTimers = function () {
+    if (timersRef.current.tick) clearInterval(timersRef.current.tick);
+    if (timersRef.current.cap) clearTimeout(timersRef.current.cap);
+    timersRef.current = { tick: null, cap: null };
+  };
+  const stopTracks = function (stream) { if (stream) stream.getTracks().forEach(function (track) { track.stop(); }); };
+  const dropVoice = function (cur) {
+    const withoutPending = function (list) { return list.filter(function (a) { return a && a.id !== cur.id; }); };
+    for (let i = 0; i < undoRef.current.length; i++) undoRef.current[i] = withoutPending(undoRef.current[i]);
+    if (latest.current.some(function (a) { return a && a.id === cur.id; })) emit(withoutPending(latest.current));
+  };
+  const stopVoice = function (cancel) {
+    requestRef.current = null; // invalidate a pending permission request, too
+    const cur = recorderRef.current;
+    clearTimers();
+    if (aliveRef.current) setRecording(null);
+    if (!cur) return;
+    if (cancel) { cur.cancelled = true; dropVoice(cur); recorderRef.current = null; }
+    if (!cur.stopping) {
+      cur.stopping = true;
+      cur.elapsed = Math.min(VOICE_MAX_SECONDS, (Date.now() - cur.started) / 1000);
+      try { cur.recorder.stop(); }
+      catch (_) { cur.cancelled = true; dropVoice(cur); recorderRef.current = null; }
+    }
+    stopTracks(cur.stream);
+  };
+  const startVoice = async function (placeholder) {
+    if (recorderRef.current || requestRef.current) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') { toast(say('errors.microphone_access_denied', 'The microphone is not available.'), 'error'); return; }
+    const request = {};
+    requestRef.current = request;
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (_) { if (aliveRef.current && requestRef.current === request) { requestRef.current = null; toast(say('errors.microphone_access_denied', 'The microphone is not available.'), 'error'); } return; }
+    if (!aliveRef.current || requestRef.current !== request) { stopTracks(stream); return; }
+    requestRef.current = null;
+    let recorder;
+    try { recorder = new MediaRecorder(stream); }
+    catch (_) { stopTracks(stream); toast(say('errors.microphone_access_denied', 'The microphone is not available.'), 'error'); return; }
+    const cur = { recorder: recorder, stream: stream, chunks: [], id: placeholder.id, started: Date.now(), cancelled: false, stopping: false };
+    recorderRef.current = cur;
+    recorder.ondataavailable = function (event) { if (!cur.cancelled && event.data && event.data.size > 0) cur.chunks.push(event.data); };
+    recorder.onerror = function () { stopVoice(true); toast(say('toasts.voice_recording_failed_audio_captured', 'The recording failed: no audio was captured.'), 'error'); };
+    recorder.onstop = function () {
+      stopTracks(stream);
+      if (cur.cancelled || !aliveRef.current) return;
+      const mimeType = recorder.mimeType || (cur.chunks[0] && cur.chunks[0].type) || 'audio/webm';
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        if (cur.cancelled || !aliveRef.current) return;
+        recorderRef.current = null;
+        const base64 = String(reader.result || '').split(',')[1];
+        if (!base64) { dropVoice(cur); toast(say('toasts.voice_recording_failed_audio_captured', 'The recording failed: no audio was captured.'), 'error'); return; }
+        const payload = { audioBase64: base64, mimeType: mimeType, durationSec: cur.elapsed };
+        const next = attachAudioToVoiceNote(latest.current, cur.id, payload);
+        if (next && next.error === 'too-large') { dropVoice(cur); toast(say('toasts.voice_note_too_long_save', 'That voice note is too long to save.'), 'warning'); return; }
+        // Undoing later edits must never restore an unplayable pending voice note.
+        for (let i = 0; i < undoRef.current.length; i++) undoRef.current[i] = attachAudioToVoiceNote(undoRef.current[i], cur.id, payload);
+        emit(next);
+      };
+      reader.readAsDataURL(new Blob(cur.chunks, { type: mimeType }));
+    };
+    try { recorder.start(); }
+    catch (_) { recorderRef.current = null; stopTracks(stream); toast(say('errors.microphone_access_denied', 'The microphone is not available.'), 'error'); return; }
+    commit(latest.current.concat([placeholder]));
+    setRecording({ id: placeholder.id, x: placeholder.x, y: placeholder.y, elapsedSec: 0 });
+    timersRef.current.tick = setInterval(function () { setRecording(function (r) { return r ? Object.assign({}, r, { elapsedSec: (Date.now() - cur.started) / 1000 }) : r; }); }, 250);
+    timersRef.current.cap = setTimeout(function () { stopVoice(false); }, VOICE_MAX_SECONDS * 1000);
+  };
+  React.useEffect(function () { aliveRef.current = true; return function () { aliveRef.current = false; stopVoice(true); }; }, []);
+  React.useEffect(function () { if (!props.showTools) { setMode(''); setShowList(false); stopVoice(true); } }, [props.showTools]);
+  React.useEffect(function () { if (typeof props.onModeChange === 'function') props.onModeChange(mode); }, [mode]);
+  const changeMode = function (next) { if (mode === 'voice' && next !== 'voice') stopVoice(true); setMode(next); };
+  const importFile = async function (event) {
+    const file = event.target.files && event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+    try {
+      if (file.size > 10 * 1024 * 1024) throw new Error('size');
+      const payload = JSON.parse(await file.text());
+      if (!aliveRef.current) return;
+      const incoming = Array.isArray(payload) ? payload : payload && payload.annotations;
+      if (!Array.isArray(incoming) || incoming.length > 1000) throw new Error('shape');
+      const point = function (v) { return v && Number.isFinite(v.x) && Number.isFinite(v.y) && Math.abs(v.x) <= 100000 && Math.abs(v.y) <= 100000; };
+      const rect = function (v) { return point(v) && Number.isFinite(v.w) && Number.isFinite(v.h) && v.w >= 0 && v.h >= 0 && v.w <= 100000 && v.h <= 100000; };
+      const clean = incoming.filter(function (a) {
+        if (!a || typeof a !== 'object' || Array.isArray(a)) return false;
+        const kind = a.kind || (STICKER_TYPES.includes(a.type) ? 'sticker' : '');
+        if (!ANNOTATION_KINDS.includes(kind)) return false;
+        if (['content', 'text', 'authorName', 'color'].some(function (name) { return a[name] != null && typeof a[name] !== 'string'; })) return false;
+        if (kind === 'highlight') return Array.isArray(a.rects) && (a.rects.length > 0 || validCardAnchor(a.anchor)) && a.rects.length <= 1000 && a.rects.every(rect);
+        if (!point(a)) return false;
+        if (kind === 'sticker') return STICKER_TYPES.includes(a.type);
+        if (kind === 'voice') return !a.pending && typeof a.audioBase64 === 'string' && a.audioBase64.length <= VOICE_MAX_BYTES && /^[A-Za-z0-9+/=]+$/.test(a.audioBase64) && /^audio\/[a-z0-9.+-]+(?:;codecs=[a-z0-9., -]+)?$/i.test(a.mimeType || 'audio/webm');
+        if (kind === 'draw') return rect(a) && DRAW_SHAPES.includes(a.shape || 'free') && a.shape !== 'erase' && Number.isFinite(a.width) && a.width > 0 && a.width <= 100 && ((a.shape || 'free') === 'free' ? Array.isArray(a.points) && a.points.length >= 2 && a.points.length <= 20000 && a.points.every(point) : point(a.start) && point(a.end));
+        return true;
+      });
+      if (incoming.length && !clean.length) throw new Error('shape');
+      const result = importAnnotations(latest.current, { docTitle: typeof payload.docTitle === 'string' ? payload.docTitle : '', annotations: clean }, isTeacher ? {} : { forceAuthor: 'student', forceAuthorName: authorName });
+      if (result.error) throw new Error(result.error);
+      commit(result.list);
+    } catch (_) { if (aliveRef.current) toast(say('annotation.import_error', 'Choose a saved annotations JSON file under 10 MB.'), 'error'); }
+  };
+  const saveAnnotations = function () {
+    let url;
+    try {
+      const visible = measureCardHighlights(contentEl, hostEl, latest.current, true, recoveryCache);
+      const payload = { docTitle: props.title || String(props.documentKey || 'Card'), documentKey: props.documentKey, annotations: visible.filter(function (a) { return a && !a.pending; }) };
+      if (typeof props.onExport === 'function') { props.onExport(payload); return; }
+      url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+      const link = document.createElement('a'); link.href = url; link.download = 'card-annotations.json'; link.click();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    } catch (_) { if (url) URL.revokeObjectURL(url); toast(say('toasts.could_not_save_annotations', 'Could not save annotations. Try a different browser.'), 'error'); }
+  };
+  // Clicks place stickers, notes and voice notes; a finished selection highlights.
+  React.useEffect(function () {
+    if (!hostEl || !mode || mode === 'draw') return undefined;
+    const opts = { isTeacher: isTeacher, authorName: authorName };
+    const click = function (event) {
+      if (mode === 'highlight') return;
+      if (event.target && event.target.closest && event.target.closest('button,input,textarea,select,a,[contenteditable],audio,[data-allo-note-expanded]')) return;
+      if (layerEl && layerEl !== hostEl && layerEl.contains(event.target)) return;
+      let next = null;
+      if (mode === 'sticker') next = createStickerFromClick(hostEl, event, Object.assign({ stickerType: stickerType }, opts));
+      else if (mode === 'note') next = createNoteFromClick(hostEl, event, Object.assign({ color: noteColor, templateContent: noteTemplate || undefined }, opts));
+      else if (mode === 'voice') {
+        if (recorderRef.current) return;
+        const placeholder = createVoicePlaceholder(hostEl, event, opts);
+        if (placeholder) startVoice(placeholder);
+        return;
+      }
+      if (next) commit(latest.current.concat([next]));
+    };
+    const mouseUp = function () {
+      if (mode !== 'highlight') return;
+      const selection = window.getSelection && window.getSelection();
+      if (!selection || selection.isCollapsed) return;
+      const next = createHighlightFromSelection(hostEl, selection, Object.assign({ color: highlightColor }, opts));
+      if (!next) return;
+      if (contentEl) {
+        const index = cardTextIndex(contentEl);
+        const anchor = captureCardAnchor(contentEl, selection.getRangeAt(0), index);
+        if (!anchor) return;
+        next.anchor = anchor;
+        next.rects = cardHighlightRects(hostEl, index, anchor);
+        if (!next.rects.length) return;
+      }
+      commit(latest.current.concat([next]));
+      try { selection.removeAllRanges(); } catch (_) {}
+    };
+    hostEl.addEventListener('click', click);
+    hostEl.addEventListener('pointerup', mouseUp);
+    hostEl.addEventListener('keyup', mouseUp);
+    return function () { hostEl.removeEventListener('click', click); hostEl.removeEventListener('pointerup', mouseUp); hostEl.removeEventListener('keyup', mouseUp); };
+  }, [hostEl, layerEl, contentEl, mode, stickerType, noteColor, noteTemplate, highlightColor, isTeacher, authorName]);
+  const ReactDOMRef = window.ReactDOM;
+  const portal = function (node, target) { return target && ReactDOMRef && ReactDOMRef.createPortal ? ReactDOMRef.createPortal(node, target) : null; };
+  const remove = function (id) { const item = latest.current.find(function (a) { return a && a.id === id; }); if (canEdit(item)) { if (recorderRef.current && recorderRef.current.id === id) stopVoice(true); else commit(removeAnnotation(latest.current, id)); } };
+  const total = annotations.length;
+  return (
+    <React.Fragment>
+      {props.showTools && (
+        <div data-allo-anno-workspace className="flex flex-wrap items-center gap-1">
+          <Toolbar mode={mode} stickerType={stickerType} noteColor={noteColor} highlightColor={highlightColor} noteTemplate={noteTemplate}
+            drawColor={drawColor} drawWidth={drawWidth} drawShape={drawShape} isTeacher={isTeacher}
+            onSetMode={changeMode} onPickType={setStickerType} onPickNoteColor={setNoteColor} onPickHighlightColor={setHighlightColor}
+            onPickTemplate={setNoteTemplate} onPickDrawColor={setDrawColor} onPickDrawWidth={setDrawWidth} onPickDrawShape={setDrawShape}
+            onClear={function () { stopVoice(true); commit(latest.current.filter(function (a) { return !canEdit(a); })); }} t={tt} />
+          <button type="button" data-allo-undo-btn="true" onClick={undoCount ? undo : undefined} disabled={!undoCount}
+            className={'p-1.5 rounded-full flex items-center gap-1 text-xs font-bold px-2 ' + (undoCount ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
+            aria-label={say('annotation.undo_aria', 'Undo last annotation')}>{say('annotation.undo_button', '↩ Undo')}</button>
+          <button type="button" aria-pressed={showList} onClick={function () { setShowList(function (v) { return !v; }); }}
+            className={'p-1.5 rounded-full flex items-center gap-1 text-xs font-bold px-2 ' + (showList ? 'bg-slate-200 text-slate-700' : 'text-slate-600 hover:bg-slate-100')}
+            aria-label={say('annotation.toggle_list_aria', 'Toggle annotation list')}>
+            {say('annotation.list_button', '📋 List')}
+            {total > 0 && <span className="ms-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">{total}</span>}
+          </button>
+          <button type="button" onClick={saveAnnotations} className="p-1.5 text-xs font-bold rounded" aria-label={say('annotation.save_aria', 'Save annotations')}>{say('annotation.save_button', 'Save annotations')}</button>
+          <button type="button" onClick={function () { if (inputRef.current) inputRef.current.click(); }} className="p-1.5 text-xs font-bold rounded" aria-label={say('annotation.import_aria', 'Import annotations')}>{say('annotation.import_button', 'Import')}</button>
+          <input ref={inputRef} type="file" accept=".json,application/json" hidden onChange={importFile} aria-label={say('annotation.import_aria', 'Import annotations')} />
+        </div>
+      )}
+      {portal(
+        <React.Fragment>
+          <Overlay annotations={displayAnnotations} mode={mode} isTeacher={isTeacher}
+            onMove={function (id, x, y) { if (canEdit(latest.current.find(function (a) { return a && a.id === id; }))) commit(updateAnnotation(latest.current, id, { x: Math.max(0, x), y: Math.max(0, y) })); }}
+            onNoteChange={function (id, patch) { if (canEdit(latest.current.find(function (a) { return a && a.id === id; }))) commit(updateAnnotation(latest.current, id, patch)); }}
+            onNoteDelete={remove} onHighlightDelete={remove} onVoiceDelete={remove} onDrawDelete={remove} />
+          {mode === 'draw' && (
+            <DrawingCapture active={true} color={drawColor} width={drawWidth} shape={drawShape} annotations={displayAnnotations}
+              onCommit={function (stroke) { const next = createDrawingFromStroke(stroke, { isTeacher: isTeacher, authorName: authorName }); if (next) commit(latest.current.concat([next])); }}
+              onErase={remove} />
+          )}
+          {recording && <RecordingOverlay x={recording.x} y={recording.y} elapsedSec={recording.elapsedSec} onStop={function () { stopVoice(false); }} onCancel={function () { stopVoice(true); }} />}
+        </React.Fragment>,
+        layerEl
+      )}
+      {showList && portal(
+        <Sidebar annotations={annotations} isTeacher={isTeacher} onClose={function () { setShowList(false); }}
+          onFocus={function (id) { const target = displayAnnotations.find(function (a) { return a && a.id === id; }); if (target && hostEl && (target.kind !== 'highlight' || target.rects?.length)) focusAnnotation(hostEl, target); }}
+          onImport={function () { if (inputRef.current) inputRef.current.click(); }} onDelete={remove} />,
+        props.sidebarEl || layerEl
+      )}
+    </React.Fragment>
+  );
+}
+
+// Mounts a Workspace from code that is not React (the word presenter).
+// Returns { update(patch), snapshotAnnotations(), destroy() }, or null when React is unavailable.
+function mountWorkspace(container, options) {
+  const RD = window.ReactDOM;
+  if (!container || !RD || !window.React) return null;
+  const root = RD.createRoot ? RD.createRoot(container) : null;
+  let current = Object.assign({}, options || {});
+  const historyStore = new Map();
+  const cardRecoveries = new Map();
+  const recoveryForCard = () => {
+    if (!cardRecoveries.has(current.documentKey)) cardRecoveries.set(current.documentKey, new WeakMap());
+    return cardRecoveries.get(current.documentKey);
+  };
+  let destroyed = false;
+  const render = function (synchronous) {
+    if (destroyed) return;
+    const element = React.createElement(Workspace, Object.assign({}, current, { key: String(current.documentKey || ''), historyStore: historyStore, recoveryCache: recoveryForCard() }));
+    if (root && synchronous && RD.flushSync) RD.flushSync(function () { root.render(element); });
+    else if (root) root.render(element); else RD.render(element, container);
+  };
+  render();
+  return {
+    snapshotAnnotations: function () { return measureCardHighlights(current.contentEl, current.hostEl, Array.isArray(current.annotations) ? current.annotations : [], true, recoveryForCard()); },
+    update: function (patch) { const next = Object.assign({}, current, patch || {}); const boundary = next.documentKey !== current.documentKey || (current.showTools && !next.showTools); current = next; render(boundary); },
+    destroy: function () { if (destroyed) return; destroyed = true; try { if (root) root.unmount(); else RD.unmountComponentAtNode(container); } catch (_) {} historyStore.clear(); cardRecoveries.clear(); },
+  };
+}
+
 // Module surface area. Phase 3b will add: createHighlightFromSelection,
 // HighlightOverlay. Phase 4 will add: renderAnnotationToHTML(annotation),
 // serializeForExport(annotations) for the doc_pipeline.
@@ -1944,6 +2435,8 @@ window.AlloModules.AnnotationSuite = {
   Overlay: Overlay,
   Toolbar: Toolbar,
   Sidebar: Sidebar,
+  Workspace: Workspace,
+  mountWorkspace: mountWorkspace,
   createStickerFromClick: createStickerFromClick,
   createNoteFromClick: createNoteFromClick,
   createHighlightFromSelection: createHighlightFromSelection,

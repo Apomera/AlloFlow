@@ -123,7 +123,7 @@ describe('copy notebook and dock portholes', () => {
     expect(text).toContain('2. Streak plate: Greenish-black');
     expect(text).toContain('luster: Lens: luster metallic (your classification)');
     expect(text).toContain('Candidates still fitting: 1 / 12');
-    expect(text).toContain('Claim: stem.rocks.pyrite');
+    expect(text).toContain('Claim: Pyrite');
     expect(text).toContain('Reasoning: ');
   });
 

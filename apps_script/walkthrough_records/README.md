@@ -6,7 +6,7 @@ feedback to a folder in your Drive and shares each note with exactly one named
 teacher, then emails that teacher a link containing no feedback text.
 
 Your district does not have to build or run anything. It only has to permit
-Apps Script and the two permissions below.
+Apps Script and the permissions below, including email identity for owner setup.
 
 ## What it can and cannot reach
 
@@ -26,7 +26,12 @@ a forwarded link opens nothing.
    source is AlloFlow itself: **Walkthrough Copilot → Set up delivery → "Copy
    script code"**. The script ships inside the app, so that button works offline
    and inside Gemini Canvas. This folder's `Code.gs` is the same file.
-3. Rename the project to **AlloFlow Walkthrough Records** and save.
+3. Rename the project to **AlloFlow Walkthrough Records**. In Project Settings,
+   enable **Show appsscript.json manifest file** and replace that file with the
+   manifest from **Copy manifest** (or this directory's `appsscript.json`). Save.
+   Run **setupWalkthroughOwner** from the editor as the deploying account.
+   Copy `wr_admin_token` from **Project Settings > Script properties** into
+   AlloFlow's **Owner token** field. Keep it private.
 4. Click **Deploy → New deployment**, choose type **Web app**.
 5. Set **Execute as: Me** and **Who has access: Anyone**. Click **Deploy**.
 6. Authorize when prompted. Google will warn that it "hasn't verified this app,"
@@ -35,19 +40,28 @@ a forwarded link opens nothing.
    you created this project, you read the code you pasted, and you recognize the
    account and project name. Otherwise cancel.
 7. Copy the **Web app URL** (it ends in `/exec`) and paste it into AlloFlow:
-   **Walkthrough Copilot → Set up delivery → Connect**. AlloFlow claims the
-   script and runs a self-test.
+   **Walkthrough Copilot → Set up delivery → Connect**. The
+   connection uses the **Owner token** copied from Script properties and runs a
+   self-test. Public first-caller enrollment is disabled.
 
 **Updating later:** paste new code, then Deploy → **Manage deployments** →
 pencil icon → Version: New version → Deploy. The URL does not change.
 
-## Why "Who has access: Anyone" is safe here
+## Owner setup and public access
 
-That setting is what lets AlloFlow talk to the script at all, and it means the
-request itself carries no Google identity. So the script issues a token to the
-first device that connects, and refuses every later request that does not
-present it. Re-claiming requires the existing token, so someone who discovers
-your URL cannot take it over.
+The public URL does not establish the caller's Google identity and never issues
+a token. Before connecting, copy this directory's `appsscript.json` into the
+manifest (Project Settings > Show appsscript.json). Its email identity scope
+lets setup verify the account; the other scopes remain `drive.file` and sending
+mail. Run **setupWalkthroughOwner** in the Apps Script editor as the account
+that will deploy this script. Active and effective identities must match.
+Copy `wr_admin_token` from **Project Settings > Script properties** into the
+AlloFlow **Owner token** field. The helper returns instructions, not the token.
+
+**Version 2 migration:** existing tokens and Drive files are preserved. Running
+owner setup again binds the owner's identity and keeps the existing token.
+An older client that only tries to claim will fail closed; update the client
+to use token-based reconnect. Source changes do not update existing deployments.
 
 That token authorizes **your** tool to write to **your** Drive. It is not a
 stand-in for anyone's identity. The teacher's identity is enforced separately,
@@ -58,8 +72,10 @@ This is the difference from the Class Mailbox, whose links intentionally stand
 in for anonymous student identity. That model is right for a class session and
 wrong for anything about a named staff member.
 
-To disconnect a device, open the script editor and run `forgetConnection`, then
-reconnect from AlloFlow to issue a new token.
+To revoke an existing device token, the verified owner runs `forgetConnection`
+in the script editor. It atomically replaces the token under a lock, with no
+publicly claimable interval. Copy the replacement `wr_admin_token` into AlloFlow
+and reconnect. Existing Drive files and their sharing are unchanged.
 
 ## What it stores
 

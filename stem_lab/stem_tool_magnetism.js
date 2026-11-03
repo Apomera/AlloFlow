@@ -4327,6 +4327,21 @@
       }
       function wcagStyles() {
         return h('style', { dangerouslySetInnerHTML: { __html:
+          ".mag-root .mag-electro-workbench{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(240px,1fr);gap:16px;align-items:start;margin:12px 0 14px}.mag-root .mag-electro-workbench>div{min-width:0}.mag-root .mag-electro-readouts.mag-readouts{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:0}.mag-root .mag-electro-caption{margin:0;padding:10px 13px;border-top:1px solid var(--allo-stem-border,#334155);color:var(--allo-stem-text-soft,#94a3b8);font-size:12px;line-height:1.6}.mag-root .mag-electro-controls>.mag-section-label{display:block;margin-bottom:12px}.mag-root .mag-electro-controls label{line-height:1.5}.mag-root .mag-electro-controls input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:#be123c}@media(max-width:760px){.mag-root .mag-electro-workbench{grid-template-columns:1fr}}@media(max-width:480px){.mag-root .mag-electro-workbench .mag-electro-readouts.mag-readouts>.mag-readout:last-child{display:flex;grid-column:auto;text-align:left}.mag-root .mag-electro-workbench .mag-electro-readouts.mag-readouts>.mag-readout:last-child b{text-align:left}.mag-root .mag-electro-readouts .mag-readout{padding:11px}.mag-root .mag-electro-readouts .mag-readout b{font-size:22px}}" +
+          ".mag-root .mag-transformer-workbench{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,1fr);gap:16px;align-items:start;margin:12px 0 14px}.mag-root .mag-transformer-workbench>div{min-width:0}.mag-root .mag-transformer-voltages.mag-readouts{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-transformer-caption{display:grid;gap:5px;border-top:1px solid var(--allo-stem-border,#334155);padding:11px 13px;font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-transformer-caption b{color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-transformer-comparison{padding:12px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-transformer-bar-label{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;margin-bottom:10px;color:var(--allo-stem-text-soft,#94a3b8);font-size:11px;font-weight:700}.mag-root .mag-transformer-bar-row{display:grid;grid-template-columns:68px minmax(0,1fr);gap:10px;align-items:center;margin-top:8px;color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-transformer-bar-row small{font-size:12px}.mag-root .mag-transformer-track{height:12px;overflow:hidden;border-radius:3px;background:color-mix(in srgb,var(--allo-stem-text-soft,#94a3b8) 16%,transparent)}.mag-root .mag-transformer-track span{display:block;height:100%;background:#d97706}.mag-root .mag-transformer-track [data-transformer-bar=secondary]{background:repeating-linear-gradient(135deg,#0284c7 0,#0284c7 5px,#38bdf8 5px,#38bdf8 7px)}.mag-root .mag-transformer-controls>.mag-section-label{display:block;margin-bottom:12px}.mag-root .mag-transformer-controls>div:last-child{display:block!important}.mag-root .mag-transformer-controls>div:last-child>div{min-width:0!important;margin-top:10px;line-height:1.6}.mag-root .mag-transformer-controls>div:last-child button{width:100%}@media(max-width:760px){.mag-root .mag-transformer-workbench{grid-template-columns:1fr}}@media(max-width:480px){.mag-root .mag-transformer-workbench .mag-transformer-voltages.mag-readouts>.mag-readout:last-child{display:flex;grid-column:auto;align-items:stretch}.mag-root .mag-transformer-workbench .mag-transformer-voltages.mag-readouts>.mag-readout:last-child b{text-align:left}.mag-root .mag-transformer-voltages.mag-readouts .mag-readout{padding:11px}.mag-root .mag-transformer-voltages.mag-readouts .mag-readout b{font-size:22px}}@media(forced-colors:active){.mag-root .mag-transformer-track{border:1px solid CanvasText;background:Canvas}.mag-root .mag-transformer-track span{background:CanvasText}.mag-root .mag-transformer-track [data-transformer-bar=secondary]{background:repeating-linear-gradient(135deg,CanvasText 0,CanvasText 4px,Canvas 4px,Canvas 6px);forced-color-adjust:none}}" +
+          ".mag-root .mag-bench-charts{margin:12px 0;min-width:0}.mag-root .mag-bench-chart-legend{display:flex;flex-wrap:wrap;gap:7px 18px;margin:0 auto 10px;max-width:760px;font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-bench-chart-legend b{color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-bench-chart-grid{display:grid;gap:14px;max-width:760px;margin-inline:auto}.mag-root .mag-bench-chart{min-width:0;margin:0;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;overflow:hidden;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-bench-chart-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-bottom:1px solid var(--allo-stem-border,#334155);color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-bench-chart-head>div{min-width:0}.mag-root .mag-bench-chart-head h4{font-size:14px;line-height:1.5;margin:0}.mag-root .mag-bench-chart-head span{display:block;font-size:12px;line-height:1.5;margin-top:4px;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-bench-chart-head strong{flex:0 0 auto;font-size:22px;line-height:1.4;font-variant-numeric:tabular-nums}.mag-root .mag-bench-chart-scale{padding:9px 12px 0;font-size:12px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-bench-chart>svg{display:block;width:100%;height:auto}.mag-root .mag-bench-chart-axis{display:flex;justify-content:space-between;padding:0 2% 9px;font-size:12px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-bench-chart figcaption{padding:9px 12px;border-top:1px solid var(--allo-stem-border,#334155);font-size:12px;line-height:1.6;color:var(--allo-stem-text,#e2e8f0)}@media(max-width:420px){.mag-root .mag-bench-chart-head{align-items:flex-start;flex-direction:column;gap:7px}.mag-root .mag-bench-chart-head span{margin-top:2px}}@media(forced-colors:active){.mag-root .mag-bench-chart,.mag-root .mag-bench-chart-head,.mag-root .mag-bench-chart figcaption{border-color:CanvasText;background:Canvas;color:CanvasText}.mag-root .mag-bench-chart-legend,.mag-root .mag-bench-chart-legend b,.mag-root .mag-bench-chart-head span,.mag-root .mag-bench-chart-scale,.mag-root .mag-bench-chart-axis{color:CanvasText}}" +
+          ".mag-root .mag-power-title{margin:12px 0 9px;font-size:13px;font-weight:800;line-height:1.5;color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-power-path,.mag-root .mag-power-readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;margin-bottom:12px}.mag-root .mag-power-step,.mag-root .mag-power-readouts>div{min-width:0;padding:14px;border:1px solid var(--allo-stem-border,#334155);border-radius:12px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220));color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-power-step{border-top:3px solid var(--mag-power-tone);display:flex;flex-direction:column;align-items:flex-start}.mag-root .mag-power-step-head{display:flex;gap:8px;align-items:center;margin-bottom:10px}.mag-root .mag-power-step-head>span{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;border:1px solid var(--mag-power-tone);border-radius:50%;font-size:13px;font-weight:800}.mag-root .mag-power-step h4{font-size:14px;line-height:1.5;margin:0}.mag-root .mag-power-formula{font-size:15px;font-weight:800;line-height:1.6}.mag-root .mag-power-step>b{display:block;font-size:28px;line-height:1.4;margin-top:5px;font-variant-numeric:tabular-nums}.mag-root .mag-power-step small,.mag-root .mag-power-readouts small{display:block;font-size:12px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-power-step p{font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8);margin:8px 0 12px}.mag-root .mag-power-track{width:100%;height:9px;overflow:hidden;border-radius:999px;background:var(--allo-stem-border,#334155);margin-top:auto}.mag-root .mag-power-track i{display:block;height:100%;border-radius:inherit;background:var(--mag-power-tone,#0284c7)}.mag-root .mag-power-readouts>div>span{font-size:12px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-power-readouts b{display:block;font-size:22px;line-height:1.4;margin:5px 0;font-variant-numeric:tabular-nums}.mag-root .mag-power-readouts .mag-power-track{margin-top:10px}.mag-root .mag-power-scale{margin:0 0 12px;font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8)}@media(forced-colors:active){.mag-root .mag-power-step,.mag-root .mag-power-readouts>div,.mag-root .mag-power-step-head>span{border-color:CanvasText;background:Canvas;color:CanvasText}.mag-root .mag-power-track{background:Canvas;border:1px solid CanvasText}.mag-root .mag-power-track i{background:Highlight}}" +
+          ".mag-root .mag-generator-stages,.mag-root .mag-generator-traces{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;margin:12px 0;align-items:start}.mag-root .mag-generator-figure{min-width:0;margin:0;overflow:hidden;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-generator-heading{display:grid;gap:5px;padding:12px;border-bottom:1px solid var(--allo-stem-border,#334155);line-height:1.5}.mag-root .mag-generator-heading b{font-size:14px;color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-generator-heading span{font-size:12px;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-generator-figure>svg{display:block;width:100%;max-width:320px;height:auto;margin-inline:auto}.mag-root [data-generator-figure=phase]>svg{max-width:240px}.mag-root [data-generator-figure=flux]>svg,.mag-root [data-generator-figure=voltage]>svg{max-width:none}.mag-root .mag-generator-caption,.mag-root .mag-generator-axis{padding:11px 12px;border-top:1px solid var(--allo-stem-border,#334155);font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-generator-axis{display:flex;justify-content:space-between;gap:8px}.mag-root .mag-generator-normalized{display:grid;gap:12px;padding:0 12px 14px}.mag-root .mag-generator-meter{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;align-items:center;color:var(--allo-stem-text-soft,#94a3b8);font-size:12px}.mag-root .mag-generator-meter b{font-size:22px;line-height:1.4;font-variant-numeric:tabular-nums;color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-generator-meter-track{position:relative;grid-column:1/-1;height:12px;border:1px solid var(--allo-stem-border,#334155);border-radius:999px;background:var(--allo-stem-panel,#1e293b)}.mag-root .mag-generator-meter-track:before{content:\"\";position:absolute;left:50%;top:-4px;bottom:-4px;border-left:2px solid var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-generator-meter-track i{position:absolute;top:2px;bottom:2px;background:#f43f5e}.mag-root .mag-generator-meter:nth-child(2) i{background:#d97706}.mag-root .mag-generator-meter-track>span{position:absolute;top:50%;width:10px;height:10px;transform:translate(-50%,-50%);border:2px solid var(--allo-stem-text,#e2e8f0);border-radius:50%;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-generator-readouts>div{min-width:0}.mag-root [data-generator-reading]{font-variant-numeric:tabular-nums;line-height:1.4;margin-top:6px}@media(max-width:480px){.mag-root .mag-generator-readouts{grid-template-columns:1fr!important}}@media(forced-colors:active){.mag-root .mag-generator-figure,.mag-root .mag-generator-heading,.mag-root .mag-generator-caption,.mag-root .mag-generator-axis,.mag-root .mag-generator-meter-track{border-color:CanvasText;background:Canvas;color:CanvasText}.mag-root .mag-generator-heading b,.mag-root .mag-generator-heading span,.mag-root .mag-generator-meter,.mag-root .mag-generator-meter b{color:CanvasText}.mag-root .mag-generator-meter-track i{background:Highlight}.mag-root .mag-generator-meter-track>span{border-color:CanvasText;background:Canvas}}" +
+          ".mag-root .mag-wire-stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;margin:12px 0}.mag-root .mag-wire-figure{min-width:0;margin:0;overflow:hidden;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-wire-heading{display:grid;gap:5px;padding:12px;border-bottom:1px solid var(--allo-stem-border,#334155);color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-wire-heading b{font-size:14px;line-height:1.5}.mag-root .mag-wire-heading span{font-size:12px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-wire-figure>svg{display:block;width:100%;height:auto}.mag-root .mag-wire-caption{display:grid;gap:5px;padding:11px 12px;border-top:1px solid var(--allo-stem-border,#334155);font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-wire-caption b{color:var(--allo-stem-text,#e2e8f0);font-size:15px}.mag-root .mag-wire-axis-labels{display:flex;justify-content:space-between;gap:10px;padding:7px 12px;font-size:12px;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-wire-readouts>div{min-width:0;padding:12px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-wire-readouts small{display:block;font-size:12px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-wire-readouts b{display:block;font-size:22px;line-height:1.4;margin-top:6px;font-variant-numeric:tabular-nums;color:var(--allo-stem-text,#e2e8f0)}@media(max-width:600px){.mag-root .mag-wire-readouts{grid-template-columns:repeat(2,minmax(0,1fr))!important}.mag-root .mag-wire-readouts>div:last-child{grid-column:1/-1}}@media(forced-colors:active){.mag-root .mag-wire-figure,.mag-root .mag-wire-heading,.mag-root .mag-wire-caption,.mag-root .mag-wire-readouts>div{border-color:CanvasText;background:Canvas;color:CanvasText}.mag-root .mag-wire-heading span,.mag-root .mag-wire-caption b,.mag-root .mag-wire-axis-labels,.mag-root .mag-wire-readouts small,.mag-root .mag-wire-readouts b{color:CanvasText}}" +
+          ".mag-root .mag-particle-figure{min-width:0;margin:0;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;overflow:hidden;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-particle-heading{display:grid;gap:5px;padding:12px 14px;color:var(--allo-stem-text,#e2e8f0);border-bottom:1px solid var(--allo-stem-border,#334155)}.mag-root .mag-particle-heading b{font-size:14px}.mag-root .mag-particle-heading span{font-size:13px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-particle-figure>svg{display:block;width:100%;height:auto}.mag-root .mag-particle-key{list-style:none;display:flex;flex-wrap:wrap;gap:8px 14px;margin:0;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border,#334155);font-size:12px;color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-particle-key li{display:flex;align-items:center;gap:6px}.mag-root .mag-particle-key li>span{font-size:18px;line-height:1}.mag-root .mag-particle-line{display:inline-block;width:22px;border-top:3px solid #f43f5e}.mag-root .mag-particle-readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--allo-stem-border,#334155)}.mag-root .mag-particle-readouts>div{min-width:0;padding:12px 10px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-particle-readouts small,.mag-root .mag-particle-readouts span{display:block;font-size:12px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-particle-readouts b{display:block;margin:6px 0;font-size:21px;line-height:1.4;font-variant-numeric:tabular-nums;color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-particle-caption{margin:0;padding:11px 12px;font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8);border-top:1px solid var(--allo-stem-border,#334155)}@media(max-width:480px){.mag-root .mag-particle-readouts{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-particle-readouts>div:last-child{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;align-items:center}.mag-root .mag-particle-readouts>div:last-child b{grid-column:2;grid-row:1/3;margin:0;text-align:right}}@media(forced-colors:active){.mag-root .mag-particle-figure,.mag-root .mag-particle-heading,.mag-root .mag-particle-key,.mag-root .mag-particle-caption,.mag-root .mag-particle-readouts>div{border-color:CanvasText;background:Canvas;color:CanvasText}.mag-root .mag-particle-heading span,.mag-root .mag-particle-readouts small,.mag-root .mag-particle-readouts span,.mag-root .mag-particle-readouts b{color:CanvasText}.mag-root .mag-particle-readouts{background:CanvasText}}" +
+          ".mag-root .mag-analyzer-stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;margin:12px 0}.mag-root .mag-analyzer-figure{min-width:0;margin:0;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;overflow:hidden;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-analyzer-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:12px;border-bottom:1px solid var(--allo-stem-border,#334155);color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-analyzer-heading b{display:block;font-size:14px}.mag-root .mag-analyzer-heading small{display:block;margin-top:5px;font-size:11px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-analyzer-heading strong{font-size:17px;font-variant-numeric:tabular-nums}.mag-root .mag-analyzer-figure svg{display:block;width:100%;height:auto}.mag-root .mag-analyzer-caption{display:grid;gap:5px;padding:11px 12px;border-top:1px solid var(--allo-stem-border,#334155);color:var(--allo-stem-text-soft,#94a3b8);font-size:12px;line-height:1.6}.mag-root .mag-analyzer-caption b{color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-analyzer-readouts{gap:10px!important}.mag-root .mag-analyzer-readouts>div{padding:11px!important;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-analyzer-readouts>div>div:first-child{font-size:12px!important;line-height:1.5}.mag-root .mag-analyzer-value{font-size:22px!important;font-variant-numeric:tabular-nums;margin-top:6px;line-height:1.4}@media(max-width:600px){.mag-root .mag-analyzer-readouts{grid-template-columns:repeat(2,minmax(0,1fr))!important}.mag-root .mag-analyzer-readouts>div:last-child{grid-column:1/-1}.mag-root .mag-analyzer-value{font-size:20px!important}}@media(forced-colors:active){.mag-root .mag-analyzer-figure,.mag-root .mag-analyzer-heading,.mag-root .mag-analyzer-caption{border-color:CanvasText;background:Canvas;color:CanvasText}.mag-root .mag-analyzer-heading small,.mag-root .mag-analyzer-caption b{color:CanvasText}}.mag-root .mag-analyzer-key-wrap{padding:10px 12px;border-top:1px solid var(--allo-stem-border,#334155);color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-analyzer-key-wrap>small{font-size:12px;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-analyzer-key{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 0;padding:0}.mag-root .mag-analyzer-key li{display:flex;align-items:center;gap:6px;min-width:0;font-size:12px;line-height:1.5}.mag-root .mag-analyzer-key-swatch{width:30px!important;height:14px!important;flex:0 0 30px}@media(forced-colors:active){.mag-root .mag-analyzer-key-wrap{border-color:CanvasText;color:CanvasText}.mag-root .mag-analyzer-key-wrap>small{color:CanvasText}}" +
+          ".mag-root .mag-motion-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}.mag-root .mag-motion-chart{min-width:0;margin:0;border:1px solid var(--allo-stem-border,#334155);border-radius:12px;overflow:hidden;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-motion-chart figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:11px 12px;border-bottom:1px solid var(--allo-stem-border,#334155);color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-motion-chart figcaption b{display:block;font-size:14px}.mag-root .mag-motion-chart figcaption small{display:block;margin-top:4px;font-size:11px;color:var(--allo-stem-text-soft,#94a3b8);line-height:1.5}.mag-root .mag-motion-chart figcaption strong{font-size:20px;font-variant-numeric:tabular-nums}.mag-root .mag-motion-chart svg{display:block;width:100%;height:auto}.mag-root .mag-motion-chart-key{grid-column:1/-1;margin:0;padding:4px 2px;color:var(--allo-stem-text-soft,#94a3b8);font-size:12px;line-height:1.6}@media(forced-colors:active){.mag-root .mag-motion-chart{border-color:CanvasText;background:Canvas}.mag-root .mag-motion-chart figcaption{border-color:CanvasText;color:CanvasText}.mag-root .mag-motion-chart figcaption small,.mag-root .mag-motion-chart-key{color:CanvasText}}" +
+          ".mag-root .mag-scope-workbench{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(230px,1fr);gap:16px;align-items:start}.mag-root .mag-scope-workbench>*{min-width:0}.mag-root .mag-scope-figure{margin:0;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;overflow:hidden;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}.mag-root .mag-scope-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:12px 14px;color:var(--allo-stem-text,#e2e8f0);font-size:13px}.mag-root .mag-scope-head span{color:var(--allo-stem-text-soft,#94a3b8);font-size:12px}.mag-root .mag-scope-figure svg{display:block;width:100%;height:auto}.mag-root .mag-scope-legend{display:flex;flex-wrap:wrap;gap:14px;padding:12px 14px;border-top:1px solid var(--allo-stem-border,#334155);color:var(--allo-stem-text-soft,#94a3b8);font-size:12px;line-height:1.5}.mag-root .mag-scope-legend span{display:flex;align-items:center;gap:6px}.mag-root .mag-scope-legend i{display:inline-block;width:18px;height:0;border-top:3px solid #d97706}.mag-root .mag-scope-legend .mag-scope-zero-key{border-top:2px dashed var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-scope-legend .mag-scope-newest-key{width:8px;height:8px;border:2px solid #d97706;border-radius:50%;background:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-scope-notes>.mag-section-label{display:block;margin-bottom:12px}.mag-root .mag-scope-readings{display:grid;gap:0;margin:0 0 14px}.mag-root .mag-scope-readings>div{display:flex;align-items:baseline;flex-wrap:wrap;justify-content:space-between;gap:6px;padding:9px 0;border-bottom:1px solid var(--allo-stem-border,#334155)}.mag-root .mag-scope-readings dt{color:var(--allo-stem-text-soft,#94a3b8);font-size:12px}.mag-root .mag-scope-readings dd{margin:0;color:var(--allo-stem-text,#e2e8f0);font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}.mag-root .mag-scope-notes>p{line-height:1.6!important;font-size:12.5px!important}.mag-root .mag-scope-notes>div:last-child{display:grid!important;grid-template-columns:minmax(0,1fr);justify-content:stretch!important;gap:10px;margin-top:12px!important}.mag-root .mag-scope-notes>div:last-child button{width:100%;min-height:44px;font-weight:700}@media(max-width:760px){.mag-root .mag-scope-workbench{grid-template-columns:1fr}}@media(forced-colors:active){.mag-root .mag-scope-legend i,.mag-root .mag-scope-legend .mag-scope-newest-key{border-color:CanvasText}.mag-root .mag-scope-legend .mag-scope-newest-key{background:CanvasText}}" +
+          ".mag-root .mag-domain-workbench{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,1fr);gap:16px;align-items:start}.mag-root .mag-domain-workbench>div{min-width:0}.mag-root .mag-domain-workbench .mag-domain-visuals{grid-template-columns:1fr;gap:14px}.mag-root .mag-domain-workbench .mag-domain-figure{padding:12px;border-radius:14px}.mag-root .mag-domain-workbench .mag-domain-figure figcaption{font-size:13px;flex-wrap:wrap;line-height:1.5;margin-bottom:10px}.mag-root .mag-domain-workbench .mag-domain-figure figcaption span{font-size:11px}.mag-root .mag-domain-workbench .mag-domain-legend{font-size:11px;line-height:1.5;gap:8px;margin-top:10px}.mag-root .mag-domain-workbench .mag-domain-key{width:22px}.mag-root .mag-domain-workbench .mag-domain-key.is-point{width:9px}.mag-root .mag-domain-workbench .mag-domain-key.is-dashed{background:repeating-linear-gradient(90deg,var(--mag-key) 0,var(--mag-key) 5px,transparent 5px,transparent 8px)}.mag-root .mag-domain-drive{display:grid;gap:12px}.mag-root .mag-domain-drive>.mag-section-label{margin:0}.mag-root .mag-domain-drive .mag-domain-hud{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-domain-drive .mag-domain-metric{padding:11px 8px}.mag-root .mag-domain-drive .mag-domain-metric b{font-size:21px}.mag-root .mag-domain-drive .mag-domain-metric small{font-size:10px}.mag-root .mag-domain-drive .mag-domain-metric span{font-size:11px;line-height:1.45}.mag-root .mag-domain-drive .mag-domain-next{grid-template-columns:auto minmax(0,1fr)}.mag-root .mag-domain-drive .mag-domain-next button{grid-column:1/-1;width:100%}.mag-root .mag-domain-drive .mag-domain-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.mag-root .mag-domain-drive button{white-space:normal;line-height:1.45}.mag-root .mag-domain-drive.mag-motion-controls .mag-range{margin-bottom:0}.mag-root .mag-domain-drive .mag-domain-phase{font-size:12px;line-height:1.6}.mag-root .mag-domain-drive .mag-domain-reset-note{font-size:11px;line-height:1.5}.mag-root .mag-domain-drive .mag-domain-controls legend{font-size:11px}@media(max-width:760px){.mag-root .mag-domain-workbench{grid-template-columns:1fr}}@media(forced-colors:active){.mag-root .mag-domain-workbench .mag-domain-key{background:CanvasText!important;forced-color-adjust:none}.mag-root .mag-domain-workbench .mag-domain-key.is-dashed{background:repeating-linear-gradient(90deg,CanvasText 0,CanvasText 5px,Canvas 5px,Canvas 8px)!important}}" +
+          ".mag-root .mag-eddy-workbench{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(270px,1fr);gap:16px;align-items:start;margin:12px 0}.mag-root .mag-eddy-workbench>div{min-width:0}.mag-root .mag-eddy-caption{display:grid;gap:5px;border-top:1px solid var(--allo-stem-border,#334155);padding:11px 13px;color:var(--allo-stem-text-soft,#94a3b8);font-size:12px;line-height:1.6}.mag-root .mag-eddy-caption b{color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-eddy-controls>.mag-section-label{display:block;margin-bottom:12px}.mag-root .mag-eddy-controls .mag-sim-grid{grid-template-columns:1fr!important;gap:0!important}.mag-root .mag-eddy-controls.mag-motion-controls .mag-range{margin-bottom:12px}.mag-root .mag-eddy-materials{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important}.mag-root .mag-eddy-materials button:last-child{grid-column:1/-1}.mag-root .mag-eddy-controls button{white-space:normal;line-height:1.45}.mag-root .mag-eddy-comparison{padding:13px;border:1px solid var(--allo-stem-border,#334155);border-radius:12px;margin:10px 0;background:var(--allo-stem-panel,#1e293b);color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-eddy-comparison-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:12px;margin-bottom:12px}.mag-root .mag-eddy-comparison-head span{font-size:11px;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-eddy-comparison-row{display:grid;grid-template-columns:1fr auto;gap:6px;font-size:12px;margin-bottom:12px}.mag-root .mag-eddy-bar-track{grid-column:1/-1;border:1px solid var(--allo-stem-border,#334155);height:10px;border-radius:4px;overflow:hidden}.mag-root .mag-eddy-bar-track>div{height:100%}.mag-root .mag-eddy-comparison p{font-size:11px;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8);margin:0}.mag-root .mag-eddy-readouts{grid-template-columns:repeat(3,minmax(0,1fr))!important}.mag-root .mag-eddy-readouts>div{background:var(--allo-stem-panel,#1e293b)}.mag-root .mag-eddy-readouts [data-eddy-drag-reading],.mag-root .mag-eddy-readouts [data-eddy-distance-reading],.mag-root .mag-eddy-readouts [data-eddy-heat-reading]{display:block;font-size:20px;line-height:1.45;font-variant-numeric:tabular-nums}.mag-root .mag-eddy-tube{border-top:1px solid var(--allo-stem-border,#334155);padding-top:16px;margin-top:16px}.mag-root .mag-eddy-tube>div>svg{max-width:360px!important}@media(max-width:760px){.mag-root .mag-eddy-workbench{grid-template-columns:1fr}}@media(max-width:480px){.mag-root .mag-eddy-readouts{grid-template-columns:repeat(2,minmax(0,1fr))!important}.mag-root .mag-eddy-readouts>div:last-child{grid-column:1/-1}.mag-root .mag-eddy-controls{padding:12px}}@media(forced-colors:active){.mag-root .mag-eddy-bar-track{border-color:CanvasText;forced-color-adjust:none}.mag-root [data-eddy-distance-bar]{background:CanvasText!important;forced-color-adjust:none}.mag-root [data-eddy-distance-bar=\"Field off\"]{background:repeating-linear-gradient(90deg,CanvasText 0,CanvasText 4px,Canvas 4px,Canvas 7px)!important}}" +
+          ".mag-root .mag-walk-workbench{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(270px,1fr);gap:16px;align-items:start;margin:12px 0}.mag-root .mag-walk-workbench>div{min-width:0}.mag-root .mag-walk-board{display:block;width:100%;max-width:none!important}.mag-root .mag-walk-caption{display:grid;gap:5px;padding:11px 13px;border-top:1px solid var(--allo-stem-border,#334155);font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-walk-caption b{color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-walk-controls>.mag-section-label{display:block;margin-bottom:12px}.mag-root .mag-walk-bearing{display:flex;gap:13px;align-items:center;margin-bottom:12px}.mag-root .mag-walk-bearing>svg{flex:0 0 80px}.mag-root .mag-walk-bearing>div{display:grid;gap:6px;color:var(--allo-stem-text-soft,#94a3b8);font-size:12px;line-height:1.45}.mag-root .mag-walk-bearing b{font-size:15px;color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-walk-bearing small{font-size:11px}.mag-root .mag-walk-controls .mag-observe{margin:0 0 16px;align-items:start;line-height:1.6}.mag-root .mag-walk-pad{padding:12px 0;margin-bottom:0!important}.mag-root .mag-walk-pad button{font-size:22px!important}.mag-root .mag-walk-workbench+.mag-maze-evidence .mag-maze-chart{max-width:640px;margin-inline:auto}.mag-root .mag-walk-workbench+.mag-maze-evidence .mag-maze-metric b{font-size:20px}.mag-root .mag-walk-workbench+.mag-maze-evidence .mag-maze-metric{padding:12px}@media(max-width:760px){.mag-root .mag-walk-workbench{grid-template-columns:1fr}}@media(max-width:480px){.mag-root .mag-walk-controls{padding:12px}.mag-root .mag-walk-workbench .mag-instrument-head{font-size:10px}}@media(forced-colors:active){.mag-root .mag-walk-bearing>svg text{fill:CanvasText;forced-color-adjust:none}}" +
+          ".mag-root .mag-crane-workbench{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(270px,1fr);gap:16px;align-items:start;margin:12px 0}.mag-root .mag-crane-workbench>div{min-width:0}.mag-root .mag-crane-workbench .mag-crane-scene{display:block;width:100%;max-width:none!important}.mag-root .mag-crane-caption{display:grid;gap:5px;padding:11px 13px;border-top:1px solid var(--allo-stem-border,#334155);color:var(--allo-stem-text-soft,#94a3b8);font-size:12px;line-height:1.6}.mag-root .mag-crane-caption b{color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-crane-controls>.mag-section-label{display:block;margin-bottom:12px}.mag-root .mag-crane-controls .mag-crane-next{margin:0 0 12px;align-items:start}.mag-root .mag-crane-controls .mag-crane-predict{margin:0 0 12px}.mag-root .mag-crane-controls .mag-crane-predict>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-crane-controls button{white-space:normal;line-height:1.45}.mag-root .mag-crane-controls button:disabled{cursor:not-allowed}.mag-root .mag-crane-controls .mag-crane-predict legend{font-size:12px}.mag-root .mag-crane-workbench .mag-observe{margin-bottom:0}@media(max-width:760px){.mag-root .mag-crane-workbench{grid-template-columns:1fr}}@media(max-width:480px){.mag-root .mag-crane-controls{padding:12px}.mag-root .mag-crane-workbench .mag-instrument-head{font-size:10px}.mag-root .mag-crane-workbench .mag-instrument-head b{flex-basis:100%}}" +
+          ".mag-root .mag-motor-workbench{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(270px,1fr);gap:16px;align-items:start;margin:12px 0 14px}.mag-root .mag-motor-workbench>div{min-width:0}.mag-root .mag-motor-scene>svg{max-width:100%!important;width:100%;margin-top:10px!important}.mag-root .mag-motor-caption{display:grid;gap:5px;border-top:1px solid var(--allo-stem-border,#334155);padding:11px 13px;font-size:12px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8)}.mag-root .mag-motor-caption b{color:var(--allo-stem-text,#e2e8f0)}.mag-root .mag-motor-controls>.mag-section-label{display:block;margin-bottom:12px}.mag-root .mag-motor-controls.mag-motion-controls .mag-range{margin-bottom:10px}.mag-root .mag-motor-controls button{white-space:normal;line-height:1.4}.mag-root .mag-motor-controls [aria-label='Motor torque landmarks']{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-motor-controls [aria-label='Motor torque landmarks']>span{grid-column:1/-1}.mag-root .mag-motor-telemetry>svg{max-width:520px;margin-inline:auto!important}.mag-root .mag-motor-telemetry strong{font-size:18px!important}.mag-root .mag-motor-workbench-3d .mag-motor-controls{margin-top:12px}@media(max-width:760px){.mag-root .mag-motor-workbench{grid-template-columns:1fr}}@media(max-width:480px){.mag-root .mag-motor-controls{padding:12px}.mag-root .mag-motor-telemetry{grid-template-columns:repeat(2,minmax(0,1fr))!important}}" +
           '.mag-root button:focus-visible,.mag-root input:focus-visible,.mag-root select:focus-visible,.mag-root textarea:focus-visible,.mag-root summary:focus-visible{outline:3px solid #fbbf24;outline-offset:2px;border-radius:8px}' +
           '.mag-root .mag-sronly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
           ".mag-root .mag-instrument{min-width:0;overflow:hidden;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}\n.mag-root .mag-instrument svg{display:block;width:100%;height:auto}\n.mag-root .mag-instrument-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;padding:10px 13px;border-bottom:1px solid var(--allo-stem-border,#334155);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--allo-stem-text-soft,#94a3b8)}\n.mag-root .mag-instrument-head b{color:var(--allo-stem-text,#e2e8f0);font-weight:700;letter-spacing:0;text-transform:none}\n.mag-root .mag-readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}\n.mag-root .mag-readout{position:relative;min-width:0;display:flex;flex-direction:column;gap:6px;padding:13px 14px;border:1px solid var(--allo-stem-border,#334155);border-radius:11px;background:var(--allo-stem-panel,#1e293b);border-top:2px solid var(--mag-readout-tone,#38bdf8)}\n.mag-root .mag-readout small{font-size:11px;font-weight:700;line-height:1.4;color:var(--allo-stem-text-soft,#94a3b8)}\n.mag-root .mag-readout b{font-size:clamp(19px,2.1vw,27px);font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:var(--allo-stem-text,#e2e8f0);overflow-wrap:anywhere}\n.mag-root .mag-readout[data-compact=true] b{font-size:16px;letter-spacing:0;line-height:1.35}\n.mag-root .mag-readout span{font-size:11px;line-height:1.4;color:var(--allo-stem-text-soft,#94a3b8)}\n.mag-root .mag-plot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 10px}\n.mag-root .mag-motion-layout{display:grid;grid-template-columns:minmax(220px,.7fr) minmax(0,1.65fr);gap:18px;align-items:start;margin-top:12px}\n.mag-root .mag-motion-controls{min-width:0;padding:14px;border:1px solid var(--allo-stem-border,#334155);border-radius:12px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}\n.mag-root .mag-motion-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:14px}\n.mag-root .mag-motion-presets button{padding:8px 6px!important;font-size:12px!important;line-height:1.4;white-space:normal}\n.mag-root .mag-motion-controls>.mag-section-label{display:block;margin:0 0 10px}\n.mag-root .mag-section-label{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--allo-stem-text-soft,#94a3b8)}\n.mag-root .mag-motion-result{min-width:0}\n.mag-root .mag-motion-run{width:100%}\n.mag-root .mag-motion-notice{border-left:3px solid #38bdf8;padding:9px 12px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220));border-radius:0 8px 8px 0}\n.mag-root .mag-motion-empty{display:flex;align-items:center;gap:14px;min-width:0;padding:24px;border:1px dashed var(--allo-stem-border,#334155);border-radius:12px;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220));color:var(--allo-stem-text-soft,#94a3b8);font-size:13px;line-height:1.6}\n.mag-root .mag-motion-empty>span{flex:0 0 44px;display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--allo-stem-border,#334155);border-radius:12px;font-size:24px;color:var(--allo-stem-text,#e2e8f0)}\n.mag-root .mag-motion-empty b{display:block;color:var(--allo-stem-text,#e2e8f0);font-size:15px;margin-bottom:4px}\n.mag-root .mag-motion-reading{border:1px solid var(--allo-stem-border,#334155);border-left:3px solid #fbbf24;border-radius:10px;padding:12px!important;margin:10px 0;background:var(--allo-stem-instrument,var(--allo-stem-panel,#0b1220))}\n.mag-root .mag-motion-reading b{display:block;margin-bottom:5px}\n.mag-root #mag-motion-sample{font-variant-numeric:tabular-nums}\n.mag-root [data-induction-motion-studio] table tbody tr[aria-current=true]{background:color-mix(in srgb,#38bdf8 15%,var(--allo-stem-panel,#1e293b));outline:2px solid var(--allo-stem-text-soft,#94a3b8);outline-offset:-2px}\n.mag-root .mag-hand-stage{max-width:760px;margin:0 auto 14px}\n.mag-root .mag-readouts-hand{grid-template-columns:repeat(2,minmax(0,1fr))}\n@media(max-width:760px){.mag-root .mag-motion-layout{grid-template-columns:1fr}.mag-root .mag-plot-grid{grid-template-columns:1fr}.mag-root .mag-motion-controls{padding:12px}.mag-root .mag-motion-controls .mag-motion-sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.mag-root .mag-motion-controls .mag-range{margin-bottom:0}}\n@media(max-width:480px){.mag-root .mag-readouts{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-readouts:not(.mag-readouts-hand)>.mag-readout:last-child{grid-column:1/-1}.mag-root .mag-readout{padding:11px 12px}.mag-root .mag-readout b{font-size:23px}.mag-root .mag-motion-empty{padding:16px}.mag-root .mag-motion-layout{gap:12px}.mag-root .mag-instrument-head{padding:9px 11px}}\n@media(forced-colors:active){.mag-root .mag-readout,.mag-root .mag-instrument,.mag-root .mag-motion-controls,.mag-root .mag-motion-empty,.mag-root .mag-motion-reading{border-color:CanvasText;background:Canvas;color:CanvasText}.mag-root [data-induction-motion-studio] table tbody tr[aria-current=true]{outline-color:Highlight;background:Canvas}.mag-root .mag-motion-notice{border-color:Highlight}}\n\n.mag-root .mag-hand-workbench{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(240px,1fr);gap:16px;align-items:start;margin-bottom:14px}\n.mag-root .mag-hand-workbench>div{min-width:0}.mag-root .mag-hand-stage{margin-bottom:0}.mag-root .mag-hand-workbench .mag-readouts{margin-bottom:0}\n.mag-root .mag-particle-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr);gap:16px;align-items:start}\n.mag-root .mag-particle-workbench>div{min-width:0}.mag-root .mag-particle-workbench .mag-sim-grid{grid-template-columns:1fr!important;gap:12px!important}\n@media(max-width:760px){.mag-root .mag-hand-workbench,.mag-root .mag-particle-workbench{grid-template-columns:1fr}.mag-root .mag-mode-rail{flex-wrap:nowrap!important;overflow-x:auto;gap:6px!important;padding:6px 6px 9px;scroll-padding-inline:6px}.mag-root .mag-mode-rail button{flex:0 0 auto;white-space:nowrap;scroll-snap-align:start}}\n@media(max-width:480px){.mag-root .mag-readouts:not(.mag-readouts-hand)>.mag-readout:last-child{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;column-gap:12px}.mag-root .mag-readouts:not(.mag-readouts-hand)>.mag-readout:last-child b{grid-column:2;grid-row:1/3;text-align:right}.mag-root .mag-readouts:not(.mag-readouts-hand)>.mag-readout:last-child span{grid-column:1;grid-row:2}}\n\n@media(max-width:480px){.mag-root .mag-motion-controls .mag-motion-sliders{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-motion-sliders>.mag-range:last-child{grid-column:1/-1}.mag-root .mag-motion-sliders .mag-range-head{gap:5px}.mag-root .mag-motion-sliders .mag-range-value{min-width:35px;padding:3px 5px}}\n@media(max-width:760px){.mag-root .mag-mode-rail>span{display:none}}\n" +
@@ -7165,8 +7180,13 @@
             h('button', { 'aria-pressed': d.electroView === '3d' ? 'true' : 'false', onClick: function () { if (d.electroView === '3d') return; upd({ electroView: '3d', electro3dStatus: 'loading', electro3dUsed: true, coilTouched: true, electro3dMaterial: d.core ? (d.electro3dMaterial === 'air' ? 'soft' : d.electro3dMaterial) : 'air' }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_electromagnet_engineering_lab_s', 'Three-dimensional electromagnet engineering lab selected.')); }, style: btn(d.electroView === '3d') }, '3D engineering lab')),
           d.electroView === '3d' ? electro3DCard() : card('Build an electromagnet', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'A coil of wire carrying current becomes a magnet. Two things you control set its strength: how many ', h('b', null, 'turns'), ' of wire, and how much ', h('b', null, 'current'), ' flows. An iron core multiplies it.'),
-            // schematic coil
-            h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 10 } }, electroSVG(bars)),
+            h('div', { className: 'mag-electro-workbench' },
+            h('div', null, electroSVG(bars),
+              h('div', { className: 'mag-readouts mag-electro-readouts' },
+                instrumentReadout('Calculated interior field', (B * 1000).toFixed(B < 0.01 ? 2 : 0) + ' mT', 'Live · ideal solenoid model', '#fb7185', false, { 'data-electro-readout': 'field' }),
+                instrumentReadout('Field strength', rel.toFixed(1) + '×', 'Compared with the starting coil', '#38bdf8', false, { 'data-electro-readout': 'relative' }))),
+            h('div', { className: 'mag-motion-controls mag-electro-controls' },
+            h('span', { className: 'mag-section-label' }, 'Build & compare'),
             slider('Turns of wire (N)', d.turns, 5, 200, 5, function (v) { upd({ turns: v, coilTouched: true }); }),
             slider('Current (I, amps)', d.current, 0, 6, 0.5, function (v) { upd({ current: v, coilTouched: true }); }),
             h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', margin: '-2px 0 9px' } },
@@ -7180,7 +7200,7 @@
               }, style: btn(d.windingDir < 0) }, '↻ Reverse winding')),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, color: TEXT, fontSize: 13, margin: '6px 0 10px', cursor: 'pointer' } },
               h('input', { type: 'checkbox', checked: !!d.core, onChange: function () { upd({ core: !d.core, coilTouched: true }); } }),
-              'Slide in a soft-iron core'),
+              'Slide in a soft-iron core'))),
             h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true' }, '🧪'),
               h('span', null, h('b', null, 'Run a fair test: '), 'lock setup A, change exactly one control, then use the live B comparison to decide what caused the result. Try doubling turns; start a new A and double current next.')),
@@ -7195,39 +7215,63 @@
       }
 
       function electroSVG(bars) {
-        var kids = [];
-        kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: 300, height: 120, fill: INSTRUMENT, rx: 10 }));
-        // core rod
-        kids.push(h('rect', { key: 'core', x: 60, y: 52, width: 180, height: 16, rx: 3, fill: d.core ? '#94a3b8' : '#1f2937', stroke: '#334155' }));
-        // Show more visible loops as N rises. This is a visual sample, not one
-        // ellipse per physical turn, so the diagram stays readable at N = 200.
-        var loopCount = 5 + Math.round((d.turns - 5) / 195 * 9);
-        var loopGap = 152 / Math.max(1, loopCount - 1);
-        for (var i = 0; i < loopCount; i++) {
-          kids.push(h('ellipse', { key: 'c' + i, cx: 74 + i * loopGap, cy: 60, rx: 7, ry: 22, fill: 'none', stroke: d.current > 0 ? '#f59e0b' : '#475569', strokeWidth: 3 }));
-        }
-        // Current-direction cues and the axial magnetic field.
-        if (d.current > 0) {
-          var axisDir = (d.currentDir < 0 ? -1 : 1) * (d.windingDir < 0 ? -1 : 1);
-          [92, 132, 172, 212].forEach(function (ax, ai) {
-            var x1 = axisDir > 0 ? ax : ax + 18;
-            var x2 = axisDir > 0 ? ax + 18 : ax;
-            kids.push(h('line', { key: 'axis' + ai, x1: x1, y1: 60, x2: x2, y2: 60, stroke: 'rgba(244,63,94,0.72)', strokeWidth: 1.5 }));
-            kids.push(h('polygon', { key: 'axishead' + ai, points: x2 + ',60 ' + (x2 - axisDir * 6) + ',56 ' + (x2 - axisDir * 6) + ',64', fill: 'rgba(244,63,94,0.82)' }));
-          });
-          kids.push(h('text', { key: 'idir', x: 150, y: 28, fill: '#fbbf24', fontSize: 11, textAnchor: 'middle' }, 'right-hand rule: reverse current OR winding → swap poles'));
-        } else {
-          kids.push(h('text', { key: 'off', x: 150, y: 28, fill: '#94a3b8', fontSize: 11, textAnchor: 'middle' }, 'circuit off · no magnetic field'));
-        }
-        kids.push(h('text', { key: 'turnLabel', x: 150, y: 88, fill: '#94a3b8', fontSize: 11, textAnchor: 'middle' }, loopCount + ' visible loops represent ' + d.turns + ' turns'));
-        // strength meter
-        kids.push(h('rect', { key: 'mb', x: 60, y: 96, width: 180, height: 12, rx: 6, fill: '#1f2937' }));
-        kids.push(h('rect', { key: 'mf', x: 60, y: 96, width: Math.min(180, bars * 4.5), height: 12, rx: 6, fill: '#f43f5e' }));
+        var active = d.current > 0;
         var poleDir = (d.currentDir < 0 ? -1 : 1) * (d.windingDir < 0 ? -1 : 1);
-        kids.push(h('text', { key: 'poleR', x: 250, y: 64, fill: poleDir > 0 ? '#ef4444' : '#3b82f6', fontSize: 13, fontWeight: 800 }, d.current > 0 ? (poleDir > 0 ? 'N' : 'S') : ''));
-        kids.push(h('text', { key: 'poleL', x: 46, y: 64, fill: poleDir > 0 ? '#3b82f6' : '#ef4444', fontSize: 13, fontWeight: 800, textAnchor: 'end' }, d.current > 0 ? (poleDir > 0 ? 'S' : 'N') : ''));
-        return h('svg', { viewBox: '0 0 300 120', width: '100%', style: { maxWidth: 380 }, role: 'img', 'aria-label': 'A wire coil with ' + d.turns + ' turns and ' + d.current + ' amps, ' + (d.core ? 'with an iron core' : 'with an air core') + '; field points ' + (poleDir > 0 ? 'right' : 'left') + ' and the strength meter is ' + (d.current > 0 ? 'filled' : 'empty') }, kids);
+        var loopCount = 5 + Math.round((d.turns - 5) / 195 * 9);
+        var loopGap = 252 / Math.max(1, loopCount - 1);
+        var loopText = loopCount + ' visible loops represent ' + d.turns + ' turns';
+        var coilColor = active ? '#d97706' : SOFT;
+        var kids = [h('rect', { key: 'bg', width: 560, height: 280, fill: INSTRUMENT })];
+        [40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520].forEach(function (x) {
+          kids.push(h('line', { key: 'grid-x' + x, x1: x, x2: x, y1: 14, y2: 266, stroke: BORDER, opacity: 0.3 }));
+        });
+        [40, 80, 120, 160, 200, 240].forEach(function (y) {
+          kids.push(h('line', { key: 'grid-y' + y, x1: 20, x2: 540, y1: y, y2: y, stroke: BORDER, opacity: 0.3 }));
+        });
+        if (active) {
+          [0, 1].forEach(function (i) {
+            var top = 40 - i * 20, bottom = 200 + i * 15;
+            kids.push(h('path', { key: 'field-top' + i, d: 'M126 120 C48 ' + top + ' 512 ' + top + ' 434 120', fill: 'none', stroke: '#38bdf8', strokeWidth: i ? 1.4 : 2, opacity: i ? 0.45 : 0.8 }));
+            kids.push(h('path', { key: 'field-bottom' + i, d: 'M126 120 C48 ' + bottom + ' 512 ' + bottom + ' 434 120', fill: 'none', stroke: '#38bdf8', strokeWidth: i ? 1.4 : 2, opacity: i ? 0.45 : 0.8 }));
+          });
+          [60, 180].forEach(function (y) {
+            kids.push(h('polygon', { key: 'return-arrow' + y, points: poleDir > 0 ? '272,' + y + ' 284,' + (y - 5) + ' 284,' + (y + 5) : '288,' + y + ' 276,' + (y - 5) + ' 276,' + (y + 5), fill: '#0284c7' }));
+          });
+        }
+        kids.push(h('path', { key: 'wires', d: 'M154 154V236H253 M406 154V236H277', fill: 'none', stroke: SOFT, strokeWidth: 3, strokeLinejoin: 'round' }));
+        kids.push(h('rect', { key: 'core', x: 138, y: 104, width: 284, height: 32, rx: 7, fill: d.core ? '#64748b' : INSTRUMENT, stroke: SOFT, strokeWidth: 1.5, strokeDasharray: d.core ? undefined : '4 4' }));
+        if (d.core) kids.push(h('path', { key: 'core-shine', d: 'M146 109H414', stroke: '#cbd5e1', strokeWidth: 2, opacity: 0.7 }));
+        for (var i = 0; i < loopCount; i++) {
+          var cx = 154 + i * loopGap;
+          kids.push(h('ellipse', { key: 'c' + i, cx: cx, cy: 120, rx: 12, ry: 37, fill: 'none', stroke: coilColor, strokeWidth: 4 }));
+          kids.push(h('path', { key: 'front' + i, d: 'M' + cx + ' 83 A12 37 0 0 1 ' + cx + ' 157', fill: 'none', stroke: active ? '#fbbf24' : SOFT, strokeWidth: 2 }));
+        }
+        if (active) {
+          [190, 248, 306, 364].forEach(function (x, i) {
+            var x1 = poleDir > 0 ? x : x + 24, x2 = poleDir > 0 ? x + 24 : x;
+            kids.push(h('line', { key: 'axis' + i, x1: x1, y1: 120, x2: x2, y2: 120, stroke: '#fb7185', strokeWidth: 3 }));
+            kids.push(h('polygon', { key: 'axishead' + i, points: x2 + ',120 ' + (x2 - poleDir * 7) + ',115 ' + (x2 - poleDir * 7) + ',125', fill: '#fb7185' }));
+          });
+          [['left', 96, poleDir > 0 ? 'S' : 'N'], ['right', 464, poleDir > 0 ? 'N' : 'S']].forEach(function (pole) {
+            var north = pole[2] === 'N', x = pole[1];
+            kids.push(h('g', { key: pole[0], 'data-electro-pole': pole[0] },
+              h('rect', { x: x - 20, y: 101, width: 40, height: 38, rx: 8, fill: north ? '#dc2626' : '#1d4ed8' }),
+              h('line', { x1: x - 13, x2: x + 13, y1: 107, y2: 107, stroke: '#fff', strokeWidth: 2 }),
+              north ? null : h('line', { x1: x - 13, x2: x + 13, y1: 112, y2: 112, stroke: '#fff', strokeWidth: 2 }),
+              h('text', { x: x, y: 131, textAnchor: 'middle', fill: '#fff', fontSize: 20, fontWeight: 800 }, pole[2])));
+          });
+        }
+        kids.push(h('text', { key: 'coreLabel', x: 280, y: 28, textAnchor: 'middle', fill: TEXT, fontSize: 15, fontWeight: 700 }, d.core ? 'SOFT-IRON CORE' : 'AIR CORE'));
+        kids.push(h('text', { key: 'turnLabel', x: 280, y: 202, textAnchor: 'middle', fill: TEXT, fontSize: 14 }, loopText));
+        kids.push(h('path', { key: 'battery', d: 'M258 218V254 M274 226V246', fill: 'none', stroke: TEXT, strokeWidth: 4 }));
+        kids.push(h('text', { key: 'battery-plus', x: 242, y: 222, textAnchor: 'middle', fill: TEXT, fontSize: 15 }, '+'));
+        kids.push(h('text', { key: 'battery-label', x: 280, y: 271, textAnchor: 'middle', fill: SOFT, fontSize: 14 }, active ? 'DC source · circuit on' : 'circuit off · no magnetic field'));
+        return h('div', { className: 'mag-instrument', 'data-electro-instrument': 'true' },
+          h('div', { className: 'mag-instrument-head' }, h('span', null, 'Solenoid · 10 cm coil'), h('b', null, active ? 'Field points ' + (poleDir > 0 ? '→ right' : '← left') : 'No current · field off')),
+          h('svg', { viewBox: '0 0 560 280', width: '100%', role: 'img', 'aria-label': 'A wire coil with ' + d.turns + ' turns and ' + d.current + ' amps, ' + (d.core ? 'with an iron core' : 'with an air core') + '; ' + (active ? 'field points ' + (poleDir > 0 ? 'right' : 'left') : 'no magnetic field') + '. ' + loopText + '. The loops and field paths are schematic.' }, kids),
+          h('p', { className: 'mag-electro-caption' }, h('b', { style: { display: 'block', color: TEXT, marginBottom: 4 } }, (d.core ? 'Soft-iron core · ' : 'Air core · ') + loopText), active ? 'right-hand rule: reverse current OR winding → swap poles. Blue paths return outside the coil; rose arrows show the interior field.' : 'circuit off · no magnetic field. Raise the current to reveal the field direction.'));
       }
+
 
       // ── Motor ─────────────────────────────────────────────────────────
       function forceVectorLabCard() {
@@ -7239,8 +7283,6 @@
         var currentMidX = cx + Math.sin(theta) * wireRadius * 0.52;
         var currentMidY = cy - Math.cos(theta) * wireRadius * 0.52;
         var forceSign = state.signedForce >= 0 ? 1 : -1;
-        var forceEndX = cx + forceSign * Math.min(58, 18 + state.magnitude * 0.7);
-        var forceEndY = cy - forceSign * Math.min(34, 10 + state.magnitude * 0.42);
         var maxForce = Math.max(1, state.current * state.field * state.length);
         var curve = [];
         for (var angle = 0; angle <= 90; angle += 5) {
@@ -7248,61 +7290,65 @@
           var y = 192 - (state.current * state.field * state.length * Math.sin(angle * Math.PI / 180) / maxForce) * 112;
           curve.push(x.toFixed(1) + ',' + y.toFixed(1));
         }
+        var currentDX = state.wireVector.x, currentDY = -state.wireVector.y;
+        var arrowStartX = currentMidX - currentDX * 12, arrowStartY = currentMidY - currentDY * 12;
+        var arrowEndX = currentMidX + currentDX * 12, arrowEndY = currentMidY + currentDY * 12;
+        var forceLabel = state.deadSpot ? 'ZERO' : forceSign > 0 ? '+z · out of screen' : '−z · into screen';
+        var reversedForceLabel = forceSign > 0 ? '−z, into the screen' : '+z, out of the screen';
         function commit(patch, message) {
           upd(Object.assign({}, patch, { forceLabUsed: true, directionSeen: true }));
           if (message) announceToSR(message);
         }
-        var aria = 'Right-hand-rule force lab. Current ' + state.current.toFixed(1) + ', field ' + state.field.toFixed(1) + ', wire length ' + state.length.toFixed(1) + ', angle ' + state.angle.toFixed(0) + ' degrees from the field. Force magnitude ' + state.magnitude.toFixed(2) + ' relative units toward ' + state.forceDirection + '. Parallel current fraction ' + state.parallelFraction.toFixed(2) + ', perpendicular fraction ' + state.perpendicularFraction.toFixed(2) + '.';
+        var aria = 'Right-hand-rule force lab. Current ' + state.current.toFixed(1) + ', field ' + state.field.toFixed(1) + ', wire length ' + state.length.toFixed(1) + ', angle ' + state.angle.toFixed(0) + ' degrees from the field. Force magnitude ' + state.magnitude.toFixed(2) + ' relative units; ' + (state.deadSpot ? 'no force direction' : forceLabel) + '. Parallel current fraction ' + state.parallelFraction.toFixed(2) + ', perpendicular fraction ' + state.perpendicularFraction.toFixed(2) + '.';
         return h('section', { 'aria-label': __alloT('stem.magnetism.a11y_right_hand_rule_wire_force_lab', 'Right-hand-rule wire-force lab'), style: { margin: '12px 0 8px' } },
           h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 4 } }, 'Right-hand-rule force lab'),
           h('p', { style: { color: SOFT, fontSize: 12, margin: '0 0 8px', lineHeight: 1.45 } }, 'Rotate a current-carrying wire through a uniform field. The vector view shows ', h('b', null, 'F = I L × B'), '; the curve makes the ', h('b', null, 'sin θ'), ' dependence visible.'),
-          h('svg', { viewBox: '0 0 520 248', width: '100%', style: { maxWidth: 760, display: 'block', margin: '0 auto 8px' }, role: 'img', 'aria-label': aria },
-            h('rect', { x: 0, y: 0, width: 520, height: 248, rx: 10, fill: INSTRUMENT }),
-            h('text', { x: 130, y: 18, fill: TEXT, fontSize: 11.5, fontWeight: 800, textAnchor: 'middle' }, 'VECTOR VIEW · x, y, z'),
-            h('text', { x: 400, y: 18, fill: TEXT, fontSize: 11.5, fontWeight: 800, textAnchor: 'middle' }, 'FORCE CURVE · |F| ∝ sin θ'),
-            h('line', { x1: cx, y1: cy, x2: 212, y2: cy, stroke: '#94a3b8', strokeWidth: 1.5 }),
-            h('polygon', { points: '220,' + cy + ' 210,' + (cy - 4) + ' 210,' + (cy + 4), fill: '#94a3b8' }),
-            h('text', { x: 218, y: cy - 7, fill: SOFT, fontSize: 10 }, 'x'),
-            h('line', { x1: cx, y1: cy, x2: cx, y2: 47, stroke: '#94a3b8', strokeWidth: 1.5 }),
-            h('polygon', { points: cx + ',39 ' + (cx - 4) + ',49 ' + (cx + 4) + ',49', fill: '#94a3b8' }),
-            h('text', { x: cx + 7, y: 48, fill: SOFT, fontSize: 10 }, 'y'),
-            h('line', { x1: cx, y1: cy, x2: 76, y2: 177, stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' }),
-            h('polygon', { points: '68,184 80,179 74,172', fill: '#94a3b8' }),
-            h('text', { x: 69, y: 194, fill: SOFT, fontSize: 10 }, 'z'),
-            [64, 98, 164, 198].map(function (x, index) {
-              var direction = d.forceLabFieldDir < 0 ? -1 : 1;
-              var y1 = direction > 0 ? 180 : 68, y2 = direction > 0 ? 68 : 180;
-              return h('g', { key: 'field-arrow-' + index },
-                h('line', { x1: x, y1: y1, x2: x, y2: y2, stroke: '#38bdf8', strokeWidth: 2, opacity: 0.75 }),
-                h('polygon', { points: x + ',' + y2 + ' ' + (x - 5) + ',' + (y2 + (direction > 0 ? 9 : -9)) + ' ' + (x + 5) + ',' + (y2 + (direction > 0 ? 9 : -9)), fill: '#38bdf8' }));
-            }),
-            h('text', { x: 80, y: 60, fill: '#7dd3fc', fontSize: 11 }, 'B'),
-            h('line', { x1: cx, y1: cy, x2: wireEndX, y2: wireEndY, stroke: '#fbbf24', strokeWidth: 7, strokeLinecap: 'round' }),
-            h('polygon', { points: currentMidX + ',' + currentMidY + ' ' + (currentMidX - 10 * Math.cos(theta)) + ',' + (currentMidY - 10 * Math.sin(theta)) + ' ' + (currentMidX - 4 * Math.cos(theta) - 6 * Math.sin(theta)) + ',' + (currentMidY - 4 * Math.sin(theta) + 6 * Math.cos(theta)), fill: '#fbbf24' }),
-            h('text', { x: wireEndX + 6, y: wireEndY - 4, fill: '#fbbf24', fontSize: 11 }, 'I · wire'),
-            h('path', { d: 'M' + (cx + 26) + ' ' + cy + ' A26 26 0 0 0 ' + (cx + Math.sin(theta) * 26) + ' ' + (cy - Math.cos(theta) * 26), fill: 'none', stroke: '#fbbf24', strokeWidth: 1.5 }),
-            h('text', { x: cx + 30, y: cy - 18, fill: TEXT, fontSize: 11 }, 'θ = ' + state.angle.toFixed(0) + '°'),
-            h('line', { x1: cx, y1: cy, x2: forceEndX, y2: forceEndY, stroke: '#f43f5e', strokeWidth: 4, strokeLinecap: 'round' }),
-            h('polygon', { points: forceEndX + ',' + forceEndY + ' ' + (forceEndX - forceSign * 10) + ',' + (forceEndY + 5) + ' ' + (forceEndX - forceSign * 4) + ',' + (forceEndY + forceSign * 10), fill: '#f43f5e' }),
-            h('text', { x: forceEndX + forceSign * 5, y: forceEndY - forceSign * 5, fill: '#fda4af', fontSize: 11, textAnchor: forceSign > 0 ? 'start' : 'end' }, 'F · ' + state.forceDirection),
-            h('text', { x: 130, y: 226, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, 'field arrows + wire direction determine the force axis'),
-            h('line', { x1: 300, y1: 192, x2: 500, y2: 192, stroke: BORDER }),
-            h('line', { x1: 300, y1: 44, x2: 300, y2: 192, stroke: BORDER }),
-            h('polyline', { points: curve.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5 }),
-            h('line', { x1: 300 + state.angle / 90 * 198, y1: 44, x2: 300 + state.angle / 90 * 198, y2: 198, stroke: '#fbbf24', strokeDasharray: '4 3' }),
-            h('circle', { cx: 300 + state.angle / 90 * 198, cy: 192 - state.magnitude / maxForce * 112, r: 5, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2 }),
-            h('text', { x: 300, y: 208, fill: SOFT, fontSize: 10 }, '0° · parallel'),
-            h('text', { x: 500, y: 208, fill: SOFT, fontSize: 10, textAnchor: 'end' }, '90° · perpendicular'),
-            h('text', { x: 400, y: 224, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' },
-              h('tspan', { x: 400 }, 'parallel component does not push;'),
-              h('tspan', { x: 400, dy: 12 }, 'perpendicular component does'))),
-          h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '0 0 8px' } },
-            h('div', { style: { padding: 8, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Force magnitude'), h('div', { style: { color: TEXT, fontSize: 15, fontWeight: 800 } }, state.magnitude.toFixed(2))),
-            h('div', { style: { padding: 8, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Perpendicular fraction'), h('div', { style: { color: TEXT, fontSize: 15, fontWeight: 800 } }, state.perpendicularFraction.toFixed(2))),
-            h('div', { style: { padding: 8, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Force direction'), h('div', { style: { color: TEXT, fontSize: 15, fontWeight: 800 } }, state.forceDirection))),
+          h('div', { className: 'mag-wire-stages', role: 'group', 'aria-label': aria },
+            h('figure', { className: 'mag-wire-figure' },
+              h('figcaption', { className: 'mag-wire-heading' }, h('b', null, 'VECTOR VIEW · x, y, z'), h('span', null, 'Wire and field in the screen · +z points out')),
+              h('svg', { 'data-wire-plane': 'true', viewBox: '0 24 260 184', role: 'img', 'aria-label': 'Wire-force vector view. ' + (state.deadSpot ? 'Force is zero.' : forceLabel + '.') + ' Current and field arrows follow their selected signs.' },
+                h('rect', { x: 0, y: 24, width: 260, height: 184, fill: INSTRUMENT }),
+                h('line', { x1: cx, y1: cy, x2: 212, y2: cy, stroke: SOFT, strokeWidth: 1.5 }),
+                h('polygon', { points: '220,' + cy + ' 210,' + (cy - 4) + ' 210,' + (cy + 4), fill: SOFT }),
+                h('text', { x: 218, y: cy - 7, fill: TEXT, fontSize: 12 }, 'x'),
+                h('line', { x1: cx, y1: cy, x2: cx, y2: 47, stroke: SOFT, strokeWidth: 1.5 }),
+                h('polygon', { points: cx + ',39 ' + (cx - 4) + ',49 ' + (cx + 4) + ',49', fill: SOFT }),
+                h('text', { x: cx + 7, y: 48, fill: TEXT, fontSize: 12 }, 'y'),
+                state.field > 1e-9 ? [64, 98, 164, 198].map(function (x, index) {
+                  var y1 = state.fieldSign > 0 ? 180 : 68, y2 = state.fieldSign > 0 ? 68 : 180;
+                  return h('g', { key: 'field-arrow-' + index },
+                    h('line', { 'data-wire-field-arrow': 'true', x1: x, y1: y1, x2: x, y2: y2, stroke: '#0284c7', strokeWidth: 2, opacity: 0.85 }),
+                    h('polygon', { points: x + ',' + y2 + ' ' + (x - 5) + ',' + (y2 + (state.fieldSign > 0 ? 9 : -9)) + ' ' + (x + 5) + ',' + (y2 + (state.fieldSign > 0 ? 9 : -9)), fill: '#0284c7' }));
+                }) : null,
+                h('text', { x: 70, y: 57, fill: TEXT, fontSize: 12 }, state.field > 1e-9 ? 'B' : 'B = 0'),
+                h('line', { 'data-wire-axis': 'true', x1: cx, y1: cy, x2: wireEndX, y2: wireEndY, stroke: '#d97706', strokeWidth: 7, strokeLinecap: 'round' }),
+                state.current > 1e-9 ? h('g', null,
+                  h('line', { 'data-wire-current-arrow': 'true', x1: arrowStartX, y1: arrowStartY, x2: arrowEndX, y2: arrowEndY, stroke: TEXT, strokeWidth: 2.5 }),
+                  h('polygon', { points: arrowEndX + ',' + arrowEndY + ' ' + (arrowEndX - currentDX * 10 - currentDY * 4) + ',' + (arrowEndY - currentDY * 10 + currentDX * 4) + ' ' + (arrowEndX - currentDX * 10 + currentDY * 4) + ',' + (arrowEndY - currentDY * 10 - currentDX * 4), fill: TEXT })) : null,
+                h('text', { x: wireEndX + 7, y: wireEndY - 5, fill: TEXT, fontSize: 12 }, state.current > 1e-9 ? 'I' : 'I = 0'),
+                h('path', { 'data-wire-angle-arc': 'true', d: 'M' + cx + ' ' + (cy - 26) + ' A26 26 0 0 1 ' + (cx + Math.sin(theta) * 26) + ' ' + (cy - Math.cos(theta) * 26), fill: 'none', stroke: '#d97706', strokeWidth: 1.5 }),
+                h('text', { x: cx + 30, y: cy - 18, fill: TEXT, fontSize: 12 }, 'θ = ' + state.angle.toFixed(0) + '°'),
+                h('circle', { cx: cx, cy: cy, r: 15, fill: INSTRUMENT, stroke: state.deadSpot ? BORDER : '#e11d48', strokeWidth: 2 }),
+                state.deadSpot ? h('text', { 'data-wire-zero': 'true', x: cx, y: cy + 4, textAnchor: 'middle', fill: TEXT, fontSize: 12, fontWeight: 800 }, '0') : forceSign > 0 ? h('circle', { 'data-wire-force-glyph': '+z', cx: cx, cy: cy, r: 4.5, fill: '#e11d48' }) : h('path', { 'data-wire-force-glyph': '−z', d: 'M' + (cx - 6) + ' ' + (cy - 6) + ' L' + (cx + 6) + ' ' + (cy + 6) + ' M' + (cx + 6) + ' ' + (cy - 6) + ' L' + (cx - 6) + ' ' + (cy + 6), stroke: '#e11d48', strokeWidth: 2.5 })),
+              h('div', { className: 'mag-wire-caption' }, h('b', { 'data-wire-force-direction': 'true' }, state.deadSpot ? 'No magnetic force' : 'F: ' + forceLabel), h('span', null, '⊙ +z out · ⊗ −z into the screen'), h('span', null, 'θ is wire tilt from the field axis; arrow reversals set direction.'))),
+            h('figure', { className: 'mag-wire-figure' },
+              h('figcaption', { className: 'mag-wire-heading' }, h('b', null, 'FORCE CURVE · |F| ∝ sin θ'), h('span', null, 'Marker follows the selected wire tilt')),
+              h('svg', { 'data-wire-curve-plane': 'true', viewBox: '280 32 240 168', role: 'img', 'aria-label': 'Force magnitude across wire tilt. Selected angle ' + state.angle.toFixed(0) + ' degrees and force ' + state.magnitude.toFixed(2) + ' relative units.' },
+                h('rect', { x: 280, y: 32, width: 240, height: 168, fill: INSTRUMENT }),
+                h('line', { x1: 300, y1: 192, x2: 500, y2: 192, stroke: SOFT }),
+                h('line', { x1: 300, y1: 44, x2: 300, y2: 192, stroke: SOFT }),
+                h('polyline', { 'data-wire-force-curve': 'true', points: curve.join(' '), fill: 'none', stroke: '#0284c7', strokeWidth: 2.5 }),
+                h('line', { 'data-wire-curve-cursor': 'true', x1: 300 + state.angle / 90 * 198, y1: 44, x2: 300 + state.angle / 90 * 198, y2: 198, stroke: '#d97706', strokeDasharray: '4 3' }),
+                h('circle', { 'data-wire-curve-point': 'true', cx: 300 + state.angle / 90 * 198, cy: 192 - state.magnitude / maxForce * 112, r: 5, fill: INSTRUMENT, stroke: '#d97706', strokeWidth: 2 })),
+              h('div', { className: 'mag-wire-axis-labels' }, h('span', null, '0° · parallel'), h('span', null, '90° · perpendicular')),
+              h('div', { className: 'mag-wire-caption' }, h('b', null, 'F = I L B sin θ'), h('span', null, 'Curve height is relative. The selected force and direction are shown below.')))),
+          h('div', { className: 'mag-sim-grid mag-wire-readouts', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '0 0 8px' } },
+            h('div', null, h('small', null, 'Force magnitude'), h('b', { 'data-wire-reading': 'force' }, state.magnitude.toFixed(2))),
+            h('div', null, h('small', null, 'Perpendicular fraction'), h('b', { 'data-wire-reading': 'fraction' }, state.perpendicularFraction.toFixed(2))),
+            h('div', null, h('small', null, 'Force direction'), h('b', { 'data-wire-reading': 'direction' }, state.deadSpot ? 'ZERO' : state.forceDirection))),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_force_vector_direction_controls', 'Force vector direction controls'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
-            h('button', { 'aria-pressed': d.forceLabCurrentDir < 0 ? 'true' : 'false', onClick: function () { commit({ forceLabCurrentDir: -d.forceLabCurrentDir }, 'Current reversed. Force direction reversed.'); }, style: btn(d.forceLabCurrentDir < 0) }, '↕ Reverse current'),
-            h('button', { 'aria-pressed': d.forceLabFieldDir < 0 ? 'true' : 'false', onClick: function () { commit({ forceLabFieldDir: -d.forceLabFieldDir }, 'Field reversed. Force direction reversed.'); }, style: btn(d.forceLabFieldDir < 0) }, '🧲 Reverse field'),
+            h('button', { 'aria-pressed': d.forceLabCurrentDir < 0 ? 'true' : 'false', onClick: function () { commit({ forceLabCurrentDir: -d.forceLabCurrentDir }, state.deadSpot ? 'Current reversed. Force remains zero.' : 'Current reversed. Force now points ' + reversedForceLabel + '.'); }, style: btn(d.forceLabCurrentDir < 0) }, '↕ Reverse current'),
+            h('button', { 'aria-pressed': d.forceLabFieldDir < 0 ? 'true' : 'false', onClick: function () { commit({ forceLabFieldDir: -d.forceLabFieldDir }, state.deadSpot ? 'Field reversed. Force remains zero.' : 'Field reversed. Force now points ' + reversedForceLabel + '.'); }, style: btn(d.forceLabFieldDir < 0) }, '🧲 Reverse field'),
             h('button', { 'aria-pressed': d.forceLabAngle === 0 ? 'true' : 'false', onClick: function () { commit({ forceLabAngle: 0 }, 'Wire is parallel to the field. Force is zero.'); }, style: btn(d.forceLabAngle === 0) }, '0° · parallel'),
             h('button', { 'aria-pressed': d.forceLabAngle === 90 ? 'true' : 'false', onClick: function () { commit({ forceLabAngle: 90 }, 'Wire is perpendicular to the field. Force is maximum.'); }, style: btn(d.forceLabAngle === 90) }, '90° · maximum')),
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 } },
@@ -7314,7 +7360,7 @@
               slider('Wire length (L)', d.forceLabLength, 1, 10, 1, function (value) { commit({ forceLabLength: value }); }))),
           h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
             h('span', { 'aria-hidden': 'true' }, state.deadSpot ? '∥' : '⊗'),
-            h('span', null, h('b', null, state.deadSpot ? 'No magnetic push at this angle. ' : 'Force is active. '), state.deadSpot ? 'The wire is parallel to the field, so the cross product vanishes. Rotate toward 90° to increase the perpendicular component.' : 'Reverse either current or field to flip F; reverse both and the original force direction returns.'))
+            h('span', null, h('b', null, state.deadSpot ? (state.angle === 0 ? 'No magnetic push at this angle. ' : 'No magnetic push. ') : 'Force is active. '), state.deadSpot ? (state.current === 0 ? 'Current is zero. Raise I to create a magnetic push when the wire is tilted.' : state.field === 0 ? 'Magnetic field is zero. Raise B to create a magnetic push when the wire is tilted.' : 'The wire is parallel to the field, so the cross product vanishes. Rotate toward 90° to increase the perpendicular component.') : 'Reverse either current or field to flip F; reverse both and the original force direction returns.'))
         );
       }
       function powerBridgeCard() {
@@ -7328,46 +7374,42 @@
         }
         var aria = 'Magnetic work bridge. Force magnitude ' + state.magnitude.toFixed(2) + ' relative units, radius ' + state.radius.toFixed(2) + ', shaft speed ' + state.speedRpm.toFixed(0) + ' RPM, tangential speed ' + state.tangentialSpeed.toFixed(2) + ', torque ' + state.torque.toFixed(2) + ', and mechanical power ' + state.mechanicalPower.toFixed(2) + ' relative units.';
         var statusText = state.deadSpot
-          ? 'No work yet: the wire is parallel to the field, so F = 0.'
+          ? state.current < 1e-9 ? 'No work yet: Current is zero, so F = 0.'
+            : state.field < 1e-9 ? 'No work yet: Magnetic field is zero, so F = 0.'
+            : 'No work yet: the wire is parallel to the field, so F = 0.'
           : !state.moving
             ? 'Force is ready, but the shaft is stopped. Add motion to see power.'
             : 'The moving wire carries the magnetic push through a distance: P = F·v.';
-        return h('section', { 'aria-label': __alloT('stem.magnetism.a11y_magnetic_work_and_power_bridge', 'Magnetic work and power bridge'), style: { margin: '10px 0 8px' } },
+        return h('section', { className: 'mag-power-bridge', 'aria-label': __alloT('stem.magnetism.a11y_magnetic_work_and_power_bridge', 'Magnetic work and power bridge'), style: { margin: '10px 0 8px' } },
           h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 4 } }, 'Force → torque → mechanical power'),
           h('p', { style: { color: SOFT, fontSize: 12, margin: '0 0 8px', lineHeight: 1.45 } }, 'Keep the magnetic force fixed, then add motion. This makes the work pathway visible: ', h('b', null, 'τ = F·r'), ' and ', h('b', null, 'P = F·v'), '. Values are relative teaching units.'),
-          h('svg', { viewBox: '0 0 520 198', width: '100%', style: { maxWidth: 760, display: 'block', margin: '0 auto 8px' }, role: 'group', 'aria-label': aria },
-            h('rect', { x: 0, y: 0, width: 520, height: 198, rx: 10, fill: INSTRUMENT }),
-            h('text', { x: 260, y: 18, fill: TEXT, fontSize: 11.5, fontWeight: 800, textAnchor: 'middle' }, 'MAGNETIC WORK BRIDGE · P = F·v'),
-            h('line', { x1: 34, y1: 73, x2: 146, y2: 73, stroke: '#f43f5e', strokeWidth: 4, strokeLinecap: 'round' }),
-            h('polygon', { points: '146,73 134,67 134,79', fill: '#f43f5e' }),
-            h('line', { x1: 198, y1: 73, x2: 310, y2: 73, stroke: '#fbbf24', strokeWidth: 4, strokeLinecap: 'round' }),
-            h('polygon', { points: '310,73 298,67 298,79', fill: '#fbbf24' }),
-            h('line', { x1: 362, y1: 73, x2: 474, y2: 73, stroke: '#34d399', strokeWidth: 4, strokeLinecap: 'round' }),
-            h('polygon', { points: '474,73 462,67 462,79', fill: '#34d399' }),
-            h('circle', { cx: 26, cy: 73, r: 7, fill: '#f43f5e' }),
-            h('circle', { cx: 190, cy: 73, r: 7, fill: '#fbbf24' }),
-            h('circle', { cx: 354, cy: 73, r: 7, fill: '#34d399' }),
-            h('text', { x: 90, y: 48, fill: '#fda4af', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, 'F · force'),
-            h('text', { x: 254, y: 48, fill: '#fde68a', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, 'τ = F·r'),
-            h('text', { x: 430, y: 48, fill: '#86efac', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, 'P = F·v'),
-            h('text', { x: 90, y: 101, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, 'magnetic push'),
-            h('text', { x: 254, y: 101, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, 'turning effect'),
-            h('text', { x: 430, y: 101, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, 'rate of work'),
-            h('text', { x: 28, y: 131, fill: SOFT, fontSize: 10.5 }, 'force'),
-            h('rect', { x: 86, y: 122, width: 118, height: 10, rx: 5, fill: BORDER }),
-            h('rect', { x: 86, y: 122, width: forceWidth, height: 10, rx: 5, fill: '#f43f5e' }),
-            h('text', { x: 28, y: 153, fill: SOFT, fontSize: 10.5 }, 'speed'),
-            h('rect', { x: 86, y: 144, width: 118, height: 10, rx: 5, fill: BORDER }),
-            h('rect', { x: 86, y: 144, width: speedWidth, height: 10, rx: 5, fill: '#38bdf8' }),
-            h('text', { x: 280, y: 131, fill: SOFT, fontSize: 10.5 }, 'power'),
-            h('rect', { x: 338, y: 122, width: 148, height: 32, rx: 7, fill: BORDER }),
-            h('rect', { x: 338, y: 122, width: powerWidth * 1.25, height: 32, rx: 7, fill: '#34d399', opacity: 0.85 }),
-            h('text', { x: 412, y: 143, fill: TEXT, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, state.mechanicalPower.toFixed(2) + ' rel'),
-            h('text', { x: 260, y: 181, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, state.moving ? 'motion supplies v; angle supplies the perpendicular force' : 'set a shaft speed to activate mechanical power'),
-          h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '0 0 8px' } },
-            h('div', { style: { padding: 8, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Tangential speed'), h('div', { style: { color: TEXT, fontSize: 15, fontWeight: 800 } }, state.tangentialSpeed.toFixed(2))),
-            h('div', { style: { padding: 8, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Torque'), h('div', { style: { color: TEXT, fontSize: 15, fontWeight: 800 } }, state.torque.toFixed(2))),
-            h('div', { style: { padding: 8, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Work per turn'), h('div', { style: { color: TEXT, fontSize: 15, fontWeight: 800 } }, state.workPerTurn.toFixed(2)))),
+          h('div', { className: 'mag-power-title' }, 'MAGNETIC WORK BRIDGE · P = F·v'),
+          h('div', { className: 'mag-power-path', role: 'group', 'aria-label': aria },
+            h('div', { className: 'mag-power-step', 'data-power-step': 'force', style: { '--mag-power-tone': '#f43f5e' } },
+              h('div', { className: 'mag-power-step-head' }, h('span', { 'aria-hidden': 'true' }, '1'), h('h4', null, 'Force magnitude')),
+              h('span', { className: 'mag-power-formula' }, 'F = I L B sin θ'),
+              h('b', { 'data-power-reading': 'force' }, state.magnitude.toFixed(2)),
+              h('small', null, 'relative units'),
+              h('p', null, 'Magnetic push on the wire.'),
+              h('div', { className: 'mag-power-track', 'aria-hidden': 'true' }, h('i', { 'data-power-bar': 'force', style: { width: (forceWidth / 118 * 100) + '%' } }))),
+            h('div', { className: 'mag-power-step', 'data-power-step': 'torque', style: { '--mag-power-tone': '#d97706' } },
+              h('div', { className: 'mag-power-step-head' }, h('span', { 'aria-hidden': 'true' }, '2'), h('h4', null, 'Torque magnitude')),
+              h('span', { className: 'mag-power-formula' }, 'τ = F·r'),
+              h('b', { 'data-power-reading': 'torque' }, state.torque.toFixed(2)),
+              h('small', null, 'relative units'),
+              h('p', null, 'The push produces a turning effect at radius r.')),
+            h('div', { className: 'mag-power-step', 'data-power-step': 'power', style: { '--mag-power-tone': '#059669' } },
+              h('div', { className: 'mag-power-step-head' }, h('span', { 'aria-hidden': 'true' }, '3'), h('h4', null, 'Mechanical power')),
+              h('span', { className: 'mag-power-formula' }, 'P = F·v'),
+              h('b', { 'data-power-reading': 'power' }, state.mechanicalPower.toFixed(2)),
+              h('small', null, 'relative units'),
+              h('p', null, 'Motion determines the rate of mechanical work.'),
+              h('div', { className: 'mag-power-track', 'aria-hidden': 'true' }, h('i', { 'data-power-bar': 'power', style: { width: (powerWidth / 118 * 100) + '%' } })))),
+          h('div', { className: 'mag-power-readouts' },
+            h('div', null, h('span', null, 'Tangential speed'), h('b', { 'data-power-reading': 'speed' }, state.tangentialSpeed.toFixed(2)), h('small', null, 'Speed at the wire · v = ωr'), h('div', { className: 'mag-power-track', 'aria-hidden': 'true' }, h('i', { 'data-power-bar': 'speed', style: { width: (speedWidth / 118 * 100) + '%' } }))),
+            h('div', null, h('span', null, 'Radius'), h('b', { 'data-power-reading': 'radius' }, state.radius.toFixed(2)), h('small', null, 'Distance from the shaft · r')),
+            h('div', null, h('span', null, 'Work per turn'), h('b', { 'data-power-reading': 'work' }, state.workPerTurn.toFixed(2)), h('small', null, 'Work over one revolution · W = 2π τ'))),
+          h('p', { className: 'mag-power-scale' }, 'Comparison bars stop at the teaching-scale reference; the numbers show the full values.'),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_shaft_speed_presets', 'Shaft speed presets'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
             h('button', { 'aria-pressed': d.forceLabSpeed === 0 ? 'true' : 'false', onClick: function () { commit({ forceLabSpeed: 0 }, 'Shaft stopped. Mechanical power is zero.'); }, style: btn(d.forceLabSpeed === 0) }, '0 RPM · stop'),
             h('button', { 'aria-pressed': d.forceLabSpeed === 300 ? 'true' : 'false', onClick: function () { commit({ forceLabSpeed: 300 }, 'Shaft set to 300 RPM.'); }, style: btn(d.forceLabSpeed === 300) }, '300 RPM · steady'),
@@ -7375,7 +7417,7 @@
           slider('Shaft speed (RPM)', d.forceLabSpeed, 0, 600, 50, function (value) { commit({ forceLabSpeed: value }); }),
           h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
             h('span', { 'aria-hidden': 'true' }, state.powerActive ? '⚡' : '⏸'),
-            h('span', null, h('b', null, statusText + ' '), state.powerActive ? 'Increasing angle, wire length, or speed increases the rate of mechanical work.' : 'The force curve and this bridge are linked to the same angle and field controls.')))
+            h('span', null, h('b', null, statusText + ' '), state.powerActive ? 'Increasing angle, wire length, or speed increases the rate of mechanical work.' : 'The force curve and this bridge are linked to the same angle and field controls.'))
         );
       }
       function motorTab() {
@@ -7459,16 +7501,14 @@
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_motor_force_model_view', 'Motor force model view'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
               h('button', { 'aria-pressed': d.motorView !== '3d' ? 'true' : 'false', onClick: function () { upd({ motorView: '2d' }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_motor_force_model_selected', 'Two-dimensional motor force model selected.')); }, style: btn(d.motorView !== '3d') }, '2D force diagram'),
               h('button', { 'aria-pressed': d.motorView === '3d' ? 'true' : 'false', onClick: function () { upd({ motorView: '3d', motor3dStatus: 'loading', motor3dUsed: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_motor_torque_lab_selected', 'Three-dimensional motor torque lab selected.')); }, style: btn(d.motorView === '3d') }, '3D torque lab')),
-            d.motorView === '3d' ? motor3DPanel() : h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 6 } }, motorSVG()),
-            motorTorqueGraph(),
-            motorTelemetryHUD(),
-            forceVectorLabCard(),
-            powerBridgeCard(),
+            h('div', { className: d.motorView === '3d' ? 'mag-motor-workbench-3d' : 'mag-motor-workbench' },
+              h('div', { className: 'mag-motor-scene' }, d.motorView === '3d' ? motor3DPanel() : motorSVG(), motorTorqueGraph()),
+              h('div', { className: 'mag-motion-controls mag-motor-controls' },
+                h('span', { className: 'mag-section-label' }, 'Drive & inspect'),
             slider('Current (I)', d.motorCurrent, 0, 6, 1, function (v) { upd({ motorCurrent: v }); }),
             slider('Magnet strength (B)', d.motorField, 1, 8, 1, function (v) { upd({ motorField: v }); }),
             slider('Shaft load (relative torque ×)', Math.max(0, Number(d.motorLoad) || 0), 0, 2, 0.25, function (v) { upd({ motorLoad: v }); }),
             h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.35, margin: '-5px 0 8px' } }, 'Raise the load until the margin reaches 0× to find the stall boundary.'),
-            motorLoadThresholdCard(),
             h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', margin: '-2px 0 9px' } },
               h('button', { 'aria-pressed': d.motorCurrentDir < 0 ? 'true' : 'false', onClick: function () {
                 upd({ motorCurrentDir: -d.motorCurrentDir, motorDirectionSeen: true });
@@ -7506,7 +7546,11 @@
               h('button', { 'aria-pressed': motorLandmarkActive(270) ? 'true' : 'false', onClick: function () { freezeMotorAt(270, 'Maximum torque'); }, style: btn(motorLandmarkActive(270)) }, '270° · maximum torque')),
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_motor_angle_probe', 'Motor angle probe'), style: { margin: '0 0 2px' } },
               slider('Rotor angle (°)', Math.round(Number(d.motorAngle) || 0), 0, 360, 5, probeMotorAngle),
-              h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.35, margin: '-5px 0 9px' } }, 'Scrub the angle to watch torque leverage rise and fall. 0° and 360° are the same physical position.')),
+              h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.35, margin: '-5px 0 9px' } }, 'Scrub the angle to watch torque leverage rise and fall. 0° and 360° are the same physical position.')))),
+            motorTelemetryHUD(),
+            motorLoadThresholdCard(),
+            forceVectorLabCard(),
+            powerBridgeCard(),
             h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
               h('span', { 'aria-hidden': 'true' }, d.motorRunning ? 'RUN' : 'PAUSE'),
               h('span', null, h('b', null, d.motorRunning ? 'Torque run active. ' : 'Torque engine paused. '), d.motorRunning ? 'The rotor angle advances from the linked I × B torque model.' : 'Press Run motor to animate the rotor, or Step by hand to inspect one turn.')),
@@ -7726,52 +7770,52 @@
         var comparisonSamples = !projected && comparisonTrial && Array.isArray(comparisonTrial.trace) ? comparisonTrial.trace : [];
         var W = 520, H = 264, left = 56, right = 72, plotW = W - left - right;
         var panels = [
-          { key: 'rpm', label: 'shaft speed', unit: 'RPM', color: '#38bdf8', top: 32, height: 54, floor: 700, targetMin: 500 },
-          { key: 'generatedVoltage', label: 'generated voltage', unit: 'V', color: '#fbbf24', top: 107, height: 54, floor: 20, targetMin: 14, targetMax: 18 },
-          { key: 'outputPower', label: 'useful power', unit: 'W', color: '#34d399', top: 182, height: 54, floor: 8, targetMin: 5 }
+          { key: 'rpm', label: 'shaft speed', unit: 'RPM', color: '#0284c7', top: 32, height: 54, floor: 700, targetMin: 500 },
+          { key: 'generatedVoltage', label: 'generated voltage', unit: 'V', color: '#d97706', top: 107, height: 54, floor: 20, targetMin: 14, targetMax: 18 },
+          { key: 'outputPower', label: 'useful power', unit: 'W', color: '#059669', top: 182, height: 54, floor: 8, targetMin: 5 }
         ];
-        var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 12, fill: INSTRUMENT })];
+        var charts = [];
         function xAt(sample) { return left + Math.max(0, Math.min(10, sample.time || 0)) / 10 * plotW; }
         panels.forEach(function (panel, pi) {
+          var kids = [];
           var scaleSamples = samples.concat(comparisonSamples);
           var observedMax = scaleSamples.reduce(function (mx, sample) { return Math.max(mx, Number(sample[panel.key]) || 0); }, 0);
           panel.max = Math.max(panel.floor, observedMax * 1.12);
           function yAt(value) { return panel.top + panel.height - Math.max(0, Math.min(panel.max, value)) / panel.max * panel.height; }
           var bandTop = panel.targetMax == null ? panel.top : yAt(panel.targetMax);
           var bandBottom = yAt(panel.targetMin);
-          kids.push(h('rect', { key: 'band' + pi, x: left, y: bandTop, width: plotW, height: Math.max(0, bandBottom - bandTop), fill: 'rgba(52,211,153,.10)' }));
+          kids.push(h('rect', { key: 'band' + pi, 'data-bench-band': 'true', x: left, y: bandTop, width: plotW, height: Math.max(0, bandBottom - bandTop), fill: 'rgba(52,211,153,.10)' }));
           kids.push(h('line', { key: 'base' + pi, x1: left, y1: panel.top + panel.height, x2: W - right, y2: panel.top + panel.height, stroke: BORDER, strokeWidth: 1 }));
-          kids.push(h('line', { key: 'target' + pi, x1: left, y1: bandBottom, x2: W - right, y2: bandBottom, stroke: '#34d399', strokeWidth: 1, strokeDasharray: '4 4' }));
-          kids.push(h('text', { key: 'label' + pi, x: left, y: panel.top - 6, fill: TEXT, fontSize: 11, fontWeight: 800 }, panel.label));
-          kids.push(h('text', { key: 'zero' + pi, x: left - 7, y: panel.top + panel.height + 4, fill: SOFT, fontSize: 11, textAnchor: 'end' }, '0'));
-          kids.push(h('text', { key: 'max' + pi, x: left - 7, y: panel.top + 4, fill: SOFT, fontSize: 11, textAnchor: 'end' }, Math.round(panel.max) + ' ' + panel.unit));
+          kids.push(h('line', { key: 'target' + pi, 'data-bench-target': 'true', x1: left, y1: bandBottom, x2: W - right, y2: bandBottom, stroke: '#059669', strokeWidth: 1, strokeDasharray: '4 4' }));
           if (comparisonSamples.length) {
             var comparisonPoints = comparisonSamples.map(function (sample) { return xAt(sample).toFixed(1) + ',' + yAt(Number(sample[panel.key]) || 0).toFixed(1); }).join(' ');
-            kids.push(h('polyline', { key: 'comparison' + pi, points: comparisonPoints, fill: 'none', stroke: panel.color, strokeWidth: 2,
-              strokeDasharray: '3 4', strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.62 }));
+            kids.push(h('polyline', { key: 'comparison' + pi, 'data-bench-series': 'comparison', points: comparisonPoints, fill: 'none', stroke: panel.color, strokeWidth: 2,
+              strokeDasharray: '3 4', strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 1 }));
           }
           var points = samples.map(function (sample) { return xAt(sample).toFixed(1) + ',' + yAt(Number(sample[panel.key]) || 0).toFixed(1); }).join(' ');
-          kids.push(h('polyline', { key: 'line' + pi, points: points, fill: 'none', stroke: panel.color, strokeWidth: 3,
+          kids.push(h('polyline', { key: 'line' + pi, 'data-bench-series': 'current', points: points, fill: 'none', stroke: panel.color, strokeWidth: 3,
             strokeDasharray: projected ? '6 4' : 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }));
           var end = samples[samples.length - 1] || {};
           var ex = xAt(end), ey = yAt(Number(end[panel.key]) || 0);
-          if (pi === 0) kids.push(h('circle', { key: 'mark' + pi, cx: ex, cy: ey, r: 4, fill: INSTRUMENT, stroke: panel.color, strokeWidth: 2 }));
-          else if (pi === 1) kids.push(h('rect', { key: 'mark' + pi, x: ex - 4, y: ey - 4, width: 8, height: 8, fill: INSTRUMENT, stroke: panel.color, strokeWidth: 2 }));
-          else kids.push(h('polygon', { key: 'mark' + pi, points: ex + ',' + (ey - 5) + ' ' + (ex + 5) + ',' + ey + ' ' + ex + ',' + (ey + 5) + ' ' + (ex - 5) + ',' + ey, fill: INSTRUMENT, stroke: panel.color, strokeWidth: 2 }));
+          if (pi === 0) kids.push(h('circle', { key: 'mark' + pi, 'data-bench-end': 'true', cx: ex, cy: ey, r: 4, fill: INSTRUMENT, stroke: panel.color, strokeWidth: 2 }));
+          else if (pi === 1) kids.push(h('rect', { key: 'mark' + pi, 'data-bench-end': 'true', x: ex - 4, y: ey - 4, width: 8, height: 8, fill: INSTRUMENT, stroke: panel.color, strokeWidth: 2 }));
+          else kids.push(h('polygon', { key: 'mark' + pi, 'data-bench-end': 'true', points: ex + ',' + (ey - 5) + ' ' + (ex + 5) + ',' + ey + ' ' + ex + ',' + (ey + 5) + ' ' + (ex - 5) + ',' + ey, fill: INSTRUMENT, stroke: panel.color, strokeWidth: 2 }));
           var formatted = panel.key === 'rpm' ? Math.round(Number(end[panel.key]) || 0) : (Number(end[panel.key]) || 0).toFixed(1);
-          kids.push(h('text', { key: 'value' + pi, x: W - right + 8, y: ey + 4, fill: TEXT, fontSize: 11, fontWeight: 800 }, formatted + ' ' + panel.unit));
+          charts.push(h('figure', { key: panel.key, className: 'mag-bench-chart', 'data-bench-chart': panel.key },
+            h('div', { className: 'mag-bench-chart-head' },
+              h('div', null, h('h4', null, panel.label), h('span', null, (projected ? 'Projected at ' : 'Latest sample at ') + (Number(end.time) || 0).toFixed(1) + ' s')),
+              h('strong', { 'data-bench-reading': panel.key }, formatted + ' ' + panel.unit)),
+            h('div', { className: 'mag-bench-chart-scale' }, 'Vertical scale: 0–' + Math.round(panel.max) + ' ' + panel.unit),
+            h('svg', { viewBox: '48 ' + (panel.top - 8) + ' 408 70', role: 'img', 'aria-label': panel.label + ' over zero to ten seconds. ' + (projected ? 'Dashed projected response.' : 'Solid recorded response.') + (comparisonSamples.length ? ' Dashed line is comparison trial ' + comparisonTrial.id + '.' : '') }, kids),
+            h('div', { className: 'mag-bench-chart-axis' }, h('span', null, '0 s'), h('span', null, '5 s'), h('span', null, '10 s')),
+            h('figcaption', null, panel.targetMax == null ? 'Target: ≥ ' + panel.targetMin + ' ' + panel.unit : 'Target: ' + panel.targetMin + '–' + panel.targetMax + ' ' + panel.unit)));
         });
-        [0, 5, 10].forEach(function (tick) {
-          var x = left + tick / 10 * plotW;
-          kids.push(h('line', { key: 'tick' + tick, x1: x, y1: 238, x2: x, y2: 243, stroke: BORDER, strokeWidth: 1 }));
-          kids.push(h('text', { key: 'tickText' + tick, x: x, y: 257, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, tick + ' s'));
-        });
-        if (comparisonSamples.length) kids.push(h('text', { key: 'comparisonMode', x: left, y: 18, fill: SOFT, fontSize: 11 }, 'trial #' + comparisonTrial.id + ' · dashed'));
-        kids.push(h('text', { key: 'mode', x: W - 12, y: 18, fill: SOFT, fontSize: 11, textAnchor: 'end' }, projected ? 'projected response · dashed' : 'current trial · solid'));
         var last = samples[samples.length - 1] || {};
         var aria = (projected ? 'Projected' : 'Measured') + ' ten second motor generator response. Final speed ' + Math.round(last.rpm || 0) + ' RPM, voltage ' + (last.generatedVoltage || 0).toFixed(1) + ' volts, useful power ' + (last.outputPower || 0).toFixed(1) + ' watts.';
         if (comparisonSamples.length) aria += ' Dashed curves compare trial ' + comparisonTrial.id + ' with the solid current trial.';
-        return h('svg', { viewBox: '0 0 520 264', width: '100%', style: { maxWidth: 760, display: 'block', margin: '0 auto 10px' }, role: 'img', 'aria-label': aria }, kids);
+        return h('div', { className: 'mag-bench-charts', 'data-projected': projected ? 'true' : 'false', role: 'group', 'aria-label': aria },
+          h('div', { className: 'mag-bench-chart-legend' }, h('b', null, projected ? 'projected response · dashed' : 'current trial · solid'), comparisonSamples.length ? h('span', null, 'trial #' + comparisonTrial.id + ' · dashed') : null),
+          h('div', { className: 'mag-bench-chart-grid' }, charts));
       }
       function benchControlPanel(loadOhms, friction, turns, field) {
         return h('div', null,
@@ -8212,6 +8256,7 @@
       function massAnalyzerCard() {
         var speciesKey = ANALYZER_SPECIES[d.analyzerSpecies] ? d.analyzerSpecies : 'deuteron';
         var species = ANALYZER_SPECIES[speciesKey];
+        var analyzerColors = { proton: '#d97706', deuteron: '#059669', helium: '#0284c7', carbon: '#e11d48' };
         var state = velocitySelectorState(d.analyzerE, d.analyzerSelectorB, d.analyzerSpeed, d.analyzerB, species.mass, species.charge);
         var mystery = analyzerMysteryState(d.analyzerMysteryRound, d.analyzerE, d.analyzerSelectorB, d.analyzerSpeed, d.analyzerB, d.analyzerMysteryScan, d.analyzerMysteryGuess, d.analyzerMysteryChecked, d.analyzerMysteryWins);
         var selectedSpeedText = state.selectedSpeed.toFixed(2);
@@ -8242,11 +8287,12 @@
           var radius = Math.max(38, Math.min(215, 38 + arcState.analyzerRadius * 19));
           var endX = 300 + radius;
           var endY = 150 - radius;
-          return h('path', { key: 'arc-' + key, d: 'M300 150 A' + radius.toFixed(1) + ' ' + radius.toFixed(1) + ' 0 0 0 ' + endX.toFixed(1) + ' ' + endY.toFixed(1),
-            fill: 'none', stroke: item.color, strokeWidth: selected ? 4.5 : 2.4, strokeDasharray: selected ? 'none' : item.dash,
-            strokeLinecap: 'round', opacity: selected ? 1 : 0.7 });
+          analyzerMinY = Math.min(analyzerMinY, endY - 14);
+          return h('path', { key: 'arc-' + key, 'data-analyzer-species': key, 'data-analyzer-selected': selected ? 'true' : 'false', d: 'M300 150 A' + radius.toFixed(1) + ' ' + radius.toFixed(1) + ' 0 0 0 ' + endX.toFixed(1) + ' ' + endY.toFixed(1),
+            fill: 'none', stroke: analyzerColors[key] || item.color, strokeWidth: selected ? 4.5 : 2.4, strokeDasharray: selected ? 'none' : item.dash,
+            strokeLinecap: 'round', opacity: 1 });
         }
-        var arcs = [];
+        var arcs = [], analyzerMinY = 0;
         if (state.passes) {
           if (d.analyzerShowAll) Object.keys(ANALYZER_SPECIES).forEach(function (key) {
             if (key !== speciesKey) arcs.push(analyzerArc(key, ANALYZER_SPECIES[key], false));
@@ -8256,10 +8302,11 @@
         if (mystery.scan) {
           var mysteryRadius = Math.max(38, Math.min(215, 38 + mystery.scan.radius * 19));
           var mysteryEndX = 300 + mysteryRadius, mysteryEndY = 150 - mysteryRadius;
+          analyzerMinY = Math.min(analyzerMinY, mysteryEndY - 24);
           arcs.push(h('g', { key: 'mystery-trace', 'aria-hidden': 'true' },
-            h('path', { d: 'M300 150 A' + mysteryRadius.toFixed(1) + ' ' + mysteryRadius.toFixed(1) + ' 0 0 0 ' + mysteryEndX.toFixed(1) + ' ' + mysteryEndY.toFixed(1), fill: 'none', stroke: TEXT, strokeWidth: 5.5, strokeDasharray: '5 5', strokeLinecap: 'round' }),
-            h('path', { d: 'M' + (mysteryEndX - 6).toFixed(1) + ' ' + mysteryEndY.toFixed(1) + ' L' + mysteryEndX.toFixed(1) + ' ' + (mysteryEndY - 6).toFixed(1) + ' L' + (mysteryEndX + 6).toFixed(1) + ' ' + mysteryEndY.toFixed(1) + ' L' + mysteryEndX.toFixed(1) + ' ' + (mysteryEndY + 6).toFixed(1) + ' Z', fill: '#fbbf24', stroke: INSTRUMENT, strokeWidth: 1.5 }),
-            h('text', { x: Math.min(566, mysteryEndX + 9), y: Math.max(58, mysteryEndY - 8), fill: TEXT, fontSize: 10, fontWeight: 900, textAnchor: mysteryEndX > 540 ? 'end' : 'start' }, '? trace')));
+            h('path', { 'data-analyzer-mystery-arc': 'true', d: 'M300 150 A' + mysteryRadius.toFixed(1) + ' ' + mysteryRadius.toFixed(1) + ' 0 0 0 ' + mysteryEndX.toFixed(1) + ' ' + mysteryEndY.toFixed(1), fill: 'none', stroke: TEXT, strokeWidth: 5.5, strokeDasharray: '5 5', strokeLinecap: 'round' }),
+            h('path', { d: 'M' + (mysteryEndX - 6).toFixed(1) + ' ' + mysteryEndY.toFixed(1) + ' L' + mysteryEndX.toFixed(1) + ' ' + (mysteryEndY - 6).toFixed(1) + ' L' + (mysteryEndX + 6).toFixed(1) + ' ' + mysteryEndY.toFixed(1) + ' L' + mysteryEndX.toFixed(1) + ' ' + (mysteryEndY + 6).toFixed(1) + ' Z', fill: '#d97706', stroke: INSTRUMENT, strokeWidth: 1.5 }),
+            h('text', { x: Math.min(566, mysteryEndX + 9), y: mysteryEndY - 8, fill: TEXT, fontSize: 12, fontWeight: 900, textAnchor: mysteryEndX > 540 ? 'end' : 'start' }, '? trace')));
         }
         var statusText = !state.moving ? 'NO BEAM — speed is zero' : state.passes ? 'PASS — forces cancel at the slit' : 'BLOCKED — beam misses the slit';
         var balanceText = state.magneticForce > state.electricForce ? 'magnetic force is larger' : state.magneticForce < state.electricForce ? 'electric force is larger' : 'electric and magnetic forces balance';
@@ -8343,40 +8390,57 @@
         return card('Velocity selector + mass analyzer', h('div', null,
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
             'Crossed fields admit one speed: ', h('b', null, 'v = E/B'), '. In the analyzer, magnetic curvature follows ', h('b', null, 'r = mv/(|q|B)'), ', so the landing path reveals mass-to-charge ratio rather than mass alone.'),
-          h('svg', { viewBox: '0 0 600 300', width: '100%', style: { maxWidth: 760, display: 'block', margin: '0 auto 10px' }, role: 'img', 'aria-label': aria },
-            h('rect', { x: 0, y: 0, width: 600, height: 300, rx: 12, fill: INSTRUMENT }),
-            h('rect', { x: 55, y: 58, width: 240, height: 190, rx: 10, fill: 'rgba(56,189,248,.045)', stroke: BORDER }),
-            h('rect', { x: 312, y: 42, width: 276, height: 216, rx: 10, fill: 'rgba(167,139,250,.045)', stroke: BORDER }),
-            h('text', { x: 175, y: 25, fill: TEXT, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, '1 · VELOCITY SELECTOR'),
-            h('text', { x: 450, y: 25, fill: TEXT, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, '2 · MASS ANALYZER'),
-            h('rect', { x: 65, y: 70, width: 220, height: 10, rx: 4, fill: '#f43f5e' }),
-            h('rect', { x: 65, y: 220, width: 220, height: 10, rx: 4, fill: '#38bdf8' }),
-            h('text', { x: 78, y: 67, fill: '#fda4af', fontSize: 13, fontWeight: 800 }, '+ + +'),
-            h('text', { x: 78, y: 246, fill: '#7dd3fc', fontSize: 13, fontWeight: 800 }, '− − −'),
-            markerGroups,
-            analyzerMarkers,
-            h('text', { x: 175, y: 94, fill: '#7dd3fc', fontSize: 11, textAnchor: 'middle' }, '⊗ Bselector into screen'),
-            h('text', { x: 450, y: 55, fill: '#c4b5fd', fontSize: 11, textAnchor: 'middle' }, '⊗ Banalyzer into screen'),
-            h('rect', { x: 294, y: 44, width: 12, height: 96, fill: '#64748b' }),
-            h('rect', { x: 294, y: 160, width: 12, height: 98, fill: '#64748b' }),
-            h('text', { x: 300, y: 276, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'slit'),
-            h('path', { d: selectorPath, fill: 'none', stroke: species.color, strokeWidth: 4.5, strokeLinecap: 'round' }),
-            arcs,
-            h('circle', { cx: 35, cy: 150, r: 10, fill: species.color, stroke: '#fff', strokeWidth: 1.5 }),
-            h('text', { x: 35, y: 154, fill: INSTRUMENT, fontSize: 9, fontWeight: 900, textAnchor: 'middle' }, species.symbol),
-            h('line', { x1: 152, y1: 150, x2: 152, y2: 150 + electricLength, stroke: '#f43f5e', strokeWidth: 2.5 }),
-            h('polygon', { points: '152,' + (156 + electricLength) + ' 146,' + (146 + electricLength) + ' 158,' + (146 + electricLength), fill: '#f43f5e' }),
-            h('text', { x: 160, y: 165 + electricLength, fill: '#fda4af', fontSize: 11 }, 'FE'),
-            h('line', { x1: 198, y1: 150, x2: 198, y2: 150 - magneticLength, stroke: '#34d399', strokeWidth: 2.5 }),
-            h('polygon', { points: '198,' + (144 - magneticLength) + ' 192,' + (154 - magneticLength) + ' 204,' + (154 - magneticLength), fill: '#34d399' }),
-            h('text', { x: 207, y: 144 - magneticLength, fill: '#6ee7b7', fontSize: 11 }, 'FB'),
-            h('text', { x: 175, y: 285, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, balanceText),
-            h('rect', { x: 338, y: 266, width: 224, height: 22, rx: 11, fill: state.passes ? 'rgba(52,211,153,.16)' : state.moving ? 'rgba(244,63,94,.17)' : 'rgba(251,191,36,.15)', stroke: state.passes ? '#34d399' : state.moving ? '#f43f5e' : '#fbbf24' }),
-            h('text', { x: 450, y: 281, fill: TEXT, fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, statusText)),
-          h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '0 0 9px' } },
-            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Selected speed · E/B'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, selectedSpeedText)),
-            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Selector result'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, !state.moving ? 'STILL' : state.passes ? 'PASS' : 'BLOCKED')),
-            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'm/|q| → radius'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, state.massToCharge.toFixed(1) + ' → ' + state.analyzerRadius.toFixed(2)))),
+          h('div', { className: 'mag-analyzer-stages', role: 'group', 'aria-label': aria },
+            h('figure', { className: 'mag-analyzer-figure' },
+              h('figcaption', { className: 'mag-analyzer-heading' }, h('span', null, h('b', null, '1 · Velocity selector'), h('small', null, 'Crossed E/B · ⊗ B into screen')), h('strong', null, species.symbol)),
+              h('svg', { viewBox: '0 0 310 300', role: 'img', 'aria-label': 'Velocity selector. ' + statusText + '. ' + balanceText + '.' },
+                h('rect', { x: 0, y: 0, width: 310, height: 300, fill: INSTRUMENT }),
+                h('rect', { x: 55, y: 58, width: 240, height: 190, rx: 10, fill: 'rgba(56,189,248,.045)', stroke: BORDER }),
+                h('rect', { x: 65, y: 70, width: 220, height: 10, rx: 4, fill: '#e11d48' }),
+                h('rect', { x: 65, y: 220, width: 220, height: 10, rx: 4, fill: '#0284c7' }),
+                h('text', { x: 78, y: 67, fill: TEXT, fontSize: 14, fontWeight: 800 }, '+ + +'),
+                h('text', { x: 78, y: 246, fill: TEXT, fontSize: 14, fontWeight: 800 }, '− − −'),
+                markerGroups,
+                h('rect', { x: 294, y: 44, width: 12, height: 96, fill: '#64748b' }),
+                h('rect', { x: 294, y: 160, width: 12, height: 98, fill: '#64748b' }),
+                h('text', { x: 298, y: 280, fill: SOFT, fontSize: 13, textAnchor: 'end' }, 'slit'),
+                h('path', { 'data-selector-path': 'true', d: selectorPath, fill: 'none', stroke: analyzerColors[speciesKey], strokeWidth: 4.5, strokeLinecap: 'round' }),
+                h('circle', { cx: 35, cy: 150, r: 12, fill: INSTRUMENT, stroke: analyzerColors[speciesKey], strokeWidth: 2 }),
+                h('text', { x: 35, y: 154, fill: TEXT, fontSize: 11, fontWeight: 900, textAnchor: 'middle' }, species.symbol),
+                state.electricForce > 1e-9 ? h('g', { 'data-selector-force': 'electric' },
+                  h('line', { x1: 152, y1: 150, x2: 152, y2: 150 + electricLength, stroke: '#e11d48', strokeWidth: 2.5 }),
+                  h('polygon', { points: '152,' + (156 + electricLength) + ' 146,' + (146 + electricLength) + ' 158,' + (146 + electricLength), fill: '#e11d48' }),
+                  h('text', { x: 160, y: 165 + electricLength, fill: TEXT, fontSize: 14 }, 'FE')) : h('text', { x: 152, y: 179, fill: TEXT, fontSize: 13, textAnchor: 'middle' }, 'FE = 0'),
+                state.magneticForce > 1e-9 ? h('g', { 'data-selector-force': 'magnetic' },
+                  h('line', { x1: 198, y1: 150, x2: 198, y2: 150 - magneticLength, stroke: '#059669', strokeWidth: 2.5 }),
+                  h('polygon', { points: '198,' + (144 - magneticLength) + ' 192,' + (154 - magneticLength) + ' 204,' + (154 - magneticLength), fill: '#059669' }),
+                  h('text', { x: 207, y: 144 - magneticLength, fill: TEXT, fontSize: 14 }, 'FB')) : h('text', { x: 198, y: 130, fill: TEXT, fontSize: 13, textAnchor: 'middle' }, 'FB = 0')),
+              h('div', { className: 'mag-analyzer-caption' }, h('b', { 'data-selector-balance': 'true' }, balanceText), h('span', null, 'Electric force ↓ · magnetic force ↑. The slit tests the moving beam.'))),
+            h('figure', { className: 'mag-analyzer-figure' },
+              h('figcaption', { className: 'mag-analyzer-heading' }, h('span', null, h('b', null, '2 · Mass analyzer'), h('small', null, '⊗ B into screen · schematic arcs')), h('strong', null, !state.moving ? 'STILL' : state.passes ? 'PASS' : 'BLOCKED')),
+              h('svg', { 'data-analyzer-plane': 'true', viewBox: '292 ' + analyzerMinY + ' 308 ' + (300 - analyzerMinY), role: 'img', 'aria-label': 'Mass analyzer. ' + statusText + '. ' + (mystery.scan ? 'Saved unknown trace retained. ' : '') + 'Numerical radius is ' + state.analyzerRadius.toFixed(2) + ' relative units.' },
+                h('rect', { x: 292, y: analyzerMinY, width: 308, height: 300 - analyzerMinY, fill: INSTRUMENT }),
+                h('rect', { x: 312, y: analyzerMinY < 0 ? analyzerMinY + 8 : 42, width: 276, height: 258 - (analyzerMinY < 0 ? analyzerMinY + 8 : 42), rx: 10, fill: 'rgba(167,139,250,.045)', stroke: BORDER }),
+                analyzerMarkers,
+                h('rect', { x: 294, y: 44, width: 12, height: 96, fill: '#64748b' }),
+                h('rect', { x: 294, y: 160, width: 12, height: 98, fill: '#64748b' }),
+                arcs),
+              state.passes || mystery.scan ? h('div', { className: 'mag-analyzer-key-wrap' },
+                h('small', null, 'Ion paths · m/|q|'),
+                h('ul', { className: 'mag-analyzer-key', 'aria-label': 'Ion path key' },
+                  state.passes ? Object.keys(ANALYZER_SPECIES).filter(function (key) { return d.analyzerShowAll || key === speciesKey; }).map(function (key) {
+                    var ion = ANALYZER_SPECIES[key], selected = key === speciesKey;
+                    return h('li', { key: key, 'data-analyzer-key': key },
+                      h('svg', { className: 'mag-analyzer-key-swatch', viewBox: '0 0 30 14', 'aria-hidden': 'true' }, h('path', { d: 'M2 7 H28', fill: 'none', stroke: analyzerColors[key], strokeWidth: selected ? 4.5 : 2.4, strokeDasharray: selected ? 'none' : ion.dash })),
+                      h(selected ? 'b' : 'span', null, ion.symbol + ' · ' + (ion.mass / Math.abs(ion.charge)).toFixed(1)));
+                  }) : null,
+                  mystery.scan ? h('li', { 'data-analyzer-saved-key': 'true' },
+                    h('svg', { className: 'mag-analyzer-key-swatch', viewBox: '0 0 30 14', 'aria-hidden': 'true' }, h('path', { d: 'M2 7 H28', stroke: TEXT, strokeWidth: 3, strokeDasharray: '5 5' }), h('path', { d: 'M15 3 L19 7 L15 11 L11 7 Z', fill: '#d97706', stroke: INSTRUMENT, strokeWidth: 1 })), h('span', null, '? · saved trace')) : null)) : null,
+              h('div', { className: 'mag-analyzer-caption' }, h('b', { 'data-analyzer-status': 'true' }, statusText), h('span', null, 'Arc size is schematic; use the numerical radius.'), mystery.scan ? h('span', null, 'Saved unknown trace retained.') : null))),
+          h('div', { className: 'mag-sim-grid mag-analyzer-readouts', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '0 0 9px' } },
+            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Selected speed · E/B'), h('div', { className: 'mag-analyzer-value', 'data-analyzer-reading': 'speed', style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, selectedSpeedText)),
+            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Selector result'), h('div', { className: 'mag-analyzer-value', 'data-analyzer-reading': 'result', style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, !state.moving ? 'STILL' : state.passes ? 'PASS' : 'BLOCKED')),
+            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'm/|q| → radius'), h('div', { className: 'mag-analyzer-value', 'data-analyzer-reading': 'radius', style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, state.massToCharge.toFixed(1) + ' → ' + state.analyzerRadius.toFixed(2)))),
           mysteryPanel(),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_ion_species', 'Ion species'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
             Object.keys(ANALYZER_SPECIES).map(function (key) {
@@ -8430,42 +8494,39 @@
             h('button', { 'aria-pressed': d.chargeView !== '3d' ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeView: '2d', charge3dRunning: false }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_lorentz_force_diagram_selected', 'Two-dimensional Lorentz-force diagram selected.')); }, style: btn(d.chargeView !== '3d') }, '2D bend diagram'),
             h('button', { 'aria-pressed': d.chargeView === '3d' ? 'true' : 'false', onClick: function () { if (d.chargeView === '3d') return; upd({ chargeView: '3d', charge3dStatus: 'loading', charge3dUsed: true, lorentzUsed: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_particle_helix_lab_selected', 'Three-dimensional particle helix lab selected.')); }, style: btn(d.chargeView === '3d') }, '3D helix lab')),
           h('div', { className: d.chargeView === '3d' ? '' : 'mag-particle-workbench' },
-          d.chargeView === '3d' ? chargedParticle3DPanel() : h('svg', { viewBox: '0 0 320 220', width: '100%', style: { maxWidth: 520, display: 'block', margin: '0 auto 10px' }, role: 'img',
-            'aria-label': 'A ' + chargeName + ' particle moving right through a field ' + fieldName + ', curving ' + (bendsUp ? 'up' : 'down') },
-            h('title', null, 'Charged-particle path and perpendicular magnetic force'),
-            h('desc', null, 'The field symbols fill a uniform magnetic field. The amber arrow is the incoming velocity, the green arrow is the initial magnetic force, and the rose curve is the particle path. Magnetic force stays perpendicular to the instantaneous velocity.'),
-            h('rect', { x: 0.5, y: 0.5, width: 319, height: 219, fill: INSTRUMENT, stroke: BORDER, rx: 14 }),
-            h('text', { x: 14, y: 18, fill: SOFT, fontSize: 8.5, fontWeight: 800, letterSpacing: 1.15 }, 'BEAM CHAMBER'),
-            h('text', { x: 305, y: 18, fill: TEXT, fontSize: 10, fontWeight: 700, textAnchor: 'end' }, d.chargeField > 0 ? '⊙ B out of screen' : '⊗ B into screen'),
-            h('rect', { x: 10, y: 28, width: 300, height: 148, rx: 9, fill: 'none', stroke: 'rgba(148,163,184,.19)' }),
-            h('path', { d: 'M18 34V170M38 34V170M58 34V170M78 34V170M98 34V170M118 34V170M138 34V170M158 34V170M178 34V170M198 34V170M218 34V170M238 34V170M258 34V170M278 34V170M298 34V170M16 34H304M16 54H304M16 74H304M16 94H304M16 114H304M16 134H304M16 154H304M16 174H304',
-              fill: 'none', stroke: 'rgba(148,163,184,.085)', strokeWidth: 0.7 }),
-            h('g', { opacity: 0.72 }, markers.filter(function (_, index) { return index % 2 === 0; })),
-            h('line', { x1: 243, y1: 42, x2: 255, y2: 42, stroke: '#f43f5e', strokeWidth: 2.5, strokeLinecap: 'round' }),
-            h('text', { x: 261, y: 45, fill: SOFT, fontSize: 9, fontWeight: 700 }, 'path'),
-            h('line', { x1: 16, y1: 110, x2: 302, y2: 110, stroke: 'rgba(148,163,184,.24)', strokeWidth: 0.8, strokeDasharray: '3 5' }),
-            h('polyline', { points: path, fill: 'none', stroke: '#f43f5e', strokeWidth: 3.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            h('line', { x1: 7, y1: 110, x2: 22, y2: 110, stroke: '#d97706', strokeWidth: 2.2, strokeDasharray: '2 3', strokeLinecap: 'round' }),
-            h('line', { x1: 31, y1: 110, x2: 70, y2: 110, stroke: '#d97706', strokeWidth: 2.5, strokeLinecap: 'round' }),
-            h('polygon', { points: '76,110 66,105 66,115', fill: '#d97706' }),
-            h('rect', { x: 74, y: bendsUp ? 117 : 87, width: 67, height: 17, rx: 5, fill: INSTRUMENT, stroke: 'rgba(251,191,36,.32)' }),
-            h('text', { x: 107.5, y: bendsUp ? 129 : 99, fill: TEXT, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'velocity v'),
-            h('line', { x1: 52, y1: 110, x2: 52, y2: bendsUp ? 66 : 154, stroke: '#059669', strokeWidth: 2.5, strokeLinecap: 'round' }),
-            h('polygon', { points: bendsUp ? '52,60 46,71 58,71' : '52,160 46,149 58,149', fill: '#059669' }),
-            h('rect', { x: 61, y: bendsUp ? 55 : 148, width: 51, height: 17, rx: 5, fill: INSTRUMENT, stroke: 'rgba(52,211,153,.32)' }),
-            h('text', { x: 86.5, y: bendsUp ? 67 : 160, fill: TEXT, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'force F'),
-            h('circle', { cx: 32, cy: 110, r: 12.5, fill: INSTRUMENT, stroke: 'rgba(226,232,240,.30)', strokeWidth: 0.8 }),
-            h('circle', { cx: 32, cy: 110, r: 9, fill: d.chargeSign > 0 ? '#fb7185' : '#38bdf8', stroke: '#fff', strokeWidth: 1.5 }),
-            h('text', { x: 32, y: 114, fill: '#0f172a', fontSize: 12, fontWeight: 900, textAnchor: 'middle' }, d.chargeSign > 0 ? '+' : '−'),
-            h('line', { x1: 13, y1: 182, x2: 307, y2: 182, stroke: 'rgba(148,163,184,.24)', strokeWidth: 0.8 }),
-            h('line', { x1: 108, y1: 190, x2: 108, y2: 210, stroke: 'rgba(148,163,184,.18)', strokeWidth: 0.8 }),
-            h('line', { x1: 215, y1: 190, x2: 215, y2: 210, stroke: 'rgba(148,163,184,.18)', strokeWidth: 0.8 }),
-            h('text', { x: 18, y: 194, fill: SOFT, fontSize: 8.5, fontWeight: 800, letterSpacing: 0.5 }, 'INITIAL BEND'),
-            h('text', { x: 18, y: 209, fill: TEXT, fontSize: 12, fontWeight: 800 }, bendsUp ? '↑ Upward' : '↓ Downward'),
-            h('text', { x: 120, y: 194, fill: SOFT, fontSize: 8.5, fontWeight: 800, letterSpacing: 0.5 }, 'RADIUS INDICATOR'),
-            h('text', { x: 120, y: 209, fill: TEXT, fontSize: 12, fontWeight: 800 }, radiusRel.toFixed(2)),
-            h('text', { x: 227, y: 194, fill: SOFT, fontSize: 8.5, fontWeight: 800, letterSpacing: 0.5 }, 'FORCE RULE'),
-            h('text', { x: 227, y: 209, fill: TEXT, fontSize: 12, fontWeight: 800 }, 'F ⟂ v')),
+          d.chargeView === '3d' ? chargedParticle3DPanel() : h('figure', { className: 'mag-particle-figure', 'data-particle-stage': 'true' },
+            h('figcaption', { className: 'mag-particle-heading' }, h('b', null, 'Beam chamber'), h('span', null, chargeName + ' charge · ' + (d.chargeField > 0 ? '⊙ B out of screen' : '⊗ B into screen'))),
+            h('svg', { 'data-particle-plane': 'true', viewBox: '0 24 320 156', width: '100%', role: 'img',
+              'aria-label': 'A ' + chargeName + ' particle moving right through a field ' + fieldName + ', curving ' + (bendsUp ? 'up' : 'down') },
+              h('title', null, 'Charged-particle path and perpendicular magnetic force'),
+              h('desc', null, 'The field symbols fill a uniform magnetic field. The amber arrow is the incoming velocity, the green arrow is the initial magnetic force, and the rose curve is the particle path. Magnetic force stays perpendicular to the instantaneous velocity.'),
+              h('rect', { x: 0.5, y: 24.5, width: 319, height: 155, fill: INSTRUMENT, stroke: BORDER, rx: 10 }),
+              h('rect', { x: 10, y: 28, width: 300, height: 148, rx: 9, fill: 'none', stroke: 'rgba(148,163,184,.19)' }),
+              h('path', { d: 'M18 34V170M38 34V170M58 34V170M78 34V170M98 34V170M118 34V170M138 34V170M158 34V170M178 34V170M198 34V170M218 34V170M238 34V170M258 34V170M278 34V170M298 34V170M16 34H304M16 54H304M16 74H304M16 94H304M16 114H304M16 134H304M16 154H304M16 174H304', fill: 'none', stroke: 'rgba(148,163,184,.085)', strokeWidth: 0.7 }),
+              h('g', { opacity: 0.72 }, markers.filter(function (_, index) { return index % 2 === 0; })),
+              h('line', { x1: 16, y1: 110, x2: 302, y2: 110, stroke: 'rgba(148,163,184,.24)', strokeWidth: 0.8, strokeDasharray: '3 5' }),
+              h('polyline', { 'data-particle-path': 'true', points: path, fill: 'none', stroke: '#f43f5e', strokeWidth: 3.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              h('line', { x1: 7, y1: 110, x2: 22, y2: 110, stroke: '#d97706', strokeWidth: 2.2, strokeDasharray: '2 3', strokeLinecap: 'round' }),
+              h('line', { 'data-particle-velocity': 'true', x1: 31, y1: 110, x2: 70, y2: 110, stroke: '#d97706', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              h('polygon', { points: '76,110 66,105 66,115', fill: '#d97706' }),
+              h('rect', { x: 74, y: bendsUp ? 117 : 87, width: 86, height: 20, rx: 5, fill: INSTRUMENT, stroke: 'rgba(251,191,36,.32)' }),
+              h('text', { x: 117, y: bendsUp ? 131 : 101, fill: TEXT, fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, 'velocity v'),
+              h('line', { 'data-particle-force': 'true', x1: 52, y1: 110, x2: 52, y2: bendsUp ? 66 : 154, stroke: '#059669', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              h('polygon', { points: bendsUp ? '52,60 46,71 58,71' : '52,160 46,149 58,149', fill: '#059669' }),
+              h('rect', { x: 61, y: bendsUp ? 53 : 148, width: 65, height: 20, rx: 5, fill: INSTRUMENT, stroke: 'rgba(52,211,153,.32)' }),
+              h('text', { x: 93.5, y: bendsUp ? 67 : 162, fill: TEXT, fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, 'force F'),
+              h('circle', { cx: 32, cy: 110, r: 12.5, fill: INSTRUMENT, stroke: 'rgba(226,232,240,.30)', strokeWidth: 0.8 }),
+              h('circle', { cx: 32, cy: 110, r: 9, fill: d.chargeSign > 0 ? '#fb7185' : '#38bdf8', stroke: '#fff', strokeWidth: 1.5 }),
+              h('text', { x: 32, y: 114, fill: '#0f172a', fontSize: 12, fontWeight: 900, textAnchor: 'middle' }, d.chargeSign > 0 ? '+' : '−')),
+            h('ul', { className: 'mag-particle-key', 'aria-label': 'Particle diagram key' },
+              h('li', null, h('span', { className: 'mag-particle-line', 'aria-hidden': 'true' }), 'Particle path'),
+              h('li', null, h('span', { 'aria-hidden': 'true', style: { color: '#d97706' } }, '→'), 'Velocity v'),
+              h('li', null, h('span', { 'aria-hidden': 'true', style: { color: '#059669' } }, bendsUp ? '↑' : '↓'), 'Initial force F')),
+            h('div', { className: 'mag-particle-readouts', role: 'group', 'aria-label': 'Particle-beam readings' },
+              h('div', null, h('small', null, 'Initial bend'), h('b', { 'data-particle-reading': 'bend' }, bendsUp ? '↑ Upward' : '↓ Downward')),
+              h('div', null, h('small', null, 'Radius indicator'), h('b', { 'data-particle-reading': 'radius' }, radiusRel.toFixed(2)), h('span', null, 'v/B · relative')),
+              h('div', null, h('small', null, 'Force rule'), h('b', null, 'F ⟂ v'), h('span', null, 'at every point'))),
+            h('p', { className: 'mag-particle-caption' }, 'Arrows show velocity and force at entry. Path distances are schematic.')),
           h('div', { className: 'mag-motion-controls' },
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 9 } },
             h('div', null,
@@ -8550,7 +8611,7 @@
             h('b', { style: { color: TEXT } }, 'Record a torque trial. '),
             'Change one control, save the evidence in the notebook, then compare the live setup here. Saved trials flow into Mission Control report exports.',
             !d.notebookOpen ? h('button', { type: 'button', onClick: openNotebook, style: Object.assign({}, btn(), { marginTop: 6 }) }, 'Record a torque trial') : null);
-        return h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_live_torque_telemetry', 'Live torque telemetry'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, margin: '0 0 10px', padding: '9px 10px', borderRadius: 9, background: 'rgba(251,191,36,.07)', border: '1px solid rgba(251,191,36,.24)' } },
+        return h('div', { className: 'mag-motor-telemetry', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_live_torque_telemetry', 'Live torque telemetry'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, margin: '0 0 10px', padding: '9px 10px', borderRadius: 9, background: 'rgba(251,191,36,.07)', border: '1px solid rgba(251,191,36,.24)' } },
           h('div', null,
             h('div', { style: { color: SOFT, fontSize: 11 } }, 'Rotor angle'),
             h('strong', { style: { display: 'block', color: TEXT, fontSize: 15, fontVariantNumeric: 'tabular-nums' } }, angle.toFixed(0) + '°')),
@@ -8592,7 +8653,7 @@
           h('line', { x1: 18, y1: 16, x2: 18, y2: 68, stroke: 'rgba(251,113,133,.28)', strokeWidth: 4 }),
           h('line', { x1: 160, y1: 16, x2: 160, y2: 68, stroke: 'rgba(251,113,133,.28)', strokeWidth: 4 }),
           h('line', { x1: 302, y1: 16, x2: 302, y2: 68, stroke: 'rgba(251,113,133,.28)', strokeWidth: 4 }),
-          h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5 }),
+          h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#0284c7', strokeWidth: 2.5 }),
           h('line', { x1: px, y1: 14, x2: px, y2: 70, stroke: 'rgba(251,191,36,.45)', strokeDasharray: '3 3' }),
           h('circle', { cx: px, cy: py, r: 4.5, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1.5 }),
           h('text', { x: 18, y: 76, fill: SOFT, fontSize: 11 }, '0°'),
@@ -8602,47 +8663,62 @@
 
       function motorSVG() {
         var deg = d.motorAngle;
-        var loopColor = d.motorCurrent > 0 ? '#f59e0b' : '#475569';
+        var loopColor = d.motorCurrent > 0 ? '#d97706' : SOFT;
         var torqueDir = d.motorCurrentDir * d.motorFieldDir > 0 ? 1 : -1;
         var half = ((Math.floor(deg / 180) % 2 === 0) ? 1 : -1) * torqueDir; // commutator + supply/field direction
         var rotationArc = torqueDir > 0 ? 'M 113 53 Q 150 27 187 53' : 'M 187 53 Q 150 27 113 53';
         var rotationHead = torqueDir > 0 ? '187,53 176,48 181,59' : '113,53 124,48 119,59';
-        return h('svg', { viewBox: '0 0 300 190', width: '100%', style: { maxWidth: 390 }, role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_motor_model_with_a_amp_current_loop_in_field_se', 'Motor model with a {value1} amp current loop in field setting {value2}, rotated {value3} degrees; opposite wire forces create torque'), { value1: d.motorCurrent, value2: d.motorField, value3: Math.round(deg) })},
-          h('rect', { x: 0, y: 0, width: 300, height: 190, fill: INSTRUMENT, rx: 10 }),
+        var hasTorque = d.motorCurrent > 0 && Math.abs(Math.sin(deg * Math.PI / 180)) > 1e-6;
+        return h('div', { className: 'mag-instrument', 'data-motor-stage': 'true' },
+          h('div', { className: 'mag-instrument-head' }, h('span', null, 'DC motor · force pair'), h('b', null, d.motorCurrent <= 0 ? 'No current · no force' : hasTorque ? (torqueDir > 0 ? 'clockwise torque' : 'counter-clockwise torque') : 'Torque dead spot')),
+          h('svg', { viewBox: '0 0 560 350', width: '100%', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_motor_model_with_a_amp_current_loop_in_field_se', 'Motor model with a {value1} amp current loop in field setting {value2}, rotated {value3} degrees; opposite wire forces create torque'), { value1: d.motorCurrent, value2: d.motorField, value3: Math.round(deg) })},
+          h('rect', { width: 560, height: 350, fill: INSTRUMENT }),
+          Array.from({ length: 13 }, function (_, index) { return h('line', { key: 'gx' + index, x1: 40 + index * 40, x2: 40 + index * 40, y1: 18, y2: 332, stroke: BORDER, opacity: 0.3 }); }),
+          [40, 80, 120, 160, 200, 240, 280, 320].map(function (y) { return h('line', { key: 'gy' + y, x1: 20, x2: 540, y1: y, y2: y, stroke: BORDER, opacity: 0.3 }); }),
+          h('g', { transform: 'translate(40,4) scale(1.6)' },
+          h('line', { x1: 150, y1: 95, x2: 150, y2: 185, stroke: SOFT, strokeWidth: 5 }),
+          h('circle', { cx: 150, cy: 95, r: 8, fill: INSTRUMENT, stroke: SOFT, strokeWidth: 2 }),
           h('text', { x: 150, y: 18, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'magnetic field B flows from N → S'),
-          h('rect', { x: 8, y: 64, width: 38, height: 62, fill: d.motorFieldDir > 0 ? '#ef4444' : '#3b82f6', rx: 4 }),
-          h('text', { x: 27, y: 100, fill: '#fff', fontSize: 14, fontWeight: 800, textAnchor: 'middle' }, d.motorFieldDir > 0 ? 'N' : 'S'),
-          h('rect', { x: 254, y: 64, width: 38, height: 62, fill: d.motorFieldDir > 0 ? '#3b82f6' : '#ef4444', rx: 4 }),
-          h('text', { x: 273, y: 100, fill: '#fff', fontSize: 14, fontWeight: 800, textAnchor: 'middle' }, d.motorFieldDir > 0 ? 'S' : 'N'),
+          h('rect', { x: 8, y: 64, width: 38, height: 62, fill: d.motorFieldDir > 0 ? '#dc2626' : '#1d4ed8', rx: 4 }),
+          h('text', { 'data-motor-pole': 'left', x: 27, y: 100, fill: '#fff', fontSize: 14, fontWeight: 800, textAnchor: 'middle' }, d.motorFieldDir > 0 ? 'N' : 'S'),
+          h('rect', { x: 254, y: 64, width: 38, height: 62, fill: d.motorFieldDir > 0 ? '#1d4ed8' : '#dc2626', rx: 4 }),
+          h('text', { 'data-motor-pole': 'right', x: 273, y: 100, fill: '#fff', fontSize: 14, fontWeight: 800, textAnchor: 'middle' }, d.motorFieldDir > 0 ? 'S' : 'N'),
           // field lines with arrowheads pair direction with the N/S labels.
           [72, 95, 118].map(function (yy, i) {
             var fx1 = d.motorFieldDir > 0 ? 50 : 250;
             var fx2 = d.motorFieldDir > 0 ? 250 : 50;
             var fhead = d.motorFieldDir > 0 ? 238 : 62;
             return h('g', { key: 'f' + i },
-              h('line', { x1: fx1, y1: yy, x2: fx2, y2: yy, stroke: 'rgba(148,163,184,0.28)', strokeWidth: 1.2 }),
-              h('polygon', { points: fhead + ',' + yy + ' ' + (fhead - d.motorFieldDir * 8) + ',' + (yy - 4) + ' ' + (fhead - d.motorFieldDir * 8) + ',' + (yy + 4), fill: 'rgba(148,163,184,0.55)' }));
+              h('line', { x1: fx1, y1: yy, x2: fx2, y2: yy, stroke: SOFT, opacity: 0.75, strokeWidth: 1.2 }),
+              h('polygon', { points: fhead + ',' + yy + ' ' + (fhead - d.motorFieldDir * 8) + ',' + (yy - 4) + ' ' + (fhead - d.motorFieldDir * 8) + ',' + (yy + 4), fill: SOFT }));
           }),
-          d.motorCurrent > 0 ? h('g', { 'aria-hidden': 'true' },
-            h('path', { d: rotationArc, fill: 'none', stroke: '#fbbf24', strokeWidth: 2.3, strokeLinecap: 'round' }),
-            h('polygon', { points: rotationHead, fill: '#fbbf24' }),
+          hasTorque ? h('g', { 'aria-hidden': 'true' },
+            h('path', { d: rotationArc, fill: 'none', stroke: '#d97706', strokeWidth: 2.3, strokeLinecap: 'round' }),
+            h('polygon', { points: rotationHead, fill: '#d97706' }),
             h('text', { x: 150, y: 39, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, torqueDir > 0 ? 'clockwise torque' : 'counter-clockwise torque')) : null,
           // rotating loop
           h('g', { transform: 'translate(150,95) rotate(' + deg.toFixed(1) + ')' },
             h('rect', { x: -50, y: -30, width: 100, height: 60, fill: 'none', stroke: loopColor, strokeWidth: 5, rx: 4 }),
             // force arrows (up on one side, down on other; flip with commutator)
-            d.motorCurrent > 0 ? h('polygon', { points: '-50,' + (-30 - 6 * half) + ' -56,' + (-14 - 6 * half) + ' -44,' + (-14 - 6 * half), fill: '#34d399', transform: half > 0 ? '' : 'rotate(180 -50 -30)' }) : null,
-            d.motorCurrent > 0 ? h('circle', { cx: 50, cy: 30, r: 3, fill: '#34d399' }) : null),
-          d.motorCurrent > 0 ? h('g', null,
-            h('line', { x1: 82, y1: half > 0 ? 85 : 105, x2: 82, y2: half > 0 ? 45 : 145, stroke: '#34d399', strokeWidth: 2.5 }),
-            h('polygon', { points: half > 0 ? '82,39 76,50 88,50' : '82,151 76,140 88,140', fill: '#34d399' }),
-            h('text', { x: 68, y: half > 0 ? 42 : 151, fill: '#34d399', fontSize: 11, textAnchor: 'end' }, 'force'),
-            h('line', { x1: 218, y1: half > 0 ? 105 : 85, x2: 218, y2: half > 0 ? 145 : 45, stroke: '#34d399', strokeWidth: 2.5 }),
-            h('polygon', { points: half > 0 ? '218,151 212,140 224,140' : '218,39 212,50 224,50', fill: '#34d399' }),
-            h('text', { x: 232, y: half > 0 ? 151 : 42, fill: '#34d399', fontSize: 11 }, 'force')) : null,
-          h('text', { x: 150, y: 166, fill: SOFT, fontSize: 11, textAnchor: 'middle' },
-            h('tspan', { x: 150 }, 'commutator flips current each half-turn'),
-            h('tspan', { x: 150, dy: 13 }, 'forces keep the same torque direction'))
+            d.motorCurrent > 0 ? h('polygon', { points: '-50,' + (-30 - 6 * half) + ' -56,' + (-14 - 6 * half) + ' -44,' + (-14 - 6 * half), fill: '#059669', transform: half > 0 ? '' : 'rotate(180 -50 -30)' }) : null,
+            d.motorCurrent > 0 ? h('circle', { cx: 50, cy: 30, r: 3, fill: '#059669' }) : null),
+          d.motorCurrent > 0 ? h('g', { 'data-motor-force-pair': 'true' },
+            h('line', { x1: 82, y1: half > 0 ? 85 : 105, x2: 82, y2: half > 0 ? 45 : 145, stroke: '#059669', strokeWidth: 2.5 }),
+            h('polygon', { points: half > 0 ? '82,39 76,50 88,50' : '82,151 76,140 88,140', fill: '#059669' }),
+            h('text', { x: 68, y: half > 0 ? 42 : 151, fill: TEXT, fontSize: 11, textAnchor: 'end' }, 'force'),
+            h('line', { x1: 218, y1: half > 0 ? 105 : 85, x2: 218, y2: half > 0 ? 145 : 45, stroke: '#059669', strokeWidth: 2.5 }),
+            h('polygon', { points: half > 0 ? '218,151 212,140 224,140' : '218,39 212,50 224,50', fill: '#059669' }),
+            h('text', { x: 232, y: half > 0 ? 151 : 42, fill: TEXT, fontSize: 11 }, 'force')) : null,
+          h('g', { transform: 'translate(150,185) rotate(' + deg.toFixed(1) + ')' },
+            h('path', { d: 'M-3 -13A13 13 0 0 0 -3 13', fill: 'none', stroke: '#d97706', strokeWidth: 6 }),
+            h('path', { d: 'M3 -13A13 13 0 0 1 3 13', fill: 'none', stroke: '#d97706', strokeWidth: 6 })),
+          h('rect', { x: 122, y: 180, width: 11, height: 10, fill: SOFT, rx: 2 }),
+          h('rect', { x: 167, y: 180, width: 11, height: 10, fill: SOFT, rx: 2 }),
+          h('text', { x: 150, y: 208, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, 'split-ring commutator · brushes'))),
+          h('div', { className: 'mag-motor-caption' },
+            h('b', null, 'Rotor ' + Math.round(deg) + '° · ' + (d.motorRunning ? 'running' : 'paused')),
+            h('span', null, 'commutator flips current each half-turn; forces keep the same torque direction.'),
+            h('span', null, 'Gold loop: current path · green arrows: wire forces · labeled N/S poles: field direction. Geometry is schematic.'))
         );
       }
 
@@ -9638,21 +9714,30 @@
         }
         var controlsChanged = motion && (motion.controls.turns !== d.induceTurns || motion.controls.start !== d.induceMotionStart || motion.controls.finish !== d.induceMotionFinish || motion.controls.duration !== d.induceMotionDuration);
         function chart() {
-          var W = 560, left = 84, right = 18, scale = Math.max(0.01, motion.peakMagnitude);
+          var W = 320, left = 54, right = 12, scale = Math.max(0.01, motion.peakMagnitude);
           function xx(t) { return left + t / motion.controls.duration * (W - left - right); }
-          function fy(flux) { return 112 - flux * 70; }
-          function ey(emf) { return 205 - emf / scale * 52; }
-          return h('svg', { viewBox: '0 0 560 295', role: 'img', 'aria-label': 'Recorded flux and signed voltage over ' + motion.controls.duration.toFixed(2) + ' seconds. Sample ' + (selected + 1) + ' at ' + sample.time.toFixed(3) + ' seconds is selected.', style: { width: '100%', display: 'block', background: INSTRUMENT, borderRadius: 10 } },
-            h('text', { x: left, y: 22, fill: TEXT, fontSize: 19, fontWeight: 700 }, 'Flux Φ · solid · relative units'),
-            h('text', { x: left, y: 142, fill: TEXT, fontSize: 19, fontWeight: 700 }, 'Voltage ε · dashed · display-scaled V'),
-            [0, 0.5, 1].map(function (v) { return h('g', { key: 'f' + v }, h('line', { x1: left, x2: W - right, y1: fy(v), y2: fy(v), stroke: BORDER }), h('text', { x: left - 8, y: fy(v) + 4, textAnchor: 'end', fill: SOFT, fontSize: 17 }, v)); }),
-            [-1, 0, 1].map(function (v) { return h('g', { key: 'v' + v }, h('line', { x1: left, x2: W - right, y1: ey(v * scale), y2: ey(v * scale), stroke: BORDER }), h('text', { x: left - 8, y: ey(v * scale) + 4, textAnchor: 'end', fill: SOFT, fontSize: 17 }, signed(v * scale, 2))); }),
-            [0, 0.25, 0.5, 0.75, 1].map(function (f) { return h('text', { key: f, x: xx(f * motion.controls.duration), y: 279, textAnchor: f === 0 ? 'start' : f === 1 ? 'end' : 'middle', fill: SOFT, fontSize: 17 }, (f * motion.controls.duration).toFixed(2) + ' s'); }),
-            h('polyline', { points: motion.samples.map(function (p) { return xx(p.time).toFixed(2) + ',' + fy(p.flux).toFixed(2); }).join(' '), fill: 'none', stroke: '#fb7185', strokeWidth: 2.5 }),
-            h('polyline', { points: motion.samples.slice(1).map(function (p) { return xx(p.time).toFixed(2) + ',' + ey(p.emf).toFixed(2); }).join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5, strokeDasharray: '6 3' }),
-            h('line', { x1: xx(sample.time), x2: xx(sample.time), y1: 32, y2: 260, stroke: TEXT, strokeDasharray: '3 4' }),
-            h('circle', { cx: xx(sample.time), cy: fy(sample.flux), r: 5, fill: INSTRUMENT, stroke: TEXT, strokeWidth: 2 }),
-            preceding ? h('rect', { x: xx(sample.time) - 4, y: ey(sample.emf) - 4, width: 8, height: 8, fill: INSTRUMENT, stroke: TEXT, strokeWidth: 2 }) : null);
+          function fy(flux) { return 128 - flux * 92; }
+          function ey(emf) { return 92 - emf / scale * 56; }
+          return h('div', { className: 'mag-motion-charts', role: 'group', 'aria-label': 'Recorded flux and signed voltage over ' + motion.controls.duration.toFixed(2) + ' seconds. Sample ' + (selected + 1) + ' at ' + sample.time.toFixed(3) + ' seconds is selected.' },
+            ['flux', 'voltage'].map(function (id) {
+              var isFlux = id === 'flux', color = isFlux ? '#e11d48' : '#d97706';
+              var values = isFlux ? motion.samples : motion.samples.slice(1);
+              return h('figure', { key: id, className: 'mag-motion-chart', 'data-motion-chart': id },
+                h('figcaption', null,
+                  h('span', null, h('b', null, isFlux ? 'Flux Φ' : 'Voltage ε'), h('small', null, isFlux ? 'Solid · relative units' : 'Dashed · display-scaled V')),
+                  isFlux ? h('strong', { 'data-motion-flux-reading': 'true' }, sample.flux.toFixed(3)) : h('strong', { 'data-motion-voltage-reading': 'true' }, preceding ? signed(sample.emf) + ' V' : 'Initial')),
+                h('svg', { viewBox: '0 0 320 180', role: 'img', 'aria-label': (isFlux ? 'Recorded flux' : 'Recorded signed voltage') + ' over ' + motion.controls.duration.toFixed(2) + ' seconds. Selected sample ' + (selected + 1) + ' at ' + sample.time.toFixed(3) + ' seconds.' },
+                  h('rect', { x: 0, y: 0, width: W, height: 180, fill: INSTRUMENT }),
+                  (isFlux ? [0, 0.5, 1] : [-1, 0, 1]).map(function (v) {
+                    var y = isFlux ? fy(v) : ey(v * scale);
+                    return h('g', { key: 'level' + v }, h('line', { x1: left, x2: W - right, y1: y, y2: y, stroke: v === 0 ? SOFT : BORDER, strokeWidth: v === 0 ? 1.2 : 0.7, strokeDasharray: v === 0 ? '4 4' : '2 5' }), h('text', { x: left - 8, y: y + 4, textAnchor: 'end', fill: SOFT, fontSize: 14 }, isFlux ? v : signed(v * scale, 2)));
+                  }),
+                  [0, 0.25, 0.5, 0.75, 1].map(function (f) { return h('text', { key: f, x: xx(f * motion.controls.duration), y: 172, textAnchor: f === 0 ? 'start' : f === 1 ? 'end' : 'middle', fill: SOFT, fontSize: 14 }, (f * motion.controls.duration).toFixed(2) + ' s'); }),
+                  h('polyline', { 'data-motion-series': id, points: values.map(function (p) { return xx(p.time).toFixed(2) + ',' + (isFlux ? fy(p.flux) : ey(p.emf)).toFixed(2); }).join(' '), fill: 'none', stroke: color, strokeWidth: 2.5, strokeDasharray: isFlux ? undefined : '6 3', strokeLinejoin: 'round' }),
+                  h('line', { 'data-motion-cursor': id, x1: xx(sample.time), x2: xx(sample.time), y1: 22, y2: 148, stroke: TEXT, strokeDasharray: '3 4' }),
+                  isFlux ? h('circle', { 'data-motion-flux-point': 'true', cx: xx(sample.time), cy: fy(sample.flux), r: 4.5, fill: INSTRUMENT, stroke: TEXT, strokeWidth: 2 }) : preceding ? h('rect', { 'data-motion-voltage-point': 'true', x: xx(sample.time) - 4, y: ey(sample.emf) - 4, width: 8, height: 8, fill: INSTRUMENT, stroke: TEXT, strokeWidth: 2 }) : null));
+            }),
+            h('p', { className: 'mag-motion-chart-key' }, '○ Selected flux · □ Voltage for the preceding interval. Both charts share the same time axis.'));
         }
         return card('Timed motion — inspect the whole experiment', h('section', { id: 'mag-induction-motion-workbench', tabIndex: -1, 'data-induction-motion-studio': 'true', 'aria-label': 'Timed induction motion workbench' },
           h('p', { style: { color: SOFT, fontSize: 13, lineHeight: 1.6, marginTop: 0 } }, 'Choose a path and travel time. The model records uniform motion through the coil, then lets you inspect each interval at your own pace.'),
@@ -9850,13 +9935,13 @@
         var phaseRayY = phaseCy - Math.sin(phaseRad) * phaseR;
         var fluxMeterX = 374 + phase.fluxNorm * 72;
         var emfMeterX = 374 + phase.emfNorm * 72;
-        return card('Rotating-coil generator — see the phase shift', h('div', null,
+        return card('Rotating-coil generator — see the phase shift', h('div', { className: 'mag-generator-lab' },
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
             'Turn the coil through one revolution. The magnetic flux follows ', h('b', null, 'cos θ'), ', while generated voltage follows ', h('b', null, 'sin θ'), ' because voltage depends on how fast the flux changes—not simply how much flux exists.'),
-          h('svg', { viewBox: '0 0 320 190', width: '100%', style: { maxWidth: 560, display: 'block', margin: '0 auto 10px' }, role: 'img',
-            'aria-label': __alloFill(__alloT('stem.magnetism.a11y_rotating_coil_at_degrees_and_revolutions_per_mi', 'Rotating coil at {value1} degrees and {value2} revolutions per minute. Relative flux {value3} and induced voltage {value4}, shown on quarter-cycle-shifted graphs'), { value1: angle, value2: d.genRPM, value3: flux.toFixed(0), value4: emf.toFixed(0) })},
-            h('rect', { x: 0, y: 0, width: 320, height: 190, fill: INSTRUMENT, rx: 10 }),
-            h('text', { x: 80, y: 16, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'coil inside uniform field'),
+          h('div', { className: 'mag-generator-stages' },
+            h('figure', { className: 'mag-generator-figure', 'data-generator-figure': 'coil' },
+              h('div', { className: 'mag-generator-heading' }, h('b', null, 'ROTATING COIL'), h('span', null, 'Uniform field · coil angle θ = ' + angle.toFixed(0) + '°')),
+              h('svg', { viewBox: '0 24 168 152', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_rotating_coil_at_degrees_and_revolutions_per_mi', 'Rotating coil at {value1} degrees and {value2} revolutions per minute. Relative flux {value3} and induced voltage {value4}, shown on quarter-cycle-shifted graphs'), { value1: angle, value2: d.genRPM, value3: flux.toFixed(0), value4: emf.toFixed(0) }) },
             [68, 100, 132].map(function (yy, i) {
               return h('g', { key: 'gb' + i },
                 h('line', { x1: 12, y1: yy, x2: 148, y2: yy, stroke: 'rgba(56,189,248,.35)', strokeWidth: 1.5 }),
@@ -9870,49 +9955,51 @@
               h('ellipse', { cx: 0, cy: 0, rx: 8, ry: 39, fill: 'rgba(245,158,11,.10)', stroke: '#f59e0b', strokeWidth: 4 }),
               h('line', { x1: -8, y1: -39, x2: -8, y2: 39, stroke: '#fbbf24', strokeWidth: 1 }),
               h('line', { x1: 8, y1: -39, x2: 8, y2: 39, stroke: '#fbbf24', strokeWidth: 1 })),
-            h('line', { x1: 80, y1: 100, x2: normalX, y2: normalY, stroke: '#34d399', strokeWidth: 2.5 }),
+            h('line', { 'data-generator-normal': 'true', x1: 80, y1: 100, x2: normalX, y2: normalY, stroke: '#34d399', strokeWidth: 2.5 }),
             h('circle', { cx: normalX, cy: normalY, r: 3, fill: '#34d399' }),
-            h('text', { x: normalX + 5, y: normalY - 4, fill: '#34d399', fontSize: 11 }, 'normal'),
-            h('text', { x: 80, y: 164, fill: '#fbbf24', fontSize: 11, textAnchor: 'middle' }, 'θ = ' + angle + '°'),
-            h('line', { x1: 160, y1: 18, x2: 160, y2: 174, stroke: '#334155' }),
-            h('line', { x1: 176, y1: 20, x2: 191, y2: 20, stroke: '#f43f5e', strokeWidth: 2 }),
-            h('text', { x: 196, y: 24, fill: TEXT, fontSize: 11 }, 'flux Φ · cos θ · solid'),
-            h('line', { x1: 176, y1: 72, x2: 312, y2: 72, stroke: '#334155', strokeDasharray: '3 3' }),
-            h('polyline', { points: fluxPts.join(' '), fill: 'none', stroke: '#f43f5e', strokeWidth: 2 }),
-            h('line', { x1: 176, y1: 108, x2: 191, y2: 108, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '5 3' }),
-            h('text', { x: 196, y: 112, fill: TEXT, fontSize: 11 }, 'voltage ε · sin θ · dashed'),
-            h('line', { x1: 176, y1: 148, x2: 312, y2: 148, stroke: '#334155', strokeDasharray: '3 3' }),
-            h('polyline', { points: emfPts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '6 3' }),
-            h('line', { x1: cursorX, y1: 34, x2: cursorX, y2: 176, stroke: 'rgba(52,211,153,.55)', strokeDasharray: '3 3' }),
-            h('circle', { cx: cursorX, cy: 72 - fluxNorm * 25, r: 4, fill: INSTRUMENT, stroke: '#f43f5e', strokeWidth: 2 }),
-            h('rect', { x: cursorX - 3.5, y: 148 - emfNorm * 25 * voltagePlotScale - 3.5, width: 7, height: 7, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2, transform: 'rotate(45 ' + cursorX + ' ' + (148 - emfNorm * 25 * voltagePlotScale) + ')' }),
-            h('text', { x: 176, y: 184, fill: SOFT, fontSize: 11 }, '0°'),
-            h('text', { x: 312, y: 184, fill: SOFT, fontSize: 11, textAnchor: 'end' }, '360°')),
-          h('svg', { viewBox: '0 0 520 192', width: '100%', style: { maxWidth: 760, display: 'block', margin: '0 auto 9px' }, role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_phase_wheel_at_degrees_flux_is_of_its_amplitude', 'Phase wheel at {value1} degrees. Flux is {value2} of its amplitude and voltage is {value3} of its amplitude. The two signals are separated by a 90 degree phase gap.'), { value1: angle, value2: phase.fluxNorm.toFixed(2), value3: phase.emfNorm.toFixed(2) })},
-            h('rect', { x: 0, y: 0, width: 520, height: 192, rx: 10, fill: INSTRUMENT }),
-            h('text', { x: 260, y: 17, fill: TEXT, fontSize: 11.5, fontWeight: 800, textAnchor: 'middle' }, 'PHASE WHEEL · Φ = cos θ  /  ε = sin θ'),
-            h('circle', { cx: phaseCx, cy: phaseCy, r: phaseR, fill: 'none', stroke: BORDER, strokeWidth: 1.5 }),
-            h('line', { x1: phaseCx - phaseR - 8, y1: phaseCy, x2: phaseCx + phaseR + 8, y2: phaseCy, stroke: BORDER }),
-            h('line', { x1: phaseCx, y1: phaseCy - phaseR - 8, x2: phaseCx, y2: phaseCy + phaseR + 8, stroke: BORDER }),
-            h('line', { x1: phaseCx, y1: phaseCy, x2: phaseRayX, y2: phaseRayY, stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' }),
-            h('circle', { cx: phaseRayX, cy: phaseRayY, r: 4.5, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2 }),
-            h('text', { x: phaseCx, y: 38, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, 'θ = ' + angle.toFixed(0) + '°'),
-            h('text', { x: phaseCx + phaseR + 10, y: phaseCy + 4, fill: SOFT, fontSize: 10.5 }, 'Φ max'),
-            h('text', { x: phaseCx + 4, y: phaseCy - phaseR - 10, fill: SOFT, fontSize: 10.5 }, 'ε max'),
-            h('text', { x: 72, y: 171, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, phase.stopped ? 'stopped: ε = 0' : 'angle marker'),
-            h('text', { x: 248, y: 58, fill: '#fda4af', fontSize: 11, fontWeight: 800 }, 'flux Φ'),
-            h('line', { x1: 266, y1: 72, x2: 482, y2: 72, stroke: BORDER }),
-            h('line', { x1: 374, y1: 62, x2: 374, y2: 82, stroke: SOFT, strokeWidth: 1.5 }),
-            h('rect', { x: Math.min(374, fluxMeterX), y: 66, width: Math.abs(fluxMeterX - 374), height: 12, rx: 6, fill: '#f43f5e', opacity: 0.82 }),
-            h('circle', { cx: fluxMeterX, cy: 72, r: 4.5, fill: INSTRUMENT, stroke: '#f43f5e', strokeWidth: 2 }),
-            h('text', { x: 486, y: 76, fill: TEXT, fontSize: 11, textAnchor: 'end' }, phase.fluxNorm.toFixed(2)),
-            h('text', { x: 248, y: 111, fill: '#fde68a', fontSize: 11, fontWeight: 800 }, 'voltage ε'),
-            h('line', { x1: 266, y1: 125, x2: 482, y2: 125, stroke: BORDER }),
-            h('line', { x1: 374, y1: 115, x2: 374, y2: 135, stroke: SOFT, strokeWidth: 1.5 }),
-            h('rect', { x: Math.min(374, emfMeterX), y: 119, width: Math.abs(emfMeterX - 374), height: 12, rx: 6, fill: '#fbbf24', opacity: 0.82 }),
-            h('circle', { cx: emfMeterX, cy: 125, r: 4.5, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2 }),
-            h('text', { x: 486, y: 129, fill: TEXT, fontSize: 11, textAnchor: 'end' }, phase.emfNorm.toFixed(2)),
-            h('text', { x: 366, y: 157, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, '90° phase gap · voltage peaks when flux crosses zero')),
+            h('text', { x: normalX > 80 ? normalX - 5 : normalX + 5, y: normalY - 4, textAnchor: normalX > 80 ? 'end' : 'start', fill: '#34d399', fontSize: 11 }, 'normal'),
+            h('text', { x: 80, y: 164, fill: '#fbbf24', fontSize: 11, textAnchor: 'middle' }, 'θ = ' + angle + '°')
+),
+              h('figcaption', { className: 'mag-generator-caption' }, 'Arrowheads show the magnetic field. The green ray is perpendicular to the coil.')),
+            h('figure', { className: 'mag-generator-figure', 'data-generator-figure': 'phase' },
+              h('div', { className: 'mag-generator-heading' }, h('b', null, 'PHASE WHEEL · Φ = cos θ  /  ε = sin θ'), h('span', null, 'Angle marker · ' + angle.toFixed(0) + '°')),
+              h('svg', { viewBox: '0 16 168 144', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_phase_wheel_at_degrees_flux_is_of_its_amplitude', 'Phase wheel at {value1} degrees. Flux is {value2} of its amplitude and voltage is {value3} of its amplitude. The two signals are separated by a 90 degree phase gap.'), { value1: angle, value2: phase.fluxNorm.toFixed(2), value3: phase.emfNorm.toFixed(2) }) },
+                h('circle', { cx: phaseCx, cy: phaseCy, r: phaseR, fill: 'none', stroke: BORDER, strokeWidth: 1.5 }),
+                h('line', { x1: phaseCx - phaseR - 8, y1: phaseCy, x2: phaseCx + phaseR + 8, y2: phaseCy, stroke: BORDER }),
+                h('line', { x1: phaseCx, y1: phaseCy - phaseR - 8, x2: phaseCx, y2: phaseCy + phaseR + 8, stroke: BORDER }),
+                h('line', { 'data-generator-phase-ray': 'true', x1: phaseCx, y1: phaseCy, x2: phaseRayX, y2: phaseRayY, stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' }),
+                h('circle', { cx: phaseRayX, cy: phaseRayY, r: 4.5, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2 }),
+                h('text', { x: phaseCx + phaseR + 10, y: phaseCy + 4, fill: SOFT, fontSize: 10.5 }, 'Φ max'),
+                h('text', { x: phaseCx + 4, y: phaseCy - phaseR - 10, fill: SOFT, fontSize: 10.5 }, 'ε max')),
+              h('div', { className: 'mag-generator-normalized' },
+              h('div', { className: 'mag-generator-meter', role: 'meter', 'aria-label': 'Normalized flux Φ', 'aria-valuemin': -1, 'aria-valuemax': 1, 'aria-valuenow': Number(phase.fluxNorm.toFixed(6)) },
+                h('span', null, 'Normalized flux Φ'), h('b', { 'data-generator-normalized': 'flux' }, phase.fluxNorm.toFixed(2)),
+                h('div', { className: 'mag-generator-meter-track', 'aria-hidden': 'true' },
+                  h('i', { style: { left: Math.min(50, 50 + phase.fluxNorm * 50) + '%', width: Math.abs(phase.fluxNorm) * 50 + '%' } }),
+                  h('span', { style: { left: (50 + phase.fluxNorm * 50) + '%' } }))),
+              h('div', { className: 'mag-generator-meter', role: 'meter', 'aria-label': 'Normalized voltage ε', 'aria-valuemin': -1, 'aria-valuemax': 1, 'aria-valuenow': Number(phase.emfNorm.toFixed(6)) },
+                h('span', null, 'Normalized voltage ε'), h('b', { 'data-generator-normalized': 'voltage' }, phase.emfNorm.toFixed(2)),
+                h('div', { className: 'mag-generator-meter-track', 'aria-hidden': 'true' },
+                  h('i', { style: { left: Math.min(50, 50 + phase.emfNorm * 50) + '%', width: Math.abs(phase.emfNorm) * 50 + '%' } }),
+                  h('span', { style: { left: (50 + phase.emfNorm * 50) + '%' } })))),
+              h('figcaption', { className: 'mag-generator-caption' }, phase.stopped ? 'Stopped: ε = 0. Flux can still exist.' : '90° phase gap · voltage peaks when flux crosses zero'))),
+          h('div', { className: 'mag-generator-traces' },
+            h('figure', { className: 'mag-generator-figure', 'data-generator-figure': 'flux' },
+              h('div', { className: 'mag-generator-heading' }, h('b', null, 'flux Φ · cos θ · solid'), h('span', null, 'Circle marks the selected coil angle')),
+              h('svg', { viewBox: '168 36 152 76', role: 'img', 'aria-label': 'Normalized flux over one revolution. Solid curve with a circle at ' + angle + ' degrees.' },
+                h('line', { x1: 176, y1: 72, x2: 312, y2: 72, stroke: BORDER, strokeDasharray: '3 3' }),
+                h('polyline', { 'data-generator-series': 'flux', points: fluxPts.join(' '), fill: 'none', stroke: '#f43f5e', strokeWidth: 2 }),
+                h('line', { 'data-generator-cursor': 'flux', x1: cursorX, y1: 38, x2: cursorX, y2: 106, stroke: SOFT, strokeDasharray: '3 3' }),
+                h('circle', { 'data-generator-point': 'flux', cx: cursorX, cy: 72 - fluxNorm * 25, r: 4, fill: INSTRUMENT, stroke: '#f43f5e', strokeWidth: 2 })),
+              h('figcaption', { className: 'mag-generator-axis' }, h('span', null, '0°'), h('span', null, 'One revolution'), h('span', null, '360°'))),
+            h('figure', { className: 'mag-generator-figure', 'data-generator-figure': 'voltage' },
+              h('div', { className: 'mag-generator-heading' }, h('b', null, 'voltage ε · sin θ · dashed'), h('span', null, 'Diamond marks the selected coil angle')),
+              h('svg', { viewBox: '168 112 152 76', role: 'img', 'aria-label': 'Induced voltage over one revolution, scaled by crank speed. Dashed curve with a diamond at ' + angle + ' degrees.' },
+                h('line', { x1: 176, y1: 148, x2: 312, y2: 148, stroke: BORDER, strokeDasharray: '3 3' }),
+                h('polyline', { 'data-generator-series': 'voltage', points: emfPts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '6 3' }),
+                h('line', { 'data-generator-cursor': 'voltage', x1: cursorX, y1: 114, x2: cursorX, y2: 182, stroke: SOFT, strokeDasharray: '3 3' }),
+                h('rect', { 'data-generator-point': 'voltage', x: cursorX - 3.5, y: 148 - emfNorm * 25 * voltagePlotScale - 3.5, width: 7, height: 7, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2, transform: 'rotate(45 ' + cursorX + ' ' + (148 - emfNorm * 25 * voltagePlotScale) + ')' })),
+              h('figcaption', { className: 'mag-generator-axis' }, h('span', null, '0°'), h('span', null, 'Speed-scaled voltage'), h('span', null, '360°')))),
           slider('Coil angle (θ)', d.genAngle, 0, 360, 5, function (v) { upd({ genAngle: v, genPhaseSeen: true }); }),
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', margin: '-2px 0 8px' } },
             h('button', { onClick: function () { upd({ genAngle: 0, genPhaseSeen: true }); }, style: btn(Math.abs(angle) < 1) }, 'Flux maximum · 0°'),
@@ -9925,13 +10012,13 @@
             d.genRPM + ' RPM = ' + frequency.toFixed(2) + ' electrical cycle' + (Math.abs(frequency - 1) < 0.001 ? '' : 's') + ' per second · voltage amplitude ×' + speedFactor.toFixed(2)),
           slider('Turns in rotating coil (N)', d.genTurns, 10, 200, 10, function (v) { upd({ genTurns: v }); }),
           slider('Generator field strength (B)', d.genField, 1, 8, 1, function (v) { upd({ genField: v }); }),
-          h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
+          h('div', { className: 'mag-sim-grid mag-generator-readouts', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
             h('div', { style: { padding: 9, borderRadius: 9, background: 'rgba(244,63,94,.10)', border: '1px solid rgba(244,63,94,.28)' } },
               h('div', { style: { color: SOFT, fontSize: 11 } }, 'Relative magnetic flux · solid curve'),
-              h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, flux.toFixed(0) + ' Φ units')),
+              h('div', { 'data-generator-reading': 'flux', style: { color: TEXT, fontSize: 22, fontWeight: 800 } }, flux.toFixed(0) + ' Φ units')),
             h('div', { style: { padding: 9, borderRadius: 9, background: 'rgba(251,191,36,.10)', border: '1px solid rgba(251,191,36,.28)' } },
               h('div', { style: { color: SOFT, fontSize: 11 } }, 'Relative induced voltage · dashed curve'),
-              h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, emf.toFixed(0) + ' ε units'))),
+              h('div', { 'data-generator-reading': 'voltage', style: { color: TEXT, fontSize: 22, fontWeight: 800 } }, emf.toFixed(0) + ' ε units'))),
           h('div', { className: 'mag-observe', role: 'status' },
             h('span', { 'aria-hidden': 'true' }, '〰️'),
             h('span', null, h('b', null, phaseNote + ' '), 'More turns or a stronger field increases flux and voltage; faster rotation increases voltage amplitude and frequency without changing the flux amplitude.'))
@@ -9941,26 +10028,39 @@
       // ── Oscilloscope: the EMF history the student drew ────────────────
       function scopeCard() {
         var trace = Array.isArray(d.emfTrace) ? d.emfTrace.filter(function (value) { return typeof value === 'number' && Number.isFinite(value); }).slice(-72) : [];
-        var W = 320, HH = 90, mid = HH / 2;
+        var W = 320, HH = 180, mid = HH / 2;
         var maxV = trace.reduce(function (largest, value) { return Math.max(largest, Math.abs(value)); }, 2);
         var scaleLabel = maxV >= 1000 ? maxV.toExponential(1) : maxV.toFixed(2);
         var pts = trace.map(function (v, i) {
-          var x = trace.length > 1 ? (i / (trace.length - 1)) * (W - 16) + 8 : 8;
-          var y = mid - Math.max(-maxV, Math.min(maxV, v)) / maxV * (mid - 8);
+          var x = trace.length > 1 ? (i / (trace.length - 1)) * (W - 48) + 40 : 40;
+          var y = mid - Math.max(-maxV, Math.min(maxV, v)) / maxV * (mid - 22);
           return x.toFixed(1) + ',' + y.toFixed(1);
         });
         // "AC achieved" = the student has produced meaningful swings BOTH ways
         var pos = trace.some(function (v) { return v > 0.4; });
         var neg = trace.some(function (v) { return v < -0.4; });
         return card('Voltage scope — what you just drew', h('div', null,
-          h('svg', { viewBox: '0 0 ' + W + ' ' + HH, width: '100%', style: { maxWidth: 380, display: 'block', margin: '0 auto 8px' }, role: 'img',
+          h('div', { className: 'mag-scope-workbench' },
+          h('figure', { className: 'mag-scope-figure' },
+            h('figcaption', { className: 'mag-scope-head' }, h('b', null, 'Movement samples'), h('span', null, 'oldest → newest')),
+          h('svg', { viewBox: '0 0 ' + W + ' ' + HH, width: '100%', role: 'img',
             'aria-label': trace.length < 2 ? 'Empty voltage scope — move the magnet to draw a trace' : 'Voltage trace of your last ' + trace.length + ' magnet movements' },
             h('rect', { x: 0, y: 0, width: W, height: HH, fill: INSTRUMENT, rx: 8 }),
-            h('line', { x1: 8, y1: mid, x2: W - 8, y2: mid, stroke: '#334155', strokeWidth: 1, strokeDasharray: '4 4' }),
-            h('text', { x: 12, y: 14, fill: SOFT, fontSize: 11 }, '+' + scaleLabel + ' V'),
-            h('text', { x: 12, y: HH - 6, fill: SOFT, fontSize: 11 }, '−' + scaleLabel + ' V'),
-            pts.length > 1 ? h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinejoin: 'round' }) : null,
-            pts.length <= 1 ? h('text', { x: W / 2, y: mid - 6, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'move the magnet to draw your trace…') : null),
+            [mid - (mid - 22) / 2, mid + (mid - 22) / 2].map(function (y) { return h('line', { key: y, x1: 40, y1: y, x2: W - 8, y2: y, stroke: BORDER, strokeWidth: 0.7, strokeDasharray: '2 5' }); }),
+            h('line', { 'data-scope-zero': 'true', x1: 40, y1: mid, x2: W - 8, y2: mid, stroke: SOFT, strokeWidth: 1.2, strokeDasharray: '6 4' }),
+            h('text', { x: 12, y: 14, fill: SOFT, fontSize: 12 }, '+' + scaleLabel + ' V'),
+            h('text', { x: 32, y: mid + 4, fill: SOFT, fontSize: 12, textAnchor: 'end' }, '0 V'),
+            h('text', { x: 12, y: HH - 6, fill: SOFT, fontSize: 12 }, '−' + scaleLabel + ' V'),
+            pts.length > 1 ? h('polyline', { 'data-scope-trace': 'true', points: pts.join(' '), fill: 'none', stroke: '#d97706', strokeWidth: 2.2, strokeLinejoin: 'round', strokeLinecap: 'round' }) : null,
+            pts.length > 1 ? h('circle', { 'data-scope-newest': 'true', cx: pts[pts.length - 1].split(',')[0], cy: pts[pts.length - 1].split(',')[1], r: 3.5, fill: TEXT, stroke: '#d97706', strokeWidth: 1.5 }) : null,
+            pts.length <= 1 ? h('text', { x: 176, y: mid - 10, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'move the magnet to draw your trace…') : null),
+            h('div', { className: 'mag-scope-legend', 'aria-hidden': 'true' }, h('span', null, h('i', { className: 'mag-scope-wave-key' }), 'voltage'), h('span', null, h('i', { className: 'mag-scope-zero-key' }), 'zero'), h('span', null, h('i', { className: 'mag-scope-newest-key' }), 'newest sample'))),
+          h('div', { className: 'mag-motion-controls mag-scope-notes' },
+            h('span', { className: 'mag-section-label' }, 'Read the trace'),
+            h('dl', { className: 'mag-scope-readings' },
+              h('div', null, h('dt', null, 'Samples in view'), h('dd', { 'data-scope-samples': 'true' }, String(trace.length))),
+              h('div', null, h('dt', null, 'Newest sample'), h('dd', { 'data-scope-latest': 'true' }, trace.length ? (trace[trace.length - 1] > 0 ? '+' : '') + trace[trace.length - 1].toFixed(2) + ' V' : '—')),
+              h('div', null, h('dt', null, 'Display scale'), h('dd', { 'data-scope-scale': 'true' }, '±' + scaleLabel + ' V'))),
           h('p', { style: { color: SOFT, fontSize: 11.5, margin: '0 0 6px' } }, 'Autoscaled display voltage · movement samples, not a uniform time axis. Use Timed motion for a time-based graph.'),
           h('p', { style: { color: SOFT, fontSize: 12.5, margin: 0, lineHeight: 1.5 } },
             (pos && neg)
@@ -9968,7 +10068,7 @@
               : 'Wiggle the magnet in AND out, back and forth. Watch the trace cross the zero line both ways — that alternation has a famous name.'),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 } },
             h('span', { style: { color: SOFT, fontSize: 11.5 } }, (function () { var cyc = countCycles(trace); return cyc >= 1 ? ('≈ ' + cyc + ' full cycle' + (cyc > 1 ? 's' : '') + ' in view — grid AC does 60 every second') : ''; })()),
-            h('button', { onClick: function () { upd({ emfTrace: [] }); }, style: { padding: '4px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: PANEL, color: SOFT, fontSize: 12, cursor: 'pointer' } }, 'Clear trace'))
+            h('button', { onClick: function () { upd({ emfTrace: [] }); }, style: { padding: '4px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: PANEL, color: SOFT, fontSize: 12, cursor: 'pointer' } }, 'Clear trace'))))
         ), '#fbbf24');
       }
 
@@ -10023,61 +10123,46 @@
       }
 
       function eddyBrakeBenchSVG(state, material, slit) {
-        var fieldOpacity = (0.30 + state.field / 10 * 0.58).toFixed(2);
-        var loopOpacity = (0.18 + state.forcePercent / 100 * 0.78).toFixed(2);
-        var fieldOff = eddyBrakeState(material.conductivity, d.eddyThickness, slit, state.speed, 0);
-        var distanceRatio = fieldOff.stoppingDistance > 0 ? Math.min(1, state.stoppingDistance / fieldOff.stoppingDistance) : 0;
-        var stopX = 350 + distanceRatio * 145;
-        var dragLength = 20 + state.forcePercent * 1.15;
-        var heatWidth = state.heatShare / 100 * 145;
-        return h('svg', { viewBox: '0 0 520 250', width: '100%', style: { display: 'block', margin: '0 auto 8px', maxWidth: 640 }, role: 'img',
-          'aria-label': material.name + ' eddy-current brake bench. Plate speed ' + state.speed + ' of 10 and magnet field ' + state.field + ' of 10. The current path is ' + state.loop + '. Relative magnetic drag is ' + Math.round(state.forcePercent) + ' percent, modeled stopping distance is ' + state.stoppingDistance.toFixed(1) + ', and eddy-current heat share is ' + Math.round(state.heatShare) + ' percent.' },
-          h('title', null, 'Eddy-current sliding-plate brake bench'),
-          h('desc', null, 'A conducting plate moves right through a north-south magnetic gap. Blue circulating loops show induced eddy current. A green arrow points left to show the opposing magnetic drag. One white stripe marks the north pole and two mark the south pole.'),
-          h('rect', { x: 0, y: 0, width: 520, height: 250, rx: 10, fill: INSTRUMENT }),
-          h('text', { x: 18, y: 20, fill: TEXT, fontSize: 12, fontWeight: 700 }, 'conducting plate through magnetic gap'),
-          h('line', { x1: 28, y1: 77, x2: 154, y2: 77, stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' }),
-          h('polygon', { points: '160,77 149,71 149,83', fill: '#fbbf24' }),
-          h('text', { x: 31, y: 68, fill: TEXT, fontSize: 11 }, 'motion v → ' + state.speed + '/10'),
-          h('rect', { x: 24, y: 94, width: 472, height: 58, rx: 6, fill: material.color, opacity: 0.24 + material.conductivity * 0.22, stroke: material.color, strokeWidth: 2 }),
-          [60, 100, 140, 180, 340, 380, 420, 460].map(function (xx) { return h('line', { key: 'grain-' + xx, x1: xx, y1: 99, x2: xx, y2: 147, stroke: material.color, strokeWidth: 1, opacity: 0.24 }); }),
-          slit ? h('g', null,
-            h('line', { x1: 260, y1: 93, x2: 260, y2: 153, stroke: INSTRUMENT, strokeWidth: 8 }),
-            h('line', { x1: 260, y1: 94, x2: 260, y2: 152, stroke: '#f8fafc', strokeWidth: 1.4, strokeDasharray: '4 3' }),
-            h('text', { x: 268, y: 147, fill: TEXT, fontSize: 10.5 }, 'slit')) : null,
-          h('rect', { x: 220, y: 26, width: 80, height: 48, rx: 5, fill: '#ef4444', opacity: 0.88 }),
-          h('line', { x1: 226, y1: 68, x2: 294, y2: 68, stroke: '#f8fafc', strokeWidth: 3 }),
-          h('text', { x: 260, y: 47, fill: '#fff', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, 'N'),
-          h('rect', { x: 220, y: 172, width: 80, height: 48, rx: 5, fill: '#2563eb', opacity: 0.9 }),
-          h('line', { x1: 226, y1: 178, x2: 294, y2: 178, stroke: '#f8fafc', strokeWidth: 2.5 }),
-          h('line', { x1: 226, y1: 185, x2: 294, y2: 185, stroke: '#f8fafc', strokeWidth: 2.5 }),
-          h('text', { x: 260, y: 211, fill: '#fff', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, 'S'),
-          [238, 260, 282].map(function (xx) { return h('g', { key: 'field-' + xx, opacity: fieldOpacity },
-            h('line', { x1: xx, y1: 78, x2: xx, y2: 166, stroke: '#38bdf8', strokeWidth: 1.8 }),
-            h('polygon', { points: xx + ',169 ' + (xx - 4) + ',160 ' + (xx + 4) + ',160', fill: '#38bdf8' })); }),
-          [0, 1, 2].map(function (ring) {
-            var rx = 23 + ring * 18, ry = 7 + ring * 4;
-            return slit ? h('g', { key: 'loop-' + ring, opacity: loopOpacity },
-              h('path', { d: 'M ' + (260 - rx) + ' 123 Q 235 ' + (123 - ry) + ' 253 ' + (123 - ry) + ' M 267 ' + (123 - ry) + ' Q 285 ' + (123 - ry) + ' ' + (260 + rx) + ' 123 Q 285 ' + (123 + ry) + ' 267 ' + (123 + ry) + ' M 253 ' + (123 + ry) + ' Q 235 ' + (123 + ry) + ' ' + (260 - rx) + ' 123', fill: 'none', stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '4 3' })) : h('g', { key: 'loop-' + ring, opacity: loopOpacity },
-              h('ellipse', { cx: 260, cy: 123, rx: rx, ry: ry, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2 }),
-              h('polygon', { points: (260 + rx) + ',' + (123 + 2) + ' ' + (254 + rx) + ',' + '119 ' + (254 + rx) + ',' + '127', fill: '#7dd3fc' }));
-          }),
-          h('line', { x1: 215, y1: 164, x2: Math.max(68, 215 - dragLength), y2: 164, stroke: '#34d399', strokeWidth: 3.2, strokeLinecap: 'round' }),
-          h('polygon', { points: Math.max(62, 209 - dragLength) + ',164 ' + Math.max(72, 219 - dragLength) + ',158 ' + Math.max(72, 219 - dragLength) + ',170', fill: '#34d399' }),
-          h('text', { x: 20, y: 181, fill: TEXT, fontSize: 11 }, 'eddy drag ← ' + Math.round(state.forcePercent) + '%'),
-          h('text', { x: 350, y: 20, fill: TEXT, fontSize: 11, fontWeight: 700 }, 'stopping-distance comparison'),
-          h('line', { x1: 350, y1: 43, x2: 495, y2: 43, stroke: '#64748b', strokeWidth: 1.5 }),
-          h('line', { x1: 495, y1: 36, x2: 495, y2: 50, stroke: '#94a3b8', strokeWidth: 1.4, strokeDasharray: '3 2' }),
-          h('polygon', { points: stopX.toFixed(1) + ',35 ' + (stopX - 5).toFixed(1) + ',27 ' + (stopX + 5).toFixed(1) + ',27', fill: '#34d399' }),
-          h('text', { x: 350, y: 61, fill: SOFT, fontSize: 10.5 }, 'shorter'),
-          h('text', { x: 495, y: 61, fill: SOFT, fontSize: 10.5, textAnchor: 'end' }, 'field off'),
-          h('text', { x: 350, y: 78, fill: TEXT, fontSize: 10.5 }, 'modeled eddy-heat share'),
-          h('rect', { x: 350, y: 84, width: 145, height: 9, rx: 4.5, fill: 'rgba(148,163,184,.18)' }),
-          h('rect', { x: 350, y: 84, width: heatWidth, height: 9, rx: 4.5, fill: '#f97316' }),
-          h('text', { x: 495, y: 105, fill: TEXT, fontSize: 10.5, textAnchor: 'end' }, Math.round(state.heatShare) + '%'),
-          h('text', { x: 18, y: 239, fill: SOFT, fontSize: 10.5 }, slit ? 'open path · weak broken loops' : 'closed path · circulating loops'),
-          h('text', { x: 502, y: 239, fill: SOFT, fontSize: 10.5, textAnchor: 'end' }, 'low-speed teaching model · F ∝ vB²')
-        );
+        var moving = state.speed > 0, fieldOn = state.field > 0, braking = state.forcePercent > 0;
+        var fieldOpacity = (0.65 + state.field / 10 * 0.35).toFixed(2);
+        var loopOpacity = 1;
+        var dragLength = 25 + state.forcePercent;
+        return h('div', { className: 'mag-instrument', 'data-eddy-instrument': 'true' },
+          h('div', { className: 'mag-instrument-head' }, 'EDDY BRAKE · SLIDING PLATE', h('b', null, !moving ? 'Plate at rest' : !fieldOn ? 'Field off' : slit ? 'Interrupted current path' : 'Closed current path')),
+          h('svg', { viewBox: '0 0 560 290', width: '100%', role: 'img',
+            'aria-label': material.name + ' eddy-current brake bench. Plate speed ' + state.speed + ' of 10 and magnet field ' + state.field + ' of 10. The current path is ' + state.loop + '. Relative magnetic drag is ' + Math.round(state.forcePercent) + ' percent, modeled stopping distance is ' + state.stoppingDistance.toFixed(1) + ', and eddy-current heat share is ' + Math.round(state.heatShare) + ' percent.' },
+            h('title', null, 'Eddy-current sliding-plate brake bench'),
+            h('desc', null, 'A conducting plate in a north-south magnetic gap. ' + (moving ? 'The plate moves right. ' : 'The plate is at rest. ') + (braking ? 'Circulating loops show induced eddy current and a left arrow shows opposing drag. ' : 'No induced current or magnetic drag is shown. ') + 'One white stripe marks the north pole and two mark the south pole.'),
+            h('rect', { x: 0, y: 0, width: 560, height: 290, fill: INSTRUMENT }),
+            [40, 80, 120, 160, 200, 240].map(function (y) { return h('line', { key: 'grid' + y, x1: 20, x2: 540, y1: y, y2: y, stroke: BORDER, opacity: 0.3 }); }),
+            h('text', { x: 26, y: 30, fill: TEXT, fontSize: 14, fontWeight: 700 }, material.name + ' · ' + d.eddyThickness + ' mm'),
+            h('rect', { x: 25, y: 128, width: 510, height: 64, rx: 7, fill: material.color, fillOpacity: 0.18, stroke: SOFT, strokeWidth: 2 }),
+            [70, 115, 160, 205, 355, 400, 445, 490].map(function (x) { return h('line', { key: 'grain' + x, x1: x, x2: x, y1: 134, y2: 186, stroke: SOFT, opacity: 0.3 }); }),
+            slit ? h('g', { 'data-eddy-slit': 'true' },
+              h('line', { x1: 280, x2: 280, y1: 127, y2: 193, stroke: INSTRUMENT, strokeWidth: 10 }),
+              h('line', { x1: 280, x2: 280, y1: 129, y2: 191, stroke: TEXT, strokeWidth: 1.5, strokeDasharray: '4 3' }),
+              h('text', { x: 370, y: 178, fill: TEXT, fontSize: 12 }, 'slit breaks loops')) : null,
+            h('rect', { x: 238, y: 40, width: 84, height: 64, rx: 6, fill: '#dc2626' }),
+            h('text', { x: 280, y: 72, fill: '#fff', fontSize: 21, fontWeight: 800, textAnchor: 'middle' }, 'N'),
+            h('line', { x1: 246, x2: 314, y1: 96, y2: 96, stroke: '#fff', strokeWidth: 4 }),
+            h('rect', { x: 238, y: 216, width: 84, height: 60, rx: 6, fill: '#1d4ed8' }),
+            h('line', { x1: 246, x2: 314, y1: 225, y2: 225, stroke: '#fff', strokeWidth: 3 }),
+            h('line', { x1: 246, x2: 314, y1: 233, y2: 233, stroke: '#fff', strokeWidth: 3 }),
+            h('text', { x: 280, y: 261, fill: '#fff', fontSize: 21, fontWeight: 800, textAnchor: 'middle' }, 'S'),
+            fieldOn ? h('g', { 'data-eddy-field-lines': 'true', opacity: fieldOpacity }, [250, 280, 310].map(function (x) { return h('g', { key: 'field' + x },
+              h('line', { x1: x, x2: x, y1: 110, y2: 205, stroke: '#0284c7', strokeWidth: 2 }), h('polygon', { points: x + ',210 ' + (x - 4) + ',201 ' + (x + 4) + ',201', fill: '#0284c7' })); })) : null,
+            braking ? h('g', { 'data-eddy-current-loops': 'true', 'data-loop': state.loop, opacity: loopOpacity }, [0, 1, 2].map(function (ring) {
+              var rx = 32 + ring * 21, ry = 9 + ring * 6;
+              return slit ? h('path', { key: 'loop' + ring, d: 'M ' + (280 - rx) + ' 160 Q 250 ' + (160 - ry) + ' 271 ' + (160 - ry) + ' M 289 ' + (160 - ry) + ' Q 310 ' + (160 - ry) + ' ' + (280 + rx) + ' 160 Q 310 ' + (160 + ry) + ' 289 ' + (160 + ry) + ' M 271 ' + (160 + ry) + ' Q 250 ' + (160 + ry) + ' ' + (280 - rx) + ' 160', fill: 'none', stroke: '#0284c7', strokeWidth: 2.5, strokeDasharray: '5 4' })
+                : h('g', { key: 'loop' + ring }, h('ellipse', { cx: 280, cy: 160, rx: rx, ry: ry, fill: 'none', stroke: '#0284c7', strokeWidth: 2.5 }), h('polygon', { points: (280 + rx) + ',164 ' + (273 + rx) + ',156 ' + (273 + rx) + ',166', fill: '#0284c7' }));
+            })) : null,
+            moving ? h('g', { 'data-eddy-motion-arrow': 'true' },
+              h('line', { x1: 50, x2: 178, y1: 92, y2: 92, stroke: '#d97706', strokeWidth: 4 }), h('polygon', { points: '185,92 173,85 173,99', fill: '#d97706' }), h('text', { x: 50, y: 77, fill: TEXT, fontSize: 14 }, 'motion v → ' + state.speed + '/10')) : h('text', { x: 50, y: 91, fill: TEXT, fontSize: 14 }, 'v = 0 · at rest'),
+            braking ? h('g', { 'data-eddy-drag-arrow': 'true' },
+              h('line', { x1: 194, x2: 194 - dragLength, y1: 223, y2: 223, stroke: '#059669', strokeWidth: 4 }), h('polygon', { points: (186 - dragLength) + ',223 ' + (199 - dragLength) + ',216 ' + (199 - dragLength) + ',230', fill: '#059669' }), h('text', { x: 30, y: 249, fill: TEXT, fontSize: 14 }, 'drag ← ' + Math.round(state.forcePercent) + '%')) : h('text', { x: 30, y: 237, fill: TEXT, fontSize: 14 }, 'no magnetic drag'),
+            h('text', { x: 355, y: 70, fill: TEXT, fontSize: 14 }, 'field B · ' + state.field + '/10'),
+            h('text', { x: 355, y: 253, fill: SOFT, fontSize: 12 }, 'schematic · F ∝ vB²')),
+          h('div', { className: 'mag-eddy-caption' }, h('b', null, !moving ? 'No motion → no eddy current' : !fieldOn ? 'No field → no eddy current' : slit ? 'Broken loops → weaker opposing force' : 'Motion + field → circulating current'), h('span', null, braking ? (slit ? 'open path · weak broken loops' : 'closed path · circulating loops') + '. Arrow direction shows motion and opposing drag; loop shape distinguishes solid and slit conductors.' : 'No active current loops or drag arrows: the plate must move through a nonzero field for eddy braking.')));
       }
 
       function eddyCard() {
@@ -10085,6 +10170,7 @@
         var material = EDDY_MATERIALS[d.eddyMaterial] || EDDY_MATERIALS.copper;
         var brake = eddyBrakeFactor(material.conductivity, d.eddyThickness, d.eddySlit);
         var bench = eddyBrakeState(material.conductivity, d.eddyThickness, d.eddySlit, d.eddySpeed, d.eddyField);
+        var fieldOff = eddyBrakeState(material.conductivity, d.eddyThickness, d.eddySlit, bench.speed, 0);
         var brakeWord = bench.forcePercent < 5 ? 'minimal' : bench.forcePercent < 35 ? 'moderate' : bench.forcePercent < 70 ? 'strong' : 'very strong';
         function resetRace(patch) {
           cancelTubeRace();
@@ -10103,33 +10189,44 @@
         }
         return card('Eddy-current engineering lab', h('div', null,
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Compare two forms of contact-free magnetic braking. First engineer a sliding-plate brake by changing speed and field strength. Then drop identical magnets through a conducting tube and plastic control.'),
-          h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_eddy_current_conductor_and_loop_geometry', 'Eddy-current conductor and loop geometry'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+          h('section', { 'aria-label': __alloT('stem.magnetism.a11y_sliding_plate_eddy_current_brake_bench', 'Sliding-plate eddy-current brake bench'), style: { marginBottom: 13 } },
+            h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 5 } }, 'Sliding-plate brake bench'),
+            h('p', { style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.45 } }, 'Predict: doubling field strength has a larger effect than doubling speed because the braking force follows the low-speed trend F ∝ vB².'),
+            h('div', { className: 'mag-eddy-workbench' },
+              h('div', { className: 'mag-eddy-scene' }, eddyBrakeBenchSVG(bench, material, d.eddySlit),
+              h('div', { className: 'mag-eddy-comparison', role: 'group', 'aria-label': 'Stopping-distance comparison at the same starting speed' },
+                h('div', { className: 'mag-eddy-comparison-head' }, h('b', null, 'Stopping-distance comparison'), h('span', null, bench.speed ? 'same speed · shared scale' : 'at rest · no stopping run')),
+                [{ name: 'Current setup', value: bench.stoppingDistance, tone: '#0284c7' }, { name: 'Field off', value: fieldOff.stoppingDistance, tone: SOFT }].map(function (row) {
+                  var width = fieldOff.stoppingDistance > 0 ? 100 * row.value / fieldOff.stoppingDistance : 0;
+                  return h('div', { key: row.name, className: 'mag-eddy-comparison-row' }, h('span', null, row.name), h('b', null, row.value.toFixed(1) + ' rel. m'),
+                    h('div', { className: 'mag-eddy-bar-track', 'aria-hidden': 'true' }, h('div', { 'data-eddy-distance-bar': row.name, 'data-width': width.toFixed(3), style: { width: width + '%', background: row.tone } })));
+                }),
+                h('p', null, 'Relative teaching model; the field-off reference includes the same background drag.')),
+            h('div', { className: 'mag-sim-grid mag-eddy-readouts', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '0 0 9px' } },
+              h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Relative magnetic drag'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, h('span', { 'data-eddy-drag-reading': 'true' }, Math.round(bench.forcePercent) + '%'))),
+              h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Stopping distance'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, h('span', { 'data-eddy-distance-reading': 'true' }, bench.stoppingDistance.toFixed(1) + ' rel. m'))),
+              h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Eddy-heat share'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, h('span', { 'data-eddy-heat-reading': 'true' }, Math.round(bench.heatShare) + '%'))))),
+              h('div', { className: 'mag-motion-controls mag-eddy-controls' },
+                h('span', { className: 'mag-section-label' }, 'Engineer the brake'),
+          h('div', { className: 'mag-eddy-materials', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_eddy_current_conductor_and_loop_geometry', 'Eddy-current conductor and loop geometry'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
             Object.keys(EDDY_MATERIALS).map(function (key) {
               return h('button', { key: key, 'aria-pressed': d.eddyMaterial === key ? 'true' : 'false',
                 onClick: function () { resetRace({ eddyMaterial: key }); }, style: btn(d.eddyMaterial === key) }, EDDY_MATERIALS[key].name);
             }),
             h('button', { 'aria-pressed': d.eddySlit ? 'true' : 'false', onClick: function () { resetRace({ eddySlit: !d.eddySlit }); }, style: btn(d.eddySlit) }, d.eddySlit ? 'Slit plate/tube: open loop' : 'Solid plate/tube: closed loop')),
           slider('Conductor thickness (mm)', d.eddyThickness, 1, 6, 1, function (v) { resetRace({ eddyThickness: v }); }),
-          h('section', { 'aria-label': __alloT('stem.magnetism.a11y_sliding_plate_eddy_current_brake_bench', 'Sliding-plate eddy-current brake bench'), style: { marginBottom: 13 } },
-            h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 5 } }, 'Sliding-plate brake bench'),
-            h('p', { style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.45 } }, 'Predict: doubling field strength has a larger effect than doubling speed because the braking force follows the low-speed trend F ∝ vB².'),
             h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 12 } },
               slider('Plate speed', d.eddySpeed, 0, 10, 1, function (v) { resetRace({ eddySpeed: v }); }),
-              slider('Magnet field strength', d.eddyField, 0, 10, 1, function (v) { resetRace({ eddyField: v }); })),
-            eddyBrakeBenchSVG(bench, material, d.eddySlit),
-            h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '0 0 9px' } },
-              h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Relative magnetic drag'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, Math.round(bench.forcePercent) + '%')),
-              h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Stopping distance'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, bench.stoppingDistance.toFixed(1) + ' rel. m')),
-              h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Eddy-heat share'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, Math.round(bench.heatShare) + '%'))),
+              slider('Magnet field strength', d.eddyField, 0, 10, 1, function (v) { resetRace({ eddyField: v }); })))),
             h('div', { className: 'mag-legend', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_eddy_current_brake_key', 'Eddy-current brake key') },
-              h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#7dd3fc' } }), 'closed or broken loop shapes show current paths'),
-              h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#fbbf24' } }), 'right arrow is plate motion'),
-              h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#34d399' } }), 'left arrow is magnetic drag')),
+              h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#0284c7' } }), 'closed or broken loop shapes show current paths'),
+              h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#d97706' } }), 'right arrow is plate motion'),
+              h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#059669' } }), 'left arrow is magnetic drag')),
             h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
               h('span', { 'aria-hidden': 'true' }, d.eddySlit ? '/' : '↺'),
               h('span', null, h('b', null, brakeWord.charAt(0).toUpperCase() + brakeWord.slice(1) + ' braking. '),
-                d.eddySlit ? 'The slit interrupts the large circulating paths, so the stop marker moves toward the field-off reference.' : d.eddyField === 0 ? 'With the field off there is no induced current and no magnetic drag.' : 'Motion changes flux through the conductor, closed eddy loops form, and their field opposes the motion. The lost kinetic energy appears mainly as heat in the conductor.'))),
-          h('section', { 'aria-label': __alloT('stem.magnetism.a11y_eddy_current_tube_race', 'Eddy-current tube race') },
+                !bench.speed ? 'With the plate at rest there is no induced current or magnetic drag. ' : d.eddySlit ? 'The slit interrupts the large circulating paths, so the stop marker moves toward the field-off reference.' : d.eddyField === 0 ? 'With the field off there is no induced current and no magnetic drag.' : 'Motion changes flux through the conductor, closed eddy loops form, and their field opposes the motion. The lost kinetic energy appears mainly as heat in the conductor.'))),
+          h('section', { className: 'mag-eddy-tube', 'aria-label': __alloT('stem.magnetism.a11y_eddy_current_tube_race', 'Eddy-current tube race') },
             h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 5 } }, 'Tube race · conducting wall versus plastic control'),
             h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } },
               h('svg', { viewBox: '0 0 220 148', width: '100%', style: { maxWidth: 270 }, role: 'img',
@@ -10266,11 +10363,9 @@
           var angRad = domainAngle(i, alignment) + (m < 0 ? Math.PI : 0);
           var ang = angRad * 180 / Math.PI;
           var ax = 18 + (i % COLS) * CW, ay = 43 + Math.floor(i / COLS) * 22;
-          var domainColor = alignment > 0.05
-            ? (m < 0 ? 'rgba(96,165,250,' + (0.45 + alignment * 0.55).toFixed(2) + ')' : 'rgba(251,113,133,' + (0.45 + alignment * 0.55).toFixed(2) + ')')
-            : '#94a3b8';
-          arrows.push(h('g', { key: 'd' + i, transform: 'translate(' + ax + ',' + ay + ')' },
-            h('rect', { x: -14, y: -9, width: 28, height: 18, rx: 4, fill: 'rgba(148,163,184,.035)', stroke: 'rgba(148,163,184,.12)', strokeWidth: 0.8 }),
+          var domainColor = alignment > 0.05 ? (m < 0 ? '#0284c7' : '#e11d48') : SOFT;
+          arrows.push(h('g', { key: 'd' + i, 'data-domain-vector': i, transform: 'translate(' + ax + ',' + ay + ')' },
+            h('rect', { x: -14, y: -9, width: 28, height: 18, rx: 4, fill: 'rgba(148,163,184,.035)', stroke: BORDER, strokeWidth: 0.8 }),
             h('g', { transform: 'rotate(' + ang.toFixed(1) + ')' },
               h('line', { x1: -8, y1: 0, x2: 6, y2: 0, stroke: domainColor, strokeWidth: 2.2 }),
               h('polygon', { points: '10,0 4,-3.4 4,3.4', fill: domainColor }))));
@@ -10334,7 +10429,7 @@
             h('span', { 'aria-hidden': 'true' }, '🧲'),
             h('div', null,
               h('b', null, 'Make magnetic memory visible'),
-              'Sweep the applied field H and watch the domains build magnetization M. The route matters: the loop is ', h('b', null, 'hysteresis'), ', a record of where the material has been.')),
+              'Sweep the applied field H and watch the domains build magnetization M. The route matters: the loop is ', h('strong', null, 'hysteresis'), ', a record of where the material has been.')),
           h('div', { className: 'mag-domain-materials', 'aria-label': __alloT('stem.magnetism.a11y_compare_magnetic_materials', 'Compare magnetic materials') },
             memory.comparisons.map(function (item) {
               return h('button', { key: item.id, type: 'button', className: 'mag-domain-material',
@@ -10351,6 +10446,49 @@
                     h('span', { className: 'mag-domain-mini-track', 'aria-hidden': 'true' }, h('span', { className: 'mag-domain-mini-fill', style: { width: item.remanencePercent + '%' } }))),
                   h('span', { className: 'mag-domain-property' }, h('small', null, 'Coercive threshold'), h('b', null, '|' + item.coercivityPercent + '% H|'))));
             })),
+          h('div', { className: 'mag-domain-workbench' },
+          h('div', { className: 'mag-domain-visuals' },
+            h('figure', { className: 'mag-domain-figure' },
+              h('figcaption', null, 'Inside the material', h('span', null, '40 vectors · schematic')),
+              h('svg', { viewBox: '0 0 280 150', role: 'img',
+                'aria-label': __alloFill(__alloT('stem.magnetism.a11y_grid_of_40_magnetic_domains_applied_field_is_si', 'Grid of 40 magnetic domains. Applied field is {value1}; signed net magnetization is {value2} percent toward {value3}.'), { value1: memory.fieldDirection, value2: memory.signedPercent, value3: memory.magnetizationDirection })},
+                h('title', null, 'Magnetic domain alignment view'),
+                h('rect', { x: 0, y: 0, width: 280, height: 150, fill: INSTRUMENT, rx: 9 }),
+                h('text', { x: 12, y: 21, fill: SOFT, fontSize: 9.5, fontWeight: 700 }, 'APPLIED H · ' + memory.fieldDirection.toUpperCase()),
+                memory.fieldDirection === 'off'
+                  ? h('g', null, h('line', { x1: 110, y1: 18, x2: 248, y2: 18, stroke: BORDER, strokeWidth: 2, strokeDasharray: '5 4' }), h('text', { x: 252, y: 21, fill: SOFT, fontSize: 9, textAnchor: 'end' }, 'OFF'))
+                  : h('g', null,
+                    h('line', { x1: memory.fieldDirection === 'right' ? 110 : 248, y1: 18, x2: memory.fieldDirection === 'right' ? 248 : 110, y2: 18, stroke: '#d97706', strokeWidth: 2.4 }),
+                    h('polygon', { points: memory.fieldDirection === 'right' ? '252,18 244,13.5 244,22.5' : '106,18 114,13.5 114,22.5', fill: '#d97706' })),
+                arrows),
+              h('div', { className: 'mag-domain-legend', 'aria-label': __alloT('stem.magnetism.a11y_domain_direction_legend', 'Domain direction legend') },
+                h('span', null, '↗ Mixed = cancels'), h('span', null, '→ Right = positive M'), h('span', null, '← Left = negative M'))),
+            h('figure', { className: 'mag-domain-figure' },
+              h('figcaption', null, 'H–M memory loop', h('span', null, memory.history ? (memory.branch < 0 ? 'increasing H · dashed branch' : 'decreasing H · solid branch') : 'mixed starting state')),
+              h('svg', { viewBox: '0 0 260 170', role: 'img',
+                'aria-label': mat.name + ' hysteresis loop. Applied field ' + memory.field.toFixed(2) + '; signed magnetization ' + m.toFixed(2) + '; coercive threshold ' + mat.coercivity.toFixed(2) + '.' },
+                h('title', null, mat.name + ' magnetic hysteresis loop'),
+                h('rect', { x: 0, y: 0, width: 260, height: 170, fill: INSTRUMENT, rx: 9 }),
+                h('line', { x1: 30, y1: 80, x2: 230, y2: 80, stroke: BORDER, strokeWidth: 1.2 }),
+                h('line', { x1: 130, y1: 15, x2: 130, y2: 146, stroke: BORDER, strokeWidth: 1.2 }),
+                h('line', { x1: coerciveLeft, y1: 24, x2: coerciveLeft, y2: 136, stroke: 'rgba(251,113,133,.38)', strokeWidth: 1, strokeDasharray: '4 4' }),
+                h('line', { x1: coerciveRight, y1: 24, x2: coerciveRight, y2: 136, stroke: 'rgba(251,113,133,.38)', strokeWidth: 1, strokeDasharray: '4 4' }),
+                h('polyline', { 'data-domain-sweep': 'decreasing', points: loopDown.join(' '), fill: 'none', stroke: '#0284c7', strokeWidth: 2.6 }),
+                h('polyline', { 'data-domain-sweep': 'increasing', points: loopUp.join(' '), fill: 'none', stroke: '#7c3aed', strokeWidth: 2.6, strokeDasharray: '7 4' }),
+                h('circle', { className: 'mag-domain-point-ring', cx: pointX, cy: pointY, r: 9, fill: 'none', stroke: '#d97706', strokeWidth: 2 }),
+                h('circle', { 'data-domain-now': 'true', cx: pointX, cy: pointY, r: 4.8, fill: '#d97706', stroke: TEXT, strokeWidth: 1.2 }),
+                h('text', { x: 232, y: 75, fill: SOFT, fontSize: 10, textAnchor: 'end' }, '+H'),
+                h('text', { x: 28, y: 75, fill: SOFT, fontSize: 10 }, '−H'),
+                h('text', { x: 135, y: 20, fill: SOFT, fontSize: 10 }, '+M'),
+                h('text', { x: 135, y: 143, fill: SOFT, fontSize: 10 }, '−M'),
+                h('text', { x: coerciveLeft, y: 157, fill: '#e11d48', fontSize: 8.5, textAnchor: 'middle' }, '−Hc'),
+                h('text', { x: coerciveRight, y: 157, fill: '#e11d48', fontSize: 8.5, textAnchor: 'middle' }, '+Hc')),
+              h('div', { className: 'mag-domain-legend', 'aria-label': __alloT('stem.magnetism.a11y_graph_legend', 'Graph legend') },
+                h('span', { 'data-domain-sweep-key': 'increasing' }, h('i', { className: 'mag-domain-key is-dashed', style: { '--mag-key': '#7c3aed' }, 'aria-hidden': 'true' }), 'increasing H · dashed'),
+                h('span', { 'data-domain-sweep-key': 'decreasing' }, h('i', { className: 'mag-domain-key', style: { '--mag-key': '#0284c7' }, 'aria-hidden': 'true' }), 'decreasing H · solid'),
+                h('span', null, h('i', { className: 'mag-domain-key is-point', style: { '--mag-key': '#fbbf24' }, 'aria-hidden': 'true' }), 'current state')))),
+            h('div', { className: 'mag-motion-controls mag-domain-drive' },
+              h('span', { className: 'mag-section-label' }, 'Apply · remember · reverse'),
           h('section', { className: 'mag-domain-experiment', 'aria-label': __alloT('stem.magnetism.a11y_three_step_magnetic_memory_experiment', 'Three-step magnetic memory experiment') },
             h('div', { className: 'mag-domain-exp-head' }, h('b', null, 'Evidence trail · ' + mat.name), h('span', null, memory.completedCount + '/3 moments captured')),
             h('progress', { className: 'mag-domain-progress', max: 3, value: memory.completedCount, 'aria-label': memory.completedCount + ' of 3 magnetic memory evidence moments captured' }),
@@ -10369,46 +10507,6 @@
             h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#fbbf24' } }, h('small', null, 'Signed vector M'), h('b', null, signed(memory.signedPercent)), h('span', null, memory.magnetizationDirection === 'mixed' ? 'directions cancel' : 'net points ' + memory.magnetizationDirection)),
             h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#a78bfa' } }, h('small', null, 'Memory at H = 0'), h('b', null, memory.memoryAtZeroPercent + '%'), h('span', null, 'modeled remanence')),
             h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#fb7185' } }, h('small', null, 'Switching threshold'), h('b', null, '|' + memory.coercivityPercent + '%|'), h('span', null, 'modeled coercivity'))),
-          h('div', { className: 'mag-domain-visuals' },
-            h('figure', { className: 'mag-domain-figure' },
-              h('figcaption', null, 'H–M memory loop', h('span', null, 'gold point = now')),
-              h('svg', { viewBox: '0 0 260 170', role: 'img',
-                'aria-label': mat.name + ' hysteresis loop. Applied field ' + memory.field.toFixed(2) + '; signed magnetization ' + m.toFixed(2) + '; coercive threshold ' + mat.coercivity.toFixed(2) + '.' },
-                h('title', null, mat.name + ' magnetic hysteresis loop'),
-                h('rect', { x: 0, y: 0, width: 260, height: 170, fill: INSTRUMENT, rx: 9 }),
-                h('line', { x1: 30, y1: 80, x2: 230, y2: 80, stroke: BORDER, strokeWidth: 1.2 }),
-                h('line', { x1: 130, y1: 15, x2: 130, y2: 146, stroke: BORDER, strokeWidth: 1.2 }),
-                h('line', { x1: coerciveLeft, y1: 24, x2: coerciveLeft, y2: 136, stroke: 'rgba(251,113,133,.38)', strokeWidth: 1, strokeDasharray: '4 4' }),
-                h('line', { x1: coerciveRight, y1: 24, x2: coerciveRight, y2: 136, stroke: 'rgba(251,113,133,.38)', strokeWidth: 1, strokeDasharray: '4 4' }),
-                h('polyline', { points: loopDown.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.6 }),
-                h('polyline', { points: loopUp.join(' '), fill: 'none', stroke: '#a78bfa', strokeWidth: 2.6 }),
-                h('circle', { className: 'mag-domain-point-ring', cx: pointX, cy: pointY, r: 9, fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
-                h('circle', { cx: pointX, cy: pointY, r: 4.8, fill: '#fbbf24', stroke: TEXT, strokeWidth: 1.2 }),
-                h('text', { x: 232, y: 75, fill: SOFT, fontSize: 10, textAnchor: 'end' }, '+H'),
-                h('text', { x: 28, y: 75, fill: SOFT, fontSize: 10 }, '−H'),
-                h('text', { x: 135, y: 20, fill: SOFT, fontSize: 10 }, '+M'),
-                h('text', { x: 135, y: 143, fill: SOFT, fontSize: 10 }, '−M'),
-                h('text', { x: coerciveLeft, y: 157, fill: '#fb7185', fontSize: 8.5, textAnchor: 'middle' }, '−Hc'),
-                h('text', { x: coerciveRight, y: 157, fill: '#fb7185', fontSize: 8.5, textAnchor: 'middle' }, '+Hc')),
-              h('div', { className: 'mag-domain-legend', 'aria-label': __alloT('stem.magnetism.a11y_graph_legend', 'Graph legend') },
-                h('span', null, h('i', { className: 'mag-domain-key', style: { '--mag-key': '#38bdf8' }, 'aria-hidden': 'true' }), 'increasing H'),
-                h('span', null, h('i', { className: 'mag-domain-key', style: { '--mag-key': '#a78bfa' }, 'aria-hidden': 'true' }), 'decreasing H'),
-                h('span', null, h('i', { className: 'mag-domain-key is-point', style: { '--mag-key': '#fbbf24' }, 'aria-hidden': 'true' }), 'current state'))),
-            h('figure', { className: 'mag-domain-figure' },
-              h('figcaption', null, 'Inside the material', h('span', null, '40 domain vectors')),
-              h('svg', { viewBox: '0 0 280 150', role: 'img',
-                'aria-label': __alloFill(__alloT('stem.magnetism.a11y_grid_of_40_magnetic_domains_applied_field_is_si', 'Grid of 40 magnetic domains. Applied field is {value1}; signed net magnetization is {value2} percent toward {value3}.'), { value1: memory.fieldDirection, value2: memory.signedPercent, value3: memory.magnetizationDirection })},
-                h('title', null, 'Magnetic domain alignment view'),
-                h('rect', { x: 0, y: 0, width: 280, height: 150, fill: INSTRUMENT, rx: 9 }),
-                h('text', { x: 12, y: 21, fill: SOFT, fontSize: 9.5, fontWeight: 700 }, 'APPLIED H · ' + memory.fieldDirection.toUpperCase()),
-                memory.fieldDirection === 'off'
-                  ? h('g', null, h('line', { x1: 110, y1: 18, x2: 248, y2: 18, stroke: BORDER, strokeWidth: 2, strokeDasharray: '5 4' }), h('text', { x: 252, y: 21, fill: SOFT, fontSize: 9, textAnchor: 'end' }, 'OFF'))
-                  : h('g', null,
-                    h('line', { x1: memory.fieldDirection === 'right' ? 110 : 248, y1: 18, x2: memory.fieldDirection === 'right' ? 248 : 110, y2: 18, stroke: '#fbbf24', strokeWidth: 2.4 }),
-                    h('polygon', { points: memory.fieldDirection === 'right' ? '252,18 244,13.5 244,22.5' : '106,18 114,13.5 114,22.5', fill: '#fbbf24' })),
-                arrows),
-              h('div', { className: 'mag-domain-legend', 'aria-label': __alloT('stem.magnetism.a11y_domain_direction_legend', 'Domain direction legend') },
-                h('span', null, '↗ Mixed = cancels'), h('span', null, '→ Right = positive M'), h('span', null, '← Left = negative M')))),
           slider('Applied field H', memory.field, -1, 1, 0.05, function (v) {
             setMemory({ domainField: v, domainBranch: v < memory.field ? 1 : -1, domainHistory: true }, 'Swept the applied field.');
           }),
@@ -10425,7 +10523,7 @@
               h('button', { type: 'button', onClick: function () { runDomainAction('reverse'); }, style: btn(memory.phase === 'reversed') }, 'Reverse strongly'),
               h('button', { type: 'button', onClick: function () { setMemory({ domainField: 0, domainBranch: 1, domainHistory: false, domainAlign: 0 }, 'Heated past the Curie point; the memory was erased.'); }, style: btn() }, 'Heat it'),
               h('button', { type: 'button', onClick: function () { setMemory({ domainField: 0, domainBranch: 1, domainHistory: false, domainAlign: 0 }, 'Hammered; domain alignment was disrupted.'); }, style: btn() }, 'Hammer it')),
-            h('p', { className: 'mag-domain-reset-note' }, d.domainErasedSeen ? '✓ Extra evidence captured: heat or impact can scramble aligned domains without erasing your completed observations.' : 'Extension: after magnetizing, try heat or impact to scramble the domains again.')),
+            h('p', { className: 'mag-domain-reset-note' }, d.domainErasedSeen ? '✓ Extra evidence captured: heat or impact can scramble aligned domains without erasing your completed observations.' : 'Extension: after magnetizing, try heat or impact to scramble the domains again.')))),
           disclosure('This conceptual M-H loop shows saturation, remanence, and coercivity. Real loops depend on alloy, temperature, shape, sweep rate, and domain-wall pinning.')
         ), '#a3e635');
       }
@@ -10530,56 +10628,63 @@
       }
 
       function craneSVG() {
-        var W = 360, HH = 180;
-        var slotX = function (s) { return 22 + s * 36; };
+        var W = 560, HH = 280;
+        var slotX = function (s) { return 32 + s * 61.5; };
         var cx = slotX(d.craneSlot);
         var evidence = craneEvidenceState(d.cranePredictions, d.craneTests, d.craneDeposited);
         var kids = [];
-        kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: HH, fill: INSTRUMENT, rx: 10 }));
-        kids.push(h('rect', { key: 'focus', x: cx - 17, y: 102, width: 34, height: 56, rx: 7, fill: 'rgba(249,115,22,0.07)', stroke: '#f97316', strokeWidth: 1.5, strokeDasharray: '4 3' }));
-        kids.push(h('rect', { key: 'rail', x: 10, y: 18, width: W - 20, height: 5, rx: 2, fill: '#475569' }));
-        // trolley + cable + magnet disc
-        kids.push(h('rect', { key: 'trolley', x: cx - 12, y: 12, width: 24, height: 14, rx: 3, fill: '#94a3b8' }));
-        kids.push(h('line', { key: 'cable', x1: cx, y1: 26, x2: cx, y2: 62, stroke: '#64748b', strokeWidth: 2 }));
-        kids.push(h('path', { key: 'disc', d: 'M ' + (cx - 14) + ' 62 A 14 14 0 0 1 ' + (cx + 14) + ' 62 L ' + (cx + 14) + ' 70 L ' + (cx - 14) + ' 70 Z',
-          fill: d.cranePower ? '#f43f5e' : '#334155', stroke: d.cranePower ? '#fda4af' : '#475569', strokeWidth: 1.5 }));
+        kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: HH, fill: INSTRUMENT }));
+        [68, 108, 148, 188].forEach(function (y) { kids.push(h('line', { key: 'grid' + y, x1: 12, y1: y, x2: W - 12, y2: y, stroke: BORDER, opacity: 0.3 })); });
+        kids.push(h('rect', { key: 'focus', x: cx - 25, y: 171, width: 50, height: 103, rx: 7, fill: 'rgba(249,115,22,0.07)', stroke: '#f97316', strokeWidth: 1.5, strokeDasharray: '4 3' }));
+        kids.push(h('rect', { key: 'rail', x: 14, y: 27, width: W - 28, height: 7, rx: 3, fill: SOFT }));
+        for (var si = 0; si <= BIN_SLOT; si++) {
+          kids.push(h('line', { key: 'tick' + si, x1: slotX(si), y1: 36, x2: slotX(si), y2: 42, stroke: SOFT, strokeWidth: 1 }));
+          kids.push(h('text', { key: 'slot' + si, x: slotX(si), y: 17, fontSize: 10, fill: SOFT, textAnchor: 'middle' }, si === BIN_SLOT ? 'BIN' : String(si + 1)));
+        }
+        kids.push(h('rect', { key: 'trolley', x: cx - 16, y: 22, width: 32, height: 17, rx: 4, fill: TEXT, stroke: BORDER }));
+        kids.push(h('line', { key: 'cable', x1: cx, y1: 39, x2: cx, y2: 88, stroke: SOFT, strokeWidth: 3 }));
+        kids.push(h('path', { key: 'disc', d: 'M ' + (cx - 20) + ' 90 A 20 20 0 0 1 ' + (cx + 20) + ' 90 L ' + (cx + 20) + ' 103 L ' + (cx - 20) + ' 103 Z',
+          fill: d.cranePower ? '#be123c' : SOFT, stroke: d.cranePower ? '#fda4af' : TEXT, strokeWidth: 1.5 }));
+        kids.push(h('line', { key: 'coil', x1: cx - 13, y1: 94, x2: cx + 13, y2: 94, stroke: d.cranePower ? '#fff' : INSTRUMENT, strokeWidth: 2, strokeDasharray: '3 3' }));
         if (d.cranePower) {
-          kids.push(h('circle', { key: 'glow', className: 'mag-crane-glow', cx: cx, cy: 70, r: 20, fill: 'none', stroke: 'rgba(244,63,94,0.35)', strokeWidth: 4 }));
           // Schematic field loops make the on/off distinction visible beyond color.
+          kids.push(h('circle', { key: 'glow', className: 'mag-crane-glow', cx: cx, cy: 100, r: 26, fill: 'none', stroke: 'rgba(244,63,94,0.35)', strokeWidth: 4 }));
           [0, 1, 2].forEach(function (fi) {
-            var spread = 18 + fi * 10;
+            var spread = Math.min(22 + fi * 9, cx - 6, W - cx - 6);
             kids.push(h('path', { key: 'field' + fi, className: 'mag-crane-field-line',
-              d: 'M ' + (cx - 10) + ' 70 C ' + (cx - spread) + ' ' + (88 + fi * 8) + ', ' + (cx - spread) + ' ' + (112 + fi * 5) + ', ' + cx + ' ' + (126 + fi * 3) +
-                ' C ' + (cx + spread) + ' ' + (112 + fi * 5) + ', ' + (cx + spread) + ' ' + (88 + fi * 8) + ', ' + (cx + 10) + ' 70',
-              fill: 'none', stroke: 'rgba(244,63,94,' + (0.34 - fi * 0.07) + ')', strokeWidth: 1.2 }));
+              d: 'M ' + (cx - 14) + ' 103 C ' + (cx - spread) + ' ' + (122 + fi * 8) + ', ' + (cx - spread) + ' ' + (160 + fi * 5) + ', ' + cx + ' ' + (179 + fi * 3) +
+                ' C ' + (cx + spread) + ' ' + (160 + fi * 5) + ', ' + (cx + spread) + ' ' + (122 + fi * 8) + ', ' + (cx + 14) + ' 103',
+              fill: 'none', stroke: '#e11d48', opacity: 0.8 - fi * 0.15, strokeWidth: 1.5 }));
           });
         }
-        // held item rides under the magnet
         var held = d.craneHolding ? itemById(d.craneHolding) : null;
-        if (held) {
-          kids.push(h('text', { key: 'held', x: cx, y: 92, fontSize: 18, textAnchor: 'middle' }, held.emoji));
-        }
-        // ground + items
-        kids.push(h('rect', { key: 'ground', x: 0, y: 158, width: W, height: 22, fill: '#1e293b' }));
+        if (held) kids.push(h('text', { key: 'held', 'data-crane-held': held.id, x: cx, y: 132, fontSize: 25, textAnchor: 'middle' }, held.emoji));
+        kids.push(h('rect', { key: 'ground', x: 0, y: 230, width: W, height: 50, fill: PANEL, stroke: BORDER }));
         CRANE_ORDER.forEach(function (id, i) {
-          if (!(d.craneItems || {})[i]) return;
-          var it = itemById(id);
-          var itemEvidence = evidence.items[i];
-          kids.push(h('text', { key: 'it' + i, x: slotX(i), y: 152, fontSize: 18, textAnchor: 'middle' }, it.emoji));
-          if (itemEvidence.predicted !== null || itemEvidence.tested) {
+          var it = itemById(id), itemEvidence = evidence.items[i];
+          var here = !!(d.craneItems || {})[i];
+          kids.push(h('line', { key: 'bay' + i, x1: slotX(i) - 28, y1: 230, x2: slotX(i) - 28, y2: 280, stroke: BORDER }));
+          if (here) kids.push(h('text', { key: 'it' + i, x: slotX(i), y: 220, fontSize: 24, textAnchor: 'middle' }, it.emoji));
+          else kids.push(h('text', { key: 'empty' + i, x: slotX(i), y: 219, fill: SOFT, fontSize: 15, textAnchor: 'middle' }, itemEvidence.recycled ? '✓' : '·'));
+          var words = it.name.split(' ');
+          kids.push(h('text', { key: 'name' + i, x: slotX(i), y: 248, fill: TEXT, fontSize: 9, textAnchor: 'middle' }, words[0]));
+          kids.push(h('text', { key: 'kind' + i, x: slotX(i), y: 263, fill: SOFT, fontSize: 9, textAnchor: 'middle' }, words.slice(1).join(' ')));
+          if (here && (itemEvidence.predicted !== null || itemEvidence.tested)) {
             var mark = itemEvidence.tested ? (itemEvidence.correct ? '✓' : '↺') : '?';
-            kids.push(h('circle', { key: 'badgeBg' + i, cx: slotX(i) + 10, cy: 136, r: 6.5, fill: itemEvidence.tested ? (itemEvidence.correct ? '#047857' : '#0369a1') : '#a16207', stroke: '#fff', strokeWidth: 1 }));
-            kids.push(h('text', { key: 'badge' + i, x: slotX(i) + 10, y: 139.3, fill: '#fff', fontSize: 8.5, fontWeight: 900, textAnchor: 'middle' }, mark));
+            kids.push(h('circle', { key: 'badgeBg' + i, cx: slotX(i) + 14, cy: 198, r: 8, fill: itemEvidence.tested ? (itemEvidence.correct ? '#047857' : '#0369a1') : '#a16207', stroke: '#fff', strokeWidth: 1 }));
+            kids.push(h('text', { key: 'badge' + i, x: slotX(i) + 14, y: 201.5, fill: '#fff', fontSize: 10, fontWeight: 900, textAnchor: 'middle' }, mark));
           }
         });
-        // recycling bin
-        kids.push(h('rect', { key: 'bin', x: slotX(BIN_SLOT) - 16, y: 128, width: 32, height: 30, rx: 4, fill: '#14532d', stroke: '#22c55e', strokeWidth: 1.5 }));
-        kids.push(h('text', { key: 'binl', x: slotX(BIN_SLOT), y: 148, fontSize: 13, textAnchor: 'middle' }, '♻️'));
-        kids.push(h('text', { key: 'binc', x: slotX(BIN_SLOT), y: 124, fill: '#22c55e', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, Object.keys(d.craneDeposited || {}).length + '/4'));
+        kids.push(h('rect', { key: 'bin', x: slotX(BIN_SLOT) - 24, y: 190, width: 48, height: 40, rx: 5, fill: '#14532d', stroke: '#22c55e', strokeWidth: 1.5 }));
+        kids.push(h('path', { key: 'binlip', d: 'M ' + (slotX(BIN_SLOT) - 27) + ' 189 H ' + (slotX(BIN_SLOT) + 27), stroke: '#22c55e', strokeWidth: 4 }));
+        kids.push(h('text', { key: 'binl', x: slotX(BIN_SLOT), y: 218, fontSize: 22, fill: '#fff', textAnchor: 'middle' }, '♻'));
+        kids.push(h('text', { key: 'binc', 'data-crane-bin-count': 'true', x: slotX(BIN_SLOT), y: 178, fill: TEXT, fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, Object.keys(d.craneDeposited || {}).length + ' / 4'));
+        kids.push(h('text', { key: 'binlabel', x: slotX(BIN_SLOT), y: 248, fill: TEXT, fontSize: 9, textAnchor: 'middle' }, 'Recycle'));
+        kids.push(h('text', { key: 'binhint', x: slotX(BIN_SLOT), y: 263, fill: SOFT, fontSize: 9, textAnchor: 'middle' }, 'power off'));
         var currentItemId = d.craneHolding || (d.craneItems || {})[d.craneSlot];
         var currentEvidence = evidence.items.find(function (entry) { return entry.id === currentItemId; });
         var evidenceLabel = currentEvidence ? (currentEvidence.tested ? ', evidence says ' + (currentEvidence.lifted ? 'lifted' : 'no pull') : currentEvidence.predicted !== null ? ', prediction says ' + (currentEvidence.predicted ? 'will lift' : 'no pull') : ', awaiting prediction') : '';
-        return h('svg', { className: 'mag-crane-scene' + (d.cranePower ? ' is-powered' : ''), viewBox: '0 0 ' + W + ' ' + HH, width: '100%', style: { maxWidth: 420 }, role: 'img',
+        return h('svg', { className: 'mag-crane-scene' + (d.cranePower ? ' is-powered' : ''), viewBox: '0 0 ' + W + ' ' + HH, width: '100%', role: 'img',
           'aria-label': 'Junkyard crane at position ' + d.craneSlot + (d.cranePower ? ', magnet powered' : ', magnet off') + (d.craneHolding && itemById(d.craneHolding) ? ', carrying ' + itemById(d.craneHolding).name : '') + evidenceLabel }, kids);
       }
 
@@ -10610,11 +10715,40 @@
         return h('div', null,
           card('Junkyard challenge: recycle the steel', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Real scrapyards use switchable electromagnets to lift ', h('b', null, 'ferromagnetic'), ' material — power on to grab, power off to release. In this mixed lineup, find the iron, steel, nickel, and cobalt items and carry them to the ♻️ bin.'),
-            h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } }, craneSVG()),
+            h('div', { className: 'mag-crane-workbench' },
+              h('div', { className: 'mag-crane-scene-column' },
+                h('div', { className: 'mag-instrument' },
+                  h('div', { className: 'mag-instrument-head' }, 'SCRAPYARD · ELECTROMAGNET',
+                    h('b', { 'data-crane-live': 'true' }, d.craneHolding && craneOver ? 'Carrying · ' + craneOver.name : d.cranePower ? 'No pull · field on' : 'Field off')),
+                  craneSVG(),
+                  h('div', { className: 'mag-crane-caption' },
+                    h('b', null, d.craneSlot === BIN_SLOT ? 'Recycling bin · release here' : 'Bay ' + (d.craneSlot + 1) + ' / 8 · ' + (craneOver ? craneOver.name : 'empty')),
+                    h('span', null, 'Dashed bay: crane position · ? prediction · ✓ confirmed · ↺ revised. Geometry is schematic.'))),
             h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true' }, d.cranePower ? '🧲' : '🔎'),
               h('span', null, h('b', null, 'Crane is over: '), cranePositionText + '. ' +
-                (d.craneHolding ? 'The field is holding it; move to the bin and switch off.' : d.cranePower ? 'The field is on; switch it off before moving.' : d.craneSlot === BIN_SLOT ? 'Move left to return to the samples.' : currentEvidence && currentEvidence.tested ? 'Its result is already in the evidence board.' : 'Predict whether it will jump before switching on.'))),
+                (d.craneHolding ? 'The field is holding it; move to the bin and switch off.' : d.cranePower ? 'The field is on; switch it off before moving.' : d.craneSlot === BIN_SLOT ? 'Move left to return to the samples.' : currentEvidence && currentEvidence.tested ? 'Its result is already in the evidence board.' : 'Predict whether it will jump before switching on.')))),
+              h('div', { className: 'mag-motion-controls mag-crane-controls' },
+                h('span', { className: 'mag-section-label' }, 'Lift · carry · release'),
+            h('div', { className: 'mag-crane-next' },
+              h('span', { 'aria-hidden': 'true' }, next.icon),
+              h('span', null, h('b', null, 'Next action · ' + next.title), next.body)),
+            showPrediction ? h('fieldset', { className: 'mag-crane-predict' },
+              h('legend', null, 'Prediction for ' + currentEvidence.name),
+              h('div', null,
+                h('button', { type: 'button', 'aria-pressed': currentEvidence.predicted === true ? 'true' : 'false', onClick: function () { cranePredict(true); }, style: btn(currentEvidence.predicted === true) }, '🧲 Will lift'),
+                h('button', { type: 'button', 'aria-pressed': currentEvidence.predicted === false ? 'true' : 'false', onClick: function () { cranePredict(false); }, style: btn(currentEvidence.predicted === false) }, '— No pull'))) : null,
+            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 8 } },
+              h('button', { type: 'button', disabled: d.craneDone || d.craneSlot <= 0 || moveLocked, 'aria-label': __alloT('stem.magnetism.a11y_move_crane_left', 'Move crane left'), onClick: function () { craneMove(-1); }, style: btn() }, '◀ Move'),
+              h('button', { type: 'button', disabled: d.craneDone || predictionNeeded, 'aria-describedby': predictionNeeded ? 'mag-crane-evidence-title' : undefined, 'aria-pressed': d.cranePower ? 'true' : 'false', onClick: craneTogglePower, style: btn(d.cranePower) }, d.cranePower ? '⚡ Power OFF' : '⚡ Power ON'),
+              h('button', { type: 'button', disabled: d.craneDone || d.craneSlot >= BIN_SLOT || moveLocked, 'aria-label': __alloT('stem.magnetism.a11y_move_crane_right', 'Move crane right'), onClick: function () { craneMove(1); }, style: btn() }, 'Move ▶')),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { minHeight: 34, textAlign: 'center', color: d.craneDone ? '#34d399' : TEXT, fontSize: 13, fontWeight: 600, padding: '4px 8px' } }, (typeof d.craneMsg === 'string' ? d.craneMsg : '') || 'Move over an object, predict, then test it with the field.'),
+            d.craneDone ? h('div', { style: { textAlign: 'center' } },
+              h('button', { onClick: function () {
+                  upd({ craneSlot: 0, cranePower: false, craneHolding: null, craneMsg: '',
+                    craneItems: { 0: 'nail', 1: 'foil', 2: 'clip', 3: 'penny', 4: 'nickel', 5: 'ruler', 6: 'cobalt', 7: 'pencil' },
+                    craneDeposited: {}, cranePredictions: {}, craneTests: {}, craneDone: false });
+                }, style: btn() }, '↻ Reset yard & evidence')) : null)),
             h('section', { className: 'mag-crane-evidence', 'aria-labelledby': 'mag-crane-evidence-title' },
               h('div', { className: 'mag-crane-head' },
                 h('b', { id: 'mag-crane-evidence-title' }, 'Prediction → test evidence'),
@@ -10637,26 +10771,7 @@
                   return h('li', { key: item.id, className: 'mag-crane-tile', 'data-state': state, 'data-current': currentEvidence && currentEvidence.id === item.id ? 'true' : 'false', 'aria-label': item.name + ': ' + status },
                     h('div', { className: 'mag-crane-tile-top' }, h('span', { className: 'mag-crane-tile-emoji', 'aria-hidden': 'true' }, item.emoji), h('span', { className: 'mag-crane-tile-mark', 'aria-hidden': 'true' }, mark)),
                     h('b', { title: item.name }, item.name), h('small', null, status));
-                }))),
-            h('div', { className: 'mag-crane-next' },
-              h('span', { 'aria-hidden': 'true' }, next.icon),
-              h('span', null, h('b', null, 'Next action · ' + next.title), next.body)),
-            showPrediction ? h('fieldset', { className: 'mag-crane-predict' },
-              h('legend', null, 'Prediction for ' + currentEvidence.name),
-              h('div', null,
-                h('button', { type: 'button', 'aria-pressed': currentEvidence.predicted === true ? 'true' : 'false', onClick: function () { cranePredict(true); }, style: btn(currentEvidence.predicted === true) }, '🧲 Will lift'),
-                h('button', { type: 'button', 'aria-pressed': currentEvidence.predicted === false ? 'true' : 'false', onClick: function () { cranePredict(false); }, style: btn(currentEvidence.predicted === false) }, '— No pull'))) : null,
-            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 8 } },
-              h('button', { type: 'button', disabled: d.craneDone || d.craneSlot <= 0 || moveLocked, 'aria-label': __alloT('stem.magnetism.a11y_move_crane_left', 'Move crane left'), onClick: function () { craneMove(-1); }, style: btn() }, '◀ Move'),
-              h('button', { type: 'button', disabled: d.craneDone || predictionNeeded, 'aria-describedby': predictionNeeded ? 'mag-crane-evidence-title' : undefined, 'aria-pressed': d.cranePower ? 'true' : 'false', onClick: craneTogglePower, style: btn(d.cranePower) }, d.cranePower ? '⚡ Power OFF' : '⚡ Power ON'),
-              h('button', { type: 'button', disabled: d.craneDone || d.craneSlot >= BIN_SLOT || moveLocked, 'aria-label': __alloT('stem.magnetism.a11y_move_crane_right', 'Move crane right'), onClick: function () { craneMove(1); }, style: btn() }, 'Move ▶')),
-            h('div', { role: 'status', 'aria-live': 'polite', style: { minHeight: 34, textAlign: 'center', color: d.craneDone ? '#34d399' : TEXT, fontSize: 13, fontWeight: 600, padding: '4px 8px' } }, (typeof d.craneMsg === 'string' ? d.craneMsg : '') || 'Move over an object, predict, then test it with the field.'),
-            d.craneDone ? h('div', { style: { textAlign: 'center' } },
-              h('button', { onClick: function () {
-                  upd({ craneSlot: 0, cranePower: false, craneHolding: null, craneMsg: '',
-                    craneItems: { 0: 'nail', 1: 'foil', 2: 'clip', 3: 'penny', 4: 'nickel', 5: 'ruler', 6: 'cobalt', 7: 'pencil' },
-                    craneDeposited: {}, cranePredictions: {}, craneTests: {}, craneDone: false });
-                }, style: btn() }, '↻ Reset yard & evidence')) : null
+                })))
           ), '#f97316'),
           card('Why this works', h('p', { style: { color: SOFT, fontSize: 13, margin: 0, lineHeight: 1.5 } },
             'An electromagnet is a magnet with an off switch — that is its superpower. Cranes, relays, speakers, and many industrial separators use controlled current so the field can change on demand. Aluminum and copper are not lifted this way; recycling systems can separate those conductive metals with eddy currents instead.'), '#f97316')
@@ -10712,14 +10827,23 @@
       }
 
       function mazeSVG() {
-        var PAD = 12, CS = 26; // px per cell on screen
+        var PAD = 48, CS = 44; // px per cell on screen
         var W = PAD * 2 + (MAZE_COLS - 1) * CS, HH = PAD * 2 + (MAZE_ROWS - 1) * CS;
         function px(gx) { return PAD + gx * CS; }
         function py(gy) { return PAD + gy * CS; }
         var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: HH, fill: INSTRUMENT, rx: 10 })];
+        for (var col = 0; col < MAZE_COLS; col++) {
+          kids.push(h('text', { key: 'column' + col, 'data-maze-grid-label': 'column', x: px(col), y: 19, textAnchor: 'middle', fill: SOFT, fontSize: 12 }, String(col + 1)));
+          kids.push(h('line', { key: 'columnLine' + col, x1: px(col), y1: PAD, x2: px(col), y2: py(MAZE_ROWS - 1), stroke: BORDER, opacity: 0.45 }));
+        }
+        for (var row = 0; row < MAZE_ROWS; row++) {
+          kids.push(h('text', { key: 'row' + row, 'data-maze-grid-label': 'row', x: 20, y: py(row) + 4, textAnchor: 'middle', fill: SOFT, fontSize: 12 }, String(row + 1)));
+          kids.push(h('line', { key: 'rowLine' + row, x1: PAD, y1: py(row), x2: px(MAZE_COLS - 1), y2: py(row), stroke: BORDER, opacity: 0.45 }));
+        }
+        kids.push(h('rect', { key: 'currentCell', x: px(d.mazePx) - 21, y: py(d.mazePy) - 21, width: 42, height: 42, rx: 10, fill: 'rgba(56,189,248,.08)', stroke: '#0284c7', strokeWidth: 1.5, strokeDasharray: '4 4' }));
         // faint grid dots
         for (var gy = 0; gy < MAZE_ROWS; gy++) for (var gx = 0; gx < MAZE_COLS; gx++) {
-          kids.push(h('circle', { key: 'g' + gx + '_' + gy, cx: px(gx), cy: py(gy), r: 1.2, fill: '#1e293b' }));
+          kids.push(h('circle', { key: 'g' + gx + '_' + gy, cx: px(gx), cy: py(gy), r: 1.5, fill: SOFT, opacity: 0.6 }));
         }
         // Connect breadcrumb samples so the curved evidence path is visible as
         // a trajectory, not just a collection of unrelated dots.
@@ -10729,17 +10853,18 @@
           var pp = c.split(',');
           return px(+pp[0]) + ',' + py(+pp[1]);
         });
-        if (trailPoints.length > 1) kids.push(h('polyline', { key: 'trailLine', points: trailPoints.join(' '), fill: 'none', stroke: 'rgba(244,63,94,0.42)', strokeWidth: 2, strokeLinejoin: 'round' }));
+        if (trailPoints.length > 1) kids.push(h('polyline', { key: 'trailLine', 'data-maze-trail': 'true', points: trailPoints.join(' '), fill: 'none', stroke: '#e11d48', strokeWidth: 3, strokeLinejoin: 'round' }));
         trailCells.forEach(function (c, i) {
           var pp = c.split(',');
-          kids.push(h('circle', { key: 't' + i, cx: px(+pp[0]), cy: py(+pp[1]), r: i === 0 ? 3.1 : 2.4, fill: i === 0 ? '#fbbf24' : 'rgba(244,63,94,0.52)' }));
+          kids.push(h('circle', { key: 't' + i, cx: px(+pp[0]), cy: py(+pp[1]), r: i === 0 ? 4.5 : 3.4, fill: i === 0 ? '#d97706' : '#e11d48' }));
         });
+        kids.push(h('path', { key: 'startDiamond', d: 'M ' + px(roundStart[0]) + ' ' + (py(roundStart[1]) - 8) + ' l 8 8 -8 8 -8 -8 Z', fill: 'none', stroke: '#d97706', strokeWidth: 2 }));
         var mag = mazeMagnet();
         // reveal the magnet (and where its poles were) only after the win
         if (d.mazeWon) {
           var deg = mag.angle * 180 / Math.PI;
           var sx = W / 2 + mag.x / MAZE_CELL * CS, sy = HH / 2 + mag.y / MAZE_CELL * CS;
-          kids.push(h('g', { key: 'mag', transform: 'translate(' + sx + ',' + sy + ') rotate(' + deg.toFixed(1) + ')' },
+          kids.push(h('g', { key: 'mag', 'data-maze-revealed': 'true', transform: 'translate(' + sx + ',' + sy + ') rotate(' + deg.toFixed(1) + ') scale(' + (CS / 26) + ')' },
             h('rect', { x: 0, y: -8, width: 20, height: 16, fill: '#ef4444' }),
             h('rect', { x: -20, y: -8, width: 20, height: 16, fill: '#3b82f6' }),
             h('text', { x: 10, y: 4, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'N'),
@@ -10750,12 +10875,12 @@
         var b = fieldAt(f0.x, f0.y, [mag]);
         var bang = Math.atan2(b.y, b.x) * 180 / Math.PI;
         kids.push(h('g', { key: 'player', transform: 'translate(' + px(d.mazePx) + ',' + py(d.mazePy) + ')' },
-          h('circle', { r: 12, fill: '#0f172a', stroke: '#e2e8f0', strokeWidth: 1.4 }),
-          h('g', { transform: 'rotate(' + bang.toFixed(1) + ')' },
-            h('polygon', { points: '10,0 -2,-3 -2,3', fill: '#ef4444' }),
-            h('polygon', { points: '-10,0 2,-3 2,3', fill: '#e2e8f0' }))));
+          h('circle', { r: 18, fill: '#0f172a', stroke: '#e2e8f0', strokeWidth: 1.4 }),
+          h('g', { 'data-walk-needle-angle': bang.toFixed(1), transform: 'rotate(' + bang.toFixed(1) + ')' },
+            h('polygon', { points: '15,0 -3,-5 -3,5', fill: '#f43f5e' }),
+            h('polygon', { points: '-15,0 3,-5 3,5', fill: '#e2e8f0' }))));
         var hereBearing = mazeBearingAt(d.mazePx, d.mazePy);
-        return h('svg', { viewBox: '0 0 ' + W + ' ' + HH, width: '100%', style: { maxWidth: 420 }, role: 'img',
+        return h('svg', { className: 'mag-walk-board', viewBox: '0 0 ' + W + ' ' + HH, width: '100%', role: 'img',
           'aria-label': 'Field Walk board. Your compass at column ' + (d.mazePx + 1) + ', row ' + (d.mazePy + 1) + '; red needle points about ' + hereBearing.word + (d.mazeWon ? '. Magnet revealed.' : '. The hidden magnet is not visible — follow the needle.') }, kids);
       }
 
@@ -10791,11 +10916,11 @@
         if (points.length > 1) {
           var area = [left + ',' + (top + chartHeight)].concat(points.map(function (point) { return point.x.toFixed(1) + ',' + point.y.toFixed(1); })).concat([points[points.length - 1].x.toFixed(1) + ',' + (top + chartHeight)]).join(' ');
           kids.push(h('polygon', { key: 'area', points: area, fill: 'rgba(56,189,248,.11)' }));
-          kids.push(h('polyline', { key: 'line', points: points.map(function (point) { return point.x.toFixed(1) + ',' + point.y.toFixed(1); }).join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.4, strokeLinejoin: 'round', strokeLinecap: 'round' }));
+          kids.push(h('polyline', { key: 'line', points: points.map(function (point) { return point.x.toFixed(1) + ',' + point.y.toFixed(1); }).join(' '), fill: 'none', stroke: '#0284c7', strokeWidth: 2.4, strokeLinejoin: 'round', strokeLinecap: 'round' }));
         }
         var firstPoint = points[0], lastPoint = points[points.length - 1];
-        kids.push(h('circle', { key: 'first', cx: firstPoint.x, cy: firstPoint.y, r: 3.2, fill: '#fbbf24', stroke: INSTRUMENT, strokeWidth: 1.5 }));
-        if (points.length > 1) kids.push(h('circle', { key: 'last', cx: lastPoint.x, cy: lastPoint.y, r: 4, fill: '#fb7185', stroke: INSTRUMENT, strokeWidth: 1.5 }));
+        kids.push(h('circle', { key: 'first', cx: firstPoint.x, cy: firstPoint.y, r: 3.2, fill: '#d97706', stroke: INSTRUMENT, strokeWidth: 1.5 }));
+        if (points.length > 1) kids.push(h('circle', { key: 'last', cx: lastPoint.x, cy: lastPoint.y, r: 4, fill: '#e11d48', stroke: INSTRUMENT, strokeWidth: 1.5 }));
         kids.push(h('text', { key: 'start', x: left, y: H - 6, fill: SOFT, fontSize: 10, fontWeight: 700, textAnchor: 'start' }, 'start'));
         kids.push(h('text', { key: 'now', x: W - right, y: H - 6, fill: SOFT, fontSize: 10, fontWeight: 700, textAnchor: 'end' }, 'now'));
         var ratioText = evidence.signalRatio >= 100 ? evidence.signalRatio.toFixed(0) : evidence.signalRatio >= 10 ? evidence.signalRatio.toFixed(1) : evidence.signalRatio.toFixed(2);
@@ -10817,11 +10942,26 @@
         return h('div', null,
           card('Find the hidden magnet', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Somewhere on this board a magnet is buried. Your only instrument is the compass under your feet. ', h('b', null, 'Walk the way the red end points'), ' — trust the field.'),
-            h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } }, mazeSVG()),
+            h('div', { className: 'mag-walk-workbench' },
+              h('div', { className: 'mag-walk-scene mag-instrument' },
+                h('div', { className: 'mag-instrument-head' }, 'FIELD SURVEY · COMPASS', h('b', null, 'Round ' + (evidence.round + 1) + ' / ' + MAZE_ROUNDS.length)),
+                mazeSVG(),
+                h('div', { className: 'mag-walk-caption' }, h('b', null, d.mazeWon ? 'Source revealed · compare the poles with your route' : 'Source hidden · build your own evidence trail'),
+                  h('span', null, '◇ start · connected rose trail · compass ring: current square. Grid labels show column and row.'))),
+              h('div', { className: 'mag-motion-controls mag-walk-controls' },
+                h('span', { className: 'mag-section-label' }, 'Read · step · compare'),
+                h('div', { className: 'mag-walk-bearing' },
+                  h('svg', { viewBox: '0 0 80 80', width: 80, height: 80, role: 'img', 'aria-label': 'Current compass. The red tip points about ' + bearing.word + '.' },
+                    h('text', { x: 40, y: 9, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'N'), h('text', { x: 75, y: 43, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'E'),
+                    h('text', { x: 40, y: 79, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'S'), h('text', { x: 5, y: 43, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'W'),
+                    h('circle', { cx: 40, cy: 40, r: 25, fill: '#0f172a', stroke: SOFT, strokeWidth: 1.5 }),
+                    h('g', { 'data-walk-needle-angle': bearing.angle.toFixed(1), transform: 'translate(40,40) rotate(' + bearing.angle.toFixed(1) + ')' },
+                      h('polygon', { points: '21,0 -3,-6 -3,6', fill: '#f43f5e' }), h('polygon', { points: '-21,0 3,-6 3,6', fill: '#e2e8f0' }))),
+                  h('div', null, h('b', { className: 'mag-walk-position' }, 'Column ' + (d.mazePx + 1) + ' · Row ' + (d.mazePy + 1)), h('span', null, 'Red tip = local field direction'), h('small', null, d.mazeSteps + ' steps · ' + (d.mazeWon ? 'source found' : 'source hidden')))),
             h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 19 } }, bearing.symbol),
               h('span', { role: 'status' }, h('b', null, 'Read the needle: '), d.learningMode === 'challenge' ? 'Use the needle bearing to choose your own step. No path hint is shown; your connected trail is the evidence.' : 'Its strongest cardinal component points ' + bearing.word + '. The gold-outlined step is the closest D-pad match; your connected trail records the field line you infer.')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3,44px)', gap: 4, justifyContent: 'center', marginBottom: 8 } },
+            h('div', { className: 'mag-walk-pad', role: 'group', 'aria-label': 'Field Walk movement', style: { display: 'grid', gridTemplateColumns: 'repeat(3,44px)', gap: 4, justifyContent: 'center', marginBottom: 8 } },
               h('span', null, ''),
               h('button', { 'aria-label': 'Walk up' + (d.learningMode !== 'challenge' && bearing.dy === -1 ? ', closest to the red needle direction' : ''), onClick: function () { mazeMove(0, -1); }, style: mazePadStyle(0, -1) }, '↑'),
               h('span', null, ''),
@@ -10830,7 +10970,7 @@
               h('button', { 'aria-label': 'Walk right' + (d.learningMode !== 'challenge' && bearing.dx === 1 ? ', closest to the red needle direction' : ''), onClick: function () { mazeMove(1, 0); }, style: mazePadStyle(1, 0) }, '→'),
               h('span', null, ''),
               h('button', { 'aria-label': 'Walk down' + (d.learningMode !== 'challenge' && bearing.dy === 1 ? ', closest to the red needle direction' : ''), onClick: function () { mazeMove(0, 1); }, style: mazePadStyle(0, 1) }, '↓'),
-              h('span', null, '')),
+              h('span', null, '')))),
             h('div', { className: 'mag-maze-evidence' },
               h('div', { className: 'mag-maze-head' },
                 h('b', null, 'Navigation evidence'),
@@ -10864,48 +11004,53 @@
 
       // ── Transformer (mutual induction) ────────────────────────────────
       function transformerSVG() {
-        var stepUp = d.xfmrN2 > d.xfmrN1;
         var ratio = d.xfmrN2 / d.xfmrN1;
         var p = Math.max(2, Math.min(8, Math.round(d.xfmrN1 / 25)));
         var s2 = Math.max(2, Math.min(12, Math.round(d.xfmrN2 / 25)));
-        var kids = [];
-        kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: 320, height: 140, fill: INSTRUMENT, rx: 10 }));
-        // shared iron core (the flux bridge between the two coils)
-        kids.push(h('rect', { key: 'core', x: 120, y: 22, width: 80, height: 96, fill: 'none', stroke: '#94a3b8', strokeWidth: 12, rx: 8, opacity: 0.55 }));
-        if (d.xfmrAC) {
-          kids.push(h('path', { key: 'flux-path', d: 'M 132 31 H 188 V 109 H 132 Z', fill: 'none', stroke: '#fbbf24', strokeWidth: 1.8, strokeDasharray: '6 4', opacity: 0.82 }));
-          kids.push(h('polygon', { key: 'flux-head-top', points: '184,31 174,26 174,36', fill: '#fbbf24' }));
-          kids.push(h('polygon', { key: 'flux-head-bottom', points: '136,109 146,104 146,114', fill: '#fbbf24' }));
-          kids.push(h('text', { key: 'flux-label', x: 160, y: 74, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, 'changing flux Φ'));
-        } else {
-          kids.push(h('text', { key: 'flux-label', x: 160, y: 74, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, 'steady flux · no induction'));
-        }
-        kids.push(h('line', { key: 'input-wire', x1: 82, y1: 70, x2: 106, y2: 70, stroke: '#f59e0b', strokeWidth: 2 }));
-        kids.push(h('polygon', { key: 'input-head', points: '111,70 102,65 102,75', fill: '#f59e0b' }));
-        kids.push(h('line', { key: 'output-wire', x1: 214, y1: 70, x2: 238, y2: 70, stroke: '#38bdf8', strokeWidth: 2 }));
-        kids.push(h('polygon', { key: 'output-head', points: '243,70 234,65 234,75', fill: '#38bdf8' }));
-        // primary loops (left leg)
-        Array.from({ length: p }).forEach(function (_, i) {
-          kids.push(h('ellipse', { key: 'p' + i, cx: 126, cy: 40 + i * (60 / Math.max(p - 1, 1)), rx: 16, ry: 5, fill: 'none', stroke: '#f59e0b', strokeWidth: 3 }));
-        });
-        // secondary loops (right leg)
-        Array.from({ length: s2 }).forEach(function (_, i) {
-          kids.push(h('ellipse', { key: 's' + i, cx: 194, cy: 36 + i * (68 / Math.max(s2 - 1, 1)), rx: 16, ry: 5, fill: 'none', stroke: '#38bdf8', strokeWidth: 3 }));
-        });
-        kids.push(h('text', { key: 'lin', x: 60, y: 66, fill: TEXT, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, d.xfmrAC ? '120 V AC' : '120 V DC'));
-        kids.push(h('text', { key: 'lp', x: 60, y: 82, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'primary N₁=' + d.xfmrN1));
         var vout = transformerOut(120, d.xfmrN1, d.xfmrN2, d.xfmrAC);
-        kids.push(h('text', { key: 'lout', x: 262, y: 66, fill: TEXT, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, vout.toFixed(0) + ' V'));
-        kids.push(h('text', { key: 'ls', x: 262, y: 82, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'secondary N₂=' + d.xfmrN2));
-        if (d.xfmrAC) {
-          kids.push(h('text', { key: 'tag', x: 160, y: 14, fill: stepUp ? '#34d399' : '#fbbf24', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, stepUp ? 'STEP-UP ▲' : (d.xfmrN2 === d.xfmrN1 ? '1 : 1' : 'STEP-DOWN ▼')));
-          kids.push(h('text', { key: 'trade', x: 160, y: 133, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'ideal trade: voltage ×' + ratio.toFixed(2) + ' · current ×' + (1 / ratio).toFixed(2) + ' · power ≈ constant'));
-        } else {
-          kids.push(h('text', { key: 'trade', x: 160, y: 133, fill: '#fca5a5', fontSize: 11, textAnchor: 'middle' }, 'steady flux cannot induce a secondary voltage'));
-        }
-        return h('svg', { viewBox: '0 0 320 140', width: '100%', style: { maxWidth: 380 }, role: 'img',
-          'aria-label': __alloFill(__alloT('stem.magnetism.a11y_transformer_primary_coil_of_turns_and_secondary', 'Transformer: primary coil of {value1} turns and secondary of {value2} turns on a shared iron core, output {value3} volts'), { value1: d.xfmrN1, value2: d.xfmrN2, value3: vout.toFixed(0) })}, kids);
+        var status = !d.xfmrAC ? 'DC · steady state' : ratio > 1 ? 'STEP-UP ▲' : ratio < 1 ? 'STEP-DOWN ▼' : '1 : 1';
+        var kids = [h('rect', { key: 'bg', width: 560, height: 270, fill: INSTRUMENT })];
+        [40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520].forEach(function (x) {
+          kids.push(h('line', { key: 'gx' + x, x1: x, x2: x, y1: 18, y2: 250, stroke: BORDER, opacity: 0.3 }));
+        });
+        [40, 80, 120, 160, 200, 240].forEach(function (y) {
+          kids.push(h('line', { key: 'gy' + y, x1: 20, x2: 540, y1: y, y2: y, stroke: BORDER, opacity: 0.3 }));
+        });
+        kids.push(h('rect', { key: 'core', x: 180, y: 62, width: 200, height: 144, rx: 16, fill: 'none', stroke: SOFT, strokeWidth: 27 }));
+        kids.push(h('rect', { key: 'core-edge', x: 180, y: 62, width: 200, height: 144, rx: 16, fill: 'none', stroke: BORDER, strokeWidth: 18 }));
+        if (d.xfmrAC) kids.push(h('g', { key: 'flux', 'data-transformer-flux': 'true' },
+          h('path', { d: 'M196 62H364Q380 62 380 78V190Q380 206 364 206H196Q180 206 180 190V78Q180 62 196 62Z', fill: 'none', stroke: '#d97706', strokeWidth: 3, strokeDasharray: '7 5' }),
+          h('polygon', { points: '290,62 279,56 279,68', fill: '#d97706' }),
+          h('polygon', { points: '270,206 281,200 281,212', fill: '#d97706' })));
+        kids.push(h('path', { key: 'primary-leads', d: 'M152 96H60V118 M152 184H60V162', fill: 'none', stroke: '#d97706', strokeWidth: 3, strokeLinejoin: 'round' }));
+        kids.push(h('path', { key: 'secondary-leads', d: 'M408 96H500V118 M408 184H500V162', fill: 'none', stroke: '#0284c7', strokeWidth: 3, strokeLinejoin: 'round' }));
+        Array.from({ length: p }).forEach(function (_, i) {
+          kids.push(h('ellipse', { key: 'p' + i, cx: 180, cy: 96 + i * 88 / Math.max(1, p - 1), rx: 28, ry: 6, fill: 'none', stroke: '#d97706', strokeWidth: 4 }));
+        });
+        Array.from({ length: s2 }).forEach(function (_, i) {
+          kids.push(h('ellipse', { key: 's' + i, cx: 380, cy: 96 + i * 88 / Math.max(1, s2 - 1), rx: 28, ry: 5, fill: 'none', stroke: '#0284c7', strokeWidth: 3 }));
+        });
+        kids.push(h('circle', { key: 'source', cx: 60, cy: 140, r: 22, fill: INSTRUMENT, stroke: '#d97706', strokeWidth: 2 }));
+        kids.push(h('text', { key: 'input-symbol', x: 60, y: 149, textAnchor: 'middle', fill: TEXT, fontSize: 28 }, d.xfmrAC ? '~' : '='));
+        kids.push(h('circle', { key: 'output', cx: 500, cy: 140, r: 22, fill: INSTRUMENT, stroke: '#0284c7', strokeWidth: 2 }));
+        kids.push(h('text', { key: 'output-symbol', x: 500, y: 147, textAnchor: 'middle', fill: TEXT, fontSize: 20, fontWeight: 700 }, 'V'));
+        kids.push(h('text', { key: 'primary-label', x: 82, y: 78, textAnchor: 'middle', fill: TEXT, fontSize: 14, fontWeight: 700 }, 'PRIMARY'));
+        kids.push(h('text', { key: 'secondary-label', x: 478, y: 78, textAnchor: 'middle', fill: TEXT, fontSize: 14, fontWeight: 700 }, 'SECONDARY'));
+        kids.push(h('text', { key: 'primary-turns', x: 82, y: 207, textAnchor: 'middle', fill: TEXT, fontSize: 15 }, 'N₁ = ' + d.xfmrN1));
+        kids.push(h('text', { key: 'secondary-turns', x: 478, y: 207, textAnchor: 'middle', fill: TEXT, fontSize: 15 }, 'N₂ = ' + d.xfmrN2));
+        kids.push(h('text', { key: 'flux-label', x: 280, y: 135, textAnchor: 'middle', fill: TEXT, fontSize: 15, fontWeight: 700 }, d.xfmrAC ? 'changing flux Φ' : 'steady flux'));
+        kids.push(h('text', { key: 'core-label', x: 280, y: 156, textAnchor: 'middle', fill: SOFT, fontSize: 13 }, 'shared iron core'));
+        kids.push(h('text', { key: 'schematic', x: 280, y: 246, textAnchor: 'middle', fill: SOFT, fontSize: 13 }, 'schematic windings · use N₁ and N₂ for actual turns'));
+        return h('div', { className: 'mag-instrument', 'data-transformer-instrument': 'true' },
+          h('div', { className: 'mag-instrument-head' }, h('span', null, 'Transformer · shared flux'), h('b', null, status)),
+          h('svg', { viewBox: '0 0 560 270', width: '100%', role: 'img',
+            'aria-label': __alloFill(__alloT('stem.magnetism.a11y_transformer_primary_coil_of_turns_and_secondary', 'Transformer: primary coil of {value1} turns and secondary of {value2} turns on a shared iron core, output {value3} volts'), { value1: d.xfmrN1, value2: d.xfmrN2, value3: vout.toFixed(0) })}, kids),
+          h('div', { className: 'mag-transformer-caption' },
+            h('b', null, 'Primary N₁ = ' + d.xfmrN1 + ' turns · Secondary N₂ = ' + d.xfmrN2 + ' turns'),
+            h('span', null, d.xfmrAC ? 'The dashed path shows core flux at one instant; its direction reverses with AC.' : 'steady flux · no induction. A switching pulse is outside this steady-state view.'),
+            h('span', null, d.xfmrAC ? 'ideal trade: voltage ×' + ratio.toFixed(2) + ' · current ×' + (1 / ratio).toFixed(2) + ' · power ≈ constant' : 'steady flux cannot induce a secondary voltage')));
       }
+
 
       function transformerTab() {
         var turnsRatio = d.xfmrN2 / d.xfmrN1;
@@ -11019,7 +11164,21 @@
         return h('div', null,
           card('Turns ratio: voltage and current trade', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'AC in the primary makes changing core flux. The secondary shares that flux, so V2/V1 = N2/N1. Add a load to reveal the current and power that the voltage-only view hides.'),
-            h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 10 } }, transformerSVG()),
+            h('div', { className: 'mag-transformer-workbench' },
+            h('div', null, transformerSVG(),
+              h('div', { className: 'mag-readouts mag-transformer-voltages' },
+                instrumentReadout('Primary input', '120 V', d.xfmrAC ? 'AC · source voltage' : 'DC · source voltage', '#d97706', false, { 'data-transformer-reading': 'primary' }),
+                instrumentReadout('Secondary output', load.vout.toFixed(0) + ' V', d.xfmrAC ? 'AC · follows the turns ratio' : 'No sustained induced voltage', '#0284c7', false, { 'data-transformer-reading': 'secondary' })),
+              h('div', { className: 'mag-transformer-comparison', role: 'group', 'aria-label': 'Primary and secondary voltage on a shared scale' },
+                h('div', { className: 'mag-transformer-bar-label' }, h('span', null, 'Voltage comparison'), h('span', null, 'shared scale')),
+                [{ key: 'primary', label: 'Primary', value: 120 }, { key: 'secondary', label: 'Secondary', value: load.vout }].map(function (reading) {
+                  var width = reading.value / Math.max(120, load.vout) * 100;
+                  return h('div', { key: reading.key, className: 'mag-transformer-bar-row' }, h('small', null, reading.label),
+                    h('div', { className: 'mag-transformer-track', role: 'img', 'aria-label': reading.label + ' voltage ' + reading.value.toFixed(0) + ' V; shared scale maximum ' + Math.max(120, load.vout).toFixed(0) + ' V' },
+                      h('span', { 'data-transformer-bar': reading.key, style: { width: width + '%' } })));
+                }))),
+            h('div', { className: 'mag-motion-controls mag-transformer-controls' },
+            h('span', { className: 'mag-section-label' }, 'Set the turns ratio'),
             slider('Primary turns (N1)', d.xfmrN1, 25, 200, 25, function (v) { upd({ xfmrN1: v, xfmrTouched: true }); }),
             slider('Secondary turns (N2)', d.xfmrN2, 25, 400, 25, function (v) { upd({ xfmrN2: v, xfmrTouched: true }); }),
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
@@ -11028,7 +11187,7 @@
                 h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800 } }, '120 V → ' + load.vout.toFixed(0) + ' V output'),
                 h('div', { style: { color: SOFT, fontSize: 11.5, marginTop: 2 } }, d.xfmrAC
                   ? ('voltage x' + turnsRatio.toFixed(2) + ', ideal current capacity x' + currentRatio.toFixed(2))
-                  : 'Steady DC makes steady flux, so continuous secondary voltage is zero.'))),
+                  : 'Steady DC makes steady flux, so continuous secondary voltage is zero.'))))),
             h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true' }, '='),
               h('span', null, d.xfmrAC
@@ -11062,16 +11221,10 @@
                   ? h('button', { onClick: nextTransformerMission, style: btn(true) }, solvedCount === TRANSFORMER_DESIGN_MISSIONS.length ? '\u21BB Replay next mission' : '\u25B6 Next unsolved mission')
                   : h('button', { onClick: validateTransformerDesign, style: btn(design.allMet) }, design.allMet ? '\u2713 Lock in design' : (d.xfmrChecked ? 'Check again' : 'Check design')),
                 d.xfmrChecked && !design.allMet ? h('span', { style: { alignSelf: 'center', color: SOFT, fontSize: 11 } }, 'Next focus: ' + design.nextAction.label) : null)),
-            h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '10px 0' } },
-              h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } },
-                h('div', { style: { color: SOFT, fontSize: 11 } }, 'Secondary current'),
-                h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, load.iout.toFixed(2) + ' A')),
-              h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } },
-                h('div', { style: { color: SOFT, fontSize: 11 } }, 'Useful output'),
-                h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, load.pout.toFixed(0) + ' W')),
-              h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } },
-                h('div', { style: { color: SOFT, fontSize: 11 } }, 'Heat loss'),
-                h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, load.loss.toFixed(1) + ' W'))),
+            h('div', { className: 'mag-readouts' },
+              instrumentReadout('Secondary current', load.iout.toFixed(2) + ' A', 'Live · resistive load', '#0284c7'),
+              instrumentReadout('Useful output', load.pout.toFixed(0) + ' W', 'Power delivered to the load', '#059669'),
+              instrumentReadout('Heat loss', load.loss.toFixed(1) + ' W', 'Power lost in this model', '#d97706')),
             h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', padding: 10 } },
               h('div', { role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_lamp_brightness_percent', 'Lamp brightness {value1} percent'), { value1: Math.round(brightness * 100) }), style: {
                 width: 52, height: 52, borderRadius: '50%', border: '2px solid ' + BORDER,

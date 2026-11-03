@@ -10,6 +10,8 @@ const { SourceFetchError, fetchPublicPage } = require('./web-source-fetch.cjs');
 const { createAlloSheetGristBridge } = require('./allosheet-grist-bridge.cjs');
 const { createAlloSheetEngineManager } = require('./allosheet-engine-manager.cjs');
 const { createWindowsZipExtractor } = require('./allosheet-zip-extractor.cjs');
+const { createLocalImageManager, preflight: localImagePreflight } = require('./local-image-manager.cjs');
+const { createLocalImageProxy, ImageProxyError, MAX_JSON_BYTES: MAX_IMAGE_JSON_BYTES } = require('./local-image-proxy.cjs');
 const path = require('path');
 const { execFile, spawn, spawnSync } = require('child_process');
 const { isDeepStrictEqual } = require('util');
@@ -2442,10 +2444,17 @@ function compactLanDocs() {
   }
 }
 
-function serializeLanDoc(key) {
+function serializeLanDoc(key, auth = null) {
   compactLanDocs();
   const entry = lanDocs.get(key);
   if (!entry) return null;
+  if (auth) {
+    const parent = entry.data;
+    const code = sanitizeLanSessionCode(auth.sessionCode);
+    if (auth.role !== 'participant' || !code || code !== auth.sessionCode
+      || !isPlainObject(parent) || parent.parentKind !== 'live' || parent.parentId !== code
+      || !serializeLanSession(code)) return null;
+  }
   return {
     id: key,
     data: cloneJson(entry.data || {}),
@@ -2840,7 +2849,10 @@ function getSchoolBoxStackPaths() {
 
   for (const candidate of candidates) {
     const rootCompose = path.join(candidate.root, 'docker-compose.yml');
-    if (!isAsarPath(rootCompose) && fs.existsSync(rootCompose)) {
+    const dockerCompose = path.join(candidate.root, 'docker', 'docker-compose.yml');
+    // The checkout's nested stack is maintained; the root file is a legacy
+    // quick-start. Packaged stacks with only a root compose still work.
+    if (!isAsarPath(rootCompose) && fs.existsSync(rootCompose) && !fs.existsSync(dockerCompose)) {
       const dockerEnvExample = path.join(candidate.root, 'docker', '.env.example');
       const localEnvExample = path.join(candidate.root, '.env.example');
       const usesDockerEnv = fs.existsSync(dockerEnvExample);
@@ -2856,7 +2868,6 @@ function getSchoolBoxStackPaths() {
       };
     }
 
-    const dockerCompose = path.join(candidate.root, 'docker', 'docker-compose.yml');
     if (!isAsarPath(dockerCompose) && fs.existsSync(dockerCompose)) {
       return {
         cwd: path.join(candidate.root, 'docker'),
@@ -2896,6 +2907,277 @@ function readEnvValues(filePath) {
     values[match[1]] = value;
   }
   return values;
+}
+
+// Managed images have their own project, model volume and private settings.
+// Merely opening the command center never creates settings or installs models.
+function getLocalImageStackPaths(resourcesPath = process.resourcesPath) {
+  const composeFile = resourcesPath && path.join(resourcesPath, 'local-images', 'docker-compose.yml');
+  if (composeFile && fs.existsSync(composeFile)) return { composeFile, stackAvailable: true };
+  return getSchoolBoxStackPaths();
+}
+
+function createDesktopLocalImageService(options = {}) {
+  const stackPaths = options.stackPaths || getLocalImageStackPaths;
+  const dataDir = options.dataDir || getDataDir;
+  const appOrigin = options.appOrigin || (() => new URL(getAppUrl(readConfig())).origin);
+  const freeDisk = options.freeDisk || getFreeDiskBytes;
+  const imageKeys = ['IMAGE_BACKEND', 'IMAGE_MODEL', 'IMAGE_MODEL_REVISION', 'ALLOFLOW_IMAGE_OFFLINE',
+    'ALLOFLOW_FLUX_API_TOKEN', 'ALLOFLOW_FLUX_ALLOWED_ORIGINS', 'ALLOFLOW_BIND_ADDRESS', 'FLUX_PORT', 'HF_TOKEN', 'FLUX_MODEL'];
+  const execute = options.execute || ((command, args, commandOptions = {}) => new Promise((resolve) => {
+    const env = { ...process.env };
+    // Compose environment variables override --env-file. Never inherit an
+    // unrelated provider token, network binding or Compose service override.
+    for (const key of Object.keys(env)) {
+      if (imageKeys.includes(key.toUpperCase()) || key.toUpperCase().startsWith('COMPOSE_')) delete env[key];
+    }
+    execFile(command, args, {
+      cwd: commandOptions.cwd, env, shell: false, windowsHide: true,
+      encoding: 'utf8', timeout: commandOptions.timeout || 10000, maxBuffer: 8 * 1024 * 1024,
+    }, (error, stdout) => resolve({ code: error ? 1 : 0, stdout: String(stdout || '') }));
+  }));
+  const paths = () => {
+    const stack = stackPaths();
+    if (!stack.stackAvailable) throw new Error('Image stack unavailable.');
+    const directory = path.resolve(dataDir());
+    const identity = process.platform === 'win32' ? directory.toLowerCase() : directory;
+    const suffix = crypto.createHash('sha256').update(identity).digest('hex').slice(0, 16);
+    return { composeFile: stack.composeFile, envFile: path.join(directory, 'local-images.env'), projectName: `alloflow-images-${suffix}` };
+  };
+  const catalog = () => {
+    const manifestPath = path.join(path.dirname(paths().composeFile), 'flux-server', 'model-manifest.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    return Object.entries(manifest.models || {}).filter(([, item]) => item.backend === 'sana-sprint'
+      && item.managed_download === true && /^[a-f0-9]{40}$/.test(item.revision)
+      && Number.isSafeInteger(item.download_bytes) && item.download_bytes > 0
+      && Array.isArray(item.files) && item.files.length > 0).map(([id, item]) => ({ ...item, id }));
+  };
+  function expectedOrigin() {
+    const value = new URL(appOrigin());
+    if (value.protocol !== 'http:' || !isLoopbackHostname(value.hostname) || value.username || value.password) {
+      throw new Error('Managed images require a local AlloFlow app.');
+    }
+    return value.origin;
+  }
+  async function localDockerContext() {
+    // Refuse remote Docker hosts: image actions must remain on this device.
+    if (process.env.DOCKER_HOST || process.env.DOCKER_CONTEXT) return false;
+    const result = await execute('docker', ['context', 'inspect', '--format', '{{json .Endpoints.docker.Host}}']);
+    if (result.code !== 0) return false;
+    let endpoint; try { endpoint = JSON.parse(result.stdout.trim()); } catch (_) { return false; }
+    return typeof endpoint === 'string' && (endpoint.startsWith('unix:///') || endpoint.startsWith('npipe:////./pipe/'));
+  }
+  let hardwarePending = null, hardwareCache = null, hardwareUntil = 0;
+  async function hardware() {
+    if (hardwarePending) return hardwarePending;
+    if (hardwareCache && Date.now() < hardwareUntil) return hardwareCache;
+    hardwarePending = (async () => {
+      if (!await localDockerContext()) return { dockerReady: false, containerPlatform: '', nvidiaReady: false };
+      const [info, compose, gpu] = await Promise.all([
+        execute('docker', ['info', '--format', '{{json .}}']),
+        execute('docker', ['compose', 'version']),
+        execute('nvidia-smi', ['--query-gpu=name', '--format=csv,noheader']),
+      ]);
+      let details = {}; try { details = JSON.parse(info.stdout); } catch (_) {}
+      const arch = ['amd64', 'x86_64'].includes(details.Architecture) ? 'amd64' : String(details.Architecture || '');
+      const localNvidia = gpu.code === 0 && Boolean(gpu.stdout.trim());
+      // Docker Desktop's WSL GPU path need not list the nvidia runtime.
+      // Eligibility is not a claim that a real CUDA inference has succeeded.
+      const dockerGpu = Boolean(details.Runtimes?.nvidia) || /docker desktop/i.test(details.OperatingSystem || '');
+      return { dockerReady: info.code === 0 && compose.code === 0,
+        containerPlatform: `${details.OSType || ''}/${arch}`, nvidiaReady: localNvidia && dockerGpu };
+    })();
+    try { hardwareCache = await hardwarePending; hardwareUntil = Date.now() + 15000; return hardwareCache; }
+    finally { hardwarePending = null; }
+  }
+  async function owned(targetPaths) {
+    if (!await localDockerContext()) return false;
+    const result = await execute('docker', ['container', 'ls', '--all', '--filter', 'name=^/alloflow-flux$', '--format', '{{json .}}']);
+    if (result.code !== 0) return false;
+    const rows = result.stdout.trim().split(/\r?\n/).filter(Boolean);
+    if (rows.length === 0) return true;
+    if (rows.length !== 1) return false;
+    const inspection = await execute('docker', ['container', 'inspect', 'alloflow-flux', '--format', '{{json .Config.Labels}}']);
+    if (inspection.code !== 0) return false;
+    let labels; try { labels = JSON.parse(inspection.stdout); } catch (_) { return false; }
+    return labels?.['com.docker.compose.project'] === targetPaths.projectName && labels?.['com.docker.compose.service'] === 'flux';
+  }
+  async function requireStopped() {
+    if (!await localDockerContext()) throw new Error('Image setup requires local Docker.');
+    const running = await execute('docker', ['container', 'ls', '--filter', 'name=^/alloflow-flux$', '--format', '{{json .}}']);
+    if (running.code !== 0 || running.stdout.trim()) throw new Error('Stop the image container before preparing or repairing settings.');
+  }
+  async function readSetup() {
+    const targetPaths = paths(), values = readEnvValues(targetPaths.envFile), models = catalog();
+    const model = models.find((entry) => entry.id === values.IMAGE_MODEL) || models[0] || {};
+    let origin = ''; try { origin = expectedOrigin(); } catch (_) {}
+    const managed = values.ALLOFLOW_DESKTOP_IMAGE_OWNER === '1' && values.IMAGE_BACKEND === 'sana-sprint'
+      && values.IMAGE_MODEL === model.id && values.IMAGE_MODEL_REVISION === model.revision && values.FLUX_PORT === '7860';
+    return {
+      paths: targetPaths, model, hardware: await hardware(), availableBytes: await freeDisk(path.dirname(targetPaths.composeFile)),
+      termsAccepted: managed && values.ALLOFLOW_DESKTOP_IMAGE_TERMS_REVISION === model.revision,
+      config: {
+        tokenConfigured: managed && /^[a-f0-9]{64}$/.test(values.ALLOFLOW_FLUX_API_TOKEN || ''),
+        originConfigured: Boolean(origin) && values.ALLOFLOW_FLUX_ALLOWED_ORIGINS === origin && values.ALLOFLOW_BIND_ADDRESS === '127.0.0.1',
+        offline: values.ALLOFLOW_IMAGE_OFFLINE === '1',
+      },
+    };
+  }
+  const probe = options.probe || (async (setup) => {
+    if (!setup.config.tokenConfigured || !setup.config.originConfigured || !setup.config.offline) throw new Error('Image setup not prepared.');
+    const inspection = await execute('docker', ['container', 'inspect', 'alloflow-flux', '--format', '{{json .}}']);
+    let container; try { container = JSON.parse(inspection.stdout); } catch (_) { throw new Error('Image container unavailable.'); }
+    const bindings = container?.NetworkSettings?.Ports?.['7860/tcp'];
+    if (inspection.code !== 0 || container?.State?.Running !== true || !Array.isArray(bindings)
+      || bindings.length !== 1 || bindings[0].HostIp !== '127.0.0.1' || bindings[0].HostPort !== '7860'
+      || container.Config?.Labels?.['com.docker.compose.project'] !== setup.paths.projectName
+      || container.Config?.Labels?.['com.docker.compose.service'] !== 'flux') throw new Error('Image endpoint is not owned.');
+    const values = readEnvValues(setup.paths.envFile);
+    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch('http://127.0.0.1:7860/health', {
+        signal: controller.signal, redirect: 'error', headers: { Authorization: `Bearer ${values.ALLOFLOW_FLUX_API_TOKEN || ''}` },
+      });
+      if (!response.ok) throw new Error('Image health unavailable.');
+      const reader = response.body.getReader(); let length = 0, chunks = [];
+      while (true) {
+        const { done, value } = await reader.read(); if (done) break;
+        length += value.byteLength; if (length > 16384) { await reader.cancel(); throw new Error('Image health response too large.'); }
+        chunks.push(Buffer.from(value));
+      }
+      return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    } finally { clearTimeout(timer); }
+  });
+  const manager = createLocalImageManager({
+    readSetup, verifyOwnership: owned, probe,
+    run: async (plan) => {
+      if (!await localDockerContext()) return { code: 1 };
+      if (plan.args.at(-2) === 'stop' && plan.args.at(-1) === 'flux') {
+        // Recovery must work even if the dedicated env file was lost. Recheck
+        // exact ownership, then stop only this fixed container; Compose would
+        // refuse an absent --env-file before it could stop anything.
+        if (!await owned(paths())) return { code: 1 };
+        return execute('docker', ['container', 'stop', 'alloflow-flux'], { timeout: 60000 });
+      }
+      if (plan.args.at(-1) === 'model_manifest.py' && !plan.args.includes('--download')) {
+        // Compose run may auto-build a missing build:-based service even with
+        // --pull never. Verify with an existing immutable image instead, with
+        // no network and a read-only cache. Missing runtime files require Install.
+        const targetPaths = paths();
+        const inspection = await execute('docker', ['image', 'inspect', `${targetPaths.projectName}-flux`, '--format', '{{.Id}}']);
+        const imageId = inspection.stdout.trim();
+        if (inspection.code !== 0 || !/^sha256:[a-f0-9]{64}$/.test(imageId)) return { code: 1 };
+        return execute('docker', ['run', '--pull', 'never', '--rm', '--network', 'none',
+          '--env-file', targetPaths.envFile, '--env', 'HF_HOME=/models',
+          '--volume', `${targetPaths.projectName}_flux_models:/models:ro`, '--entrypoint', 'python3', imageId, 'model_manifest.py'],
+        { timeout: 60 * 60 * 1000 });
+      }
+      // Build/download can take a while. Output stays server-side and bounded;
+      // no raw command output or credentials enter status or browser logs.
+      return execute(plan.command, plan.args, { cwd: plan.cwd, timeout: 60 * 60 * 1000 });
+    },
+  });
+  let preparing = false;
+  const imageProxy = createLocalImageProxy({
+    fetch: options.imageFetch,
+    connect: async (operation) => {
+      if (preparing || manager.status().busy) return { ready: false };
+      const setup = await readSetup();
+      if (!await owned(setup.paths)) return { ready: false };
+      const health = await probe(setup);
+      if (preparing || manager.status().busy || !setup.termsAccepted
+        || health?.status !== 'ok' || health.backend !== 'sana-sprint' || health.model !== setup.model.id
+        || health.revision !== setup.model.revision || health.offline !== true || health.device !== 'cuda'
+        || health.txt2img !== true || (operation === 'edit' && health.img2img !== true)) return { ready: false };
+      return { ready: true, canEdit: health.img2img === true, token: readEnvValues(setup.paths.envFile).ALLOFLOW_FLUX_API_TOKEN };
+    },
+  });
+  const imageWorkPending = () => imageProxy.status().busy || imageProxy.status().needsStop;
+  async function status() {
+    try {
+      if (!preparing) await manager.refresh();
+      const setup = await readSetup();
+      const prepared = setup.config.tokenConfigured && setup.config.originConfigured && setup.config.offline && setup.termsAccepted;
+      const snapshot = manager.status();
+      // After a Desktop restart, invalid or changed settings must not hide
+      // Stop for our still-running container. This check sends no bearer token.
+      if (!prepared && !snapshot.busy && !preparing && await owned(setup.paths)) {
+        const running = await execute('docker', ['container', 'ls', '--filter', 'name=^/alloflow-flux$', '--format', '{{json .}}']);
+        if (running.code === 0 && running.stdout.trim()) Object.assign(snapshot, {
+          phase: 'needs-restart', ready: false, message: 'The running image service needs updated settings. Stop it, then Prepare the selected model again.',
+        });
+      }
+      const check = localImagePreflight(setup);
+      if (!prepared && check.eligible) { check.eligible = false; check.issues.push('Prepare the selected model before installing.'); }
+      return { ...snapshot, busy: preparing || manager.status().busy, generation: imageProxy.status(), models: catalog().map((model) => ({ id: model.id,
+        label: model.id.includes('0.6B') ? 'SANA-Sprint 0.6B' : 'SANA-Sprint 1.6B', downloadBytes: model.download_bytes,
+        termsUrl: `https://huggingface.co/${model.id}` })), selectedModelId: setup.model.id || '', prepared,
+        preflight: check, connection: { endpoint: 'http://127.0.0.1:7860', managed: true },
+        notes: ['Model downloads also need several GiB for the CUDA runtime and dependencies.',
+          'Disk check covers the stack drive; Docker model storage is checked again inside the installer.',
+          'NVIDIA compatibility still needs a real test image on this device.',
+          'Use SANA in this app session only after the updated AlloFlow app bridge is available.'] };
+    } catch (_) {
+      return { ...manager.status(), generation: imageProxy.status(), prepared: false, models: [], selectedModelId: '',
+        preflight: { eligible: false, issues: ['The reviewed local image package is unavailable. Update AlloFlow Desktop.'], requiredBytes: 0, gpuCompatibilityVerified: false },
+        connection: { endpoint: '', managed: false }, notes: [] };
+    }
+  }
+  async function prepare(body) {
+    if (preparing || manager.status().busy || imageWorkPending() || ['loading', 'ready', 'unavailable', 'needs-restart'].includes(manager.status().phase)) throw new Error('Stop local images before preparing settings.');
+    const model = catalog().find((entry) => entry.id === body?.modelId);
+    if (!model || body?.termsAccepted !== true) throw new Error('Choose a reviewed model and accept its model and text-encoder terms.');
+    const targetPaths = paths(), origin = expectedOrigin();
+    preparing = true;
+    try {
+      if (!await owned(targetPaths)) throw new Error('Docker must be local and this image service must not belong to another installation.');
+      await requireStopped();
+      const previous = readEnvValues(targetPaths.envFile);
+      if (fs.existsSync(targetPaths.envFile) && previous.ALLOFLOW_DESKTOP_IMAGE_OWNER !== '1') throw new Error('Existing image settings are not owned by this manager.');
+      // Use a dedicated, owner-private file. Never touch School Box .env, provider
+      // credentials or process-wide settings. This runs only after explicit Setup.
+      const token = /^[a-f0-9]{64}$/.test(previous.ALLOFLOW_FLUX_API_TOKEN || '')
+        ? previous.ALLOFLOW_FLUX_API_TOKEN : crypto.randomBytes(32).toString('hex');
+      const settings = { ALLOFLOW_DESKTOP_IMAGE_OWNER: '1', IMAGE_BACKEND: 'sana-sprint', IMAGE_MODEL: model.id,
+        IMAGE_MODEL_REVISION: model.revision, ALLOFLOW_IMAGE_OFFLINE: '1', ALLOFLOW_BIND_ADDRESS: '127.0.0.1', FLUX_PORT: '7860',
+        ALLOFLOW_FLUX_API_TOKEN: token, ALLOFLOW_FLUX_ALLOWED_ORIGINS: origin, ALLOFLOW_DESKTOP_IMAGE_TERMS_REVISION: model.revision };
+      fs.mkdirSync(path.dirname(targetPaths.envFile), { recursive: true });
+      writePrivateFile(targetPaths.envFile, Object.entries(settings).map(([key, value]) => `${key}=${value}`).join('\n') + '\n');
+    } finally { preparing = false; }
+    return status();
+  }
+  async function begin(action, body = {}) {
+    if (!['install', 'repair', 'start', 'stop'].includes(action)) throw new Error('Unknown image action.');
+    if (preparing || manager.status().busy) throw new Error('An image operation is already running.');
+    if (action !== 'stop' && imageWorkPending()) throw new Error('Wait for the image request, or Stop local images before changing the runtime.');
+    if (action === 'install' || action === 'repair') {
+      if (['loading', 'ready', 'unavailable', 'needs-restart'].includes(manager.status().phase)) throw new Error('Stop local images before installing or repairing.');
+      const setup = await readSetup();
+      if (body.termsAccepted !== true || body.modelId !== setup.model.id || !setup.termsAccepted) throw new Error('Prepare this model and accept its terms before installing.');
+      await requireStopped();
+    }
+    if (preparing || manager.status().busy) throw new Error('An image operation is already running.');
+    if (action !== 'stop' && imageWorkPending()) throw new Error('An image request is still running.');
+    // manager acquires its busy flag synchronously; status polling observes the
+    // operation. Always observe rejection, without exposing external output.
+    manager[action]().then((result) => {
+      if (action === 'stop' && result.phase === 'stopped') imageProxy.confirmStopped();
+    }).catch(() => {});
+    return manager.status();
+  }
+  return Object.freeze({ status, prepare, begin,
+    appAccess: (body) => imageProxy.setAccess(body),
+    appStatus: async () => { const current = await status(); return { ...imageProxy.status(), ready: current.ready === true && !imageWorkPending() }; },
+    imageRequest: (operation, body) => imageProxy.request(operation, body),
+    cancelImage: (body) => imageProxy.cancel(body),
+  });
+}
+
+let desktopLocalImages = null;
+let localImageIntakes = 0;
+function getDesktopLocalImages() {
+  if (!desktopLocalImages) desktopLocalImages = createDesktopLocalImageService();
+  return desktopLocalImages;
 }
 
 function setEnvLine(lines, key, value, options = {}) {
@@ -3217,7 +3499,12 @@ function schoolBoxComposeArgs(action, config) {
     box.projectName,
   ];
 
-  if (box.includeGpu) args.push('--profile', 'gpu');
+  if (box.includeGpu) {
+    const gpuCompose = path.join(path.dirname(paths.composeFile), 'docker-compose.gpu.yml');
+    // Older packaged stacks carry their GPU reservation in the base file.
+    if (fs.existsSync(gpuCompose)) args.push('-f', gpuCompose);
+    args.push('--profile', 'gpu');
+  }
   if (action === 'up') return { paths, args: [...args, 'up', '-d', ...services] };
   if (action === 'stop') return { paths, args: [...args, 'stop', ...Array.from(new Set([...services, ...SCHOOLBOX_GPU_SERVICES]))] };
   throw new Error('Unknown School Box command.');
@@ -4409,6 +4696,31 @@ async function readRequestJson(req, maxBytes = MAX_REQUEST_BODY_BYTES) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
+function readLocalImageJson(req, maxBytes = 4096) {
+  return new Promise((resolve, reject) => {
+    if (!/^application\/json(?:\s*;|$)/i.test(req.headers?.['content-type'] || '')
+      || (req.headers?.['content-encoding'] && req.headers['content-encoding'] !== 'identity')) {
+      reject(new ImageProxyError('invalid-content', 'Send an uncompressed JSON image request.', 415)); return;
+    }
+    const storage = Buffer.allocUnsafe(maxBytes); let used = 0, finished = false;
+    const cleanup = () => { clearTimeout(timer); req.off('data', onData); req.off('end', onEnd); req.off('error', onError); req.off('aborted', onAborted); };
+    const finish = (error, value) => { if (finished) return; finished = true; cleanup(); if (error) { req.pause(); reject(error); } else resolve(value); };
+    const onData = (chunk) => {
+      const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      if (used + bytes.length > maxBytes) { finish(new ImageProxyError('too-large', 'The image request is too large.', 413)); return; }
+      bytes.copy(storage, used); used += bytes.length;
+    };
+    const onEnd = () => {
+      try { finish(null, JSON.parse(storage.subarray(0, used).toString('utf8'))); }
+      catch (_) { finish(new ImageProxyError('invalid-json', 'The image request is invalid.', 400)); }
+    };
+    const onError = () => finish(new ImageProxyError('disconnected', 'Image request disconnected.', 400));
+    const onAborted = onError;
+    const timer = setTimeout(() => finish(new ImageProxyError('body-timeout', 'The image request took too long to arrive.', 408)), 15000);
+    req.on('data', onData); req.on('end', onEnd); req.on('error', onError); req.on('aborted', onAborted);
+  });
+}
+
 function providerFromConfig(provider, config) {
   const override = (config.providers && config.providers[provider.id]) || {};
   return {
@@ -4934,6 +5246,72 @@ async function handleApi(req, res, url) {
     jsonResponse(res, guardRejection.status, { error: guardRejection.error });
     return;
   }
+  if (url.pathname.startsWith('/api/local-images/')) {
+    // These are native administrator controls, never embedded-app or LAN
+    // endpoints. Development's unlocked API mode must not authorize installs.
+    const peer = req.socket?.remoteAddress || '';
+    if (!isLoopbackHostname(hostnameFromHostHeader(req.headers.host))
+      || !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(peer)) {
+      jsonResponse(res, 403, { error: 'Local image controls are available only on this device.' }); return;
+    }
+    if (!privateApiToken) {
+      jsonResponse(res, 401, { error: 'Open AlloFlow Desktop to use the protected image controls.' }); return;
+    }
+    const action = url.pathname.slice('/api/local-images/'.length);
+    if (req.method === 'GET' && action === 'app-status') {
+      jsonResponse(res, 200, await getDesktopLocalImages().appStatus()); return;
+    }
+    if (req.method === 'POST' && ['app-access', 'generate', 'edit', 'cancel'].includes(action)) {
+      const generation = action === 'generate' || action === 'edit';
+      // Reserve before reading a potentially large edit body. Cancel/revoke use
+      // small bodies and remain available while a generation is draining.
+      if (generation && localImageIntakes >= 2) {
+        res.setHeader('Connection', 'close');
+        jsonResponse(res, 429, { error: 'An image request is already arriving or running.' }); return;
+      }
+      if (generation) localImageIntakes++;
+      let cancelDisconnected = null;
+      try {
+        const body = await readLocalImageJson(req, action === 'edit' ? MAX_IMAGE_JSON_BYTES : 32768);
+        if (req.aborted || res.destroyed) throw new ImageProxyError('cancelled', 'Image request cancelled.', 499);
+        const service = getDesktopLocalImages();
+        if (generation) {
+          cancelDisconnected = () => { try { service.cancelImage({ sessionId: body.sessionId, requestId: body.requestId }); } catch (_) {} };
+          res.on('close', cancelDisconnected);
+        }
+        const result = action === 'app-access' ? service.appAccess(body)
+          : action === 'cancel' ? service.cancelImage(body) : await service.imageRequest(action, body);
+        if (!res.destroyed) jsonResponse(res, 200, result);
+      } catch (error) {
+        // Never include upstream messages, prompts, image bytes or credentials.
+        if (!res.destroyed) {
+          res.setHeader('Connection', 'close');
+          jsonResponse(res, error instanceof ImageProxyError ? error.status : 503,
+            { error: error instanceof ImageProxyError ? error.message : 'The local image request could not be completed.' });
+        }
+      } finally {
+        if (cancelDisconnected) res.off('close', cancelDisconnected);
+        if (generation) localImageIntakes--;
+      }
+      return;
+    }
+    if (req.method === 'GET' && action === 'status') {
+      jsonResponse(res, 200, await getDesktopLocalImages().status()); return;
+    }
+    if (req.method === 'POST' && ['prepare', 'install', 'repair', 'start', 'stop'].includes(action)) {
+      try {
+        const body = await readRequestJson(req, 4096);
+        const service = getDesktopLocalImages();
+        const result = action === 'prepare' ? await service.prepare(body) : await service.begin(action, body);
+        jsonResponse(res, action === 'prepare' ? 200 : 202, result);
+      } catch (_) {
+        jsonResponse(res, 409, { error: 'Image action could not proceed. Refresh setup checks, accept the selected terms, and stop any active image operation before retrying.' });
+      }
+      return;
+    }
+    jsonResponse(res, 404, { error: 'Unknown local image control.' }); return;
+  }
+
   const config = readConfig();
   const origin = getRequestOrigin(req);
 
@@ -5629,7 +6007,7 @@ async function handlePublicLanApi(req, res, url) {
   if (lanDocMatch) {
     if (req.method === 'GET') {
       if (!consumeLanRateLimit(req, res, 'doc-read', LAN_READ_RATE_PER_MINUTE, lanDocAuth)) return;
-      const docEntry = serializeLanDoc(sanitizeLanDocKey(lanDocMatch[1]));
+      const docEntry = serializeLanDoc(sanitizeLanDocKey(lanDocMatch[1]), lanDocAuth);
       if (!docEntry) {
         jsonResponse(res, 404, { error: 'Class asset not found.' });
         return;
@@ -5836,7 +6214,7 @@ async function runSmoke(args) {
     const docPut = await fetch(baseUrl + '/api/lan-docs/asset_smoke_1', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ doc: { kind: 'sessionResource', resource: { id: 'r1' } } }),
+      body: JSON.stringify({ doc: { kind: 'sessionResource', parentKind: 'live', parentId: 'SMOKE1', resource: { id: 'r1' } } }),
     }).then((response) => response.json());
     const docGet = await fetch(baseUrl + '/api/lan-docs/asset_smoke_1').then((response) => response.json());
     const publicDocGet = await fetch(shareUrl + '/api/lan-docs/asset_smoke_1', { headers: publicTokenHeaders }).then((response) => response.json());
@@ -6080,6 +6458,7 @@ module.exports = {
   createLanShareServer,
   createServer,
   configurePrivateApiToken,
+  createDesktopLocalImageService,
   maybeAutostartEngine,
   getAlloSheetEngineStatus,
   getAlloSheetPrivateBrowserAuth,
@@ -6108,6 +6487,9 @@ module.exports = {
   hasStaticAppBuild,
   parseArgs,
   prepareSchoolBoxEnv,
+  getSchoolBoxStackPaths,
+  getLocalImageStackPaths,
+  schoolBoxComposeArgs,
   readConfig,
   sanitizeConfigPatch,
   runSchoolBoxCompose,

@@ -26,6 +26,26 @@
       "to": "schoolbox"
     },
     {
+      "from": "../docker/docker-compose.yml",
+      "to": "local-images/docker-compose.yml"
+    },
+    {
+      "from": "../docker/flux-server",
+      "to": "local-images/flux-server",
+      "filter": [
+        "Dockerfile",
+        "requirements.txt",
+        "requirements.in",
+        "model-manifest.json",
+        "model_manifest.py",
+        "flux_server.py",
+        "image_backends.py",
+        "security.py",
+        "studio.py",
+        "studio.html"
+      ]
+    },
+    {
       "from": "app-build",
       "to": "app-build"
     },

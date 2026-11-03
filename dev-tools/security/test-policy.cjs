@@ -381,3 +381,30 @@ test('negative control reproduces command substitution in the former trailer wor
   assert.equal(args[2], 'AlloINJECTED');
   assert.equal(args[5], '--crf=20INJECTED');
 });
+
+test('release candidate signing has a narrow no-source permission boundary', () => {
+  const source = fs.readFileSync(path.join(__dirname, '../../.github/workflows/release-candidate.yml'), 'utf8');
+  assert.deepEqual(inspectWorkflow(source, 'release-candidate.yml'), []);
+  const cases = [
+    workflow => { workflow.on.push = {}; },
+    workflow => { workflow.jobs.attest.if = 'true'; },
+    workflow => { workflow.jobs.attest.needs = []; },
+    workflow => { workflow.jobs.build.if = 'true'; },
+    workflow => { workflow.on.workflow_dispatch.inputs.source_sha.required = false; },
+    workflow => { workflow.jobs.attest.steps.push({ run: 'node untrusted.js' }); },
+    workflow => { workflow.jobs.attest.steps.push({ uses: action('actions/checkout'), with: { 'persist-credentials': false } }); },
+    workflow => { workflow.jobs.attest.permissions.contents = 'write'; },
+    workflow => { workflow.jobs.build.permissions['id-token'] = 'write'; },
+    workflow => { workflow.jobs.attest.steps[0].with['run-id'] = '123'; },
+    workflow => { workflow.jobs.attest.steps[0].with.name = 'unrelated'; },
+    workflow => { workflow.jobs.attest.steps[1].with['subject-path'] = 'unrelated.json'; },
+    workflow => { workflow.jobs.attest.steps[1].env = { NODE_OPTIONS: '--require=./release-candidate/unsafe.js' }; },
+    workflow => { workflow.jobs.attest['runs-on'] = 'self-hosted'; },
+    workflow => { workflow.jobs.attest.container = 'unreviewed/image'; },
+    workflow => { workflow.jobs.attest.services = { helper: { image: 'unreviewed/image' } }; },
+  ];
+  for (const mutate of cases) {
+    const workflow = YAML.parse(source); mutate(workflow);
+    assert.ok(inspectWorkflow(YAML.stringify(workflow), 'release-candidate.yml').length, 'unsafe producer shape was admitted');
+  }
+});

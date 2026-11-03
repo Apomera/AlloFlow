@@ -147,13 +147,14 @@ function resourceDetails(pack) {
   const coreIds = meta.workflowRevision?.coreResourceIds;
   const coreCount = Array.isArray(coreIds) ? new Set(coreIds.filter(id => typeof id === 'string' && existingIds.has(id))).size : 0;
   const sourceLinks = [], seen = new Set();
-  const candidates = [...(Array.isArray(basis.sources) ? basis.sources : [])];
+  const candidates = [...(Array.isArray(basis.sources) ? basis.sources : []), ...(Array.isArray(meta.contentSources) ? meta.contentSources : [])];
   if (basis.articleUrl) candidates.unshift({url:basis.articleUrl, title:basis.articleTitle || 'Original blog post', author:basis.articleAuthor});
   for (const item of candidates) {
     const url = publicSourceUrl(item && item.url);
     if (!url || seen.has(url)) continue;
     seen.add(url);
-    sourceLinks.push({url, title:String(item.title || 'Original source').slice(0,200), ...(item.author ? {author:String(item.author).slice(0,120)} : {})});
+    const context = typeof item.use === 'string' ? item.use.trim().slice(0,500) : '';
+    sourceLinks.push({url, title:String(item.title || 'Source').slice(0,200), ...(item.author ? {author:String(item.author).slice(0,120)} : {}), ...(context ? {context} : {})});
   }
   return {
     resource_count: pack.history.filter(Boolean).length,

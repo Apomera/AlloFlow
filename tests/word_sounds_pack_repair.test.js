@@ -274,7 +274,7 @@ describe('one rate limit no longer costs the whole pack', () => {
     // Kokoro is local and rate-limit-free, so it is the actual way out.
     const idx = SOURCE.indexOf('ttsGate.rateLimited = true;');
     expect(idx).toBeGreaterThan(0);
-    expect(SOURCE.slice(idx, idx + 500)).toMatch(/onRequestKokoroOffer\('word_sounds'\)/);
+    expect(SOURCE.slice(idx, idx + 500)).toMatch(/onRequestKokoroOffer\('word_sounds', onKokoroReady\(\)\)/);
   });
 
   it('what the run managed is recorded on the pack', () => {

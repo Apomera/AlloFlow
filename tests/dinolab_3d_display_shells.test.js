@@ -14,7 +14,7 @@ const { dinoDisplayShellGeometry, dinoFrillGeometry, dinoPlateGeometry } = new F
 function inspectShell(geometry, scale) {
   const p = geometry.attributes.position, normal = geometry.attributes.normal, uv = geometry.attributes.uv;
   expect(geometry.index).toBeTruthy();
-  expect(p.count).toBeLessThanOrEqual(geometry.userData.dinoDisplayShell.feature === 'frill' ? 2200 : 1200);
+  expect(p.count).toBeLessThanOrEqual(['frill', 'dorsal-plate'].includes(geometry.userData.dinoDisplayShell.feature) ? 2200 : 1200);
   expect(normal.count).toBe(p.count); expect(uv.count).toBe(p.count);
   const vertices = [], keys = new Map(), edges = new Map(), used = new Set();
   const tolerance = scale * 1e-7;
@@ -111,9 +111,9 @@ describe('Dino Lab curved dorsal plate volume', () => {
       const width = scale * 0.7, height = scale * 1.2, thickness = scale * 0.07;
       const shell = dinoPlateGeometry(THREE, width, height, thickness), result = inspectShell(shell, scale);
       expect(result.volume).toBeLessThan(width * height * thickness * 1.5);
-      const p = shell.attributes.position, outline = establishedPlate(width, height).getSpacedPoints(64).slice(0, 64), outerStart = 1 + 8 * 64;
+      const p = shell.attributes.position, outline = establishedPlate(width, height).getSpacedPoints(64).slice(0, 64), outerStart = 1 + 8 * 128;
       for (let side = 0; side < 64; side++) {
-        const i = outerStart + side;
+        const i = outerStart + side * 2;
         expect(p.getX(i)).toBeCloseTo(outline[side].x, 5); expect(p.getY(i)).toBeCloseTo(outline[side].y, 5);
         expect(p.getZ(i)).toBeCloseTo(0, 6);
       }

@@ -1132,7 +1132,30 @@
       material.customProgramCacheKey=function(){return source.customProgramCacheKey()+':resident-silhouette-v1';};
       return material;
     }
+    var residentShadowFocus=new THREE.Vector3();
+    function updateResidentShadowDetail(){
+      // The close resident view needs a small, texel-stable shadow window.
+      // Offset only the projection; the sun, palettes and actual birds stay put.
+      var shadow=sun.shadow,view=shadow.camera;
+      var focused=mode==='guided'&&isResidentCamera(cameraMode)&&residentPresentation==='woodland'&&wildlife.getFocus(cameraMode,residentShadowFocus);
+      var half=focused?8:44,cx=0,cy=0;
+      if(focused){
+        sun.updateWorldMatrix(true,false);sun.target.updateWorldMatrix(true,false);
+        shadow.updateMatrices(sun);
+        residentShadowFocus.applyMatrix4(view.matrixWorldInverse);
+        var stepX=half*2/shadow.mapSize.x,stepY=half*2/shadow.mapSize.y;
+        cx=Math.round(residentShadowFocus.x/stepX)*stepX;
+        cy=Math.round(residentShadowFocus.y/stepY)*stepY;
+      }
+      if(view.left!==cx-half||view.right!==cx+half||view.top!==cy+half||view.bottom!==cy-half){
+        view.left=cx-half;view.right=cx+half;view.top=cy+half;view.bottom=cy-half;
+        view.updateProjectionMatrix();shadow.needsUpdate=true;
+      }
+      shadow.bias=focused?(quality==='low'?-.00008:-.00005):-.00035;
+      shadow.normalBias=focused?(quality==='low'?.006:.003):.025;
+    }
     function renderResidentScene(){
+      updateResidentShadowDetail();
       if(!residentLensVisible()||residentPresentation!=='studio'){renderer.render(scene,camera);return;}
       var data=residentGeometry();if(!data){renderer.render(scene,camera);return;}
       ensureResidentStudio();

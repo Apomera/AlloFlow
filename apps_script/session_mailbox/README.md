@@ -25,18 +25,15 @@ remain in the Google account chosen for the deployment.
    "appsscript.json" manifest file in editor**, open `appsscript.json` from
    the file list and replace its contents with the manifest printed under
    "v24: Send to Drive" below. It tells Google the script may touch only the
-   files it creates (`drive.file`) and make outbound web requests; without
+   files it creates (`drive.file`), verify the owner's email identity, and make outbound web requests; without
    it, Google grants the script access to your entire Drive.
 3. Click **Deploy → New deployment**. Click the gear next to "Select type"
    and choose **Web app**.
 4. Set **Execute as: Me** and **Who has access: Anyone**. Click **Deploy**.
 5. Authorize when prompted. With the manifest in place the consent screen
-   asks for two things: "See, edit, create, and delete only the specific
-   Google Drive files you use with this app" and "Connect to an external
-   service". Neither is a sensitive scope, so Google's "Google hasn't
-   verified this app" interstitial is not expected. If it still appears
-   (deployments without the manifest request full Drive access, which does
-   trigger it), continue only if you created the project, reviewed the
+   asks for email identity, access to the specific Drive files used with this
+   app, and external requests. If Google's "Google hasn't verified this app"
+   interstitial appears, continue only if you created the project, reviewed the
    pasted source, and recognize the account and project name; otherwise
    cancel. Google explains this flow at
    https://developers.google.com/apps-script/guides/services/authorization.
@@ -45,7 +42,21 @@ remain in the Google account chosen for the deployment.
    documents you send to Drive.
 6. Copy the **Web app URL** (ends in `/exec`) and paste it into AlloFlow:
    **Student QR → Live class without accounts → Connect mailbox**. AlloFlow
-   runs a self-test and claims the admin token automatically.
+   authenticates using the **Admin token** you paste from Script properties;
+   it cannot issue an administrator token over the public URL.
+
+Before connecting, run **setupMailboxOwner** from the Apps Script editor as
+the account that will deploy this script. Approve the manifest's email identity
+scope when prompted. The setup requires the active account to match the
+executing owner and binds that identity for later recovery. Copy `admin` from
+**Project Settings > Script properties** into AlloFlow's **Admin token** field.
+The helper returns instructions, never the token. Keep the property private.
+
+**Version 28 migration:** existing administrator tokens, session data and Drive
+files are preserved. Run `setupMailboxOwner` as the deploying owner once to
+bind its identity, then reconnect with the existing token. Public `claim`
+requests fail closed, including before setup; an older app must use the token
+field. Updating this source does not update an already deployed Web App.
 
 **Updating later:** paste new code, then Deploy → **Manage deployments** →
 pencil icon → Version: New version → Deploy. The URL stays the same.
@@ -84,6 +95,7 @@ without that gate it would be an open upload box.
     "executeAs": "USER_DEPLOYING"
   },
   "oauthScopes": [
+    "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/script.external_request"
   ]
@@ -152,19 +164,23 @@ the U.S. Department of Education student-privacy FAQ:
 https://studentprivacy.ed.gov/frequently-asked-questions
 ## Your admin token (reconnecting from a new device)
 
-When AlloFlow first connects it claims an **admin token** and shows it to
-you once — save it like a password. Connecting from a new device (or a fresh
-Canvas paste) just needs that token pasted into the "Admin token" field.
+Owner setup creates an **admin token** in Script properties; running setup again
+preserves it. Connecting from a new device (or a fresh Canvas paste) needs that
+token pasted into the "Admin token" field. Save it like a password.
 
 **Lost the token? Check your Drive first:** the script keeps a copy in the
 `AlloFlow Class Mailbox` folder as `ADMIN-TOKEN (do not share).txt` (written
-at claim and refreshed on every successful reconnect). It cannot be fetched
+at owner setup and refreshed on every successful reconnect). It cannot be fetched
 automatically by the app — any "fetch my token" endpoint would hand it to
 students too, which is exactly what the token exists to prevent.
 
-If the Drive file is also gone: open the script → Project Settings (gear) →
-**Script properties** → delete the `admin` property → reconnect from
-AlloFlow, and it will claim (and show, and re-save) a new one.
+If the Drive note is gone, run `setupMailboxOwner` in the Apps Script editor
+as the deploying owner to restore the note without changing the token. To
+replace a lost or exposed token, close active sessions (or wait for their
+six-hour window), then run `rotateMailboxOwnerToken` as that same owner. The
+replacement is written under a lock without deleting the old property first.
+Copy the new `admin` property into AlloFlow. Do not delete the property to
+re-enable public enrollment; public claim is always disabled.
 
 ## Live sessions are real-time when the network allows
 

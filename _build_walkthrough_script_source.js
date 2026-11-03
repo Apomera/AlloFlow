@@ -17,12 +17,14 @@ const path = require('node:path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'apps_script', 'walkthrough_records', 'Code.gs');
 const README = path.join(ROOT, 'apps_script', 'walkthrough_records', 'README.md');
+const MANIFEST = path.join(ROOT, 'apps_script', 'walkthrough_records', 'appsscript.json');
 const OUTPUT = path.join(ROOT, 'walkthrough_script_source_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'walkthrough_script_source_module.js');
 
 if (!fs.existsSync(SOURCE)) { console.error('Not found:', SOURCE); process.exit(1); }
 
 const script = fs.readFileSync(SOURCE, 'utf-8');
+const manifest = fs.readFileSync(MANIFEST, 'utf-8');
 const sha256 = crypto.createHash('sha256').update(script, 'utf8').digest('hex');
 const versionMatch = /var WR_VERSION = (\d+);/.exec(script);
 const version = versionMatch ? Number(versionMatch[1]) : 1;
@@ -32,11 +34,12 @@ const version = versionMatch ? Number(versionMatch[1]) : 1;
 const STEPS = [
   { n: 1, text: 'Type script.new into your browser address bar, signed into the Google account that should own these records. A school account is the right choice.' },
   { n: 2, text: 'Delete the starter code and paste the script copied below.' },
-  { n: 3, text: 'Rename the project to AlloFlow Walkthrough Records and save.' },
-  { n: 4, text: 'Click Deploy, then New deployment, and choose type Web app.' },
-  { n: 5, text: 'Set Execute as: Me and Who has access: Anyone. Click Deploy.' },
-  { n: 6, text: 'Authorize when prompted. Google warns that it has not verified the app, because a script you just wrote is an unpublished OAuth app. Continue only if you created this project, read the code, and recognize the account.' },
-  { n: 7, text: 'Copy the Web app URL, which ends in /exec, and paste it below.' }
+  { n: 3, text: 'Rename the project to AlloFlow Walkthrough Records. In Project Settings, enable Show appsscript.json manifest file. Replace that file with the manifest copied below, then save.' },
+  { n: 4, text: 'Select setupWalkthroughOwner in the editor function menu and click Run as the account that will deploy the script. Existing tokens are preserved.' },
+  { n: 5, text: 'Authorize when prompted. Google warns that it has not verified the app, because a script you just wrote is an unpublished OAuth app. Continue only if you created this project, read the code, and recognize the account.' },
+  { n: 6, text: 'Open Project Settings > Script properties. Copy wr_admin_token into the Owner token field below. Keep this token private; it authorizes delivery from your account.' },
+  { n: 7, text: 'Click Deploy, then New deployment, and choose type Web app. Set Execute as: Me and Who has access: Anyone. Click Deploy.' },
+  { n: 8, text: 'Copy the Web app URL, which ends in /exec, and paste it below. Connect verifies your existing owner token; public requests cannot claim or reset ownership.' }
 ];
 
 const escaped = JSON.stringify(script);
@@ -68,6 +71,7 @@ const outputCode = `/**
     projectName: 'AlloFlow Walkthrough Records',
     newProjectUrl: 'https://script.new',
     steps: Object.freeze(${stepsJson}),
+    manifest: ${JSON.stringify(manifest)},
     execUrlPattern: '^https://script\\\\.google\\\\.com/macros/s/[A-Za-z0-9_-]+/exec$',
     source: ${escaped}
   });

@@ -79,8 +79,10 @@ function seed() {
       bodyPositionId: 'neutral',
       airDrag: true,
       pumps: 3,
-      rotationTarget: 360,
-      spinRate: 260,
+      // Drop-in model (2026-11): 3 pumps give ~0.87 s of air, so 210 deg/s
+      // lands a safe 180 and keeps the tangent-matched re-entry path in play.
+      rotationTarget: 180,
+      spinRate: 210,
       speedMph: 17,
       angleDeg: 35,
       gapFt: 15,
@@ -89,6 +91,7 @@ function seed() {
       showTrail: true,
       showEnergy: true,
       estimateChallenge: false,
+      _predictDefaultV: 2,
       estimateValue: '',
       experiments: [],
       stats: { runs: 0, successful: 0, withinTen: 0 },
@@ -389,8 +392,10 @@ describe('Skate Lab mounted canvas runtime', () => {
       advanceFrame(9000);
     });
     expect(container.querySelector('#sk-playhead')?.value).toBe(pausedProgress);
+    // Playback now runs at one real-time scale (1 s of motion = 1 s), so a
+    // run several seconds long needs a later frame to finish.
     await act(async () => {
-      advanceFrame(15000);
+      advanceFrame(60000);
     });
 
     expect(container.querySelector('#sk-playhead')?.value).toBe('100');

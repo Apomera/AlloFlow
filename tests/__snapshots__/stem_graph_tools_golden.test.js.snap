@@ -5,9 +5,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 16,
   "circles": 0,
   "inputs": 2,
-  "lengthBucket": 43,
+  "lengthBucket": 57,
   "paths": 0,
-  "sha": "8b425451ccdbfc9d",
+  "sha": "4787ed57c18f4626",
   "svgs": 0,
 }
 `;
@@ -50,12 +50,12 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for funcGrapher 1`] = `
 {
-  "buttons": 53,
-  "circles": 4,
-  "inputs": 10,
-  "lengthBucket": 201,
-  "paths": 1,
-  "sha": "17ece51c16358c36",
+  "buttons": 52,
+  "circles": 13,
+  "inputs": 9,
+  "lengthBucket": 231,
+  "paths": 2,
+  "sha": "b68f40e5b972a608",
   "svgs": 2,
 }
 `;
@@ -86,25 +86,25 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for graphCalc 1`] = `
 {
-  "buttons": 27,
+  "buttons": 32,
   "circles": 0,
   "inputs": 6,
-  "lengthBucket": 82,
+  "lengthBucket": 96,
   "paths": 0,
-  "sha": "13a0d525643ca677",
-  "svgs": 0,
+  "sha": "c7c0f00b2d71bd86",
+  "svgs": 6,
 }
 `;
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for inequality 1`] = `
 {
-  "buttons": 30,
-  "circles": 0,
-  "inputs": 7,
-  "lengthBucket": 100,
+  "buttons": 40,
+  "circles": 4,
+  "inputs": 8,
+  "lengthBucket": 147,
   "paths": 0,
-  "sha": "540e2e03578f71d0",
-  "svgs": 1,
+  "sha": "ac3a302c8ae22192",
+  "svgs": 2,
 }
 `;
 

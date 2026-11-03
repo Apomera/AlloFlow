@@ -3850,25 +3850,29 @@ function _builderSaveStatusLabel(state, at) {
 
 const _BUILDER_BACKUP_MAX_BYTES = 20 * 1024 * 1024;
 let _builderBackupPurifierPromise = null;
+let _builderBackupPurifier = null;
 function _builderLoadBackupPurifier() {
-  if (window.DOMPurify?.sanitize) return Promise.resolve(window.DOMPurify);
+  if (window.DOMPurify?.version === '3.4.17' && typeof window.DOMPurify.sanitize === 'function') _builderBackupPurifier = window.DOMPurify;
+  if (_builderBackupPurifier) return Promise.resolve(_builderBackupPurifier);
   if (_builderBackupPurifierPromise) return _builderBackupPurifierPromise;
   _builderBackupPurifierPromise = (async () => {
     // Use the same vendored asset as the document pipeline, including its Canvas origin.
-    for (const url of ['/dompurify/3.1.7/purify.min.js', 'https://alloflow-cdn.pages.dev/dompurify/3.1.7/purify.min.js']) {
+    for (const url of ['/dompurify/3.4.17/purify.min.js', 'https://alloflow-cdn.pages.dev/dompurify/3.4.17/purify.min.js']) {
       const loaded = await new Promise(resolve => {
         const script = document.createElement('script');
         let finished = false;
         const finish = () => {
           if (finished) return;
           finished = true; window.clearTimeout(timer); script.remove();
-          resolve(window.DOMPurify?.sanitize ? window.DOMPurify : null);
+          resolve(window.DOMPurify?.version === '3.4.17' && typeof window.DOMPurify.sanitize === 'function' ? window.DOMPurify : null);
         };
         const timer = window.setTimeout(finish, 6000);
+        script.integrity = 'sha384-P0JNneQf81HOl9VwNXK76cQ9VMD6Nfsnepxb0cCOg8+UzEdzgPHAPV4wVQrvYQSx';
+        script.crossOrigin = 'anonymous'; script.referrerPolicy = 'no-referrer';
         script.onload = finish; script.onerror = finish; script.src = url;
         document.head.appendChild(script);
       });
-      if (loaded) return loaded;
+      if (loaded) { _builderBackupPurifier = loaded; return loaded; }
     }
     throw new Error('The backup reader could not load. Check your connection and choose the file again.');
   })().finally(() => { _builderBackupPurifierPromise = null; });
@@ -4338,6 +4342,31 @@ try {
   }
 } catch (_) {}
 
+// The IMS export and Guided's student preview project the same marked teacher sections.
+function _removeStudentPackageTeacherSections(root) {
+  const teacherOnly = Array.from(root.querySelectorAll('.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner'));
+  teacherOnly.forEach(node => {
+    const prior = node.previousElementSibling;
+    if (prior?.classList.contains('page-break')) prior.remove();
+    node.remove();
+  });
+  return teacherOnly.length;
+}
+function _guidedStudentDocumentSnapshot(clean, route, config) {
+  if (!clean?.clone || !clean.doc?.body) return null;
+  const root = clean.clone;
+  const economy = clean.doc.body.dataset.alloflowWordWallPrint === 'economical';
+  const hasKey = route === 'print' && !config?.assessmentMode && !economy
+    && !!root.querySelector('.answer-key, .page-break + .teacher-view');
+  _removeStudentPackageTeacherSections(root);
+  root.querySelectorAll('script,iframe,object,embed,base,meta[http-equiv="refresh"]').forEach(node => node.remove());
+  root.querySelectorAll('a[href]').forEach(node => node.removeAttribute('href'));
+  const policy = clean.doc.createElement('meta');
+  policy.httpEquiv = 'Content-Security-Policy';
+  policy.content = "default-src 'none'; img-src data: blob: http: https:; style-src 'unsafe-inline'; font-src data:; form-action 'none'";
+  root.querySelector('head')?.prepend(policy);
+  return { html: '<!DOCTYPE html>\n' + root.outerHTML, hasKey };
+}
 function ExportPreviewView(props) {
   const {
     BUILT_IN_PRESETS, FONT_OPTIONS, STYLE_SEEDS, _ensureDiffLib,
@@ -4358,7 +4387,7 @@ function ExportPreviewView(props) {
     toggleA11yInspect, updateExportPreview,
     exportPreviewSource,
     builderResourceIds = null, builderDraftOwner = null, onBuilderDraftCapture,
-    onExportSuccess,
+    onExportSuccess, guidedDocumentReview, guidedDocumentKey, confirmGuidedDocumentReview, dismissGuidedDocumentReview,
     builderWorkspaceMode = 'author',
     setBuilderWorkspaceMode,
     onAdvancedReviewSessionChange,
@@ -8617,12 +8646,11 @@ function ExportPreviewView(props) {
         if (!built) throw new Error('The editable preview is not ready.');
         // An LMS package is student-facing: keep only the student copy.
         const studentRoot = built.clone || new DOMParser().parseFromString(built.html, 'text/html').documentElement;
-        const teacherOnly = Array.from(studentRoot.querySelectorAll('.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner'));
-        teacherOnly.forEach((node) => { const prior = node.previousElementSibling; if (prior?.classList?.contains('page-break')) prior.remove(); node.remove(); });
-        const clean = teacherOnly.length ? { ...built, html: '<!DOCTYPE html>\n' + studentRoot.outerHTML } : built;
+        const teacherSections = _removeStudentPackageTeacherSections(studentRoot);
+        const clean = teacherSections ? { ...built, html: '<!DOCTYPE html>\n' + studentRoot.outerHTML } : built;
         const succeeded = await handler({ liveHtml: clean.html, liveTitle: clean.title });
         if (succeeded !== true) return;
-        if (teacherOnly.length && addToast) {
+        if (teacherSections && addToast) {
           // English fallback for a cached strings bank that predates the key.
           const __t = (key, english) => (t && t(key)) || english;
           addToast(__t('export_preview.ims_student_copy_only', 'The IMS package holds the student copy only. Teacher-only sections, such as an answer key or lesson plan, were left out. Use Download HTML for the private teacher copy.'), 'info');
@@ -8798,6 +8826,9 @@ function ExportPreviewView(props) {
           <div className={`allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-0`} role="presentation"
             onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}>
             <style>{_BUILDER_RESPONSIVE_LAYOUT_CSS}</style>
+            {guidedDocumentReview && <GuidedStudentDocumentReview key={guidedDocumentReview.route + guidedDocumentReview.key} request={guidedDocumentReview}
+              currentKey={guidedDocumentKey} frameRef={exportPreviewRef} getClean={getCleanBuilderDocument} config={exportConfig}
+              confirm={confirmGuidedDocumentReview} dismiss={dismissGuidedDocumentReview} close={() => setShowExportPreview(false)} t={t} />}
             {pendingImageFile && (
               <div className="allo-docsuite fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="presentation"
                 onClick={(e) => { if (e.target === e.currentTarget) closeImageDialog(); }}
@@ -12419,6 +12450,63 @@ const _downloadBRF = (brf) => {
 }
 
 
+function GuidedStudentDocumentReview({ request, currentKey, frameRef, getClean, config, confirm, dismiss, close, t }) {
+  const dialogRef = React.useRef(null);
+  const [snapshot, setSnapshot] = React.useState(null);
+  const [loaded, setLoaded] = React.useState(null);
+  const [failed, setFailed] = React.useState(false);
+  const current = !!currentKey && currentKey === request.key;
+  const isPrint = request.route === 'print';
+  const label = (key, fallback) => { const value = t('guided.' + key); return value && value !== 'guided.' + key ? value : fallback; };
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (typeof dialog?.showModal === 'function') dialog.showModal();
+    else if (dialog) dialog.open = true;
+    return () => { if (dialog?.open && typeof dialog.close === 'function') dialog.close(); };
+  }, []);
+  React.useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || !current) return;
+    const refresh = () => {
+      const body = frame.contentDocument?.body;
+      if (!body || body.hasAttribute('data-allo-preview-pending') || !body.textContent.trim()) { setSnapshot(null); return; }
+      try {
+        if (body.hasAttribute('data-allo-preview-error')) throw new Error('Preview failed');
+        const next = _guidedStudentDocumentSnapshot(getClean({ forExport: true }), request.route, config);
+        setFailed(!next);
+        setSnapshot(previous => !next ? null : previous?.html === next.html && previous?.hasKey === next.hasKey ? previous
+          : { ...next, revision: (previous?.revision || 0) + 1 });
+      } catch (_) { setFailed(true); setSnapshot(null); }
+    };
+    frame.addEventListener('load', refresh);
+    frame.addEventListener('alloflow-builder-document-written', refresh);
+    refresh();
+    return () => {
+      frame.removeEventListener('load', refresh);
+      frame.removeEventListener('alloflow-builder-document-written', refresh);
+    };
+  }, [frameRef, current, getClean, request, config]);
+  const title = isPrint ? label('review_print_open', 'Preview student print pages') : label('review_lms_open', 'Preview student package');
+  return <dialog ref={dialogRef} aria-labelledby="guided-student-document-title" onCancel={event => { event.preventDefault(); close(); }}
+    className="m-auto w-[94vw] max-w-5xl rounded-xl bg-white p-4 text-slate-900 shadow-2xl">
+    <h2 id="guided-student-document-title" className="text-lg font-bold">{title}</h2>
+    {current && snapshot && !failed ? <>
+      <p className="my-2" role="status">{isPrint ? (snapshot.hasKey
+        ? label('review_print_key_yes', 'The full print file includes a teacher answer-key section. Set those pages aside before handing out the student pages.')
+        : label('review_print_key_no', 'The print file has no marked teacher answer-key section.'))
+        : label('review_lms_note', 'These are the student lesson pages used by the IMS content package. After import, use your LMS student view to check activity visibility, scoring and feedback.')}</p>
+      <iframe key={snapshot.revision} sandbox="" srcDoc={snapshot.html} title={title} onLoad={() => setLoaded(snapshot)} className="block h-[58vh] w-full rounded border border-slate-400" />
+    </> : <p className="my-3" role="status">{!current || failed ? label('review_unavailable', 'This preview is unavailable or the lesson changed. Reopen it from Guided Mode.')
+      : label('review_loading', 'Preparing the student pages…')}</p>}
+    <div className="mt-3 flex flex-wrap gap-2">
+      <button type="button" className="min-h-11 rounded bg-indigo-700 px-3 font-bold text-white disabled:opacity-50" disabled={!current || failed || !snapshot || loaded !== snapshot}
+        onClick={() => { if (confirm?.(request, snapshot.hasKey)) close(); }}>{label('review_confirm', 'I reviewed these student pages')}</button>
+      <button type="button" onClick={dismiss} className="min-h-11 rounded border border-slate-400 px-3">{label('review_edit', 'Edit in Document Builder')}</button>
+      <button type="button" onClick={close} className="min-h-11 rounded border border-slate-400 px-3">{label('review_close', 'Return to Guided Mode')}</button>
+    </div>
+  </dialog>;
+}
+
 // ─── updateExportPreview (extracted from AlloFlowANTI.txt 2026-07-20) ───────
 // The Document Builder preview writer: renders getExportPreviewHTML() into the
 // preview iframe, arms designMode editing with the edit-loss guard, wires
@@ -12498,6 +12586,7 @@ async function updateExportPreview(deps) {
     doc.open();
     doc.write(html);
     doc.close();
+    iframe.dispatchEvent?.(new Event('alloflow-builder-document-written'));
 
     // Restoring a backup/version needs the same editor behavior as the first render.
     iframe.__alloInitializeBuilderDocument = (doc) => {

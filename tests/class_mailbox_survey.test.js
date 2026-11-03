@@ -41,6 +41,7 @@ function makeGsSandbox() {
         createFile: (name, content) => { driveFiles.set(name, String(content)); return fileObj(name); },
     };
     const services = {
+        Session: { getActiveUser: () => ({ getEmail: () => "owner@example.test" }), getEffectiveUser: () => ({ getEmail: () => "owner@example.test" }) },
         CacheService: { getScriptCache: () => cache },
         PropertiesService: { getScriptProperties: () => ({
             getProperty: k => (props.has(k) ? props.get(k) : null),
@@ -61,9 +62,10 @@ function makeGsSandbox() {
             base64EncodeWebSafe: bytes => Buffer.from(bytes).toString('base64url'),
         },
     };
-    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle };');
+    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, setupMailboxOwner: setupMailboxOwner };');
     const api = factory(...Object.values(services));
     const call = payload => JSON.parse(api.handle(payload).getContent());
+    call.setupOwner = () => { api.setupMailboxOwner(); return { ok: true, admin: props.get("admin") }; };
     return { call, driveFiles };
 }
 
@@ -84,7 +86,7 @@ const SURVEY_ITEMS = [
 // sandbox and reused across hostSurvey calls (a second claim is refused).
 const admins = new WeakMap();
 function hostSurvey(call, overrides = {}) {
-    if (!admins.has(call)) admins.set(call, call({ a: 'claim' }).admin);
+    if (!admins.has(call)) admins.set(call, call.setupOwner().admin);
     const admin = admins.get(call);
     const expiresAt = new Date(Date.now() + 86400000).toISOString();
     const survey = {

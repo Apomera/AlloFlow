@@ -111,10 +111,10 @@ function SentenceFramesView(props) {
                                     onClick={launchGradingSession}
                                     data-help-key="scaffolds_grading"
                                     className={`min-h-11 flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : ''}`}
-                                    title={t('mastery.start_tooltip')}
-                                    aria-label={t('mastery.start_tooltip')}
+                                    title={label('scaffolds.feedback_purpose', 'Get AI feedback on your draft. This does not submit your work to your teacher.')}
+                                    aria-label={label('scaffolds.get_draft_feedback', 'Get feedback on my draft')}
                                 >
-                                    <Sparkles size={12} /> {t('mastery.start_check')}
+                                    <Sparkles size={12} /> {label('scaffolds.get_draft_feedback', 'Get feedback on my draft')}
                                 </button>
                                 </>
                             )}
@@ -130,6 +130,7 @@ function SentenceFramesView(props) {
                             )}
                         </div>
                     </div>
+                    {!isTeacherMode && <p data-scaffold-feedback-purpose className="text-sm text-slate-700">{label('scaffolds.feedback_purpose','Get AI feedback on your draft. This does not submit your work to your teacher.')}</p>}
                     {wordBank.length > 0 && (
                         <section data-scaffold-word-bank aria-labelledby={wordBankHeadingId} className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                             <h4 id={wordBankHeadingId} className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-2">{label('scaffolds.word_bank', 'Word bank')}</h4>

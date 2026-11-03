@@ -14,7 +14,7 @@ function postPlugin(body, env) {
     headers: { 'Content-Type': 'application/json' },
     body: body == null ? undefined : JSON.stringify(body),
   });
-  return worker.fetch(req, env);
+  return worker.fetch(req, { SUBMIT_RATE: fakeKv(), ...env });
 }
 
 function fakeKv() {

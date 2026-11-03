@@ -6,7 +6,7 @@ memory aid, and a challenge) plus one commitment the student carries into other 
 off later in the week. This guide is one page per week: the shape of the 40 minutes, what students
 do in the Hub, what the commitment is, what counts as HOWL evidence, and what tends to go wrong.
 
-Written 2026-09-13 from the first six packs in `allopacks/crew_*_grade6_8`; weeks 7 to 12 added
+Written 2026-09-13 from the first six packs in `allopacks/current/crew_*_grade6_8`; weeks 7 to 12 added
 2026-09-22 from the other six. If you are new to the words
 Crew, HOWL, or EL Education, read `docs/EL_CREW_PRIMER.md` first; it is one page.
 
@@ -37,7 +37,9 @@ persevere to produce high quality work."
 Project (under More) to open the week's `.allopack.json`. Once the packs are published to the
 Community Catalog you will find them there under SEL / Character with the tag `crew`. Loading a pack puts ten
 resources in the History panel (directions, reading, glossary, chart, sort, quiz, sentence frames,
-FAQ, memory aid, and challenge) and one Crew station under SEL Stations.
+FAQ, memory aid, and challenge), five picture companions beside them (illustrations for the reading,
+chart and FAQ, and visual references for the memory aid and challenge), and one Crew station under
+SEL Stations.
 
 **Students do not need AI.** Portland students use AlloFlow without a Gemini key. Every resource in
 these packs and every linked Hub tool works without one. Where a tool has an AI feature (Growth
@@ -161,28 +163,32 @@ participating fully and mindfully, which starts with knowing your own state.
 
 | Minutes | What happens | Resource |
 | --- | --- | --- |
-| 0 to 10 | Read. Four zones, one window, and the idea that naming a state is not the same as excusing a behavior. | Where Am I Right Now? |
+| 0 to 10 | Read. Color words as one possible language, the window as a different model, a private or fictional check-in, and asking for support. | Where Am I Right Now? |
 | 10 to 17 | Twelve words, then the Word Scramble. | Glossary, Word Scramble |
-| 17 to 25 | Chart, sort (which zone), quiz. Question 4 is about what naming your state does not mean. | Four Zones, One Window, Which Zone?, quiz |
-| 25 to 33 | Hub: Emotion Zones, the one-word check-in. Then Window of Tolerance for one move back. Sensory Regulation for a desk-sized move if there is time. | Emotion Zones (station starts), Window of Tolerance, Sensory Regulation |
+| 17 to 25 | Chart, sort (which zone), quiz on fictional examples, privacy and support choices. Question 4 is about a useful next step when a fictional learner feels overwhelmed. | Feeling Words and Support Choices, Which Zone?, Support Choices and Privacy (quiz) |
+| 25 to 33 | Hub: Emotion Zones, a private check-in or a fictional example (students may pass). Then Window of Tolerance for a support that might help with a task. Sensory Regulation for a desk-sized move if there is time. | Emotion Zones (station starts), Window of Tolerance, Sensory Regulation |
 | 33 to 38 | Frames: write your own check-in and reset. Memory aid. | Sentence Frames, Remember Zones and the Window |
-| 38 to 40 | Launch the challenge; say the commitment. | Investigate Challenge: What Moves Me Back? |
+| 38 to 40 | Launch the challenge; say the optional practice. | Investigate Challenge: Which Supports Fit? |
 
 **In the Hub.** Emotion Zones opens on Check-In. The nine main tabs are visible; fourteen more sit
 behind More. Students do not need any of them this week. Window of Tolerance asks students to add
 signs to each of three zones and then place today. The station's five active minutes are counted in
 Emotion Zones and shown at the top of the screen while it is open.
 
-**The commitment.** Do a silent one-word check-in at the start of one class, and if you are not
-green, make one move before the lesson starts.
+**The commitment.** This week it is an optional practice: notice what support you want for one
+task, privately or through a fictional example, and request a break or another way to take part if
+it would help. No particular color is the goal. The self-check reads "I practiced choosing or
+requesting support for a task, using a private or fictional example."
 
-**What counts as evidence.** "Before math on Thursday I was yellow. I did the long exhale twice
-and started the warm-up." A zone, a move, a class. Not evidence: "I stayed calm."
+**What counts as evidence.** "In the fictional case, Sam asked for a quieter spot before the math
+warm-up, then started it and checked whether the spot helped." A task, a support, a check. No zone,
+feeling or disclosure is required, and none is rated. Not evidence: "I stayed calm."
 
 **Watch for.** "Do I have to tell the Crew why I am in yellow?" No, and the FAQ says so; the
 check-in is a word, not a story. "Is it bad to be in blue a lot?" It is information, not a
 verdict; if it is every day, that is a conversation with an adult, not a Crew activity. The
-challenge runs for a week and asks for the pattern, not the feelings.
+challenge uses clearly labeled fictional situations and asks which supports fit a task, not
+anyone's feelings.
 
 **If you only have 15 minutes.** Chart, the Emotion Zones check-in, the commitment.
 
@@ -208,12 +214,16 @@ thoughtfully and on time. The week replaces willpower with one small system.
 pick one launch move for today, then Hold to choose the capture spot. The badge "N of 11 explored"
 counts tabs visited; nothing is locked. Goal Setter wants one goal, one first step.
 
-**The commitment.** Do the launch check at the end of every day, and count how many mornings you
-had everything.
+**The commitment.** This week it is a practice: plan or try a manageable routine with the supports
+you need, and record honestly what you observed, or say it was not recorded. The self-check reads "I
+planned or tried a manageable routine with needed supports and honestly recorded what was observed
+or not recorded." A chosen or clearly labeled fictional example works too, and a teacher or trusted
+adult can share the planning.
 
-**What counts as evidence.** "I did the launch check five nights. Four mornings I had everything.
-Tuesday I forgot my charger, so I moved the check to right after dinner." A count and a revision.
-Not evidence: "I was more organized."
+**What counts as evidence.** "My launch check is a photo of my locker list. I tried it three days
+and recorded two mornings with everything; one day was not recorded. I moved the check to right
+after dinner." A routine, a support, an honest record (gaps labeled) and a revision. Not evidence:
+"I was more organized."
 
 **Watch for.** "Paper or screen?" Either; the FAQ says the capture spot has to be one place, not
 the best place. "I built a system and it fell apart in a week. Did I fail?" No, the part that broke
@@ -245,12 +255,17 @@ asking. Then seven steps and a Rehearse tab. The tool calls the third move Asser
 it Ask, and says so. The pair rehearsal is the point of the slot; keep the asks small and real
 ("could you show me one worked example of the fractions problem?").
 
-**The commitment.** Make one specific ask in one class where you are stuck, and report back on
-what happened.
+**The commitment.** This week it is a practice: make or rehearse a support request through a route
+you choose (speech, writing, drawing or AAC, privately or with a partner). Personal details can stay
+private and the situation can be fictional; an agreed pause can be part of the plan. The self-check
+reads "I made or rehearsed a support request using a real or fictional situation and an accessible
+response mode."
 
-**What counts as evidence.** "In ELA I asked Ms. Ortiz if she could show me one paragraph that got
-a 4 on evidence. She did, and I saw mine had no quote." The ask, the class, the answer. Not
-evidence: "I participated more."
+**What counts as evidence.** "I wrote out an ask for a fictional student stuck on setting up
+equations: describe where the student is stuck, say how it feels, ask for two worked examples, and
+thank the teacher." Or a real ask: "In ELA I asked Ms. Ortiz if she could show me one paragraph that
+got a 4 on evidence." The four moves, in a route the student chose. Not evidence: "I participated
+more."
 
 **Watch for.** "Is it embarrassing to ask in front of the class?" The FAQ offers the after-class and
 written options; the pack does not require a public ask. "What if the teacher says no?" Then the
@@ -286,12 +301,16 @@ check-in offers the student's recorded Crew station steps from the last three we
 points; one click drops a step into the evidence box and the student writes what it looked like.
 The Home and Library tabs carry the "New to Crew or HOWLs?" primer.
 
-**The commitment.** Rate one assignment against its rubric before turning it in, and compare your
-rating to the feedback you get.
+**The commitment.** This week it is a practice: compare a rubric and its feedback with the evidence
+you have, using an example you choose to discuss or a clearly labeled fictional one, and name one
+next step or question. The self-check reads "I compared a rubric and feedback with available
+evidence, using a chosen or fictional example, and identified a next step or question." Speech,
+writing, drawing, AAC and supported rehearsal all count.
 
 **What counts as evidence.** "I gave my lab write-up a 3 on analysis because I explained the graph
-but did not say why the line bends. The feedback said the same thing." A row, a rating, a reason, a
-comparison. Not evidence: "I checked my work."
+but did not say why the line bends. The feedback said the same thing, so my next step is one
+sentence on why it bends." A row, a rating, a reason, a comparison, a next step or question. Not
+evidence: "I checked my work."
 
 **Watch for.** "What if my self-rating is higher than the teacher's?" That gap is the information;
 the FAQ says so. "What if the feedback is just a grade with no comments?" Then the rubric row is the
@@ -410,16 +429,20 @@ student sets one boundary ahead of time, so where their attention goes is their 
 | 10 to 17 | Twelve words, then the Word Scramble. | Glossary, Word Scramble |
 | 17 to 25 | Chart, sort (boundary, ban, or bait), quiz. Question 3 is about what Nadia lost without ever taking her phone out. | Pulled or Chosen?, Boundary, Ban, or Bait?, Pulled on Purpose (quiz) |
 | 25 to 33 | Hub: Digital Wellbeing Studio, the Self-Check answered honestly, then one habit from the Toolkit. Executive Function's Focus tab for one move in the class where attention drifts most. | Digital Wellbeing Studio (station starts), Executive Function |
-| 33 to 38 | Frames: your boundary and what it beats. Memory aid. | Sentence Frames, Remember Out of Sight, Not Just Out of Hand |
-| 38 to 40 | Launch the three-day attention log; say the commitment. | Investigate Challenge: Where Did It Go? |
+| 33 to 38 | Frames: your boundary and what it beats. Memory aid. | Sentence Frames, Remember Task, Support and Access |
+| 38 to 40 | Launch the support investigation (chosen or clearly labeled fictional observations); say the practice. | Investigate Challenge: Where Did It Go? |
 
 **In the Hub.** Digital Wellbeing Studio opens on Self-Check: twelve questions on a four-point
 scale, one at a time. Toolkit is the next tab. The other tabs (Cyberbullying, What's Real?, AI
 Companions, When You're Struggling) are there if a student wants them; this week needs only the
 first two. In Executive Function, Focus is the sixth tab in the row.
 
-**The commitment.** Keep your phone in your bag, not your pocket, for one class every day, and notice
-the first time you reach for it.
+**The commitment.** This week it is a practice: choose a task-specific support, or use a
+fictional case, while keeping needed communication, learning, health and safety access available. A
+device-away plan is optional and never a prerequisite for taking part. The self-check reads "I
+considered or tried a task-specific support while preserving needed access, using a chosen or
+fictional example." A student who chooses a device-away plan might keep the phone in a bag, not a
+pocket, for one class and notice the first reach.
 
 **What counts as evidence.** "Phone in the bag for science every day. Monday I reached for my pocket
 four minutes in; by Thursday I did not reach at all. Wednesday it was in my hoodie by mistake and I
@@ -462,12 +485,16 @@ was started in. A Tracker started fresh in November reads "Q2 (Nov-Jan)" and its
 check-ins yet this quarter". Read "quarter" as "this stretch of the trimester". Executive
 Function's Start, Hold and Plan tabs rebuild a launch check or a capture spot.
 
-**The commitment.** Make the one change from your review, run it for five days, and count the
-mornings you had everything.
+**The commitment.** This week it is a practice: review the evidence and context you have, choose a
+support or one check to try next, and label any missing records as not recorded rather than
+inventing them. The self-check reads "I reviewed available evidence and context, chose a support or
+one prospective check, and labeled any missing records honestly." A chosen or clearly labeled
+fictional example works too.
 
 **What counts as evidence.** "My launch check stopped in week 6 because I have practice on Tuesdays
-and Thursdays. I moved it to the bus ride home. This week: five mornings of five." The part, the
-reason, the change, a count. Not evidence: "I got organized again."
+and Thursdays. Two weeks were not recorded. I will move it to the bus ride home and check it next
+week." The part, the reason, the change, and an honest record. Not evidence: "I got organized
+again."
 
 **Watch for.** "My whole system fell apart. Is one change enough?" The FAQ: find the part that fell
 first and fix that one. "I did not keep a count." Then start one today; "not enough to know" is an
@@ -502,12 +529,16 @@ Communication Plan is the fourth tab, and the tool's own next step matches the p
 where, and by when. DEAR MAN is familiar from week 5: one sentence for the ask, who you are asking,
 then the seven steps and Rehearse.
 
-**The commitment.** In one real group task, say your part of the whole out loud (what, where, by
-when) and finish it before the deadline.
+**The commitment.** This week it is a practice: for a chosen real task or a clearly labeled
+fictional group, draft an accessible parts list (what, where, by when) with the dependencies,
+feedback and backups each part needs. Use teacher-approved channels; nobody needs a personal phone
+or a reply from an ill classmate. The self-check reads "I considered an accessible parts list and
+its dependencies, feedback and backups using a chosen or fictional group task."
 
-**What counts as evidence.** "Social studies poster: I said 'the map and its key, on the poster file,
-by Wednesday.' I needed the population numbers from Ava, so I asked her Monday. The map was done
-Wednesday." What, where, by when, and the ask. Not evidence: "I did my share."
+**What counts as evidence.** "Social studies poster: my part is the map and its key, on the poster
+file, by Wednesday. It depends on the population numbers from Ava; I will ask through the class
+channel Monday, and the backup is the teacher's shared data sheet." What, where, by when, a
+dependency and a backup. Not evidence: "I did my share."
 
 **Watch for.** "What if I end up doing everything?" The FAQ: students may help, and may say calmly
 which parts were theirs; a parts list with names is fair to everyone. "Is asking a teammate for their
@@ -531,9 +562,9 @@ piece of evidence for each HOWL, then one gap) and rehearses it for the student-
 | --- | --- | --- |
 | 0 to 10 | Read. Twelve weeks as evidence, the student-led conference, Zoe and Malik both claiming a 3, and why adjectives are claims. | The Story of Your Trimester |
 | 10 to 17 | Twelve words, then Matching. | Glossary, Matching |
-| 17 to 25 | Chart, sort (claim, evidence, or gap), quiz. Question 3 asks why Malik's story is the believable one. | Claim or Evidence?, Adjective or Evidence?, What Makes It Believable? (quiz) |
+| 17 to 25 | Chart, sort (claim, evidence, or gap), quiz. Question 3 asks why Malik's example gives a listener more to check than Zoe's. | Claim or Evidence?, Adjective or Evidence?, What Makes It Believable? (quiz) |
 | 25 to 33 | Hub: HOWL Tracker, History and SLC rehearsal: one piece of evidence per HOWL from the check-ins and station records. Strengths Finder for words more specific than "good." | HOWL Tracker (station starts), Strengths Finder |
-| 33 to 38 | Frames: the three-HOWL story with one gap. Memory aid. | Sentence Frames, Remember Level, Evidence, Gap |
+| 33 to 38 | Frames: the three-HOWL story with a gap, uncertainty or next check. Memory aid. | Sentence Frames, Remember Level, Evidence, Gap |
 | 38 to 40 | Pair up and time the two minutes; say the commitment. | Explore Challenge: Two Minutes, Three HOWLs |
 
 **In the Hub.** HOWL Tracker's SLC rehearsal tab is a seven-step practice for presenting HOWL growth
@@ -544,12 +575,16 @@ not the four-HOWL EL default, so the steps name the right habits. Strengths Find
 students pick the character strengths that feel like theirs, and its next step asks for one real
 moment from this trimester for each.
 
-**The commitment.** Rehearse your two-minute trimester story with a partner, and take one piece of
-their feedback into the version you use at the conference.
+**The commitment.** This week it is a practice: rehearse an evidence-based account through an
+accessible mode with an educator or chosen partner, and consider their feedback with reasons.
+Changing the account is not required when the evidence supports keeping it. The self-check reads "I
+rehearsed an evidence-based reflection through an accessible mode and considered feedback with
+reasons, using a chosen or fictional record."
 
-**What counts as evidence.** "I told my story to Jordan. It ran three minutes because my Respect part
-was all adjectives. I swapped them for the lunch-table move from week 8 and it came in at two." Said
-aloud, timed, feedback taken, one thing changed. Not evidence: "I practiced my story."
+**What counts as evidence.** "I shared my story with Jordan in writing. Jordan said my Respect part
+was all adjectives. I agreed and swapped them for the lunch-table move from week 8; I kept my
+Perseverance part because the evidence supports it." Rehearsed, feedback considered, a reason for
+each choice. Not evidence: "I practiced my story."
 
 **Watch for.** "What if I do not have evidence for a HOWL?" The FAQ: "I do not have a moment I can
 point to for this one, and that is my gap" is itself evidence of self-assessment. "Do I have to talk
@@ -575,4 +610,4 @@ its evidence. That is the conversation the grading guide's statements were writt
 - King Middle School, Student and Family Handbook, "Grading Guide" (the three HOWL statements and behaviors): <https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide>
 - King Middle School, "Expeditionary Learning Model": <https://king.portlandschools.org/about/learning-models>
 - EL Education, Crew: <https://www.eleducation.org/crew>
-- The twelve packs: `allopacks/crew_norms_grade6_8`, `crew_repair`, `crew_zones`, `crew_system`, `crew_ask`, `crew_feedback`, `crew_perspective`, `crew_upstander`, `crew_attention`, `crew_halfway`, `crew_teamwork`, `crew_story` (all `_grade6_8.allopack.json`), and the primer `docs/EL_CREW_PRIMER.md`.
+- The twelve packs: `allopacks/current/crew_norms_grade6_8`, `crew_repair`, `crew_zones`, `crew_system`, `crew_ask`, `crew_feedback`, `crew_perspective`, `crew_upstander`, `crew_attention`, `crew_halfway`, `crew_teamwork`, `crew_story` (all `_grade6_8.allopack.json`), and the primer `docs/EL_CREW_PRIMER.md`.

@@ -78,6 +78,17 @@ function OutlineView(props) {
   var safeDownloadBlob = props.safeDownloadBlob;
   // Components
   var ErrorBoundary = props.ErrorBoundary;
+  var conceptCompositionRef = React.useRef(null);
+  var controlSize = { minHeight: 44, minWidth: 44, maxWidth: '100%' };
+  var canAddConcept = typeof mapAddInput === 'string' && !!mapAddInput.trim();
+  function addConcept() {
+    if (canAddConcept && typeof handleAddToMapList === 'function') handleAddToMapList(mapAddInput);
+  }
+  function handleConceptKeyDown(event) {
+    if (event.key !== 'Enter' || conceptCompositionRef.current === event.currentTarget || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
+    event.preventDefault();
+    addConcept();
+  }
   return (
                   <div className="space-y-6 h-full">
                       <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex flex-col sm:flex-row flex-wrap justify-between items-start gap-4">
@@ -93,6 +104,7 @@ function OutlineView(props) {
                         <div className="flex flex-wrap gap-2">
                             {isTeacherMode && (
 (generatedContent?.data?.structureType !== 'Venn Diagram' || isInteractiveVenn || isVennPlaying) && <button
+                                    type="button" style={controlSize} data-outline-layout-toggle
                                     onClick={() => {
                                         if (generatedContent?.data?.structureType === 'Venn Diagram') {
                                             if (isInteractiveVenn || isVennPlaying) {
@@ -107,10 +119,10 @@ function OutlineView(props) {
                                         }
                                     }}
                                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 motion-safe:animate-[pulse_3s_ease-in-out_infinite]'}`}
-                                    title={isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.tooltip_static') : t('outline.tooltip_interactive')}
+                                    title={isInteractiveMap || isInteractiveVenn || isVennPlaying ? tl('outline.view_diagram', 'View diagram') : tl('outline.edit_layout_hint', 'Arrange the concepts and connections in this organizer.')}
                                 >
                                     {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? <Layout size={14}/> : <Share2 size={14}/>}
-                                    {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? (t('outline.view_diagram') || 'View diagram') : (t('outline.edit_diagram_layout') || 'Edit diagram layout')}
+                                    {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? tl('outline.view_diagram', 'View diagram') : tl('outline.edit_diagram_layout', 'Edit diagram layout')}
                                 </button>
                             )}
                             {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying
@@ -118,6 +130,7 @@ function OutlineView(props) {
                                 && generatedContent?.data?.structureType !== 'Memory Palace'
                                 && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && (
                                 <button
+                                    type="button" style={controlSize}
                                     onClick={() => {
                                         var vr = window.AlloModules && window.AlloModules.ViewRenderers;
                                         if (vr && typeof vr.openConceptMap3D === 'function') {
@@ -146,6 +159,7 @@ function OutlineView(props) {
                                 && generatedContent?.data?.structureType !== 'Memory Palace'
                                 && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && (
                                 <button
+                                    type="button" style={controlSize} data-outline-freeforms-copy
                                     onClick={() => {
                                         // gradual release: AI-authored organizer → student remixes it as their own
                                         // Free Forms composition. The host (AlloFlowANTI) listens for this event,
@@ -157,26 +171,26 @@ function OutlineView(props) {
                                         }
                                     }}
                                     className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-violet-600 border border-violet-200 hover:bg-violet-50"
-                                    title={t('concept_map.toolbar.remix_tooltip') || 'Rebuild this organizer yourself in Free Forms — your own words, your own arrangement'}
-                                    aria-label={t('concept_map.toolbar.remix_tooltip') || 'Make it mine in Free Forms'}
+                                    title={tl('concept_map.toolbar.remix_copy_hint', 'Open a separate Free Forms copy to change the words and arrangement.')}
                                 >
-                                    🏛️ {t('concept_map.toolbar.remix') || 'Make it mine'}
+                                    🏛️ {tl('concept_map.toolbar.remix_copy', 'Make a Free Forms copy')}
                                 </button>
                             )}
                             {isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (
                                 <button
-                                    data-outline-edit-text
+                                    type="button" style={controlSize} data-outline-edit-text
+                                    title={isEditingOutline ? tl('outline.done_editing_text', 'Done editing text') : tl('outline.edit_text_hint', 'Change the wording in this organizer.')}
                                     onClick={handleToggleIsEditingOutline}
                                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`}
                                 >
                                     {isEditingOutline ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
-                                    {isEditingOutline ? t('common.done') : t('outline.edit_text')}
+                                    {isEditingOutline ? tl('outline.done_editing_text', 'Done editing text') : tl('outline.edit_text', 'Edit Text')}
                                 </button>
                             )}
                             {/* Teacher only in the markup, not just hidden by a class. */}
                             {isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (
                             <button
-                                data-outline-regenerate
+                                type="button" style={controlSize} data-outline-regenerate
                                 onClick={() => handleGenerate('outline')}
                                 disabled={isProcessing} aria-busy={isProcessing}
                                 className="flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -188,7 +202,7 @@ function OutlineView(props) {
                     </div>
                     {isInteractiveMap ? (
                         (!isConceptMapReady && !isChallengeActive) ? (
-                            <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl border-2 border-indigo-100 shadow-lg text-center flex flex-col items-center justify-center min-h-[400px]">
+                            <div className="max-w-3xl mx-auto bg-white p-4 sm:p-10 rounded-2xl border-2 border-indigo-100 shadow-lg text-center flex flex-col items-center justify-center min-h-[400px]">
                                 <div className="bg-indigo-50 p-4 rounded-full mb-4">
                                     <Layout size={48} className="text-indigo-600" />
                                 </div>
@@ -198,27 +212,32 @@ function OutlineView(props) {
                                         <div key={idx} className="bg-white border-2 border-indigo-100 px-4 py-2 rounded-xl shadow-sm font-bold text-indigo-700 animate-in motion-reduce:animate-none zoom-in duration-300 flex items-center gap-2 group" style={{ animationDelay: `${idx * 50}ms` }}>
                                             {branch.title}
                                             <button
-                                                aria-label={(t('outline.remove_concept_named') || 'Remove concept {name}').replace('{name}', String(branch.title || ''))}
+                                                type="button" style={controlSize} data-outline-remove-concept
+                                                aria-label={tl('outline.remove_concept_named', 'Remove concept {name}').replace('{name}', String(branch.title || ''))}
                                                 onClick={() => handleRemoveFromMapList(idx)}
-                                                className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-indigo-600 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5"
+                                                className="inline-flex items-center justify-center shrink-0 text-indigo-600 hover:text-red-700 hover:bg-red-50 rounded-full p-0.5"
                                                 title={t('common.remove_concept')}
                                             >
                                                 <X size={12} />
                                             </button>
                                         </div>
                                     ))}
-                                    <div className="flex items-center gap-2 animate-in motion-reduce:animate-none zoom-in duration-300 delay-100">
-                                        <input aria-label={t('common.enter_map_add_input')}
-                                            type="text"
+                                    <div className="flex flex-wrap items-center justify-center gap-2 animate-in motion-reduce:animate-none zoom-in duration-300 delay-100">
+                                        <input aria-label={tl('concept_map.setup.add_concept_btn', 'Add Concept')}
+                                            type="text" style={controlSize} data-outline-add-concept-input
                                             value={mapAddInput}
                                             onChange={(e) => setMapAddInput(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleAddToMapList(mapAddInput)}
+                                            onCompositionStart={(e) => { conceptCompositionRef.current = e.currentTarget; }}
+                                            onCompositionEnd={(e) => { if (conceptCompositionRef.current === e.currentTarget) conceptCompositionRef.current = null; }}
+                                            onBlur={(e) => { if (conceptCompositionRef.current === e.currentTarget) conceptCompositionRef.current = null; }}
+                                            onKeyDown={handleConceptKeyDown}
                                             placeholder={t('concept_map.setup.add_concept_placeholder')}
                                             className="px-3 py-2 rounded-xl border-2 border-indigo-600 text-sm focus:border-indigo-400 outline-none w-32 bg-slate-50 focus:bg-white transition-colors"
                                         />
                                         <button
-                                            onClick={() => handleAddToMapList(mapAddInput)}
-                                            className="bg-indigo-100 text-indigo-600 px-3 py-2 rounded-xl text-xs font-bold hover:bg-indigo-200 transition-colors flex items-center gap-1"
+                                            type="button" style={controlSize} data-outline-add-concept disabled={!canAddConcept}
+                                            onClick={addConcept}
+                                            className="bg-indigo-100 text-indigo-600 px-3 py-2 rounded-xl text-xs font-bold hover:bg-indigo-200 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <Plus size={14} /> {t('concept_map.setup.add_concept_btn')}
                                         </button>
@@ -226,6 +245,7 @@ function OutlineView(props) {
                                 </div>
                                 <p className="text-slate-600 max-w-md mx-auto mb-6">{tl('outline.curate_concepts_hint', 'Review and curate the concepts before generating the interactive diagram.')}</p>
                                 <button
+                                    type="button" style={controlSize}
                                     onClick={handleInitializeMap}
                                     disabled={isProcessing} aria-busy={isProcessing}
                                     className="w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"

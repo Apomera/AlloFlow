@@ -6,13 +6,18 @@
   function angle(level){return (level-1.5)*step;}
   function point(p){return !!p&&Number.isFinite(p.x)&&Number.isFinite(p.z);}
   function start(level,p){if(!Number.isInteger(level)||level<0||level>3||!point(p)||Math.hypot(p.x,p.z)>1.5)return null;return {initial:level,angle:Math.hypot(p.x,p.z)>=.15?Math.atan2(p.x,-p.z):null,turn:0,position:level,preview:level,invalid:false};}
-  function move(g,p){
+  function move(g,p,trackFinger){
     if(!g)return null;var t=Object.assign({},g);if(g.invalid)return t;
     if(!point(p)||Math.hypot(p.x,p.z)>2.1){t.invalid=true;return t;}if(Math.hypot(p.x,p.z)<.15)return t;
     var next=Math.atan2(p.x,-p.z);if(g.angle===null){t.angle=next;return t;}
     var delta=next-g.angle;while(delta>Math.PI)delta-=2*Math.PI;while(delta<-Math.PI)delta+=2*Math.PI;
     if(Math.abs(delta)>Math.PI*.65){t.invalid=true;return t;}
-    t.angle=next;t.position=clamp(g.position+delta/step);t.turn=(t.position-t.initial)*step;t.preview=Math.round(t.position);return t;
+    // A studio preview tracks the full finger path, including travel past a stop,
+    // so retracing it restores the starting setting. Recipe dials use physical stops.
+    var previous=trackFinger&&Number.isFinite(g.fingerPosition)?g.fingerPosition:g.position;
+    var position=previous+delta/step;
+    if(trackFinger)t.fingerPosition=position;
+    t.angle=next;t.position=clamp(position);t.turn=(t.position-t.initial)*step;t.preview=Math.round(t.position);return t;
   }
   function value(g){return g&&!g.invalid&&Math.abs(g.turn)>=step/2&&g.preview!==g.initial?g.preview:null;}
   function available(s,station,locked){

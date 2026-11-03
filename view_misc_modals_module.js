@@ -2020,12 +2020,38 @@ function AIBackendModalBody(props) {
     "onnx-npu": "http://localhost:11435",
     custom: "http://localhost:8080"
   };
+  const aiCredentialDestination = (config) => {
+    try {
+      const backend = String(config.backend || "gemini");
+      const url = new URL(config.baseUrl || aiBackendDefaults[backend] || (backend === "gemini" ? "https://generativelanguage.googleapis.com" : ""));
+      if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return "";
+      return backend + "|" + url.origin;
+    } catch (_) {
+      return "";
+    }
+  };
+  const geminiCredentialDestination = "gemini|https://generativelanguage.googleapis.com";
   const readAIBackendConfig = () => {
     try {
-      return JSON.parse(configStorage.getItem(configStorageKey) || "{}");
+      const config = JSON.parse(configStorage.getItem(configStorageKey) || "{}");
+      if (!config || typeof config !== "object" || Array.isArray(config)) return {};
+      if (config.apiKeyDestination && config.apiKeyDestination !== aiCredentialDestination(config)) return { ...config, apiKey: "" };
+      return config;
     } catch {
       return {};
     }
+  };
+  const updateAIBackendRoute = (current, changes) => {
+    const updated = { ...current, ...changes };
+    const previousDestination = aiCredentialDestination(current);
+    const destination = aiCredentialDestination(updated);
+    if (previousDestination === geminiCredentialDestination && current.apiKey && !updated.geminiApiKey) updated.geminiApiKey = current.apiKey;
+    if (!destination || destination !== previousDestination) {
+      updated.apiKey = destination === geminiCredentialDestination ? updated.geminiApiKey || "" : "";
+    }
+    if (destination === geminiCredentialDestination && updated.geminiApiKey) updated.apiKey = updated.geminiApiKey;
+    updated.apiKeyDestination = destination;
+    return updated;
   };
   React.useEffect(() => {
     if (requestedSettingsSection !== "gemini-audio") return void 0;
@@ -2058,6 +2084,8 @@ function AIBackendModalBody(props) {
   const writeAIBackendConfig = (config, options = {}) => {
     try {
       const next = { ...config || {} };
+      next.apiKeyDestination = aiCredentialDestination(next);
+      if (!next.apiKeyDestination) next.apiKey = "";
       if (options.preserveValidation !== true) delete next.validation;
       configStorage.setItem(configStorageKey, JSON.stringify(next));
       if (isStudentAiSetup) window.dispatchEvent(new CustomEvent("alloflow:student-ai-config-changed"));
@@ -2276,7 +2304,7 @@ function AIBackendModalBody(props) {
     const backend = cfg.backend || "gemini";
     const Provider = typeof window !== "undefined" && window.AIProvider || ai && ai.constructor;
     if (!Provider) return ai;
-    const canInheritActiveProvider = !isStudentAiSetup && (backend === "gemini" || backend === (ai && ai.backend));
+    const canInheritActiveProvider = !isStudentAiSetup && ai && aiCredentialDestination(cfg) && aiCredentialDestination(cfg) === aiCredentialDestination({ backend: ai.backend || "gemini", baseUrl: ai.baseUrl || "" });
     const inheritedApiKey = canInheritActiveProvider ? ai && ai.apiKey : "";
     const inheritedModels = canInheritActiveProvider ? ai && ai.models : {};
     return new Provider({
@@ -2291,11 +2319,7 @@ function AIBackendModalBody(props) {
   };
   const applyBackendChoice = (backend, { showStatus = false } = {}) => {
     const current = readAIBackendConfig();
-    const updated = { ...current, backend, baseUrl: aiBackendDefaults[backend] || "" };
-    if (String(current.backend || "gemini") === "gemini" && current.apiKey && !updated.geminiApiKey) {
-      updated.geminiApiKey = current.apiKey;
-    }
-    if (backend === "gemini" && updated.geminiApiKey) updated.apiKey = updated.geminiApiKey;
+    const updated = updateAIBackendRoute(current, { backend, baseUrl: aiBackendDefaults[backend] || "" });
     if (backend !== current.backend) delete updated.models;
     writeAIBackendConfig(updated);
     const urlEl = document.getElementById("ai-backend-url");
@@ -2328,7 +2352,7 @@ function AIBackendModalBody(props) {
   ];
   const forgetGeminiCloudServicesKey = () => {
     const current = readAIBackendConfig();
-    const geminiIsPrimary = String(current.backend || "gemini") === "gemini";
+    const geminiIsPrimary = aiCredentialDestination(current) === geminiCredentialDestination;
     const next = { ...current };
     delete next.geminiApiKey;
     if (geminiIsPrimary) delete next.apiKey;
@@ -2351,7 +2375,9 @@ function AIBackendModalBody(props) {
       defaultValue: readAIBackendConfig().baseUrl || "",
       onChange: (e) => {
         const current = readAIBackendConfig();
-        writeAIBackendConfig({ ...current, baseUrl: e.target.value });
+        const updated = updateAIBackendRoute(current, { baseUrl: e.target.value });
+        writeAIBackendConfig(updated);
+        if (updated.apiKey !== current.apiKey) setConfigRevision((revision) => revision + 1);
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
     }
@@ -2366,11 +2392,11 @@ function AIBackendModalBody(props) {
       autoComplete: "off",
       placeholder: t("ai_backend.api_key_placeholder") || "Your API key...",
       key: "primary-api-key-" + String(readAIBackendConfig().backend || "gemini") + "-" + configRevision,
-      defaultValue: String(readAIBackendConfig().backend || "gemini") === "gemini" ? readAIBackendConfig().geminiApiKey || readAIBackendConfig().apiKey || "" : readAIBackendConfig().apiKey || "",
+      defaultValue: readAIBackendConfig().apiKey || "",
       onChange: (e) => {
         const current = readAIBackendConfig();
         const next = { ...current, apiKey: e.target.value };
-        if (String(current.backend || "gemini") === "gemini") next.geminiApiKey = e.target.value;
+        if (aiCredentialDestination(current) === geminiCredentialDestination) next.geminiApiKey = e.target.value;
         writeAIBackendConfig(next);
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"

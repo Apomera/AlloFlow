@@ -24,17 +24,30 @@ index is not exactly what the generator produces, or if any entry points at a mi
 
 Resource capability tags (`memory-aid`, `applied-challenge`, `illustrated`, and `text-only`) are derived from the referenced pack and reconciled after curated overrides. Keep custom topical tags in the published record; do not manually maintain capability tags. An illustration tag reports an image reference, not complete or reviewed image coverage.
 
+Source links combine `sourceBasis` citations with declared `contentSources` teacher
+background. Only safe HTTPS links are exposed; duplicates are removed. A bounded
+`contentSources[].use` note remains visible as context, so a background organization
+is not presented as the author or endorser of an original teaching activity.
+
 Raw `main` is the live catalog, so a push publishes within minutes.
 
 ## Public directory and share links
 
-The Lesson Library at `https://alloflow.dev/packs` groups catalogued AlloPacks by
-topic and keeps base and illustrated editions together. Each version has its own
-Open, Copy link, and Download JSON actions. The three legacy sample projects remain below it.
+The Lesson Library at `https://alloflow.dev/packs` groups current catalogued AlloPacks
+by topic. Each current pack has Open, Copy link, and Download JSON actions.
+The three legacy sample projects remain below it.
 The directory, short URLs, and in-app catalog all use `catalog/index.json`.
 
+Since 2026-11-02 each topic has one current illustrated pack in `allopacks/current/`,
+with one link (`/p/<topic>` and `/app/?lesson=<topic>`). The older editions (text-only
+root files and the earlier `allopacks/illustrated/` copies) were removed that day and remain
+in git history; their links are not redirected. The link builder rejects any pack file that
+is not listed, unless `superseded_allopacks.json` names it (its `entries` list superseded
+files still on disk; `withheld` lists packs kept unlisted on purpose).
+
 `share_slug` is a readable alias independent of the existing catalog `slug`.
-Katie's reading-space pack uses `https://alloflow.dev/p/reading-space`.
+For example, the Water Cycle pack uses `https://alloflow.dev/p/water-cycle-grade6`.
+Withheld packs (for example, awaiting an author's review) get no catalog entry or share link.
 Existing `/app/?lesson=<slug>` URLs remain valid. Relative Pages redirects preserve
 the origin when an existing user opens a `pages.dev/p/...` link; copied links use
 the current `alloflow.dev` domain. These origins keep separate browser storage.

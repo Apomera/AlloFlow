@@ -50,6 +50,17 @@ function learnerPanelAnnotations(teacher, learner) {
 
 function ImageView(props) {
   var t = props.t;
+  const imageText = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; };
+  const altFieldId = 'visual-alt-' + React.useId();
+  const descriptionId = altFieldId + '-notice';
+  const imageData = props.generatedContent?.data || {};
+  const altTools = window.AlloModules && window.AlloModules.AltText;
+  const descriptionStale = imageData.altSource === 'stale' || !!(imageData.altHash && imageData.imageUrl && typeof altTools?.hashImage === 'function' && altTools.hashImage(imageData.imageUrl) !== imageData.altHash);
+  const descriptionMissing = typeof imageData.altText !== 'string' || !imageData.altText.trim();
+  const descriptionNeedsAttention = imageData.decorative !== true && (descriptionMissing || descriptionStale);
+  const imageDescription = imageData.decorative === true ? '' : descriptionStale
+    ? imageText('visuals.description_review_alt', 'Image description needs review')
+    : descriptionMissing ? imageText('visuals.description_missing_alt', 'Image description unavailable') : imageData.altText;
   var leveledTextLanguage = props.leveledTextLanguage;
   var fillInTheBlank = props.fillInTheBlank;
   var generatedContent = props.generatedContent;
@@ -79,6 +90,8 @@ function ImageView(props) {
   var handleScoreUpdate = props.handleScoreUpdate;
   var handleRestoreImage = props.handleRestoreImage;
   var handleRefineImage = props.handleRefineImage;
+  const imageRefinementComposingRef = React.useRef(false);
+  React.useEffect(() => { imageRefinementComposingRef.current = false; }, [generatedContent?.id, generatedContent?._artifactInstanceId, generatedContent?.data?.imageUrl, isTeacherMode]);
   var handleDownloadImage = props.handleDownloadImage;
   var handleAnimatePanel = props.handleAnimatePanel;
   var handleRegeneratePanelFrame = props.handleRegeneratePanelFrame;
@@ -223,7 +236,7 @@ function ImageView(props) {
                                 />
                             ) : generatedContent?.data.imageUrl ? (
                                 <div style={{position:'relative'}}>
-                                <img src={generatedContent?.data.imageUrl} alt={generatedContent?.data.decorative ? '' : (generatedContent?.data.altText || '')} role={generatedContent?.data.decorative ? 'presentation' : undefined} className="w-full h-auto rounded" loading="lazy" decoding="async"/>
+                                <img src={generatedContent?.data.imageUrl} alt={imageDescription} aria-describedby={descriptionNeedsAttention ? descriptionId : undefined} role={generatedContent?.data.decorative ? 'presentation' : undefined} className="w-full h-auto rounded" loading="lazy" decoding="async"/>
                                 {isTeacherMode && (
                                   <div style={{position:'absolute',top:'8px',right:'8px',display:'flex',gap:'6px'}}>
                                     <button
@@ -238,7 +251,7 @@ function ImageView(props) {
                                       aria-expanded={findOpen}
                                       onClick={toggleFind}
                                       className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-800 transition-all shadow-sm cursor-pointer"
-                                    >🔎 {t('visuals.find_short') || 'Find'}</button>
+                                    >🔎 {imageText('visuals.find_short', 'Find')}</button>
                                     {generatedContent?.data?.originalImage && (
                                       <button
                                         aria-label={t('visuals.restore_ai_image') || 'Restore AI image'}
@@ -255,11 +268,17 @@ function ImageView(props) {
                                     {/^https:\/\//i.test(generatedContent.data.imageAttribution.url || '') && <> · <a href={generatedContent.data.imageAttribution.url} target="_blank" rel="noopener noreferrer" className="underline">{t('visuals.image_source_link') || 'Source'}</a></>}
                                   </p>
                                 )}
-                                {isTeacherMode && window.AlloModules && window.AlloModules.ImageAltField && (() => {
-                                    const A = window.AlloModules.AltText;
+                                {descriptionNeedsAttention && <div id={descriptionId} role="status" className="mt-3 rounded-xl border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950">
+                                  <p>{isTeacherMode
+                                    ? descriptionStale ? imageText('visuals.description_review_teacher', 'The picture changed. Review its description before sharing.') : imageText('visuals.description_missing_teacher', 'This picture needs a description so everyone can use it. Add one below, or mark it decorative if it carries no information.')
+                                    : imageText('visuals.description_missing_learner', 'An image description is not available for this picture. Ask your teacher for a description or an accessible version.')}</p>
+                                  {isTeacherMode && <button type="button" onClick={() => document.getElementById(altFieldId)?.focus()} className="mt-2 min-h-11 rounded-lg border border-amber-700 px-3 py-2 font-bold focus-visible:ring-2 focus-visible:ring-amber-700">{imageText('visuals.description_edit', 'Edit image description')}</button>}
+                                </div>}
+                                {isTeacherMode && (() => {
+                                    const A = window.AlloModules && window.AlloModules.AltText;
                                     const d = generatedContent?.data || {};
                                     const currentUrl = d.imageUrl;
-                                    const stale = !!(A && d.altHash && currentUrl && A.hashImage(currentUrl) !== d.altHash);
+                                    const stale = descriptionStale;
                                     const patch = (fields) => {
                                         updateImageResource(item => item.data.imageUrl === currentUrl
                                             ? { ...item, data: { ...item.data, ...fields } } : item);
@@ -294,12 +313,18 @@ function ImageView(props) {
                                             }
                                         }
                                     };
+                                    const changeDescription = value => patch({ altText: value, altSource: 'author', altHash: currentUrl && typeof A?.hashImage === 'function' ? A.hashImage(currentUrl) : '' });
+                                    if (!window.AlloModules?.ImageAltField) return <div className="mt-3 rounded-xl border border-slate-300 p-3">
+                                      <label htmlFor={altFieldId} className="block text-sm font-bold">{imageText('a11y.alt.field_label', 'Image description')}</label>
+                                      {!d.decorative && <textarea id={altFieldId} value={d.altText || ''} maxLength={800} rows={3} onChange={event => changeDescription(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-400 p-2 focus-visible:ring-2 focus-visible:ring-sky-600" />}
+                                      <label className="mt-2 flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={d.decorative === true} onChange={event => patch({ decorative: event.target.checked })} />{imageText('a11y.alt.decorative_label', 'Decorative (screen readers skip it)')}</label>
+                                    </div>;
                                     return React.createElement(window.AlloModules.ImageAltField, {
-                                        id: 'visual-alt-' + (generatedContent?.id || 'single'), t: t, value: d.altText || '',
+                                        id: altFieldId, t: t, value: d.altText || '',
                                         source: stale ? 'stale' : (d.altSource || (d.altText ? 'planning' : '')), decorative: d.decorative === true, busy: altBusy,
-                                        onChange: (value) => patch({ altText: value, altSource: 'author', altHash: (currentUrl && A) ? A.hashImage(currentUrl) : d.altHash }),
+                                        onChange: changeDescription,
                                         onDecorativeChange: (flag) => patch({ decorative: flag }),
-                                        onRegenerate: regenerate,
+                                        onRegenerate: A && typeof window.callGeminiVision === 'function' ? regenerate : undefined,
                                     });
                                 })()}
                                 </div>
@@ -352,13 +377,20 @@ function ImageView(props) {
                                     value={imageRefinementInput}
                                     onChange={(e) => setImageRefinementInput(e.target.value)}
                                     placeholder={t('visuals.refiner_placeholder')}
-                                    className="flex-grow text-sm p-2 border border-yellow-600 rounded-md focus:ring-2 focus:ring-yellow-400 outline-none"
-                                    onKeyDown={(e) => e.key === 'Enter' && handleRefineImage()}
+                                    className="min-w-0 min-h-11 flex-grow text-sm p-2 border border-yellow-600 rounded-md focus:ring-2 focus:ring-yellow-400 outline-none"
+                                    onCompositionStart={() => { imageRefinementComposingRef.current = true; }}
+                                    onCompositionEnd={() => { imageRefinementComposingRef.current = false; }}
+                                    onBlur={() => { imageRefinementComposingRef.current = false; }}
+                                    onKeyDown={(e) => {
+                                      if (e.key !== 'Enter' || imageRefinementComposingRef.current || e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
+                                      e.preventDefault();
+                                      if (!e.repeat && !isProcessing && String(imageRefinementInput || '').trim() && typeof handleRefineImage === 'function') handleRefineImage();
+                                    }}
                                 />
-                                <button
+                                <button type="button"
                                     onClick={handleRefineImage}
                                     disabled={!imageRefinementInput.trim() || isProcessing} aria-busy={isProcessing}
-                                    className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="min-h-11 min-w-11 shrink-0 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     title={t('common.apply_nano_edit')}
                                     aria-label={t('common.apply_nano_edit')}
                                 >
@@ -376,13 +408,13 @@ function ImageView(props) {
                             </div>
                         </div>
                         {isTeacherMode && (
-                        <div className="flex gap-3 w-full max-w-2xl">
-                            <button onClick={handleDownloadImage} data-help-key="visuals_download" className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium"><Download size={18} /> {t('visuals.download')}</button>
+                        <div className="flex gap-3 w-full max-w-2xl" style={{flexWrap:'wrap'}}>
+                            <button onClick={handleDownloadImage} data-help-key="visuals_download" style={{flexBasis:'16rem'}} className="min-w-0 min-h-11 flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium"><Download size={18} /> {t('visuals.download')}</button>
                             <button
                               aria-label={t('visuals.upload_image') || 'Upload your own image'}
                               title={t('visuals.upload_image') || 'Upload your own image'}
                               onClick={() => singleImageFileRef.current?.click()}
-                              className="flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors font-medium border border-purple-200"
+                              className="min-h-11 flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors font-medium border border-purple-200"
                             ><span style={{fontSize:'1.125rem'}}>📷</span></button>
                             {!usesVisualPanelGrid && (
                             <button
@@ -390,10 +422,10 @@ function ImageView(props) {
                               title={t('visuals.find_picture') || 'Find a symbol or photo'}
                               aria-expanded={findOpen}
                               onClick={toggleFind}
-                              className="flex-none flex items-center justify-center gap-2 bg-sky-50 text-sky-900 py-2 px-4 rounded-lg hover:bg-sky-100 transition-colors font-medium border border-sky-300"
+                              className="min-h-11 flex-none flex items-center justify-center gap-2 bg-sky-50 text-sky-900 py-2 px-4 rounded-lg hover:bg-sky-100 transition-colors font-medium border border-sky-300"
                             ><span style={{fontSize:'1.125rem'}}>🔎</span></button>
                             )}
-                            <button aria-label={t('common.regenerate')} onClick={handleRestoreImage} data-help-key="visuals_regenerate" className="flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-600"><RefreshCw size={18} /></button>
+                            <button aria-label={t('common.regenerate')} onClick={handleRestoreImage} data-help-key="visuals_regenerate" className="min-h-11 flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-600"><RefreshCw size={18} /></button>
                         </div>
                         )}
                     </div>

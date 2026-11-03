@@ -40,44 +40,65 @@ function gap(overrides = {}) {
 }
 
 describe('Skate Lab truthful contact outcomes', () => {
+  // 2026-11 change (approved, bug 1): the spin is about the body's long axis,
+  // as in vert aerials, so every multiple of 180 degrees is a safe landing. A
+  // half-turn is now a valid landing (riding forward after a vert air); a
+  // quarter-turn (board sideways to the wall) is the unsafe case that keeps the
+  // "stop at first unsafe contact" path pinned.
   it('separates the requested trick from physical wall alignment', () => {
-    const baseline = halfpipe();
+    const baseline = halfpipe({ rotationTarget: 180, spinRate: 210 });
     const timing = halfpipe({ spinRate: 0 });
-    const invertedTarget = halfpipe({
+    const halfTurn = halfpipe({
       rotationTarget: 180,
       spinRate: 180 / timing.airTime,
+    });
+    const quarterTurn = halfpipe({
+      rotationTarget: 180,
+      spinRate: 90 / timing.airTime,
     });
     const safeTargetMiss = halfpipe({
       rotationTarget: 360,
       spinRate: 0,
     });
 
+    expect(timing.airTime).toBeGreaterThan(0.3);
     expect(baseline.trickGoalMet).toBe(true);
     expect(baseline.contactSafe).toBe(true);
     expect(baseline.runSuccessful).toBe(true);
     expect(baseline.outcome).toBe('landed');
 
-    expect(invertedTarget.completed).toBeCloseTo(180, 8);
-    expect(invertedTarget.trickGoalMet).toBe(true);
-    expect(invertedTarget.contactAlignmentErrorDeg).toBeCloseTo(180, 8);
-    expect(invertedTarget.contactSafe).toBe(false);
-    expect(invertedTarget.reentryModeled).toBe(false);
-    expect(invertedTarget.runSuccessful).toBe(false);
-    expect(invertedTarget.outcome).toBe('unsafe-contact');
+    expect(halfTurn.completed).toBeCloseTo(180, 8);
+    expect(halfTurn.trickGoalMet).toBe(true);
+    expect(halfTurn.contactAlignmentErrorDeg).toBeCloseTo(0, 8);
+    expect(halfTurn.contactSafe).toBe(true);
+    expect(halfTurn.reentryModeled).toBe(true);
+    expect(halfTurn.runSuccessful).toBe(true);
+    expect(halfTurn.outcome).toBe('landed');
+    expect(halfTurn.landingStance).toBe('forward');
 
-    const stopped = physics.sampleHalfpipe(invertedTarget, 1);
+    expect(quarterTurn.completed).toBeCloseTo(90, 8);
+    expect(quarterTurn.trickGoalMet).toBe(false);
+    expect(quarterTurn.contactAlignmentErrorDeg).toBeCloseTo(90, 8);
+    expect(quarterTurn.contactSafe).toBe(false);
+    expect(quarterTurn.reentryModeled).toBe(false);
+    expect(quarterTurn.runSuccessful).toBe(false);
+    expect(quarterTurn.outcome).toBe('unsafe-contact');
+
+    const stopped = physics.sampleHalfpipe(quarterTurn, 1);
     expect(stopped.phase).toContain('unsafe contact');
     expect(stopped.hasSurfaceContact).toBe(true);
     expect(stopped.hasSupport).toBe(false);
     expect(stopped.normalG).toBe(0);
-    expect(stopped.vy).toBeCloseTo(-invertedTarget.exitSpeed, 8);
-    expect(stopped.rotation).toBeCloseTo(invertedTarget.landingRotationDeg, 8);
+    expect(stopped.vy).toBeCloseTo(-quarterTurn.exitSpeed, 8);
+    expect(stopped.rotation).toBeCloseTo(quarterTurn.landingRotationDeg, 8);
+    expect(stopped.spinDeg).toBeCloseTo(quarterTurn.completed, 8);
 
     expect(safeTargetMiss.trickGoalMet).toBe(false);
     expect(safeTargetMiss.contactSafe).toBe(true);
     expect(safeTargetMiss.landed).toBe(true);
     expect(safeTargetMiss.runSuccessful).toBe(false);
     expect(safeTargetMiss.outcome).toBe('trick-missed');
+    expect(safeTargetMiss.landingStance).toBe('fakie');
     expect(physics.sampleHalfpipe(safeTargetMiss, 1).hasSupport).toBe(true);
   });
 

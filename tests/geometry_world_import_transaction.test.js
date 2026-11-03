@@ -229,7 +229,12 @@ describe('queued editable import caller transaction',()=>{
   function caller(app){
     const source=readFileSync('stem_lab/stem_tool_geometryworld_builder.js','utf8');
     const start=source.indexOf('      function confirmEditableRestore() {'),end=source.indexOf('      function downloadEditableRecovery()',start);
-    const token={current:4},preview={value:incoming},clear=vi.fn(),error=vi.fn(),focus=vi.fn(),announce=vi.fn(),applyFailed={current:false};
+    const token={current:4},preview={value:incoming},clear=vi.fn(),error=vi.fn(),announce=vi.fn(),applyFailed={current:false};
+    const owner={current:{token:token.current,engine:app.engine,lesson:app.engine._currentLesson,blocks:app.engine.blocks,surface:'studio'}};
+    const heading = document.createElement('h3');
+    heading.id='gwe-selected-creation-title';heading.tabIndex=-1;document.body.appendChild(heading);
+    const focus = vi.spyOn(heading,'focus');
+    vi.spyOn(window,'requestAnimationFrame').mockImplementation(cb=>{cb(0);return 0;});
     let queued;
     app.engine.transitionWorld=vi.fn((_target,action)=>{if(app.engine._worldTransitionDepth)return action();queued=action;return false;});
     app.engine.logEvent=vi.fn();
@@ -237,17 +242,23 @@ describe('queued editable import caller transaction',()=>{
       transitionBuilderWorld:(engine,target,action)=>engine.transitionWorld(target,action),restoreEditableWorld:api.restoreEditableWorld,ctx:app.ctx,
       editableApplyFailedRef:applyFailed,setEditablePreview:clear,setEditableError:error,
       patchGeometryState:(ctx,patch)=>ctx.updateMulti('geometryWorld',patch),announce,
-      cancelEditablePreview:clear,focusWorldSurface:focus,EDITABLE_WORLD_SCHEMA:api.EDITABLE_WORLD_SCHEMA};
-    const confirm=new Function(...Object.keys(deps),source.slice(start,end)+'\nreturn confirmEditableRestore;')(...Object.values(deps));
+      cancelEditablePreview:clear,EDITABLE_WORLD_SCHEMA:api.EDITABLE_WORLD_SCHEMA,
+      editableOwnerRef:owner,editableSurfaceRef:{current:'studio'},toolFocusRequest:{current:0},packageArrival:null,
+      workshopFocusAllowed:engine=>engine===window.__geoWorldEngine,
+      selectionMeasurement:api.selectionMeasurement,setProjectName:vi.fn(),saveWorldDraft:()=>({ok:true}),savedDraft:vi.fn()};
+    const guard=source.slice(source.indexOf('      function editableRequestIsCurrent('),source.indexOf('      function chooseEditableWorld('));
+    const bindRevision=source.slice(source.indexOf('  function bindPackageRevision('),source.indexOf('  function currentPackageRevision('));
+    const confirm=new Function(...Object.keys(deps),bindRevision+guard+source.slice(start,end)+'\nreturn confirmEditableRestore;')(...Object.values(deps));
     return {confirm,token,clear,error,focus,announce,applyFailed,retry(){app.engine._worldTransitionDepth=1;try{return queued();}finally{delete app.engine._worldTransitionDepth;}}};
   }
+  afterEach(()=>document.getElementById('gwe-selected-creation-title')?.remove());
   it('keeps the preview and current HUD on rejection, then retries the full success flow',()=>{
     const app=fixture(),before=frozen(app),run=caller(app);
     expect(run.confirm()).toBe(false);
     expect(frozen(app)).toEqual(before);expect(run.clear).not.toHaveBeenCalled();expect(run.error).not.toHaveBeenCalled();expect(run.announce).not.toHaveBeenCalled();expect(run.focus).not.toHaveBeenCalled();
     expect(run.applyFailed.current).toBe(false);expect(app.engine.loadLesson).not.toHaveBeenCalled();
     expect(run.retry()).toBe(true);
-    expect(app.state()).toMatchObject({activeLesson:'builderSandbox',hudPreset:'builder',hudPanel:'inventory',showGeometryHome:false,measureHistory:[],builderPrintContext:null,blocksPlaced:3});
+    expect(app.state()).toMatchObject({activeLesson:'builderSandbox',hudPreset:'builder',hudPanel:'',sandboxDockCollapsed:false,builderPanel:'build',showGeometryHome:false,measureHistory:[],builderPrintContext:null,blocksPlaced:3});
     expect(app.engine.logEvent).toHaveBeenCalledWith('editable_world_open',{blocks:3,schema:api.EDITABLE_WORLD_SCHEMA});
     expect(run.clear).toHaveBeenCalledTimes(1);expect(run.focus).toHaveBeenCalledTimes(1);expect(run.announce).toHaveBeenCalledWith(app.ctx,expect.stringContaining('Opened New tower'),'success');
   });

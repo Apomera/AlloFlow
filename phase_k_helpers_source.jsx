@@ -498,6 +498,11 @@ const resolveAdventureSentenceVoice = (sentences, index, activeSpeaker, voiceMap
 // joins identical in-flight generations, so Adventure may safely warm one
 // local sentence instead of skipping it.
 const _kokoroVoicePrefix = /^(af_|am_|bf_|bm_)/i; // mirrors tts_source _kokoroVoicePrefix
+const _pkExplainDeviceProvider = (runtime, voice, addToast, t) => {
+    if (!_kokoroVoicePrefix.test(String(voice || '')) || runtime.deviceProviderNoticeVoice === voice) return;
+    runtime.deviceProviderNoticeVoice = voice;
+    if (typeof addToast === 'function') addToast((typeof t === 'function' && t('header.kokoro_browser_provider')) || 'The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro.', 'info');
+};
 
 const sanitizeTtsText = (text) => String(text || '')
     .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
@@ -833,7 +838,15 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               if (playbackSessionRef.current !== sessionId) return;
               playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName, deps, contentId);
           };
+          const selectedKokoro = _kokoroVoicePrefix.test(String(currentVoice || ''));
+          const reportKokoroUnavailable = () => {
+              const message = 'The selected Kokoro voice could not read this sentence. Check the voice download or choose another voice, then try again.';
+              if (typeof addToast === 'function') addToast(message, 'warning');
+              else if (typeof setError === 'function') setError(message);
+              terminatePlayback('kokoro-unavailable');
+          };
           const speakViaBrowserFallback = (reason) => {
+              if (selectedKokoro && ttsConfig.provider !== 'browser') { reportKokoroUnavailable(); return false; }
               warnLog(`Browser-TTS fallback at index ${index} (${reason})`);
               if (ttsConfig.provider === 'off') {
                   terminatePlayback('tts-off');
@@ -959,7 +972,8 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               } else if (_browserTtsFallbackEnabled) {
                   speakViaBrowserFallback('retries-exhausted');
               } else {
-                  terminatePlayback('tts-unavailable', err);
+                  if (selectedKokoro) reportKokoroUnavailable();
+                  else terminatePlayback('tts-unavailable', err);
               }
           };
           sequenceErrorHandler = handlePlaybackError;
@@ -1036,6 +1050,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   // queues behind bulk preloads (AlloBot greetings, Word Sounds
                   // warm-ups, our own look-aheads all share the normal lane).
                   if (ttsConfig.provider === 'browser') {
+                      _pkExplainDeviceProvider(playbackRuntime, currentVoice, addToast, t);
                       speakViaBrowserFallback('configured-provider');
                       return;
                   }
@@ -1049,6 +1064,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                           language: segmentLanguage,
                           priority: 'interactive',
                           reason: 'read-aloud-active',
+                          allowProviderFallback: !selectedKokoro,
                           signal: sessionSignal,
                           kokoroLock,
                       }, mode === 'persona' ? {} : { maxRetries: 1 });
@@ -1203,6 +1219,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                       language: targetLanguage,
                       priority: 'normal',
                       reason: 'read-aloud-preload',
+                      allowProviderFallback: !_kokoroVoicePrefix.test(String(targetVoice || '')),
                       signal: sessionSignal,
                       maxRetries: 0,
                       kokoroLock,
@@ -1662,7 +1679,9 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
         const savedPersonaTarget = [translationMessage?.translationTarget, translationMessage?.translationLanguage]
             .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
         const ttsLanguage = speechLanguageOverride || (personaTranslationMatch ? (savedPersonaTarget?.trim() || 'English') : directSpeechLanguage);
+        const directKokoro = _kokoroVoicePrefix.test(String(selectedVoice || ''));
         const speakDirectViaBrowser = reason => {
+            if (directKokoro && handleSpeakTtsConfig.provider !== 'browser') return false;
             if (!directIsCurrent() || handleSpeakTtsConfig.provider === 'off') return false;
             warnLog(`Direct browser-TTS fallback (${reason})`);
             const adapter = _pkStartBrowserSpeech(sanitizeTtsText(effectiveText), {
@@ -1683,6 +1702,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
         setIsGeneratingAudio(true);
         setPlayingContentId(contentId);
         if (handleSpeakTtsConfig.provider === 'browser') {
+            _pkExplainDeviceProvider(playbackRuntime, selectedVoice, addToast, t);
             if (!speakDirectViaBrowser('configured-provider')) finishDirect();
             return;
         }
@@ -1691,6 +1711,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
             audioUrl = await callTTS(effectiveText, selectedVoice, 1, {
                 language: ttsLanguage, maxRetries: 1, priority: 'interactive',
                 reason: 'direct-read-aloud', signal: directSignal,
+                allowProviderFallback: !directKokoro,
             });
             if (!directIsCurrent()) return;
             if (!audioUrl) {
@@ -1720,7 +1741,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
             const requiresBrowser = !!(err && err.useBrowserTts) || code === 'browser-tts-required';
             if (requiresBrowser && speakDirectViaBrowser('provider-contract')) return;
             if (err && err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
-                setError(t('errors.speech_generation_failed'));
+                setError(directKokoro ? 'The selected Kokoro voice could not read this text. Check the voice download or choose another voice, then try again.' : t('errors.speech_generation_failed'));
                 warnLog('Direct TTS failed:', err);
             }
             finishDirect();
@@ -2077,7 +2098,8 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
       if (!saveStillCurrent()) return cancelledSave;
       if (!saveFileName.trim()) return { ok: false, reason: 'filename-required', narration: 'A filename is required before saving.' };
       let currentLog = [...studentProgressLog];
-      if (saveType === 'student') {
+      const hasPendingTeacherAssessment = saveType === 'student' && history.some(quiz => quiz?.type === 'quiz' && (['teacher-graded', 'teacher-release'].includes(quiz.data?.deliverySettings?.feedbackTiming) || quiz.data?.answerKeysWithheld === true));
+      if (saveType === 'student' && !hasPendingTeacherAssessment) {
         const quizItems = history.filter(h => h.type === 'quiz');
         let totalScore = 0;
         let count = 0;
@@ -2270,7 +2292,30 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
               stickers: Array.isArray(stickers) ? stickers : []
           }, null, 2);
       } else {
-          const studentHistory = history.filter(item => !['udl-advice', 'brainstorm'].includes(item.type));
+          const studentHistory = [];
+          const sourceTeacherOnlyTypes = ['lesson-plan', 'udl-advice', 'brainstorm', 'alignment-report', 'video-ref', 'persona-transcript', 'persona-reflection', 'persona-summary', 'persona-session', 'persona-session-read-aloud', 'gemini-bridge'];
+          const studentTransport = window.AlloModules?.SessionTransport;
+          const studentSerializer = window.AlloModules?.LiveAac?.serializeResourceForStudentPack;
+          const activityProjector = window.AlloModules?.BrainstormView?.projectStudentActivityResource;
+          const learnerActivities = history.filter(item => item?.type === 'brainstorm' && !item.data?.submissionCopy && Array.isArray(item.data) && item.data.some(activity => activity && ['discussion', 'jigsaw'].includes(activity.kind)));
+          try {
+              if (typeof studentTransport?.studentSafeResources !== 'function' || typeof studentSerializer !== 'function' || typeof window.sanitizeHistoryForCloud !== 'function' || typeof window.stripUndefined !== 'function' || (learnerActivities.length && typeof activityProjector !== 'function')) throw new Error('student projection unavailable');
+              const projectedHistory = studentTransport.studentSafeResources(history, sourceTeacherOnlyTypes, activityProjector);
+              if (!Array.isArray(projectedHistory) || learnerActivities.some(original => !projectedHistory.some(item => item?.id === original.id && item.type === 'brainstorm'))) throw new Error('learner activity projection unavailable');
+              for (const item of projectedHistory) {
+                  if (!item || !item.id || !item.type) throw new Error('invalid learner resource');
+                  if (item.type === 'brainstorm' && (item.studentProjection !== true || !Array.isArray(item.data) || !item.data.length || item.data.some(activity => !activity || !['discussion', 'jigsaw'].includes(activity.kind)))) throw new Error('invalid learner activity');
+                  if (sourceTeacherOnlyTypes.includes(item.type) && item.type !== 'brainstorm' && !(item.type === 'lesson-plan' && item.studentProjection === true && ['study', 'family'].includes(item.config?.generationInputs?.mode))) throw new Error('teacher resource crossed learner boundary');
+                  const safe = studentSerializer(item, { sanitizeHistoryForCloud: window.sanitizeHistoryForCloud, stripUndefined: window.stripUndefined });
+                  if (!safe || safe.id !== item.id || safe.type !== item.type) throw new Error('resource serialization failed');
+                  if (item.type === 'quiz' && ['teacher-graded', 'teacher-release'].includes(item.data?.deliverySettings?.feedbackTiming) && safe.data?.answerKeysWithheld !== true) throw new Error('graded answer keys were not withheld');
+                  studentHistory.push(safe);
+              }
+          } catch (_) {
+              const message = 'Student resources could not be prepared safely. Reload AlloFlow and try Save File again.';
+              try { addToast(message, 'error'); } catch (_) {}
+              return { ok: false, reason: 'student-resource-projection-unavailable', narration: message };
+          }
           dataStr = JSON.stringify({
               mode: 'student',
               studentNickname: studentNickname,
@@ -2693,6 +2738,12 @@ const autoConfigureSettings = async (text, grade, standards, language, customInp
             ? `Mandatory Standards: ${standards}`
             : "Mandatory Standards: None specific (Focus on general comprehension)";
         let existingBlock = "ALREADY GENERATED: None";
+        const sourceMatrix = window.AlloModules && window.AlloModules.GenerationMatrix;
+        const existingSourceCheck = sourceMatrix && typeof sourceMatrix.findExistingSourceAnalysis === 'function'
+            ? sourceMatrix.findExistingSourceAnalysis(history, text) : null;
+        const sourceCheckInstruction = existingSourceCheck
+            ? 'SOURCE CHECK: The exact current source is already checked. Reuse its analysis; do not request another analysis generation.'
+            : 'SOURCE CHECK: This exact source has no completed check. Include analysis first.';
         if (existingResources.length > 0) {
             const resourceSummaries = history.filter(h => h.type && h.type !== 'lesson-plan').slice(-15).map(h => {
                 const type = h.type;
@@ -2756,6 +2807,7 @@ const autoConfigureSettings = async (text, grade, standards, language, customInp
             ${standardsBlock}
             ${userCustomBlock}
             ${existingBlock}
+            ${sourceCheckInstruction}
             ${countConstraint}
             --- 2. THE SOURCE MATERIAL ---
             "${text.substring(0, 3000)}...",
@@ -2763,7 +2815,7 @@ const autoConfigureSettings = async (text, grade, standards, language, customInp
             Determine the best tools to teach this specific content. Available tools and when to use them:
 ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt === 'function')
                 ? window.formatToolCatalogForPrompt()
-                : `            - **analysis**: Analyze source text for key ideas, vocabulary, structure. ALWAYS include as first resource.
+                : `            - **analysis**: Analyze source text for key ideas, vocabulary, structure. Include first only if this exact source has not been checked; otherwise reuse its check.
             - **simplified**: Adapt text to a specific reading level. Good for differentiation.
             - **glossary**: Key vocabulary with definitions, examples, images. Essential for content-heavy texts.
             - **outline**: Visual organizer (Venn Diagram, Flow Chart, Structured Outline). Match to content topology.
@@ -2792,7 +2844,7 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
             - You MUST return these in the "lessonDNA" field of the response JSON (see schema below). This is not optional — downstream resources depend on it for alignment.
             STEP 3: CONFIGURE THE RESOURCE PLAN
             Create a sequential list of resources to generate.
-            - **Analysis**: Always recommended first.
+            - **Analysis**: Include first only when this exact source has not been checked. An existing check is reused without another generation.
             - **Visuals**: Choose 'outline' type based on topology (e.g. Comparative -> Venn, Procedural -> Flow Chart).
             - **Assessment**: Quiz should test the Golden Thread.
             ${allowDuplicates ? '**HIGH VOLUME STRATEGY**: Since the target count is high, include complementary variations. Example: Generate a "Concept Sort" for vocabulary AND a "Timeline" for sequence.' : ''}
@@ -2801,7 +2853,7 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
             Return a JSON object with this specific schema:
             {
                 "resourcePlan": [
-                    { "tool": "analysis", "directive": "Analyze text..." },
+                    ${existingSourceCheck ? '' : '{ "tool": "analysis", "directive": "Analyze text..." },'}
                     { "tool": "simplified", "directive": "Adapt text for ${grade}..." },
                     { "tool": "outline", "directive": "Create a Venn Diagram comparing..." },
                     { "tool": "brainstorm", "directive": "Seminar on the central conflict...", "activityMode": "discussion", "activityConfig": { "protocol": "socratic-seminar" } }
@@ -2950,7 +3002,7 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
           const report = {
               readingLevel: { range: readingLevel.range, explanation: readingLevel.explanation || '' },
               concepts: Array.isArray(source.concepts) ? source.concepts : [],
-              accuracy: { rating: accuracy.rating, reason: accuracy.reason || '', discrepancies: Array.isArray(accuracy.discrepancies) ? accuracy.discrepancies : [], verifiedFacts: Array.isArray(accuracy.verifiedFacts) ? accuracy.verifiedFacts : [] },
+              accuracy: { rating: accuracy.rating, reason: accuracy.reason || '', discrepancies: Array.isArray(accuracy.discrepancies) ? accuracy.discrepancies : [], verifiedFacts: Array.isArray(accuracy.verifiedFacts) ? accuracy.verifiedFacts : [], unsourcedFacts: Array.isArray(accuracy.unsourcedFacts) ? accuracy.unsourcedFacts : [] },
               grammar: Array.isArray(source.grammar) ? source.grammar : []
           };
           // Protect cited evidence and quoted source examples even if the model
@@ -2964,7 +3016,7 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
           const prompt = `Translate the explanations in this existing source-text analysis into ${target}. Do not analyze, correct, or reassess the passage.
 Report JSON: ${JSON.stringify(maskedReport)}
 Rules:
-- Translate readingLevel.explanation, concepts, accuracy.reason, accuracy.discrepancies, accuracy.verifiedFacts, and grammar explanations. Keep each list in the same order with the same number of entries.
+- Translate readingLevel.explanation, concepts, accuracy.reason, accuracy.discrepancies, accuracy.verifiedFacts, accuracy.unsourcedFacts, and grammar explanations. Keep each list in the same order with the same number of entries.
 - Keep readingLevel.range and accuracy.rating unchanged. Keep non-string entries unchanged.
 - Keep every __ANALYSIS_QUOTE_N__ token exactly in its original field. They represent citations and quoted examples from the ORIGINAL language; never translate examples, corrections, or evidence quotations.
 - Return ONLY JSON: {"report": <the same report shape>, "sourceTranslation": <string or null>}.
@@ -2993,7 +3045,8 @@ ${companionInstruction}`;
                       rating: accuracy.rating,
                       reason: translateField(translated.accuracy?.reason, maskedReport.accuracy.reason),
                       discrepancies: translateList(translated.accuracy?.discrepancies, maskedReport.accuracy.discrepancies, report.accuracy.discrepancies),
-                      verifiedFacts: translateList(translated.accuracy?.verifiedFacts, maskedReport.accuracy.verifiedFacts, report.accuracy.verifiedFacts)
+                      verifiedFacts: translateList(translated.accuracy?.verifiedFacts, maskedReport.accuracy.verifiedFacts, report.accuracy.verifiedFacts),
+                      unsourcedFacts: report.accuracy.unsourcedFacts.length ? translateList(translated.accuracy?.unsourcedFacts, maskedReport.accuracy.unsourcedFacts, report.accuracy.unsourcedFacts) : []
                   },
                   grammar: translateList(translated.grammar, maskedReport.grammar, report.grammar)
               };
@@ -4221,6 +4274,56 @@ Return only the corrected version of this exact text:`;
     }
 };
 
+function _verificationUrl(uri) {
+    if (typeof uri !== 'string' || !/^https?:\/\//i.test(uri) || /[\s<>]/.test(uri)) return '';
+    try {
+        const url = new URL(uri);
+        return url.username || url.password ? '' : url.href;
+    } catch (_) { return ''; }
+}
+
+function _globalVerificationMarkers(raw, metadata, textParts, globalSources, sourceUrlToIndexMap) {
+    const chunks = Array.isArray(metadata?.groundingChunks) ? metadata.groundingChunks : [];
+    const localToGlobal = new Map();
+    chunks.forEach((chunk, index) => {
+        const url = _verificationUrl(chunk?.web?.uri);
+        if (!url) return;
+        if (!sourceUrlToIndexMap.has(url)) {
+            globalSources.push({ uri: chunk.web.uri, title: chunk.web.title });
+            sourceUrlToIndexMap.set(url, globalSources.length);
+        }
+        localToGlobal.set(index, sourceUrlToIndexMap.get(url));
+    });
+    const grounded = Array.isArray(metadata?.groundingSupports) && metadata.groundingSupports.length > 0;
+    // Mark provider-validated positions on the untouched response. A private marker
+    // distinguishes these insertions from model-authored numbers and Markdown links.
+    let tag = '\uE000';
+    while (raw.includes(tag)) tag += '\uE000';
+    const grounding = window.AlloModules?.TextPipelineHelpers?.processGrounding;
+    const marked = grounded && grounding ? grounding(raw, metadata, 'Links Only', false, false, textParts, index =>
+        localToGlobal.has(index) ? tag + localToGlobal.get(index) + tag : '') : raw;
+    const cleaned = marked.replace(/(`+)([^`]*?)\1|(!?)\[([^\]\n]+)\](?:\(([^)\n]*)\))?/g, (match, code, literal, image, label, destination, offset) => {
+        if (code) return match;
+        const digits = label.replace(/[⁽⁾]/g, '').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, digit => '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(digit));
+        const numbered = /^(?:Source\s+)?\d+(?:\s*,\s*(?:Source\s+)?\d+)*$/i.test(digits);
+        if (!numbered && !/^\s*(?:Source\s+)?\d/i.test(digits)) {
+            if (destination === undefined) return match;
+            const id = !grounded && !image && sourceUrlToIndexMap.get(_verificationUrl(destination));
+            return id && [...localToGlobal.values()].includes(id) ? label + ' [' + id + ']' : label;
+        }
+        // With native supports, the provider placements are authoritative. With
+        // search-result-only metadata, an explicit local ID must exist in this segment.
+        if (grounded || !numbered || image || marked[offset - 1] === '\\' || (destination === undefined && /^[(:]/.test(marked[offset + match.length] || ''))) return '';
+        const ids = new Set();
+        for (const token of digits.match(/\d+/g)) {
+            const index = Number(token) - 1, id = localToGlobal.get(index);
+            if (id && (destination === undefined || _verificationUrl(destination) === _verificationUrl(chunks[index]?.web?.uri))) ids.add(id);
+        }
+        return [...ids].map(id => '[' + id + ']').join(' ');
+    });
+    return cleaned.replace(new RegExp(tag + '(\\d+)' + tag, 'g'), '[$1]');
+}
+
 const performDeepVerification = async (fullText, deps) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, generationSignal } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] performDeepVerification fired"); } catch(_) {}
@@ -4272,28 +4375,7 @@ const performDeepVerification = async (fullText, deps) => {
                   } else {
                       chunkRawText = String(result || "");
                   }
-                  let chunkTextWithGlobalCitations = chunkRawText;
-                  if (metadata && metadata.groundingChunks) {
-                      const localToGlobalIndexMap = new Map();
-                      metadata.groundingChunks.forEach((chunk, localIdx) => {
-                          const uri = chunk.web?.uri;
-                          const title = chunk.web?.title;
-                          if (uri) {
-                              let globalIndex;
-                              if (sourceUrlToIndexMap.has(uri)) {
-                                  globalIndex = sourceUrlToIndexMap.get(uri);
-                              } else {
-                                  globalSources.push({ uri, title });
-                                  globalIndex = globalSources.length;
-                                  sourceUrlToIndexMap.set(uri, globalIndex);
-                              }
-                              localToGlobalIndexMap.set(localIdx, globalIndex);
-                          }
-                      });
-                      if (metadata.groundingSupports) {
-                         chunkTextWithGlobalCitations = applyGlobalCitations(chunkRawText, metadata.groundingSupports, localToGlobalIndexMap);
-                      }
-                  }
+                  const chunkTextWithGlobalCitations = _globalVerificationMarkers(String(chunkRawText), metadata, result.textParts, globalSources, sourceUrlToIndexMap);
                   if (chunkTextWithGlobalCitations.trim()) {
                       combinedVerificationText += `\n\n#### Segment ${i+1} Findings\n${chunkTextWithGlobalCitations}`;
                   }

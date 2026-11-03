@@ -155,7 +155,7 @@ test.describe('Weather Systems — live timeline explorer', () => {
     const saved = await page.evaluate(() => (window as any).__toolData.weatherSystems.liveForecastCheckpoints);
     expect(saved).toHaveLength(1);
     expect(saved[0]).toMatchObject({ validTimestamp: Date.parse(time(13)), predicted: { temperature: 20 } });
-    await save.click();
+    await expect(save).toBeDisabled();
     expect(await page.evaluate(() => (window as any).__toolData.weatherSystems.liveForecastCheckpoints)).toEqual(saved);
     await page.evaluate(() => {
       const w = window as any;
@@ -163,6 +163,38 @@ test.describe('Weather Systems — live timeline explorer', () => {
       w.__rerender();
     });
     expect(await page.evaluate(() => (window as any).__toolData.weatherSystems.liveForecastCheckpoints)).toEqual(saved);
+  });
+
+  test('pins two hours, attaches their evidence, and preserves the original explanation', async ({ page }) => {
+    await mount(page);
+    const panel = explorer(page);
+    await panel.getByRole('button', { name: 'Pin inspected hour as A' }).click();
+    await panel.getByRole('slider', { name: 'Inspect live timeline hour' }).focus();
+    await page.keyboard.press('End');
+    await panel.getByRole('button', { name: 'Pin inspected hour as B' }).click();
+    const compare = panel.locator('[data-weather-live-hour-comparison]');
+    await expect(compare).toContainText('Missing at 1 of');
+    await compare.getByRole('button', { name: 'Attach comparison to forecast explanation' }).click();
+    await panel.getByLabel('Explanation for the next forecast snapshot').fill('I expect cooling during this window.');
+    await panel.getByRole('button', { name: 'Save inspected forecast snapshot' }).click();
+    const saved = await page.evaluate(() => (window as any).__toolData.weatherSystems.liveForecastCheckpoints[0]);
+    expect(saved.learnerReasoning).toBe('I expect cooling during this window.');
+    expect(saved.timelineEvidence).toContain('Open-Meteo model values');
+    expect(saved.timelineEvidence).toContain(RETRIEVED);
+    await expect(page.getByRole('list', { name: 'Saved live forecast checkpoints' }).getByRole('listitem')).toContainText(saved.learnerReasoning);
+    await panel.getByLabel('Explanation for the next forecast snapshot').fill('Edited draft for another hour');
+    await expect(panel.getByRole('button', { name: 'Save inspected forecast snapshot' })).toBeDisabled();
+    expect(await page.evaluate(() => (window as any).__toolData.weatherSystems.liveForecastCheckpoints[0])).toEqual(saved);
+    await expect(panel.getByLabel('Explanation for the next forecast snapshot')).toHaveValue('Edited draft for another hour');
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__toolData.weatherSystems.liveWeather = { ...w.__toolData.weatherSystems.liveWeather, retrievedAt: '2026-10-29T12:04Z' };
+      w.__rerender();
+    });
+    await expect(panel.getByLabel('Explanation for the next forecast snapshot')).toHaveValue('');
+    await expect(panel.getByLabel('Explanation for the next forecast snapshot')).toBeDisabled();
+    await expect(panel.locator('[data-weather-explanation-recovery]')).toContainText('Edited draft for another hour');
+    await expect(compare.getByRole('button', { name: 'Attach comparison to forecast explanation' })).toBeDisabled();
   });
 
   test('exports the selected timeline with source times and excluded measurements', async ({ page }) => {

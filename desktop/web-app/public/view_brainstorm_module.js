@@ -287,9 +287,25 @@ function ActivityResponseField(props) {
   });
 }
 function ActivityAnswersNote(props) {
-  return /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600 mb-3"
-  }, activityT(props.t, 'brainstorm.answers_saved_note', 'Write your answers below. They are saved with your work.'));
+  const state = props.studentWorkStatus;
+  const messages = {
+    saving: ['brainstorm.answers_saving', 'Saving your answers…'],
+    saved: ['brainstorm.answers_saved', 'Your answers are saved on this device.'],
+    error: ['brainstorm.answers_save_error', 'Your answers could not be saved. Keep this page open and try again.'],
+    conflict: ['brainstorm.answers_save_conflict', 'Your answers are not saved yet. Review the conflicting changes above.']
+  };
+  const message = messages[state] || ['brainstorm.answers_ready', 'Write your answers below.'];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-slate-700 mb-3"
+  }, /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, activityT(props.t, message[0], message[1])), state === 'error' && typeof props.onRetrySave === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: props.onRetrySave,
+    className: "mt-2 min-h-11 rounded-lg border border-slate-500 px-3 py-2 font-bold focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, activityT(props.t, 'studio_response.retry_save', 'Try saving again')));
 }
 function ActivityArtifactSummary(props) {
   var item = props.item || {};
@@ -415,7 +431,9 @@ function DiscussionKitBody(props) {
   }, protocolLabel), item.grouping ? /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600"
   }, activityDisplayText(item.grouping)) : null), answering ? /*#__PURE__*/React.createElement(ActivityAnswersNote, {
-    t: t
+    t: t,
+    studentWorkStatus: props.studentWorkStatus,
+    onRetrySave: props.onRetrySave
   }) : null, item.openingQuestion ? /*#__PURE__*/React.createElement("div", {
     className: "mb-4"
   }, /*#__PURE__*/React.createElement("p", {
@@ -551,7 +569,9 @@ function JigsawBody(props) {
   }, /*#__PURE__*/React.createElement("h5", {
     className: "text-xs font-bold uppercase tracking-wider text-slate-600 mb-1"
   }, t('brainstorm.accountability_check') || 'Show what you learned (everyone answers)'), answering ? /*#__PURE__*/React.createElement(ActivityAnswersNote, {
-    t: t
+    t: t,
+    studentWorkStatus: props.studentWorkStatus,
+    onRetrySave: props.onRetrySave
   }) : null, /*#__PURE__*/React.createElement("ol", {
     className: "list-decimal ml-5 text-sm text-slate-700 space-y-1"
   }, checks.map(function (c, aIdx) {
@@ -634,14 +654,18 @@ function BrainstormView(props) {
     isTeacherMode: isTeacherMode,
     renderFormattedText: renderFormattedText,
     answers: learnerAnswers,
-    onAnswer: onAnswer
+    onAnswer: onAnswer,
+    studentWorkStatus: props.studentWorkStatus,
+    onRetrySave: props.onRetrySave
   }) : idea.kind === 'jigsaw' ? /*#__PURE__*/React.createElement(JigsawBody, {
     item: idea,
     t: t,
     isTeacherMode: isTeacherMode,
     renderFormattedText: renderFormattedText,
     answers: learnerAnswers,
-    onAnswer: onAnswer
+    onAnswer: onAnswer,
+    studentWorkStatus: props.studentWorkStatus,
+    onRetrySave: props.onRetrySave
   }) : isEditingBrainstorm ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement(Lightbulb, {

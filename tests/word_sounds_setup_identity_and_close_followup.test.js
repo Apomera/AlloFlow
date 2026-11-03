@@ -105,3 +105,44 @@ describe('minimized setup ownership',()=>{
   await act(async()=>pending.release());expect(props.onStartGame).not.toHaveBeenCalled();expect(container.children).toHaveLength(0);
  });
 });
+
+describe('Word Sounds voice choice', () => {
+  it('keeps the app voice if an earlier Kokoro download finishes after a reset', async () => {
+    props.isCanvasEnv = true;
+    props.selectedVoice = 'Puck';
+    const pending = [];
+    const previousLoader = window.__loadKokoroTTS;
+    window.__loadKokoroTTS = () => new Promise(resolve => pending.push(resolve));
+    try {
+      await mount();
+      const byName = name => [...container.querySelectorAll('button')].find(button => button.textContent.trim() === name);
+      await click(byName('Use Kokoro Voice'));
+      await click(byName('Use Kokoro Voice'));
+      await act(async () => pending[1](true));
+      await click(byName('Use app voice'));
+      await act(async () => pending[0](true));
+      expect(container.querySelector('[data-word-sounds-recording-voice]').textContent).toContain('Puck (app voice)');
+      expect(props.syllableReviewSession.setupDraft.packVoice).toBe('');
+    } finally { window.__loadKokoroTTS = previousLoader; }
+  });
+  it('clears only the pack override and prepares new clips with the latest app voice', async () => {
+    props.selectedVoice = 'Kore';
+    props.syllableReviewSession.setupDraft.packVoice = 'af_heart';
+    props.callTTS = vi.fn(async () => clip());
+    await mount();
+    const voiceRow = () => container.querySelector('[data-word-sounds-recording-voice]');
+    expect(voiceRow().textContent).toContain('af_heart (Word Sounds only)');
+    props.selectedVoice = 'Puck';
+    await mount();
+    expect(voiceRow().textContent).toContain('af_heart');
+    await click(voiceRow().querySelector('button'));
+    expect(props.syllableReviewSession.setupDraft.packVoice).toBe('');
+    expect(voiceRow().textContent).toContain('Puck (app voice)');
+    props.selectedVoice = 'Aoede';
+    await mount();
+    expect(voiceRow().textContent).toContain('Aoede (app voice)');
+    await click(start());
+    expect(props.callTTS.mock.calls.length).toBeGreaterThan(0);
+    expect(props.callTTS.mock.calls.every(([, voice]) => voice === 'Aoede')).toBe(true);
+  });
+});

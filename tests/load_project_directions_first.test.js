@@ -15,7 +15,7 @@ const source = readFileSync(process.env.MISC_SOURCE_PATH ? resolve(process.env.M
 const runtimeStart = source.indexOf('function _createProjectLoadOperationManager');
 const runtimeEnd = source.indexOf('const detectClimaxArchetype', runtimeStart);
 if (runtimeStart < 0 || runtimeEnd < 0) throw new Error('Project-load runtime markers missing');
-const crewPack = readFileSync(resolve(process.cwd(), 'allopacks/crew_norms_grade6_8.allopack.json'), 'utf8');
+const crewPack = readFileSync(resolve(process.cwd(), 'allopacks/current/crew_norms_grade6_8.allopack.json'), 'utf8');
 
 function makeRuntime() {
   class ImmediateFileReader {
@@ -52,7 +52,9 @@ describe('Load Project opens an AlloPack on its directions', () => {
   it('a Crew pack opens on the directions, not the challenge at the end', async () => {
     const pack = JSON.parse(crewPack);
     expect(pack.history[0].type).toBe('directions');
-    expect(pack.history[pack.history.length - 1].type).toBe('applied-challenge');
+    // The illustrated edition ends on the challenge's visual-reference image, after the challenge.
+    expect(pack.history[pack.history.length - 1].type).toBe('image');
+    expect(pack.history[pack.history.length - 2].type).toBe('applied-challenge');
     const state = await load(crewPack);
     expect(state.history).toHaveLength(pack.history.length);
     expect(state.activeView).toBe('directions');
@@ -73,6 +75,9 @@ describe('Load Project opens an AlloPack on its directions', () => {
     const pack = JSON.parse(crewPack);
     pack.history = pack.history.filter((r) => r.type !== 'directions');
     const state = await load(JSON.stringify(pack));
-    expect(state.activeView).toBe('applied-challenge');
+    // The last resource is the challenge's visual-reference image in the illustrated edition.
+    expect(pack.history[pack.history.length - 1].id).toMatch(/-challenge-visual-reference$/);
+    expect(state.activeView).toBe('image');
+    expect(state.generatedContent.id).toBe(pack.history[pack.history.length - 1].id);
   });
 });

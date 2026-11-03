@@ -6,20 +6,14 @@ import { BUG_RECEIPT_PATTERN, handleBugReview, readBugReview } from './bug_revie
  *
  * Accepts POSTs of a lesson submission (lesson_payload + metadata +
  * affirmations) from the in-canvas submit form, validates them, runs a
- * defense-in-depth PII rescan, and commits the result as a JSON file to
- * `catalog/pending/<slug>.json` in the AlloFlow repo via the GitHub API.
- *
- * Secrets (set via `wrangler secret put`):
- *   GITHUB_PAT  fine-grained token, scoped to the AlloFlow repo only,
- *               with Contents: Read and write
- *
- * Vars (in wrangler.toml):
- *   GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH
+ * defense-in-depth PII rescan, and stages the result in PRIVATE
+ * COMMUNITY_SUBMISSIONS KV for at most 30 days. Publication is a separate
+ * maintainer action; this Worker never writes submissions to GitHub.
  *
  * Endpoints:
- *   POST /submit             accept a lesson submission (-> public GitHub pending/)
- *   POST /submitTranslation  accept a translation correction (-> public GitHub pending/)
- *   POST /submitItemCorrection accept a practice-item correction (-> public GitHub pending/)
+ *   POST /v2/submit          private lesson intake (legacy /submit also private)
+ *   POST /v2/submitTranslation private translation intake
+ *   POST /v2/submitItemCorrection private practice-item correction intake
  *   POST /submitBug          accept a bug report (-> PRIVATE BUG_REPORTS KV)
  *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
  *   POST /submitPlugin      accept a Tool Forge plugin (-> PRIVATE PLUGIN_SUBMISSIONS KV)
@@ -66,14 +60,14 @@ const ALLOWED_SUBJECTS = new Set([
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Turnstile-Token',
   'Access-Control-Max-Age': '86400',
 };
 
 function jsonResponse(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders, ...extraHeaders },
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store, private', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', ...corsHeaders, ...extraHeaders },
   });
 }
 
@@ -152,19 +146,10 @@ function validateSubmission(payload) {
 }
 
 // ── /submit abuse controls ───────────────────────────────────────────────────
-// Every accepted /submit becomes a commit on the catalog branch through the
-// GitHub token, so the endpoint needs the same budget guards /search has:
-//   * per-IP fixed windows in the SUBMIT_RATE KV namespace — fail-open when the
-//     namespace is not bound, exactly like SEARCH_RATE, so an unbound worker
-//     keeps today's behaviour; bind it before opening the form to the public
-//     (wrangler.toml has the block);
-//   * a content-hash dedupe so a replayed body cannot create a second commit.
-//     The hash is recorded only AFTER a successful commit, so a 502 from GitHub
-//     never poisons a legitimate retry;
-//   * optional Cloudflare Turnstile: when TURNSTILE_SECRET is set, the payload
-//     must carry a valid `turnstile_token`. Fail-closed ONLY once configured —
-//     the in-app form does not render the widget yet, and whether Gemini Canvas
-//     allows the challenge script has not been verified.
+// Every public intake route requires SUBMIT_RATE. KV windows are approximate
+// across edges, not an atomic global quota. Storage failures refuse intake.
+// Configured Turnstile is enforced on every public write route; tokens never
+// enter staged records. Dedupe is recorded only after a successful write.
 const SUBMIT_DEFAULTS = { ratePerMinute: 3, ratePerDay: 20, dedupeTtlSeconds: 86400 };
 
 function submitLimit(env, name, fallback) {
@@ -173,7 +158,7 @@ function submitLimit(env, name, fallback) {
 }
 
 function submitClientIp(request) {
-  const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   return String(ip).split(',')[0].trim();
 }
 
@@ -185,9 +170,11 @@ async function sha256Hex(text) {
 // Returns { refusal: null | { status, error, retryAfterHint }, hash }. Counts the
 // request against the per-IP windows when it is allowed through.
 async function submitAbuseRefusal(request, env, rawBody) {
-  const hash = await sha256Hex(rawBody);
-  if (!env.SUBMIT_RATE) return { refusal: null, hash }; // namespace not bound — fail open, like SEARCH_RATE
-  const ip = submitClientIp(request);
+  const route = new URL(request.url).pathname.replace(/^\/v2\//, '/');
+  const hash = await sha256Hex(route + '\0' + rawBody);
+  const unavailable = { refusal: { status: 503, error: 'Submission protection is unavailable. Your draft has not been submitted.' }, hash };
+  if (!env.SUBMIT_RATE || typeof env.SUBMIT_RATE.get !== 'function' || typeof env.SUBMIT_RATE.put !== 'function') return unavailable;
+  const ip = await sha256Hex(submitClientIp(request));
   const minuteKey = `submitrate:${ip}:${Math.floor(Date.now() / 60000)}`;
   const dayKey = `submitday:${ip}:${new Date().toISOString().slice(0, 10)}`;
   const dupeKey = `submitdupe:${hash}`;
@@ -197,7 +184,7 @@ async function submitAbuseRefusal(request, env, rawBody) {
     minuteCount = Number(m) || 0;
     dayCount = Number(d) || 0;
     dupe = u;
-  } catch (_) { return { refusal: null, hash }; }
+  } catch (_) { return unavailable; }
   if (dupe) return { refusal: { status: 409, error: 'duplicate-submission', retryAfterHint: 'this exact submission was already received' }, hash };
   if (dayCount >= submitLimit(env, 'RATE_PER_DAY', SUBMIT_DEFAULTS.ratePerDay)) return { refusal: { status: 429, error: 'daily-limit-reached', retryAfterHint: 'tomorrow' }, hash };
   if (minuteCount >= submitLimit(env, 'RATE_PER_MINUTE', SUBMIT_DEFAULTS.ratePerMinute)) return { refusal: { status: 429, error: 'rate-limited', retryAfterHint: '1 minute' }, hash };
@@ -206,7 +193,7 @@ async function submitAbuseRefusal(request, env, rawBody) {
       env.SUBMIT_RATE.put(minuteKey, String(minuteCount + 1), { expirationTtl: 120 }),
       env.SUBMIT_RATE.put(dayKey, String(dayCount + 1), { expirationTtl: 172800 }),
     ]);
-  } catch (_) { /* counting is best-effort */ }
+  } catch (_) { return unavailable; }
   return { refusal: null, hash };
 }
 
@@ -219,81 +206,64 @@ async function recordSubmitHash(env, hash) {
 
 async function turnstileRefusal(request, env, payload) {
   if (!env.TURNSTILE_SECRET) return null;
-  const token = payload && typeof payload.turnstile_token === 'string' ? payload.turnstile_token : '';
+  const token = request.headers.get('X-Turnstile-Token') || (payload && typeof payload.turnstile_token === 'string' ? payload.turnstile_token : '');
+  if (token.length > 2048) return { status: 403, error: 'turnstile-failed' };
   if (!token) return { status: 403, error: 'turnstile-required' };
   try {
     const form = new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token, remoteip: submitClientIp(request) });
-    const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form });
+    const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form, redirect: 'error', signal: AbortSignal.timeout(8000) });
     const data = await resp.json();
-    if (!data || data.success !== true) return { status: 403, error: 'turnstile-failed' };
+    if (!resp.ok || !data || data.success !== true) return { status: 403, error: 'turnstile-failed' };
   } catch (_) {
     return { status: 403, error: 'turnstile-unavailable' };
   }
   return null;
 }
 
-async function commitToGitHub(env, slug, content) {
-  const owner = env.GITHUB_OWNER || 'Apomera';
-  const repo = env.GITHUB_REPO || 'AlloFlow';
-  const branch = env.GITHUB_BRANCH || 'main';
-  const filename = `${Date.now()}-${slug}.json`;
-  const filePath = `catalog/pending/${filename}`;
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+const COMMUNITY_RETENTION_SECONDS = 30 * 24 * 60 * 60;
 
-  // Cloudflare Workers ship btoa; encode the file content as base64.
-  const encodedContent = btoa(unescape(encodeURIComponent(content)));
-
-  const ghResp = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${env.GITHUB_PAT}`,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'AlloFlow-Catalog-Worker',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      message: `Catalog submission: ${slug}`,
-      branch: branch,
-      content: encodedContent,
-    }),
-  });
-
-  if (!ghResp.ok) {
-    const errBody = await ghResp.text();
-    throw new Error(`GitHub commit failed (${ghResp.status}): ${errBody.slice(0, 500)}`);
+async function preparePublicIntake(request, env) {
+  if (!env.SUBMIT_RATE || typeof env.SUBMIT_RATE.get !== 'function' || typeof env.SUBMIT_RATE.put !== 'function') {
+    return jsonResponse({ ok: false, error: 'Submission protection is unavailable. Your draft has not been submitted.' }, 503);
   }
-
-  return { filename, filePath };
+  const contentType = request.headers.get('Content-Type') || '';
+  if (!/^\s*application\/json(?:\s*;\s*charset\s*=\s*(?:utf-?8|"utf-?8"))?\s*$/i.test(contentType)) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  const body = await readBugBody(request);
+  if (body.status) return jsonResponse({ ok: false, error: body.error }, body.status);
+  let payload;
+  try { payload = JSON.parse(body.text); } catch (_) { return jsonResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
+  return protectPublicPayload(request, env, payload);
 }
 
-// ── Translation corrections (parallel to lesson submission; same GitHub-commit model) ──
-// Commits to translations/pending/<file>.json. The maintainer reviews + applies them to the
-// lang packs via dev-tools/i18n/ingest_translation_feedback.cjs (--apply). The app never reads
-// these back, so there's no public manifest — submit-only.
-
-async function commitJsonToGitHub(env, filePath, content, message) {
-  const owner = env.GITHUB_OWNER || 'Apomera';
-  const repo = env.GITHUB_REPO || 'AlloFlow';
-  const branch = env.GITHUB_BRANCH || 'main';
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
-  const encodedContent = btoa(unescape(encodeURIComponent(content)));
-  const ghResp = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${env.GITHUB_PAT}`,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'AlloFlow-Catalog-Worker',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ message, branch, content: encodedContent }),
-  });
-  if (!ghResp.ok) {
-    const errBody = await ghResp.text();
-    throw new Error(`GitHub commit failed (${ghResp.status}): ${errBody.slice(0, 500)}`);
-  }
+async function protectPublicPayload(request, env, payload) {
+  const turnstile = await turnstileRefusal(request, env, payload);
+  if (turnstile) return jsonResponse({ ok: false, error: turnstile.error }, turnstile.status);
+  if (payload && typeof payload === 'object' && !Array.isArray(payload)) delete payload.turnstile_token;
+  const rawBody = JSON.stringify(payload);
+  const abuse = await submitAbuseRefusal(request, env, rawBody);
+  if (abuse.refusal) return jsonResponse({ ok: false, error: abuse.refusal.error, retryAfterHint: abuse.refusal.retryAfterHint }, abuse.refusal.status);
+  return { payload, rawBody, hash: abuse.hash };
 }
+
+async function stageCommunitySubmission(env, record, responseFields = {}) {
+  if (!env.COMMUNITY_SUBMISSIONS || typeof env.COMMUNITY_SUBMISSIONS.put !== 'function') {
+    return jsonResponse({ ok: false, error: 'Private submission storage is not configured. Your draft has not been submitted.' }, 503);
+  }
+  const now = Date.now();
+  const id = `community:${record.kind}:${now}:${crypto.randomUUID()}`;
+  const stored = { ...record, submitted_at: new Date(now).toISOString(), expires_at: new Date(now + COMMUNITY_RETENTION_SECONDS * 1000).toISOString(), review_status: 'pending_review' };
+  try {
+    await env.COMMUNITY_SUBMISSIONS.put(id, JSON.stringify(stored), {
+      expirationTtl: COMMUNITY_RETENTION_SECONDS,
+      metadata: { kind: record.kind, submitted_at: stored.submitted_at, expires_at: stored.expires_at, pii: record.pii_scan.findings.length > 0 },
+    });
+  } catch (_) {
+    return jsonResponse({ ok: false, error: 'Private submission storage is unavailable. Please retry later.' }, 503);
+  }
+  return jsonResponse({ ok: true, ...responseFields, id, storage: 'private', review_status: 'pending_review', expires_at: stored.expires_at, pii_findings_count: record.pii_scan.findings.length }, 201);
+}
+
+// Community corrections remain private until a maintainer reviews and publishes them.
 
 function validateTranslation(p) {
   if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
@@ -307,18 +277,17 @@ function validateTranslation(p) {
   return null;
 }
 
-async function handleTranslationSubmit(request, env) {
-  if (!env.GITHUB_PAT) return jsonResponse({ ok: false, error: 'Server misconfigured: missing GITHUB_PAT secret.' }, 500);
+async function handleTranslationSubmit(request, env, intake) {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const rawBody = await request.text();
+  const rawBody = intake.rawBody;
   if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
   const err = validateTranslation(p);
   if (err) return jsonResponse({ ok: false, error: err }, 400);
 
-  const piiFindings = scanForPii([p.suggested, p.current, p.note].filter(Boolean).join('\n'));
+  const piiFindings = scanForPii(JSON.stringify(p));
   const record = {
     schema_version: '1.0',
     kind: 'translation_correction',
@@ -335,20 +304,12 @@ async function handleTranslationSubmit(request, env) {
       user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
     },
   };
-  const base = slugify(p.language) + '-' + slugify(p.key || p.current).slice(0, 32);
-  const filePath = `translations/pending/${Date.now()}-${base}.json`;
-  try {
-    await commitJsonToGitHub(env, filePath, JSON.stringify(record, null, 2) + '\n', `Translation correction: ${record.language} ${record.key || ''}`.trim());
-  } catch (e) {
-    return jsonResponse({ ok: false, error: 'Could not commit to GitHub: ' + e.message }, 502);
-  }
-  return jsonResponse({ ok: true, language: record.language, key: record.key, pii_findings_count: piiFindings.length }, 201);
+  return stageCommunitySubmission(env, record, { language: record.language, key: record.key });
 }
 
-// ── Practice-item corrections (parallel to translation corrections; same GitHub-commit model) ──
-// Commits to item_corrections/pending/<file>.json. The maintainer reviews + applies accepted fixes
-// to the pack source via dev-tools/i18n/ingest_item_corrections.cjs (--apply). Submit-only; the app
-// never reads these back. This is the community-review channel for the Test Prep packs, whose
+// Practice-item corrections are staged privately for maintainer review. Accepted,
+// reviewed copies can enter the existing item-correction publication workflow.
+// This is the community-review channel for the Test Prep packs, whose
 // independent expert validation is deliberately still in progress.
 
 const ITEM_CORRECTION_KINDS = ['wrong-answer', 'ambiguous', 'weak-distractor', 'outdated', 'not-exam-item', 'typo', 'other'];
@@ -369,18 +330,17 @@ function validateItemCorrection(p) {
   return null;
 }
 
-async function handleItemCorrectionSubmit(request, env) {
-  if (!env.GITHUB_PAT) return jsonResponse({ ok: false, error: 'Server misconfigured: missing GITHUB_PAT secret.' }, 500);
+async function handleItemCorrectionSubmit(request, env, intake) {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const rawBody = await request.text();
+  const rawBody = intake.rawBody;
   if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
   const err = validateItemCorrection(p);
   if (err) return jsonResponse({ ok: false, error: err }, 400);
 
-  const piiFindings = scanForPii([p.suggested, p.note, p.prompt].filter(Boolean).join('\n'));
+  const piiFindings = scanForPii(JSON.stringify(p));
   const record = {
     schema_version: '1.0',
     kind: 'item_correction',
@@ -401,18 +361,11 @@ async function handleItemCorrectionSubmit(request, env) {
       user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
     },
   };
-  const base = slugify(p.packId) + '-' + slugify(p.itemId || p.kind).slice(0, 32);
-  const filePath = `item_corrections/pending/${Date.now()}-${base}.json`;
-  try {
-    await commitJsonToGitHub(env, filePath, JSON.stringify(record, null, 2) + '\n', `Item correction: ${record.pack_id} ${record.item_id || ''}`.trim());
-  } catch (e) {
-    return jsonResponse({ ok: false, error: 'Could not commit to GitHub: ' + e.message }, 502);
-  }
-  return jsonResponse({ ok: true, pack_id: record.pack_id, item_id: record.item_id, pii_findings_count: piiFindings.length }, 201);
+  return stageCommunitySubmission(env, record, { pack_id: record.pack_id, item_id: record.item_id });
 }
 
 // ── Bug reports → Cloudflare KV (PRIVATE, not GitHub) ──
-// Unlike lessons/translations, bug reports carry error logs + free text that can include
+// Bug reports carry error logs + free text that can include
 // student-identifiable data (FERPA). The AlloFlow repo is PUBLIC, so these must NOT go to GitHub.
 // They're stored in the private BUG_REPORTS KV namespace instead. Defense-in-depth PII scan still
 // runs so findings are flagged. Read them via GET /bugs (token-gated) or `wrangler kv key list`.
@@ -779,11 +732,11 @@ function validatePd(p) {
   }
   return null;
 }
-async function handlePdSubmit(request, env) {
+async function handlePdSubmit(request, env, intake) {
   if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing PD_SUBMISSIONS KV binding.' }, 500);
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const rawBody = await request.text();
+  const rawBody = intake.rawBody;
   if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
@@ -886,11 +839,11 @@ function handleBugInbox() {
   });
 }
 
-async function handleBugSubmit(request, env) {
+async function handleBugSubmit(request, env, intake) {
   if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
   const contentType = request.headers.get('Content-Type') || '';
   if (!/^\s*application\/json(?:\s*;\s*charset\s*=\s*(?:utf-?8|"utf-?8"))?\s*$/i.test(contentType)) return bugResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const body = await readBugBody(request);
+  const body = { text: intake.rawBody };
   if (body.status) return bugResponse({ ok: false, error: body.error }, body.status);
   let p;
   try { p = JSON.parse(body.text); } catch (_) { return bugResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
@@ -1052,11 +1005,11 @@ function pluginStructureIssues(pl) {
   return issues;
 }
 
-async function handlePluginSubmit(request, env) {
+async function handlePluginSubmit(request, env, intake) {
   if (!env.PLUGIN_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing PLUGIN_SUBMISSIONS KV binding.' }, 500);
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const rawBody = await request.text();
+  const rawBody = intake.rawBody;
   if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
@@ -1623,12 +1576,13 @@ async function pdExistingIssuanceResponse(read, expected, decisionDigest, env, k
 async function handlePdIssue(request, env) {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const rawBody = await request.text();
-  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  const boundedBody = await readBugBody(request);
+  if (boundedBody.status) return jsonResponse({ ok: false, error: boundedBody.error }, boundedBody.status);
+  const rawBody = boundedBody.text;
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
 
-  let payload, signingPrivateKey, signingPublicKey, keyId, reviewedIssuance = null;
+  let payload, signingPrivateKey, signingPublicKey, keyId, reviewedIssuance = null, selfPacedIntake = null;
   if (isObject(p) && p.decision != null) {
     if (!env.PD_ISSUER_AUTH_TOKEN) return jsonResponse({ ok: false, error: 'Reviewed credential issuance is disabled: configure PD_ISSUER_AUTH_TOKEN.' }, 501);
     if (!env.PD_ISSUER_PRIVATE_KEY || !env.PD_ISSUER_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'Reviewed credential issuance requires both issuer signing keys.' }, 501);
@@ -1664,6 +1618,8 @@ async function handlePdIssue(request, env) {
     reviewedIssuance = { binding, expected, keyConfig };
   } else if (isObject(p) && p.record != null) {
     if (String(env.PD_ALLOW_SELF_PACED_ISSUANCE || '').toLowerCase() !== 'true') return jsonResponse({ ok: false, error: 'Legacy self-paced issuance is disabled.', code: 'legacy_self_paced_disabled' }, 403);
+    selfPacedIntake = await protectPublicPayload(request, env, p);
+    if (selfPacedIntake instanceof Response) return selfPacedIntake;
     if (!env.PD_SELF_PACED_PRIVATE_KEY || !env.PD_SELF_PACED_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'Self-paced signing requires separate PD_SELF_PACED_PRIVATE_KEY and PD_SELF_PACED_PUBLIC_KEY values.' }, 501);
     const err = validateLegacySelfPacedRecord(p.record);
     if (err) return jsonResponse({ ok: false, error: err.message, code: err.code, path: err.path }, err.status);
@@ -1684,7 +1640,10 @@ async function handlePdIssue(request, env) {
     schema_version: payload.schema_version, payload, signature, alg: 'Ed25519',
     key_id: keyId, public_key_spki_b64: signingPublicKey,
   };
-  if (!reviewedIssuance) return jsonResponse({ ok: true, credential }, 201);
+  if (!reviewedIssuance) {
+    await recordSubmitHash(env, selfPacedIntake.hash);
+    return jsonResponse({ ok: true, credential }, 201);
+  }
   let issuedValidation;
   try { issuedValidation = await validateReviewedCredential(credential, env, Date.now(), reviewedIssuance.keyConfig); }
   catch (_) { issuedValidation = { ok: false }; }
@@ -2212,6 +2171,35 @@ async function handleSearch(request, env, url) {
   return jsonResponse(payload);
 }
 
+async function handleLessonSubmit(request, env, intake) {
+  const payload = intake.payload;
+  const validationError = validateSubmission(payload);
+  if (validationError) return jsonResponse({ ok: false, error: validationError }, 400);
+  const submissionRecord = {
+    schema_version: '1.0',
+    kind: 'lesson_submission',
+    metadata: {
+      title: payload.metadata.title.trim(), subject: payload.metadata.subject,
+      grade_level: payload.metadata.grade_level.trim(),
+      tags: Array.isArray(payload.metadata.tags) ? payload.metadata.tags.filter(t => typeof t === 'string').slice(0, 20) : [],
+      credit: payload.metadata.credit ? payload.metadata.credit.trim() : null,
+      license: payload.metadata.license || 'CC-BY-SA-4.0',
+      standards: payload.metadata.standards ? payload.metadata.standards.trim() : null,
+    },
+    affirmations: payload.affirmations,
+    pii_scan: { ran_server_side: true, findings: scanForPii(JSON.stringify(payload)) },
+    submitter: { ip_country: request.cf?.country || null, user_agent: (request.headers.get('User-Agent') || '').slice(0, 200) },
+    lesson_payload: payload.lesson_payload,
+  };
+  return stageCommunitySubmission(env, submissionRecord, { slug: slugify(payload.metadata.title) });
+}
+
+const PUBLIC_INTAKE_HANDLERS = new Map([
+  ['/submit', handleLessonSubmit], ['/submitTranslation', handleTranslationSubmit],
+  ['/submitItemCorrection', handleItemCorrectionSubmit], ['/submitBug', handleBugSubmit],
+  ['/submitPd', handlePdSubmit], ['/submitPlugin', handlePluginSubmit],
+]);
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -2224,6 +2212,17 @@ export default {
       return jsonResponse({ ok: true });
     }
 
+    const intakePath = url.pathname.replace(/^\/v2\//, '/');
+    const intakeHandler = PUBLIC_INTAKE_HANDLERS.get(intakePath);
+    if (intakeHandler) {
+      if (request.method !== 'POST') return jsonResponse({ ok: false, error: 'Use POST for submissions.' }, 405);
+      const intake = await preparePublicIntake(request, env);
+      if (intake instanceof Response) return intake;
+      const response = await intakeHandler(request, env, intake);
+      if (response.ok) await recordSubmitHash(env, intake.hash);
+      return response;
+    }
+
     // GET (not POST) because the Canvas client sends a simple cross-origin
     // request with no preflight — the same contract the retired proxy used,
     // so WebSearchProvider's canvas-compat-get path works unchanged.
@@ -2233,23 +2232,6 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/source-metadata') {
       return handleSourceMetadata(request, env, url);
-    }
-
-    if (request.method === 'POST' && url.pathname === '/submitTranslation') {
-      return handleTranslationSubmit(request, env);
-    }
-
-    if (request.method === 'POST' && url.pathname === '/submitItemCorrection') {
-      return handleItemCorrectionSubmit(request, env);
-    }
-
-    if (url.pathname === '/submitBug') {
-      if (request.method !== 'POST') return bugResponse({ ok: false, error: 'Use POST /submitBug.' }, 405);
-      return handleBugSubmit(request, env);
-    }
-
-    if (request.method === 'POST' && url.pathname === '/submitPd') {
-      return handlePdSubmit(request, env);
     }
 
     if (request.method === 'GET' && url.pathname === '/bugs') {
@@ -2268,10 +2250,6 @@ export default {
       return handlePdList(request, env, url);
     }
 
-    if (request.method === 'POST' && url.pathname === '/submitPlugin') {
-      return handlePluginSubmit(request, env);
-    }
-
     if (request.method === 'GET' && url.pathname === '/pluginSubmissions') {
       return handlePluginList(request, env, url);
     }
@@ -2288,87 +2266,6 @@ export default {
       return handlePdVerify(request, env);
     }
 
-    if (request.method !== 'POST' || url.pathname !== '/submit') {
-      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, /submitItemCorrection, /submitBug, /submitPd, /submitPlugin, or /issuePd' }, 405);
-    }
-
-    if (!env.GITHUB_PAT) {
-      return jsonResponse({ ok: false, error: 'Server misconfigured: missing GITHUB_PAT secret.' }, 500);
-    }
-
-    const contentType = request.headers.get('Content-Type') || '';
-    if (!contentType.toLowerCase().includes('application/json')) {
-      return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-    }
-
-    const rawBody = await request.text();
-    if (bodyTooLarge(rawBody)) {
-      return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
-    }
-
-    let payload;
-    try {
-      payload = JSON.parse(rawBody);
-    } catch (err) {
-      return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400);
-    }
-
-    const validationError = validateSubmission(payload);
-    if (validationError) {
-      return jsonResponse({ ok: false, error: validationError }, 400);
-    }
-
-    // Abuse controls run only on a well-formed body, so a malformed request is
-    // never counted against a teacher's budget.
-    const turnstile = await turnstileRefusal(request, env, payload);
-    if (turnstile) {
-      return jsonResponse({ ok: false, error: turnstile.error }, turnstile.status);
-    }
-    const abuse = await submitAbuseRefusal(request, env, rawBody);
-    if (abuse.refusal) {
-      return jsonResponse({ ok: false, error: abuse.refusal.error, retryAfterHint: abuse.refusal.retryAfterHint }, abuse.refusal.status);
-    }
-
-    const piiFindings = scanForPii(JSON.stringify(payload.lesson_payload));
-
-    const submissionRecord = {
-      schema_version: '1.0',
-      submitted_at: new Date().toISOString(),
-      metadata: {
-        title: payload.metadata.title.trim(),
-        subject: payload.metadata.subject,
-        grade_level: payload.metadata.grade_level.trim(),
-        tags: Array.isArray(payload.metadata.tags) ? payload.metadata.tags.filter(t => typeof t === 'string').slice(0, 20) : [],
-        credit: payload.metadata.credit ? payload.metadata.credit.trim() : null,
-        license: payload.metadata.license || 'CC-BY-SA-4.0',
-        standards: payload.metadata.standards ? payload.metadata.standards.trim() : null,
-      },
-      affirmations: payload.affirmations,
-      pii_scan: {
-        ran_server_side: true,
-        findings: piiFindings,
-      },
-      submitter: {
-        ip_country: request.cf?.country || null,
-        user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
-      },
-      lesson_payload: payload.lesson_payload,
-    };
-
-    const slug = slugify(payload.metadata.title);
-    let commitInfo;
-    try {
-      commitInfo = await commitToGitHub(env, slug, JSON.stringify(submissionRecord, null, 2) + '\n');
-    } catch (err) {
-      return jsonResponse({ ok: false, error: 'Could not commit to GitHub: ' + err.message }, 502);
-    }
-
-    // Only a submission that actually reached GitHub is remembered as a duplicate.
-    await recordSubmitHash(env, abuse.hash);
-
-    return jsonResponse(
-      { ok: true, slug, filename: commitInfo.filename, pii_findings_count: piiFindings.length },
-      201
-    );
+    return jsonResponse({ ok: false, error: 'Unknown route or unsupported method.' }, 405);
   },
 };

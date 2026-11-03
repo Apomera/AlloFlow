@@ -2,6 +2,10 @@
 
 The Rocks & Minerals tool now connects reference study, field identification, and a saved evidence portfolio. These activities run locally without AI requests.
 
+## Moving between activities
+
+When the activity navigation has 600 pixels of space or less, **Change activity** shows the current activity’s name. Open it to see all eleven choices. Choosing one closes the list and moves focus to that activity’s heading. Escape closes the list and returns focus to **Change activity**. Wider layouts show all eleven buttons together.
+
 ## Specimen catalogues
 
 Both specimen catalogues also support search and sorting. Search names, textures, properties, uses, or formulae; combine search with a rock-family filter, or sort minerals by hardness or density. Results are announced without moving focus while typing. Opening a specimen focuses its card, and **Back to specimens** returns to the selected tile or search field. The activity skip link and retained quiz round make it easier to move between investigations.
@@ -13,6 +17,8 @@ Open a specimen's **My specimen notes** panel to bookmark it, record observation
 ## Compare
 
 Open **Compare** to place any two of the 24 rocks or 23 minerals beside each other. Search by name, property, or use, or start with a suggested pair. Rock comparisons use texture, formation, and diagnostic clues. Mineral comparisons include formula, hardness, luster, streak, cleavage, density, crystal system, and occurrence. The scratch comparison applies the same reference to both specimens and marks equal modeled hardness as uncertain.
+
+The suggested pairs open in a native disclosure. Its current pair is visibly selected, and Escape returns focus to the summary. The specimen cards show their names and numbered markers. Those markers and names repeat on the property values. Evidence values share a row on wider screens and stack into readable cards when space is limited. The mineral scratch predictions appear in separate named result cards.
 
 The differences filter hides shared rows without removing them from the exported report. Explanations are retained for each pair, including when its order is reversed. Download a text notebook or display selectable text when downloads are unavailable. Reference facts are explicitly distinguished from observations of an unknown specimen.
 
@@ -26,9 +32,15 @@ Practice retains the quiz's keyboard rules, explicit answer/correctness labels, 
 
 ## Field cases
 
-Open **Field cases** for six authored investigations: an exposed mountain core, a pebble-bearing cliff, a carbonate contact, a resistant ridge, a roofing quarry, and a floating volcanic stone. Each includes an accessible setting sketch and four observations to collect.
+The case chooser starts collapsed and shows the active case’s name. Open **Choose a field case** to select another investigation. Selecting a case closes the chooser and focuses its next unfinished step. Escape closes it and returns focus to its summary.
 
-Learners choose a rock, cite collected observations, and write a reasoned explanation. Checks assess the selected identification and diagnostic evidence. Written reasoning remains available for learner or teacher review; it is not automatically graded for scientific correctness. Successful cases reveal an interpretation, comparisons with alternatives, limits of the evidence, and a primary geology reference.
+**Observe**, **Explain**, and **Review** jump to their section headings. The current step has a visible label as well as an accessible current-state attribute. Review becomes available after a supported claim. **Your next step** shows the observation and citation counts and opens the exact unfinished control, including a partially entered fragment measurement.
+
+Open **Field cases** for six authored investigations, each with a setting sketch and four observations to collect. In the pebble-bearing cliff case, learners can use an illustrated ruler to estimate a fragment’s width and describe its outline. A text description gives the same ruler readings and outline evidence. Comparing with the field notes saves the learner’s first observation and makes the size and shape clues available to cite.
+
+The case chooser and notebook show the next step for each investigation. Selecting a saved case moves focus to that step. For example, if you entered a fragment width and left before choosing its outline, Resume returns to the outline selector with your width still filled in. A case awaiting revision leads back to the claim or evidence named in the feedback. A supported case opens at the interpretation.
+
+Learners choose a rock, cite collected observations, and write a reasoned explanation. Four cases accept multiple authored evidence combinations. For example, the resistant ridge accepts the mineral examination and mapped history as evidence for quartzite. Revision hints identify what the chosen observations still leave open or what to examine about a proposed look-alike. The learner or teacher reviews the written explanation. A supported claim reveals the interpretation, limits of the evidence, and a geology reference.
 
 Cases retain independent progress and up to 30 distinct recent attempts per case. Notebook exports contain observations, claims, reasoning, and revisions; unfinished cases do not disclose the answer. Clipboard failures expose selectable text.
 
@@ -36,9 +48,17 @@ Cases retain independent progress and up to 30 distinct recent attempts per case
 
 Successful mineral identifications now save a report containing the observation trail, cited evidence, reasoning, and confidence. The portfolio retains the latest 30 reports when a new unknown is drawn. Learners can add reflections and download one report or the portfolio. Repeated submission of the same solved specimen does not duplicate a report. Clipboard success is announced only after the copy promise resolves.
 
+## Quiz review and topic practice
+
+Quiz and practice questions use larger specimen previews, readable answer cards and an explicit answered/first-try progress summary. Answers stack on narrow screens. Correct and chosen answers retain their written labels in normal and forced-color presentation.
+
+At the end of a round, each topic with missed questions has its own **Missed-question practice** action and question count. Choose any topic to practise only its missed items, or use the existing all-missed and weakest-topic actions. Return to the round results and resume the same practice with its feedback intact. Starting another topic is a new practice session. Practice preserves the original first-answer results, score, notes and points.
+
 ## Density lab
 
 Open **Density lab** to investigate seven representative minerals with a virtual balance and graduated cylinder. Change specimen size or starting water level, make a prediction, and take separate dry-mass, initial-water, and final-water readings. Calculate density from the displayed mass and the rise in water level. The lab accepts g/cm³, g/mL, and kg/m³ and gives specific feedback for common subtraction, division, mass-versus-density, and conversion errors.
+
+The balance and cylinder have separate illustrated cards that stack on phones and sit beside each other when space allows. Their captions resize as HTML text. Each instrument has a current measurement description, including explicit unread values. The measurement cards beneath the controls retain their units and enlarge with the learner's text size. Decorative grid lines are hidden in forced colors so the cylinder markings remain clear.
 
 Recording a trial preserves its measurements, answer, prediction, and explanation. Compare the same mineral at different sizes or different minerals at equal volume, using a mass-versus-volume plot and a keyboard-scrollable table. The lab retains 30 trials and exports a readable investigation report. Calculations account for rounding on the balance; written explanations are retained for discussion rather than automatically graded. The model assumes uniform composition, complete immersion, and no pores, trapped bubbles, or reaction with water; these limits are stated alongside the activity.
 
@@ -46,30 +66,54 @@ Recording a trial preserves its measurements, answer, prediction, and explanatio
 
 Open **Notebook** to review specimen notes, bookmarks, and questions; resume comparison explanations and individual field cases; revisit density trials; and read completed mineral reports. **Continue studying** reopens the exact specimen and focuses its journal heading while preserving catalogue filters. A readable report includes unfinished written work and cited evidence without revealing unfinished field-case interpretations.
 
-The specimen journal has illustrated, expandable cards sorted by name. Search saved specimen names, observations, or questions, then narrow to **Bookmarked** or **Has questions**. A live count and empty state explain the result; **Reset journal filters** returns focus to search. These are view preferences only: readable reports and portable notebook files always include every saved record.
+The notebook header links to each section, the report chooser, and the full notebook files. Activating a link moves keyboard focus to the section heading. On narrow screens the section counts share two columns.
 
-**Save notebook file** now creates a version 2 JSON file containing all five sections. **Open a saved notebook** checks the file before showing a preview; the learner then explicitly chooses whether to replace current notebook records, including empty sections. Version 1 files remain supported and preserve the current specimen journal because older files did not contain one. The preview explains this distinction. Invalid, oversized, or unsupported files leave existing work unchanged. Opening a valid file preserves the active mineral workbench sample, quiz progress, and other tools. The active workbench sample is deliberately excluded from portable files; completed reports are included. Files have a 1 MB UTF-8 limit, and selectable text remains available when downloads fail.
+The specimen journal has illustrated, expandable cards sorted by name. Search saved specimen names, observations, or questions, then narrow to **Bookmarked** or **Has questions**. A live count and empty state explain the result. **Reset journal filters** returns focus to search. Journal filters apply only to browsing.
+
+To hand in part of a notebook, open **Share selected work** and choose the entries to include. For example, select a granite observation and a density trial for an assignment. The question written on the granite card has its own checkbox. **Preview selected report** shows the exact text available for download. Changing the selection requires a new preview. Learners can also select and copy the preview text.
+
+A density draft distinguishes the chosen sample and starting water setting from the readings the learner actually took. A recorded trial can be selected independently of that draft. If a different trial takes its place in the log, the earlier selection expires.
+
+The full readable report and version 3 notebook file include all saved work regardless of the report selection. Only the JSON notebook file can be reopened as a backup.
+
+**Save notebook file** creates a version 3 JSON file. It includes the cliff measurement and Weathering Hunt alongside the specimen journal, comparisons, field cases, density trials, and completed workbench reports. The weathering section retains the current climate settings, hypothesis, explanation, and up to eight logged trials. **Resume Weathering Hunt** reopens the investigation with those settings. Readable reports include the trial conditions and outcomes.
+
+**Open a saved notebook** validates the file and previews the replacement before the learner confirms. Version 1 and version 2 files preserve weathering work already on the device. Version 1 files also preserve the specimen journal. A confirmed version 3 import restores the incoming weathering section, including an empty investigation. The 1 MB UTF-8 limit and manual text fallback still apply.
 
 ## Visual presentation
 
+The rock and mineral galleries use larger specimen drawings, softly tinted display areas, left-aligned names, and distinct texture or luster captions. Rock-family labels appear on each card. Mineral hardness has its own readable badge below the caption. Selected specimens retain an outline and accessible pressed state.
+
+Selected rock and mineral introductions share larger close-ups, clearer headings, and a framed description area. Mineral property cards give the labels, measured properties, and explanations more room. Transformation labels and the question controls wrap at enlarged text sizes.
+
 Activities now have a dedicated navigation row with consistent outline icons and labels that wrap with enlarged text. Research progress and the rock collection use keyboard-accessible expandable summaries, bringing the working area higher on small screens. Catalogue cards show larger specimen drawings, readable texture/luster labels, and a clear selected state. Comparison specimens have numbered display areas and an explicit illustration-scale caption.
 
-The density workspace has numbered steps, a refined balance and cylinder diagram, prominent measurement readouts, and more readable trial tables. On narrow screens the instruments and plot scroll within their own keyboard-accessible regions, preserving legible markings. The Mohs scale and mineral evidence table are also keyboard-scrollable. Presentation styles remain scoped to Rocks & Minerals, respect reduced motion, and distinguish selected controls in forced-colors mode.
+The density workspace has numbered steps, separate balance and cylinder cards, prominent measurement readouts, and readable trial tables. The instrument cards reflow on narrow screens. The plot and trial table retain keyboard-accessible scrolling to preserve their markings and columns. The Mohs scale and mineral evidence table are also keyboard-scrollable. Presentation styles remain scoped to Rocks & Minerals, respect reduced motion, and distinguish selected controls in forced-colors mode.
 
 Specimen detail controls wrap into a compact navigation strip with 44-pixel targets. Journal cards distinguish specimen kind and bookmark status with text as well as drawings. Workbench property-guide tiles expand with their captions instead of clipping enlarged or widely spaced text inside fixed squares.
 
+In **Your rock collection**, earned specimen tiles display their full names. Opening a tile focuses the rock’s heading. **Back to collection** returns to the originating tile even when catalogue filters exclude the rock.
+
 ## Integration
 
-- Source: `stem_lab/stem_tool_rocks.js`; synchronized deployment copy: `desktop/web-app/public/stem_lab/stem_tool_rocks.js`.
-- Host state: `rocks.compare`, `rocks.fieldCases`, `rocks.densityLab`, `rocks.wb.archive`, `rocks.specimenNotes`, and `rocks.quizPractice`; transient notebook controls use `rocks.notebookUi`. No extra network or storage dependencies. Quiz practice stays in the session and is not included in notebook exports.
-- English keys are registered under `stem.rocks` in both `ui_strings.js` copies. Existing language packs may use English fallback for the new content until translated.
+- The tool source is `stem_lab/stem_tool_rocks.js`. The copies under `desktop/web-app/public`, `desktop/web-app/build`, and `desktop/app-build` contain the same module.
+- Learning work uses `rocks.compare`, `rocks.fieldCases`, `rocks.densityLab`, `rocks.weathHunt`, `rocks.wb.archive`, `rocks.specimenNotes`, and `rocks.quizPractice`. Notebook view preferences use `rocks.notebookUi`. Quiz practice stays in the session.
+- The four `ui_strings.js` files share the same `stem.rocks` English entries. Existing language packs can use these labels until translations are available.
 - New suites: `tests/rocks_comparison.test.js`, `tests/rocks_field_cases.test.js`, and `tests/rocks_workbench_archive.test.js`.
 - Density and portable-work suites: `tests/rocks_density_lab.test.js`, `tests/rocks_notebook.test.js`, and `tests/rocks_notebook_codec.test.js`.
 - Browser QA exercises keyboard navigation, actual notebook downloads, revisions, phone layouts, and axe accessibility checks. Detailed local results are in `tmp/rocks-enhancement/browser-results.json`.
 
 ## Verification
 
-The latest navigation/journal pass passed all 1,003 tests across 42 files and all 20 browser workflows. Its 99 layout checks found no core rule violations, unresolved meaningful-label mismatches, overflow, clipping, or browser errors. [Navigation and journal evidence](rocks-minerals-navigation-evidence.json) records the exact scope and remaining validation boundaries.
+The field workspace navigation passed 223 focused tests, three keyboard workflows, and 30 layout checks. A full local app journey verified the new heading links, gated Review control, and unfinished fragment action through the student launch pad. [Field workspace accessibility results](rocks-minerals-accessibility.md)
+
+Mobile activity navigation and field-case resume passed 441 focused tests, six keyboard workflows, and 24 layout checks. The full local app check resumed a partially entered cliff-case measurement at the outline selector. [Accessibility checks and results](rocks-minerals-accessibility.md)
+
+The selected reports and notebook navigation passed 216 focused tests, seven browser workflows, and 24 layout checks. The [accessibility review](rocks-minerals-accessibility.md) records the verified source and scope.
+
+The preceding field, collection, and weathering improvements passed 289 focused tests, 11 browser workflows, 24 layout checks, and a keyboard journey through the full local app.
+
+The preceding navigation/journal pass passed all 1,003 tests across 42 files and all 20 browser workflows. Its 99 layout checks found no core rule violations, unresolved meaningful-label mismatches, overflow, clipping, or browser errors. [Navigation and journal evidence](rocks-minerals-navigation-evidence.json) records that pass.
 
 The broader accessibility implementation, repeatable browser runner, and review boundaries are documented in [Rocks & Minerals accessibility review](rocks-minerals-accessibility.md).
 

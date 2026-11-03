@@ -39,6 +39,28 @@ describe('Skills Studio knife movement', () => {
 });
 
 describe('Measured stock and heat controls', () => {
+  it.each([[3, 1], [0, -1]])('retraces an excursion beyond burner stop %i without selecting another setting', (level, direction) => {
+    require('../stem_lab/kitchen_studio/recipe_lab_burners.js');
+    const rim = angle => ({x: Math.sin(angle), z: -Math.cos(angle)});
+    let trace = G.begin('dial', origin, {level, dialPoint: rim(0)});
+    for (const fraction of [.5, 1, .5, 0]) {
+      trace = G.move(trace, origin, rim(direction * fraction * Math.PI / 2));
+      expect(G.finish(trace).action).toBeNull();
+    }
+    trace = G.move(trace, origin, rim(-direction * Math.PI / 2));
+    expect(G.finish(trace).action).toBe(level===3 ? 'medium' : 'low');
+  });
+  it('loses rim contact when a turn crosses the spindle and keeps the recorded heat', () => {
+    require('../stem_lab/kitchen_studio/recipe_lab_burners.js');
+    const start = G.begin('dial', origin, {level: 1, dialPoint: {x: 0, z: -.8}});
+    const medium = G.move(start, at(20, 0), {x: .8, z: 0});
+    expect(G.finish(medium).action).toBe('medium');
+    const crossed = G.move(medium, origin, {x: 0, z: 0});
+    const returned = G.move(crossed, at(20, 0), {x: .8, z: 0});
+    expect(G.finish(returned)).toMatchObject({complete: false, action: null});
+    expect(G.finish(G.move(medium, {x: NaN, y: 0}, {x: .8, z: 0})).complete).toBe(false);
+    expect(G.finish(start).action).toBeNull();
+  });
   it('transfers one 50 mL measure on release and permits returning to cancel', () => {
     const start = G.begin('pour', origin);
     expect(G.finish(G.move(start, at(0, -29))).action).toBeNull();
@@ -50,22 +72,23 @@ describe('Measured stock and heat controls', () => {
     expect(G.finish(G.move(start, at(300, 0))).complete).toBe(false);
     expect(K.act(K.start('measure'), G.finish(G.move(start, at(0, -100))).action).values.ml).toBe(50);
   });
-  it('allows deliberate heat adjustments and clamps them to the three settings', () => {
+  it('allows deliberate heat adjustments and clamps them to all four settings', () => {
     const start = G.begin('dial', origin, { level: 2 });
     expect(G.finish(G.move(start, at(0, -11))).complete).toBe(false);
     expect(G.finish(G.move(start, at(0, -12))).action).toBe('high');
     expect(G.finish(G.move(start, at(0, 20))).action).toBe('low');
-    expect(G.move(start, at(0, 1000)).level).toBe(1);
+    expect(G.move(start, at(0, 1000)).level).toBe(0);
     expect(G.move(start, at(0, -1000)).level).toBe(3);
     const fromLow = G.begin('dial', origin, { level: 1 });
     expect(G.finish(G.move(fromLow, at(0, -20))).action).toBe('medium');
+    expect(G.finish(G.move(fromLow, at(0, 12))).action).toBe('off');
     expect(G.finish(G.move(fromLow, at(0, -40))).action).toBe('high');
     expect(G.finish(G.move(G.move(start, at(0, -30)), origin)).complete).toBe(false);
   });
 });
 
 describe('Gesture input and preview isolation', () => {
-  it.each(['cut', 'pour', 'dial', 'dry', 'grip'])('ignores clicks and invalid coordinates for %s', kind => {
+  it.each(['cut', 'pour', 'dial', 'dry', 'grip', 'door'])('ignores clicks and invalid coordinates for %s', kind => {
     expect(G.begin(kind, null)).toBeNull();
     expect(G.begin(kind, { x: NaN, y: 10 })).toBeNull();
     const start = G.begin(kind, origin);
@@ -99,6 +122,72 @@ describe('Gesture input and preview isolation', () => {
     expect(G.begin('unknown', origin)).toBeNull();
     expect(G.move(null, origin)).toBeNull();
     expect(G.finish(null).action).toBeNull();
+  });
+});
+
+describe('View-only refrigerator handle movement', () => {
+  it('previews a pull and opens only after deliberate downward travel', () => {
+    const start = G.begin('door', origin);
+    expect(start.initialOpen).toBe(false);
+    expect(start.opening).toBe(0);
+    const partial = G.move(start, at(0, 23));
+    expect(partial.opening).toBeCloseTo(23 / 75);
+    expect(G.finish(partial)).toMatchObject({complete: false, action: null});
+    const ready = G.move(partial, at(0, 24));
+    expect(G.finish(ready)).toEqual({complete: true, action: null, view: 'fridge', open: true, message: 'Refrigerator opened.'});
+    expect(G.progress(ready)).toBe(1);
+    expect(G.move(ready, at(0, 500)).opening).toBe(1);
+  });
+
+  it('previews a push and closes only after deliberate upward travel', () => {
+    const start = G.begin('door', origin, {open: true});
+    expect(start.opening).toBe(1);
+    expect(G.finish(G.move(start, at(0, -23))).complete).toBe(false);
+    const ready = G.move(start, at(0, -24));
+    expect(ready.opening).toBeCloseTo(1 - 24 / 75);
+    expect(G.finish(ready)).toEqual({complete: true, action: null, view: 'fridge', open: false, message: 'Refrigerator closed.'});
+    expect(G.progress(ready)).toBe(1);
+    expect(G.move(ready, at(0, -500)).opening).toBe(0);
+  });
+
+  it.each([false, true])('ignores a push toward the current state and cancels a returned pull from open=%s', open => {
+    const start = G.begin('door', origin, {open});
+    const wrongDirection = G.move(start, at(0, open ? 50 : -50));
+    expect(G.finish(wrongDirection)).toMatchObject({complete: false, action: null});
+    expect(G.progress(wrongDirection)).toBe(0);
+    const away = G.move(start, at(0, open ? -40 : 40));
+    const returned = G.move(away, origin);
+    expect(G.finish(returned)).toMatchObject({complete: false, action: null});
+    expect(returned.opening).toBe(open ? 1 : 0);
+    expect(G.progress(returned)).toBe(0);
+  });
+
+  it('loses contact after a sideways slip and cannot revive the stroke', () => {
+    const start = G.begin('door', origin);
+    expect(G.finish(G.move(start, at(55, 24))).complete).toBe(true);
+    for (const point of [at(56, 24), {x: 100, y: NaN}]) {
+      const invalid = G.move(start, point);
+      expect(invalid.invalid).toBe(true);
+      expect(G.finish(G.move(invalid, at(0, 50)))).toMatchObject({complete: false, action: null});
+      expect(G.progress(invalid)).toBe(0);
+    }
+  });
+
+  it('scales handle travel, preserves earlier frames and produces no cooking action', () => {
+    const input = Object.freeze({...origin});
+    const start = G.begin('door', input, {open: true, unit: .5});
+    Object.freeze(start.start); Object.freeze(start.current); Object.freeze(start);
+    const partial = G.move(start, at(0, -11));
+    Object.freeze(partial.current); Object.freeze(partial);
+    const ready = G.move(partial, at(0, -12));
+    expect(G.finish(partial).complete).toBe(false);
+    expect(G.finish(ready)).toMatchObject({complete: true, action: null, view: 'fridge', open: false});
+    expect(start.opening).toBe(1);
+    expect(partial.opening).toBeCloseTo(1 - 22 / 75);
+    expect(input).toEqual(origin);
+    const source = K.start('chill');
+    expect(K.act(source, G.finish(ready).action)).toBe(source);
+    expect(source.log).toHaveLength(0);
   });
 });
 

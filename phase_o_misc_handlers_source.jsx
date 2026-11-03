@@ -935,6 +935,29 @@ const _createBlueprintGenerationMatrixError = (details) => {
 const _resolveBlueprintExecutionMatrix = (row, settingsSnapshot, existingArtifacts, sourceText, forceRefresh) => {
     const reviewed = row && Array.isArray(row.generationVariants) ? row.generationVariants.filter(Boolean) : [];
     const matrix = _getBlueprintGenerationMatrix();
+    const checkedAnalysis = matrix && typeof matrix.findExistingSourceAnalysis === 'function'
+        ? matrix.findExistingSourceAnalysis(existingArtifacts, sourceText) : null;
+    const reviewedAnalysisIds = [row && row.existingArtifactId, ...reviewed.map(cell => cell.existingArtifactId)].filter(Boolean);
+    const staleAnalysisTarget = (Array.isArray(existingArtifacts) ? existingArtifacts : []).some(artifact =>
+        artifact && reviewedAnalysisIds.some(id => String(id) === String(artifact.id))
+        && artifact.type === 'analysis' && artifact.data && (artifact.data.analysisNeedsRecheck === true || artifact.data.analysisIncomplete === true
+            || matrix?.isIncompleteSourceAnalysis?.(artifact) || artifact.data.originalText !== sourceText));
+    // A source check may have landed after this plan was reviewed. Resolve
+    // analysis against actual source text on every run, including old plans
+    // whose saved action was "generate" or whose reusable check was edited.
+    if (row && (row.type || row.tool) === 'analysis' && matrix
+        && typeof matrix.resolveGenerationMatrix === 'function' && sourceText && (checkedAnalysis || staleAnalysisTarget)) {
+        const resolved = matrix.resolveGenerationMatrix(row, Object.assign({}, settingsSnapshot || {}, {
+            existingArtifacts: Array.isArray(existingArtifacts) ? existingArtifacts : [],
+            sourceText, forceRefresh: forceRefresh === true,
+        }));
+        if (resolved && Array.isArray(resolved.variants) && resolved.variants.length) {
+            return { available: true, action: resolved.action, variants: resolved.variants,
+                sourceChanged: !!(row.sourceFingerprint && row.sourceFingerprint !== resolved.sourceFingerprint),
+                reviewedSourceFingerprint: row.sourceFingerprint || '',
+                currentSourceFingerprint: resolved.sourceFingerprint || '' };
+        }
+    }
     const reviewedSourceFingerprint = (row && row.sourceFingerprint)
         || (reviewed[0] && reviewed[0].sourceFingerprint)
         || (settingsSnapshot && settingsSnapshot.sourceFingerprint)
@@ -998,7 +1021,9 @@ const _resolveBlueprintExecutionMatrix = (row, settingsSnapshot, existingArtifac
         const executionVariants = reviewed.map(cell => {
             let action = forceRefresh ? 'refresh' : (cell.action || row.generationAction || 'generate');
             let existingArtifactId = cell.existingArtifactId || null;
-            if (!forceRefresh && action !== 'reuse' && cell.generationIdentity) {
+            // Analysis uses the exact completed check above. Its generation
+            // identity normalizes whitespace and is insufficient on its own.
+            if ((row.type || row.tool) !== 'analysis' && !forceRefresh && action !== 'reuse' && cell.generationIdentity) {
                 const landed = artifacts.find(artifact => artifactIdentity(artifact) === String(cell.generationIdentity));
                 if (landed) {
                     action = 'reuse';
@@ -1129,7 +1154,7 @@ const _resolveBlueprintSourceSelection = (options) => {
         : (String(o.requestedSourceText || '').trim() ? String(o.requestedSourceText) : String(o.sourceTopic || ''));
     const analysisText = String((o.latestAnalysis && o.latestAnalysis.data && o.latestAnalysis.data.originalText) || '');
     const normalize = (value) => String(value || '').trim().replace(/\s+/g, ' ');
-    const divergent = !!(normalize(currentText) && normalize(analysisText) && normalize(currentText) !== normalize(analysisText));
+    const divergent = !!(normalize(currentText) && normalize(analysisText) && currentText !== analysisText);
     const useCurrent = !!normalize(currentText) && (divergent || !normalize(analysisText));
     return {
         text: useCurrent ? currentText : analysisText,
@@ -1461,13 +1486,23 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             let variantRetryExhausted = false;
             if (action === 'reuse') {
                 variantItem = _findBlueprintArtifact(currentBlueprintHistory, variant.existingArtifactId);
+                if (type === 'analysis' && variantItem) {
+                    // Legacy runners may only supply a reviewed ID. Even then,
+                    // an edited or unfinished report cannot count as a source check.
+                    const source = currentSourceText ?? variantItem.data?.originalText ?? variantItem.originalText;
+                    const checked = _getBlueprintGenerationMatrix()?.findExistingSourceAnalysis?.([variantItem], source);
+                    if (!checked) {
+                        variantItem = null;
+                        runtimeReason = 'Reviewed source check was no longer current; generated a fresh analysis.';
+                    }
+                }
                 if (!variantItem) {
                     // The reviewed identity is still useful, but its target may
                     // have been deleted between review and execution. Generate
                     // that exact cell instead of failing the whole row or
                     // silently looking up an ambient replacement.
                     action = 'generate';
-                    runtimeReason = 'Reviewed reusable artifact was missing; generated the reviewed variant instead.';
+                    runtimeReason = runtimeReason || 'Reviewed reusable artifact was missing; generated the reviewed variant instead.';
                 }
             }
             if (!variantItem && action !== 'reuse') {

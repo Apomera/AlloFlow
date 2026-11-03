@@ -48,7 +48,7 @@ describe('explicit original-source formatting in printable readings', () => {
   });
 
   it('renders the Case Sheet and all four Katie readings with headings, emphasis and real source links while preserving their packs', () => {
-    const pack = JSON.parse(readFileSync('allopacks/reading_decisions_grade6.allopack.json', 'utf8')), before = JSON.stringify(pack);
+    const pack = JSON.parse(readFileSync('allopacks/current/reading_decisions_grade6.allopack.json', 'utf8')), before = JSON.stringify(pack);
     const readings = pack.history.filter(item => item.type === 'simplified');expect(readings).toHaveLength(5);
     for (const item of readings) {
       expect(item.sourceSnapshot.format).toBe('markdown');

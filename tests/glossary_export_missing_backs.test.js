@@ -58,7 +58,8 @@ describe('word-list export missing card backs', () => {
     expect(review.querySelector('summary').textContent).toBe('Words to review');
     expect(terms()).toEqual(['<img src=x onerror=alert(1)> جذر']);
     expect(review.querySelector('img')).toBeNull();
-    expect(review.querySelector('li bdi').dir).toBe('auto');
+    expect(review.querySelector('li bdi').getAttribute('lang')).toBe('en');
+    expect(review.querySelector('li bdi').dir).toBe('ltr');
     const region = review.querySelector('[role="region"]');
     expect(region.tabIndex).toBe(0);
     expect(document.getElementById(region.getAttribute('aria-labelledby'))).toBe(review.querySelector('summary'));

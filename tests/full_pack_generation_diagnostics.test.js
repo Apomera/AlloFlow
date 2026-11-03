@@ -1335,6 +1335,28 @@ describe('Full Pack Generation Matrix integration', () => {
     });
   });
 
+  it.each([false, true])('recalculates a saved preview without admitting an edited check (edited=%s)', async edited => {
+    let run;
+    const source = 'This passage belongs to the teacher and stays out of compact descriptors.';
+    const report = { id: 'existing-check', type: 'analysis', data: {
+      originalText: source, ...(edited ? { analysisNeedsRecheck: true } : {}),
+    } };
+    const deps = makeDeps({
+      inputText: source, history: [report], resourceCount: 'Auto',
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+      setFullPackRun: next => { run = typeof next === 'function' ? next(run) : next; },
+    });
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const descriptors = run.preflight.generationMatrix.artifacts;
+    expect(descriptors.some(item => item.id === report.id)).toBe(!edited);
+    expect(JSON.stringify(descriptors)).not.toContain(source);
+    const quiz = run.preflight.selected.find(row => row.type === 'quiz');
+    const revised = GenerationHelpers.editFullPackPlanResourceDirective(run, quiz.uiId, 'Use three short questions.');
+    const row = revised.preflight.selected.find(item => item.type === 'analysis');
+    expect(row.generationAction === 'reuse').toBe(!edited);
+    if (!edited) expect(row.existingArtifactId).toBe(report.id);
+  });
+
   it('waits for a late Matrix load and then creates the exact grade-language plan automatically', async () => {
     vi.useFakeTimers();
     let latestRun = null;

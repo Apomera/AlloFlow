@@ -1,0 +1,632 @@
+{
+  "requestId": "source-media-literacy-grade7-8-20261101",
+  "profile": "native",
+  "title": "Before You Share: Follow the Source, Check the Claim",
+  "author": "AlloFlow · original AI-authored teaching draft · educator review pending",
+  "sourceTopic": "Original fictional refill-station source-evaluation case for grades 7–8",
+  "gradeLevel": "7th–8th Grade",
+  "language": "en",
+  "learningGoal": "Evaluate a claim by investigating its publisher, tracing the evidence trail, distinguishing repeated reports from independent observations, and writing a proportionate conclusion with a useful next check.",
+  "standards": "No formal standards alignment asserted; educator mapping pending.",
+  "privacy": {
+    "confirmNoStudentPii": true,
+    "confirmSourcePermission": true
+  },
+  "history": [
+    {
+      "id": "sml-directions",
+      "type": "directions",
+      "title": "Start here: Should we share the claim?",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": {
+        "body": "**Draft for educator review · Grades 7–8 · Two sessions of about 40 minutes**\n\n**Goal:** Make a claim that fits the evidence. Explain who produced information, trace repeated reports to their source, and name what remains uncertain.\n\nAll schools, organizations, records, numbers and events in the case are invented. The four cards are original teaching material, not screenshots or quotations from real sources.\n\n1. Read **The claim on our feed**. Before opening the evidence packet, record an initial judgment: share as written, revise before sharing, or wait for more evidence. Give one reason. Keep this first response on paper or in a separate accessible document.\n2. Open **Four source cards**. Read A–D and the source information on each. In **My evidence record**, copy a short detail with its card letter into the left column. In the right column, explain what it supports, what it cannot establish, and one useful next check. Leave your first judgment intact.\n3. Use **Check the source, then the claim** and the **Glossary** as needed. Follow the source trail between the cards. A new publication is not necessarily a new observation.\n4. Try **New observation, copied report, or background?** This is a separate practice case. Use Check and Why? to reconsider your choices.\n5. Use **A discussion that changes our reasoning** with a partner, by exchanging written/AAC messages, or by responding to an imagined counterargument on your own.\n6. In the source packet's **Essay** section, write, dictate or point to a recorded final response. Use at least two card letters, distinguish a recorded observation from a broader claim, and name a limit or next check. A teacher or scribe may record an oral, signed, AAC or diagram-based response faithfully.\n7. Compare your first and final judgments: what changed or stayed, and which detail explains that? Complete **Check your reasoning** after your final response.\n\nThis packet rehearses moves used in lateral reading. Moving among provided cards is an offline simulation. It does not verify a real website or complete an open-web investigation. You do not need to search for the fictional organizations.\n\nSuccess means a well-supported, proportionate conclusion; you do not have to choose the most confident answer. You may use read-aloud, a calculator, enlarged text, a partner reader or the sentence starters while keeping the same reasoning goal.",
+        "objectives": [
+          {
+            "id": "sml-goal-source",
+            "label": "I identified a source and traced at least one report to its evidence.",
+            "kind": "manual",
+            "resourceRef": "sml-dbq"
+          },
+          {
+            "id": "sml-goal-notes",
+            "label": "I recorded what a detail supports and one limit.",
+            "kind": "manual",
+            "resourceRef": "sml-notes"
+          },
+          {
+            "id": "sml-goal-reasoning",
+            "label": "I made a final claim with card references and a useful next check.",
+            "kind": "manual",
+            "resourceRef": "sml-dbq"
+          },
+          {
+            "id": "sml-goal-reflect",
+            "label": "I compared my first and final judgments without erasing my first response.",
+            "kind": "manual"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sml-reading",
+      "type": "simplified",
+      "title": "The claim on our feed",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": "## A claim worth checking\n\n**Fictional teaching case.** A supplier's post appears in a fictional school's community feed:\n\n> Our refill station halved bottle waste across the whole school. The pilot proves that installing the station caused the improvement. Share the good news!\n\nA community roundup repeats the message. Your group is deciding what wording, if any, to share.\n\nBefore reading the four source cards, record your first judgment and one reason. You may choose **share as written**, **revise before sharing**, or **wait for more evidence**. This is a first attempt, not a score for knowing the outcome.\n\n## Your task\n\nUse Cards A–D in **Four source cards** to investigate the message. Track three different questions:\n\n- **Who is behind it?** Look beyond what a post says about itself.\n- **Where did this claim's evidence originate?** Trace summaries and reposts to the record they rely on.\n- **How far does that evidence reach?** Consider what was measured, who or what was included, and what else changed.\n\nSource identity and a claim's evidence are related questions, but they are not the same question. A source with an interest may still provide a correct observation. An official record can still have a limited scope.\n\nYou are not deciding whether refill stations are generally good or bad. Decide what **these fictional records** allow you to say about **this claim**.\n\n## Response choices\n\nWrite, dictate, sign, use AAC, or make a labeled source-trail diagram with an explanation. In every format, identify your evidence by card letter, explain your reasoning and state a limit. All needed case information is inside the packet."
+    },
+    {
+      "id": "sml-dbq",
+      "type": "dbq",
+      "title": "Four source cards: The refill-station claim",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": {
+        "title": "Did the station halve schoolwide bottle waste?",
+        "historicalContext": "Fictional present-day media-literacy case. The supplier's post makes a schoolwide causal claim after a two-week comparison. Every card below was invented for this lesson; none is a real historical document, website, quotation or measurement. Compare the provided records as an offline rehearsal for source checking. In a real investigation you would also examine external information about the publisher and locate the actual original records.",
+        "documents": [
+          {
+            "id": "A",
+            "title": "A · Supplier's promotional post",
+            "source": "Original fictional teaching card. Publisher: the station supplier's marketing team. Posted after the pilot week. Purpose: promote its product.",
+            "excerptKind": "reconstructed",
+            "documentType": "reconstructed",
+            "excerpt": "FICTIONAL CARD A — SUPPLIER POST\n\nOur refill station halved disposable-bottle waste across the whole school! Our pilot proves the station caused the improvement. Share this success with your community.\n\nEvidence link named in the post: Facilities Count Log, comparison and pilot weeks (Card B).\n\nPublisher's description: We sell and install refill stations. Our team supplied the station used in this pilot.\n\nThe post displays 800 likes. No additional schoolwide measurement or comparison group is included in the post.",
+            "sourcingQuestions": [
+              "Who published this, and what does the publisher want readers to do?",
+              "Which other card could help check the publisher's connection to the pilot?",
+              "What could popularity tell you, and what can it not establish?"
+            ],
+            "analysisQuestions": [
+              "State the claim about the whole school and the claim about cause in your own words.",
+              "Follow the named evidence link to the provided record. Does its scope match the post's wording?"
+            ]
+          },
+          {
+            "id": "B",
+            "title": "B · Facilities count log",
+            "source": "Original fictional teaching card. Publisher: school facilities team. Recorded at the end of lunch on each listed day. Purpose: describe the monitored bin.",
+            "excerptKind": "reconstructed",
+            "documentType": "data",
+            "excerpt": "FICTIONAL CARD B — FACILITIES COUNT LOG\n\nMeasure: number of disposable bottles found in the one bin labeled Cafeteria Bin 1 at the end of lunch. The same labeled bin and counting method were used each day.\n\nComparison week, before installation:\nMonday 24; Tuesday 22; Wednesday 26; Thursday 23; Friday 25. Weekly total: 120 bottles.\n\nPilot week, after installation:\nMonday 10; Tuesday 14; Wednesday 13; Thursday 11; Friday 12. Weekly total: 60 bottles.\n\nScope note: Other school bins, bottle weight, reusable-bottle use and lunch participation were not measured in this log. The team recorded counts; it did not run a controlled study of what caused any change.",
+            "sourcingQuestions": [
+              "Which information comes from direct counting in this record?",
+              "What was the unit, location and time period of the measurement?"
+            ],
+            "analysisQuestions": [
+              "Compare the totals. You may use a calculator; the reasoning goal is the interpretation.",
+              "What information would be needed to extend the finding beyond the monitored bin?"
+            ]
+          },
+          {
+            "id": "C",
+            "title": "C · Community roundup",
+            "source": "Original fictional teaching card. Publisher: a community news roundup. Posted the day after Card A. Purpose: summarize items from the school feed.",
+            "excerptKind": "reconstructed",
+            "documentType": "reconstructed",
+            "excerpt": "FICTIONAL CARD C — COMMUNITY ROUNDUP\n\nA refill station has halved bottle waste across the school, according to the supplier's recent post. The reported count changed from 120 to 60.\n\nCredit: Supplier's promotional post (Card A), which links to the Facilities Count Log (Card B).\n\nReporting note: This roundup did not collect bottle counts, interview the counters or inspect other bins. It summarizes the supplier's post.",
+            "sourcingQuestions": [
+              "Where does this publication say its information came from?",
+              "Trace the route from this report to the original measurement."
+            ],
+            "analysisQuestions": [
+              "Does publishing the statement again add a separate measurement? Explain using the reporting note.",
+              "What would make another report independent support rather than repetition?"
+            ]
+          },
+          {
+            "id": "D",
+            "title": "D · Operations purchase and calendar record",
+            "source": "Original fictional teaching card. Publisher: school operations office. Compiled after the pilot from a purchase record and calendar. Purpose: record operations, not evaluate effectiveness.",
+            "excerptKind": "reconstructed",
+            "documentType": "reconstructed",
+            "excerpt": "FICTIONAL CARD D — OPERATIONS RECORD\n\nPurchase entry: One refill station was bought from the supplier that published Card A and installed before the pilot week.\n\nCalendar entry: Two grade groups ate lunch offsite on Tuesday and Wednesday of the pilot week. They ate on campus during all five comparison-week days.\n\nRecord limits: This file does not report the number of people eating lunch, the number of bottles used or discarded, or measurements from any bin. It does not calculate the effect of the station or of the offsite lunches.",
+            "sourcingQuestions": [
+              "How does this record help check the supplier's relationship to the pilot?",
+              "What is this record designed to document, and what is outside its purpose?"
+            ],
+            "analysisQuestions": [
+              "Which contextual difference might matter when interpreting the two weeks?",
+              "Can this card tell you how much of any change that difference caused? Explain the limit."
+            ]
+          }
+        ],
+        "corroborationClaims": [],
+        "synthesisPrompt": "Should the community share the supplier's wording as written, revise it, or wait? Give a proportionate conclusion, not just a verdict. Cite at least two card letters and accurately explain their details. Trace one report to the record it relies on; distinguish another publication from another measurement. Explain how source identity matters without treating an interest as proof of falsehood. State what these records establish, what they do not establish, and one additional check that could reduce a specific uncertainty. Then compare this response with your first judgment.",
+        "thesisStarter": "Based on Cards ___, I would ___. The records support ___ because ___. They do not yet establish ___. I would next check ___ to learn ___.",
+        "rubric": [
+          {
+            "1": "Names a verdict with no relevant card detail.",
+            "2": "Gives a relevant detail but leaves its source or scope unclear.",
+            "3": "Accurately uses at least two card references and explains what each contributes.",
+            "4": "Meets level 3 and precisely distinguishes the measured unit, location or period from the broader claim.",
+            "criteria": "Accurate use of evidence"
+          },
+          {
+            "1": "Counts repeated publications as separate proof without checking their origin.",
+            "2": "Names an origin or publisher but does not explain the relationship.",
+            "3": "Traces a report to its evidence and explains whether it adds an independent observation.",
+            "4": "Meets level 3 and explains how publisher identity or purpose guides further checking without deciding truth by identity alone.",
+            "criteria": "Source trail and independence"
+          },
+          {
+            "1": "Makes an unsupported broad conclusion or gives no conclusion.",
+            "2": "Recognizes uncertainty but gives a vague limit or next step.",
+            "3": "Keeps the conclusion within the records' scope and proposes a relevant additional check.",
+            "4": "Meets level 3 and connects the next check to a specific uncertainty or alternative explanation.",
+            "criteria": "Proportionate conclusion and next check"
+          }
+        ],
+        "teacherNotes": "EDUCATOR REVIEW DRAFT — MODEL REASONING, NOT A REQUIRED SCRIPT: The facilities log records 120 disposable bottles in one cafeteria bin in the comparison week and 60 in the pilot week, so the recorded count in that bin fell by half (B). This does not establish a schoolwide reduction or show that the station caused it: no other bins or bottle weight were measured (B), and two grades ate offsite on two pilot-week days (D). The roundup repeats the supplier's post instead of adding a separate measurement (C). The supplier sells the station (A, D), which is a reason to examine its evidence, not proof that its claim is false. I would retain the narrow recorded observation and revise the schoolwide causal claim. I would next request counts across school bins over several comparable weeks, lunch participation and any collection changes; even then, I would consider alternative explanations. Accept differently worded bounded conclusions, including a justified choice to wait before sharing. Do not require students to infer the size of the offsite-lunch effect; it is unknown. Do not conclude that refill stations do not work, or that every schoolwide reduction claim is false. Popularity does not supply a new measurement. The original records are fictional, and navigating these cards is not actual open-web verification. Keep this model teacher-only; the blank corroboration table intentionally supplies no answer mapping."
+      }
+    },
+    {
+      "id": "sml-glossary",
+      "type": "glossary",
+      "title": "Words for checking information",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": [
+        {
+          "term": "Claim",
+          "def": "A statement that can be examined using evidence. Its wording determines how broad the claim is.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Evidence",
+          "def": "Information used to support or challenge a particular claim. Explain how it connects to that claim.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Publisher",
+          "def": "The person, group or organization that puts information before an audience.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Lateral reading",
+          "def": "Leaving an unfamiliar page to investigate its publisher through other sources. This packet rehearses that move using supplied fictional records.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Original source",
+          "def": "The earliest record or observation in the source trail you are examining. Being original does not make it automatically correct or complete.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Corroboration",
+          "def": "Checking whether other evidence supports a claim. Repeating the same source does not add an independent observation.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Scope",
+          "def": "The people, places, measures and time period covered by a record or claim.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Causal claim",
+          "def": "A statement that one factor produced a change. A before-and-after difference alone may leave other explanations open.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Conflict of interest",
+          "def": "A situation in which a source's other interests could pull against its responsibility to report fairly or accurately. Check the connection and the evidence; the interest alone does not prove a claim false.",
+          "tier": "Domain"
+        },
+        {
+          "term": "Uncertainty",
+          "def": "Something the available information does not settle. Name what is unknown and what could help resolve it.",
+          "tier": "Academic"
+        }
+      ]
+    },
+    {
+      "id": "sml-anchor",
+      "type": "anchor-chart",
+      "title": "Check the source, then the claim",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": {
+        "title": "Four moves before sharing",
+        "sections": [
+          {
+            "label": "1 · Investigate who is behind it",
+            "bullets": [
+              "Identify the publisher and intended audience.",
+              "Use other sources to check identity, expertise and relevant interests; an About page is the publisher's own account.",
+              "An interest is a reason to examine evidence, not an automatic falsehood test."
+            ]
+          },
+          {
+            "label": "2 · Follow the evidence trail",
+            "bullets": [
+              "Locate the original record behind the statement.",
+              "Track which reports rely on which earlier reports.",
+              "Count independent observations, not just links or publications."
+            ]
+          },
+          {
+            "label": "3 · Match the claim to the record",
+            "bullets": [
+              "Check what, where, when and who were measured.",
+              "Distinguish a recorded change from an explanation of what caused it.",
+              "Look for missing context and other plausible explanations."
+            ]
+          },
+          {
+            "label": "4 · Say what you can support",
+            "bullets": [
+              "Give a conclusion with source references and reasoning.",
+              "Keep the wording within the evidence's scope.",
+              "Name a specific uncertainty and a next check that could reduce it."
+            ]
+          },
+          {
+            "label": "Using these moves offline",
+            "bullets": [
+              "These original cards rehearse checking moves; they do not verify actual websites.",
+              "Do not search for the fictional publishers.",
+              "For a later web task, use teacher-selected real sources and record the pages and dates you actually inspected."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "sml-sort",
+      "type": "concept-sort",
+      "title": "New observation, copied report, or background?",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": {
+        "instructions": "Separate practice case; all examples are fictional. Sort by the information each card adds, not by whether its claim sounds convincing. After Check, open Why? to examine your reasoning.",
+        "categories": [
+          {
+            "id": "new-observation",
+            "label": "Adds a separately collected observation"
+          },
+          {
+            "id": "copied-report",
+            "label": "Repeats someone else's report"
+          },
+          {
+            "id": "background",
+            "label": "Adds source or situation background"
+          }
+        ],
+        "items": [
+          {
+            "id": "sml-sort-1",
+            "content": "A park volunteer counts people at the west gate on Saturday and publishes the count with the time and method.",
+            "categoryId": "new-observation",
+            "explanation": "This card describes a separately collected count. Its method and scope still need checking; being a new observation does not make every broader claim valid."
+          },
+          {
+            "id": "sml-sort-2",
+            "content": "A neighborhood blog quotes the park volunteer's count and names that volunteer as its only source.",
+            "categoryId": "copied-report",
+            "explanation": "The blog passes on the volunteer's observation. It is another publication, but the card describes no separate count."
+          },
+          {
+            "id": "sml-sort-3",
+            "content": "A public events calendar states that a free concert was scheduled in the park that Saturday.",
+            "categoryId": "background",
+            "explanation": "The calendar adds context that may matter when interpreting attendance. It does not supply another gate count or establish how much the concert changed attendance."
+          },
+          {
+            "id": "sml-sort-4",
+            "content": "Another team independently counts people at the east gate on Sunday and publishes its own notes.",
+            "categoryId": "new-observation",
+            "explanation": "The team collected a separate observation. A different gate and day mean it may not directly corroborate the Saturday west-gate figure."
+          },
+          {
+            "id": "sml-sort-5",
+            "content": "An account shares the neighborhood blog's post with the words 'another report confirms it' and adds no new records.",
+            "categoryId": "copied-report",
+            "explanation": "The share repeats a report that already relied on the volunteer. Calling it confirmation does not add an independent observation."
+          },
+          {
+            "id": "sml-sort-6",
+            "content": "A separate sponsorship register identifies the publisher of a park campaign as a company that sells event tickets.",
+            "categoryId": "background",
+            "explanation": "This supplies information about the publisher's connection and possible interest. It does not by itself prove the attendance statement true or false."
+          }
+        ]
+      }
+    },
+    {
+      "id": "sml-notes",
+      "type": "note-taking",
+      "title": "My evidence record",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": {
+        "templateType": "double-entry",
+        "title": "Card detail → What it supports, its limit, my next check",
+        "entries": [
+          {
+            "id": "sml-note-a",
+            "quote": "",
+            "response": ""
+          },
+          {
+            "id": "sml-note-b",
+            "quote": "",
+            "response": ""
+          },
+          {
+            "id": "sml-note-c",
+            "quote": "",
+            "response": ""
+          },
+          {
+            "id": "sml-note-d",
+            "quote": "",
+            "response": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "sml-discussion",
+      "type": "brainstorm",
+      "title": "A discussion that changes our reasoning",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": [
+        {
+          "kind": "discussion",
+          "title": "Keep a finding; question its reach",
+          "protocol": "think-pair-share",
+          "grouping": "Think and record first. Then work with a partner or exchange accessible written/AAC messages. An independent learner can write an objection and reply to it.",
+          "openingQuestion": "Which part of the supplier's message, if any, could you responsibly keep? Which words need another check?",
+          "questionSets": [
+            {
+              "depth": "literal",
+              "questions": [
+                "What does each card actually record? Point to a detail and its card letter.",
+                "Which record is named as the evidence behind the post and roundup?"
+              ]
+            },
+            {
+              "depth": "inferential",
+              "questions": [
+                "Do two publications here supply two independent measurements? Trace the connection.",
+                "How does the operations record affect what you can conclude without establishing a replacement cause?"
+              ]
+            },
+            {
+              "depth": "evaluative",
+              "questions": [
+                "Which proposed next check would most directly address a limitation you identified?",
+                "Can you state a useful conclusion while being uncertain about cause?"
+              ]
+            }
+          ],
+          "talkStems": {
+            "agree": [
+              "I can support that part because Card ___ records ___."
+            ],
+            "disagree": [
+              "That wording reaches beyond ___; the record covers ___."
+            ],
+            "clarify": [
+              "Are you making a claim about the count, the whole school, or the cause?"
+            ],
+            "build": [
+              "Your point makes me want to check ___ because ___."
+            ]
+          },
+          "lookFors": [
+            "Accurate card references and an explained source trail.",
+            "A distinction between recorded observation and broader inference.",
+            "A reply that addresses a partner's reasoning, with a limit or next check."
+          ],
+          "facilitationNotes": "Do not equate quick speech with strong reasoning. Offer silent thinking, read-aloud and communication choices. Invite a reasoned retained judgment as well as a revision. Keep model answers in the teacher-only source-packet notes. Return to the records when students disagree; the activity is not a vote on source popularity."
+        }
+      ]
+    },
+    {
+      "id": "sml-frames",
+      "type": "sentence-frames",
+      "title": "Sentence starters: Keep the reasoning yours",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "Card ___ records ___. That supports ___ within the scope of ___."
+          },
+          {
+            "text": "Card ___ relies on Card ___. This adds ___, but it does not add ___."
+          },
+          {
+            "text": "The publisher's connection is ___. I should check ___ rather than assume ___."
+          },
+          {
+            "text": "A different explanation could be ___. These records do not tell me ___."
+          },
+          {
+            "text": "I would share/revise/wait because ___. My next check is ___ so I can learn ___."
+          },
+          {
+            "text": "My first judgment was ___. I now ___ because Card ___ changed/confirmed my reasoning about ___."
+          }
+        ],
+        "rubric": "Use accurate evidence, explain its connection, trace its source and keep your conclusion proportionate. The starters are optional; filling blanks alone is not evidence of understanding."
+      }
+    },
+    {
+      "id": "sml-quiz",
+      "type": "quiz",
+      "title": "Check your reasoning",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": {
+        "scoringPolicy": {
+          "partialCredit": true,
+          "writtenResponseMode": "teacher-review"
+        },
+        "deliverySettings": {
+          "profile": "flexible",
+          "feedbackTiming": "teacher-graded",
+          "pacing": "all-at-once",
+          "timeLimitMinutes": 0,
+          "allowFlagging": true,
+          "showProgress": true
+        },
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which next action best checks the evidence behind the supplier's post?",
+            "options": [
+              "Trace its evidence link to the original count log and inspect the method and scope.",
+              "Treat its 800 likes as independent measurements.",
+              "Reject every detail because the supplier sells stations.",
+              "Count the roundup as a second bottle-counting study."
+            ],
+            "correctAnswer": "Trace its evidence link to the original count log and inspect the method and scope."
+          },
+          {
+            "type": "mcq",
+            "question": "Why is Card C not an independent measurement of bottle waste?",
+            "options": [
+              "A community publication can never report accurate information.",
+              "It states that it summarizes Card A and collected no counts of its own.",
+              "It was published later, so it must be false.",
+              "All sources about the same topic are copies."
+            ],
+            "correctAnswer": "It states that it summarizes Card A and collected no counts of its own."
+          },
+          {
+            "type": "mcq",
+            "question": "Which statement most closely matches what Card B measures?",
+            "options": [
+              "Bottle weight across the whole school fell by half.",
+              "The station caused every change in bottle use.",
+              "The recorded disposable-bottle count in one cafeteria bin changed from 120 to 60 across the two listed weeks.",
+              "Every student used a reusable bottle during the pilot."
+            ],
+            "correctAnswer": "The recorded disposable-bottle count in one cafeteria bin changed from 120 to 60 across the two listed weeks."
+          },
+          {
+            "type": "mcq",
+            "question": "What does the supplier's commercial connection establish by itself?",
+            "options": [
+              "Every claim in its post is false.",
+              "The station caused the change.",
+              "The supplier has a relevant interest to examine alongside the evidence.",
+              "Card B cannot contain any useful observation."
+            ],
+            "correctAnswer": "The supplier has a relevant interest to examine alongside the evidence."
+          },
+          {
+            "type": "short-answer",
+            "question": "Use Cards B and D to explain one reason the before-and-after counts do not by themselves establish a schoolwide causal effect. Cite both cards.",
+            "expectedAnswer": "Card B counts bottles in only one cafeteria bin and does not measure all bins or weight. Card D records offsite lunches during the pilot but no participation or effect size. A defensible answer connects the limited measurement and changed context to why schoolwide causation remains unsettled, without claiming that offsite lunches fully explain the difference.",
+            "studentCriteria": [
+              "Accurately cite B and D, explain how their details limit the broader conclusion, and avoid claiming a cause that the records do not establish."
+            ]
+          },
+          {
+            "type": "short-answer",
+            "question": "Propose one additional check and explain which specific uncertainty it would help reduce. State one thing that check might still leave unresolved.",
+            "expectedAnswer": "For example, collect counts from multiple school bins over several comparable weeks and record lunch participation and collection methods to examine scope and context. This could improve the comparison without by itself eliminating every alternative cause. Accept other feasible checks clearly matched to a stated uncertainty and limit.",
+            "studentCriteria": [
+              "Name a feasible check, connect it to a specific uncertainty, and explain a remaining limit. More information is useful only when you explain what it can establish."
+            ]
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Compare your first and final judgments. Which card detail most affected your reasoning, or why did your judgment stay the same?"
+          },
+          {
+            "text": "In a real online investigation, what source-background or original-record check would you still need to perform?"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sml-lesson",
+      "type": "lesson-plan",
+      "title": "Teacher guide: Source checks and proportionate claims",
+      "meta": "Grades 7–8 · Original fictional teaching case · Educator review draft",
+      "data": {
+        "essentialQuestion": "What can we responsibly say when a widely repeated claim rests on limited evidence?",
+        "objectives": [
+          "Investigate a publisher using information beyond its own message.",
+          "Trace repeated reports to their evidence and distinguish publication count from independent observations.",
+          "Use scope and context to make a proportionate conclusion with a useful next check."
+        ],
+        "hook": "Session1, 5 minutes: show only The claim on our feed. Learners record a first judgment and reason; retain it for later comparison. Do not display the teacher model before independent work.",
+        "guidedPractice": "Session1, 12 minutes: introduce the four checking moves. Model locating a publisher, an evidence link and a scope note using a separate invented example, not by resolving the refill-station case. Explain that card navigation rehearses lateral reading but cannot verify real sites. The original record and its limitations remain available to everyone.",
+        "independentPractice": "Session1, 15 minutes: learners read A–D and fill the blank evidence record. Left column: short detail plus card letter. Right column: what it supports, a limit and a next check. Session1, 8 minutes: try the separate park concept sort; examine Why? feedback after checking. Session2, 12 minutes: use the discussion kit. Session2, 15 minutes: write or record the source-packet synthesis using its rubric. Session2, 8 minutes: complete the quiz; written items use teacher review and do not need AI.",
+        "closure": "Session2, 5 minutes: compare first and final judgments with a specific card detail. Invite justified retained judgments as well as revisions. Ask which real-world check remains unperformed.",
+        "successCriteria": [
+          {
+            "id": "sml-criterion-evidence",
+            "statement": "I accurately connect at least two card details to my conclusion.",
+            "source": "author"
+          },
+          {
+            "id": "sml-criterion-trail",
+            "statement": "I trace a repeated report to its source and explain whether it adds an independent observation.",
+            "source": "author"
+          },
+          {
+            "id": "sml-criterion-scope",
+            "statement": "I distinguish a recorded count from a schoolwide causal claim and name a useful next check.",
+            "source": "author"
+          },
+          {
+            "id": "sml-criterion-reflect",
+            "statement": "I compare my first and final reasoning without erasing my first response.",
+            "source": "author"
+          }
+        ],
+        "timing": [
+          {
+            "label": "Session 1 · First judgment",
+            "minutes": 5
+          },
+          {
+            "label": "Session 1 · Model checking moves",
+            "minutes": 12
+          },
+          {
+            "label": "Session 1 · Examine cards and record evidence",
+            "minutes": 15
+          },
+          {
+            "label": "Session 1 · Separate transfer sort",
+            "minutes": 8
+          },
+          {
+            "label": "Session 2 · Discussion",
+            "minutes": 12
+          },
+          {
+            "label": "Session 2 · Synthesis",
+            "minutes": 15
+          },
+          {
+            "label": "Session 2 · Quiz",
+            "minutes": 8
+          },
+          {
+            "label": "Session 2 · Reflection",
+            "minutes": 5
+          }
+        ],
+        "materialsNeeded": [
+          "This original fictional four-card packet; no internet or AI provider required for core activities.",
+          "Paper or a separate accessible document for the first judgment; four blank double-entry rows for card details and responses.",
+          "Optional read-aloud, calculator, enlargement, partner reader, AAC, scribe or labeled source-trail diagram."
+        ],
+        "assessmentIdeas": [
+          "Review the DBQ rubric and quiz together. MCQ keys are deterministic; the two written items require teacher judgment using their studentCriteria. Do not infer mastery from a corrected sort alone. MODEL RESPONSE: The facilities log records 120 disposable bottles in one cafeteria bin in the comparison week and 60 in the pilot week, so the recorded count in that bin fell by half (B). This does not establish a schoolwide reduction or show that the station caused it: no other bins or bottle weight were measured (B), and two grades ate offsite on two pilot-week days (D). The roundup repeats the supplier's post instead of adding a separate measurement (C). The supplier sells the station (A, D), which is a reason to examine its evidence, not proof that its claim is false. I would retain the narrow recorded observation and revise the schoolwide causal claim. I would next request counts across school bins over several comparable weeks, lunch participation and any collection changes; even then, I would consider alternative explanations.",
+          "Access and expression: Keep the evidence and reasoning goal common. Offer read-aloud, partner reading, a calculator, card letters, optional starters and flexible response modes. A scribe records the learner's explanation faithfully. Do not prefill the double-entry responses or corroboration table. Allow extra time or smaller chunks. Judge reasoning, not response speed or spelling."
+        ],
+        "extensions": [
+          {
+            "title": "Plan a real-world source check",
+            "description": "With teacher-selected real pages, propose a check of the publisher through other sources and a separate check of the original evidence. If the investigation is carried out later, record the actual pages, dates and unresolved questions. Do not treat this fictional rehearsal as completed verification."
+          }
+        ],
+        "directInstruction": "Teach the difference between checking a publisher and checking a specific claim. Investigate an unfamiliar publisher through information beyond its own page, then trace the claim to its original record and examine scope and independence. The offline case rehearses these moves; no real site has been verified. Teacher background (accessed 2026-11-01):\nDigital Inquiry Group — Teaching Lateral Reading — https://cor.inquirygroup.org/curriculum/collections/teaching-lateral-reading/\nTeacher background: investigate an unfamiliar publisher using other sources; original fictional activities in this pack are not DIG lessons.\n\nPrinceton University Library — Media Literacy: Lateral Reading — https://libguides.princeton.edu/medialiteracy/lateralreading\nTeacher background: distinguish investigating a publisher from evaluating the evidence for a particular claim.\n\nUW–Green Bay Library — Evaluating Sources of Information — https://library.uwgb.edu/evalinfo\nTeacher background: trace a summary to its original source and compare coverage.\n\nThese links informed general teaching moves only. No linked lesson, infographic, worksheet, screenshot or source text is reproduced; no affiliation or endorsement is implied. The case, cards, questions and rubric are original AI-authored material requiring educator review."
+      }
+    }
+  ]
+}

@@ -1,30 +1,50 @@
 /* Pointer travel previews a technique; the host commits the engine action on release. */
 (function (root) {
   'use strict';
-  var heat = ['low', 'medium', 'high'];
+  var heat = ['off', 'low', 'medium', 'high'];
   function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
   function point(value) { return !!value && Number.isFinite(value.x) && Number.isFinite(value.y); }
   function begin(kind, at, options) {
-    if (['cut', 'pour', 'dial', 'dry', 'grip'].indexOf(kind) === -1 || !point(at)) return null;
+    if (['cut', 'pour', 'dial', 'dry', 'grip', 'door'].indexOf(kind) === -1 || !point(at)) return null;
     options = options || {};
     var unit = Number.isFinite(options.unit) && options.unit > 0 ? clamp(options.unit, .5, 2) : 1;
     var level = Number.isFinite(options.level) ? clamp(Math.round(options.level), 1, 3) : 1;
+    var turn = null;
+    if (kind === 'dial' && options.dialPoint && Math.hypot(options.dialPoint.x, options.dialPoint.z) >= .55) {
+      turn = root.KitchenBurnerDials.start(options.level, options.dialPoint);
+    }
+    if (kind === 'dial' && !turn && Number.isFinite(options.level)) level = clamp(Math.round(options.level), 0, 3);
     return {
       kind: kind, unit: unit, start: { x: at.x, y: at.y }, current: { x: at.x, y: at.y },
       phase: kind === 'cut' ? 'down' : kind === 'dry' ? 'rub' : 'adjust', invalid: false, depth: 0,
       cutReached: false, action: options.action === 'largeDice' ? 'largeDice' : 'dice',
-      initialLevel: level, level: level, delta: 0, travel: 0,
+      initialLevel: level, level: turn ? turn.initial : level, turn: turn, delta: 0, travel: 0,
       passes: 0, rubDirection: 0, rubEdge: 0, passTravel: 0,
-      initialCurl: options.claw === true ? 1 : 0, curl: options.claw === true ? 1 : 0, gripAction: null
+      initialCurl: options.claw === true ? 1 : 0, curl: options.claw === true ? 1 : 0, gripAction: null,
+      initialOpen: options.open === true, opening: options.open === true ? 1 : 0
     };
   }
-  function move(trace, at) {
+  function move(trace, at, dialPoint) {
     if (!trace || trace.invalid) return trace;
     if (!point(at)) return Object.assign({}, trace, { invalid: true, phase: 'retry' });
     var next = Object.assign({}, trace, { current: { x: at.x, y: at.y } });
+    if (trace.turn) {
+      // Crossing the spindle loses rim contact. Keep that stroke cancelled even
+      // if the pointer subsequently comes back to the rim.
+      if (dialPoint && Math.hypot(dialPoint.x, dialPoint.z) < .2) dialPoint = null;
+      next.turn = root.KitchenBurnerDials.move(trace.turn, dialPoint, true);
+      next.invalid = next.turn.invalid;
+      next.level = next.turn.preview;
+      next.phase = next.invalid ? 'retry' : root.KitchenBurnerDials.value(next.turn) === null ? 'adjust' : 'ready';
+      return next;
+    }
     var dx = (at.x - trace.start.x) / trace.unit, dy = (at.y - trace.start.y) / trace.unit;
     next.travel = Math.abs(dy);
-    if (trace.kind === 'grip') {
+    if (trace.kind === 'door') {
+      if (Math.abs(dx) > 55) return Object.assign(next, { invalid: true, phase: 'retry' });
+      next.opening = clamp((trace.initialOpen ? 1 : 0) + dy / 75, 0, 1);
+      next.phase = (trace.initialOpen ? dy <= -24 : dy >= 24) ? 'ready' : 'adjust';
+    } else if (trace.kind === 'grip') {
       if (Math.abs(dx) > 35) return Object.assign(next, { invalid: true, phase: 'retry' });
       next.curl = clamp(trace.initialCurl - dy / 40, 0, 1);
       next.gripAction = dy <= -28 ? 'claw' : dy >= 28 ? 'flat' : null;
@@ -51,12 +71,28 @@
       next.delta = dy <= -30 ? 50 : dy >= 30 ? -50 : 0;
       next.phase = next.delta ? 'ready' : 'adjust';
     } else if (trace.kind === 'dial') {
-      next.level = clamp(trace.initialLevel + Math.round(-dy / 20), 1, 3);
-      next.phase = Math.abs(dy) >= 12 ? 'ready' : 'adjust';
+      next.level = clamp(trace.initialLevel + Math.round(-dy / 20), 0, 3);
+      next.phase = Math.abs(dy) >= 12 && next.level !== trace.initialLevel ? 'ready' : 'adjust';
     }
     return next;
   }
   function finish(trace) {
+    if (trace && trace.kind === 'door') {
+      if (!trace.invalid && trace.phase === 'ready') return {
+        complete: true, action: null, view: 'fridge', open: !trace.initialOpen,
+        message: trace.initialOpen ? 'Refrigerator closed.' : 'Refrigerator opened.'
+      };
+      return {
+        complete: false, action: null,
+        message: trace.invalid ? 'Contact lost. Start again on the refrigerator handle.' : trace.initialOpen ? 'Push the handle up, then release to close the refrigerator.' : 'Pull the handle down, then release to open the refrigerator.'
+      };
+    }
+    if (trace && trace.turn) {
+      var setting = trace.invalid ? null : root.KitchenBurnerDials.value(trace.turn);
+      if (setting === null) return {complete:false, action:null, message:trace.invalid ? 'Contact lost. Start again at the rim.' : 'Turn the rim to another marked setting.'};
+      var name = root.KitchenBurnerDials.levels[setting].toLowerCase();
+      return {complete:true, action:name, message:setting ? 'Release to set '+name+' heat.' : 'Release to turn the burner off.'};
+    }
     if (!trace || trace.invalid) return { complete: false, action: null, message: trace && trace.kind === 'dry' ? 'Contact lost. Keep the towel level and rub steadily from side to side.' : 'Movement stopped. Start again with a steady vertical motion.' };
     if (trace.kind === 'grip') return trace.gripAction
       ? { complete: true, action: trace.gripAction, message: trace.gripAction === 'claw' ? 'Release to tuck fingertips into a claw grip.' : 'Release to extend the fingers.' }
@@ -71,12 +107,18 @@
       ? { complete: true, action: trace.delta > 0 ? 'add50' : 'remove50', message: trace.delta > 0 ? 'Add 50 mL of stock.' : 'Remove 50 mL of stock.' }
       : { complete: false, action: null, message: 'Drag up to add 50 mL, or down to remove 50 mL, then release.' };
     if (trace.kind === 'dial') return trace.phase === 'ready'
-      ? { complete: true, action: heat[trace.level - 1], message: 'Set heat to ' + heat[trace.level - 1] + '.' }
-      : { complete: false, action: null, message: 'Drag up for more heat or down for less, then release.' };
+      ? { complete: true, action: heat[trace.level], message: trace.level === 0 ? 'Release to turn the burner off.' : 'Set heat to ' + heat[trace.level] + '.' }
+      : { complete: false, action: null, message: trace.initialLevel === 0 && trace.current.y > trace.start.y ? 'At the Off stop. Drag up to choose more heat.' : trace.initialLevel === 3 && trace.current.y < trace.start.y ? 'At the High stop. Drag down toward Off.' : 'Drag up for more heat or down toward Off, then release.' };
     return { complete: false, action: null, message: 'Choose a kitchen tool to begin.' };
   }
   function progress(trace) {
     if (!trace || trace.invalid) return 0;
+    if (trace.kind === 'door') {
+      var dy = (trace.current.y - trace.start.y) / trace.unit;
+      return clamp((trace.initialOpen ? -dy : dy) / 24, 0, 1);
+    }
+    if (trace.turn) return clamp(Math.abs(trace.turn.turn) / (Math.PI / 4), 0, 1);
+    if (trace.kind === 'dial') return trace.initialLevel === 0 && trace.current.y > trace.start.y || trace.initialLevel === 3 && trace.current.y < trace.start.y ? 0 : clamp(trace.travel / 12, 0, 1);
     if (trace.kind === 'grip') return clamp(trace.travel / 28, 0, 1);
     if (trace.kind === 'dry') return clamp((trace.passes + clamp(trace.passTravel / 24, 0, 1)) / 3, 0, 1);
     if (trace.kind === 'cut') {

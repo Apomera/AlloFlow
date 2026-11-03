@@ -4,7 +4,7 @@ import { GlHarness } from './helpers/stem_gl_harness';
 
 test.describe.configure({ timeout: 300_000, retries: 0, mode: 'serial' });
 test.use({ video: 'off', trace: 'off', actionTimeout: 60_000 });
-const report = 'reports/dinolab-landmark-focus';
+const report = process.env.DINO_LANDMARK_FOCUS_REPORT_DIR || 'reports/dinolab-landmark-focus';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_dinolab.js', toolId: 'dinoLab', width: 1280, height: 960, layout: 'document', appStyles: true,
   probes: 'var R=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){var r=new R(o),draw=r.render.bind(r);r.__landmarkIdentity=(window.__landmarkRendererCount||0)+1;window.__landmarkRendererCount=r.__landmarkIdentity;r.render=function(s,c){window.__landmarkScene=s;window.__landmarkCamera=c;window.__landmarkRenderer=r;return draw(s,c);};return r;};' });
 test.beforeAll(async () => { fs.mkdirSync(report, { recursive: true }); await harness.start(); });

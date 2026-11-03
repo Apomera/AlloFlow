@@ -122,8 +122,8 @@ describe.skipIf(!R)('SEL Hub · a station can carry the grade its tools run at',
 });
 
 describe('Crew Launch stations declare the grade their pack was written for', () => {
-  const packs = readdirSync(resolve(ROOT, 'allopacks')).filter((f) => /^crew_.*\.allopack\.json$/.test(f))
-    .map((f) => JSON.parse(readFileSync(resolve(ROOT, 'allopacks', f), 'utf8')));
+  const packs = readdirSync(resolve(ROOT, 'allopacks', 'current')).filter((f) => /^crew_.*\.allopack\.json$/.test(f))
+    .map((f) => JSON.parse(readFileSync(resolve(ROOT, 'allopacks', 'current', f), 'utf8')));
   it.each(packs.map((p) => [p.allopack.title, p]))('%s', (_title, p) => {
     expect(p.allopack.gradeLevel).toBe('6th-8th Grade');
     for (const st of p.selStations) expect(st.gradeLevel).toBe(p.allopack.gradeLevel);

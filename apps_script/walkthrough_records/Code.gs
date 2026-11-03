@@ -22,7 +22,9 @@
  * system of record with verified identity, assignments and a tamper-evident
  * audit trail, see apps_script/educator_evaluation/.
  *
- * SCOPES. drive.file only, so the consent screen reads "see, edit, create and
+ * SCOPES. Drive access is limited to drive.file; email identity verifies owner
+ * setup, and send_mail permits the approved teacher notification. Drive consent
+ * reads "see, edit, create and
  * delete only the specific Google Drive files you use with this app" rather
  * than granting access to the principal's whole Drive. Everything below is
  * designed to stay inside that scope: the working folder id is remembered in
@@ -31,7 +33,7 @@
  */
 
 var WR_SERVICE = 'alloflow-walkthrough-records';
-var WR_VERSION = 1;
+var WR_VERSION = 2;
 var WR_FOLDER_NAME = 'AlloFlow Walkthrough Records';
 var WR_PROP_TOKEN = 'wr_admin_token';
 var WR_PROP_FOLDER = 'wr_folder_id';
@@ -73,7 +75,7 @@ function wrDomainOf_(email) {
 }
 
 function wrOwnerEmail_() {
-  try { return String(Session.getEffectiveUser().getEmail() || '').toLowerCase(); } catch (err) { return ''; }
+  try { return String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase(); } catch (err) { return ''; }
 }
 
 /**
@@ -93,7 +95,7 @@ function wrFolder_() {
 
 function wrAuthorize_(request) {
   var stored = wrProps_().getProperty(WR_PROP_TOKEN);
-  if (!stored) return wrError_('not_claimed', 'This script has not been connected yet. Connect it from AlloFlow first.');
+  if (!stored) return wrError_('not_claimed', 'Run setupWalkthroughOwner in the Apps Script editor, then paste the owner token into AlloFlow.');
   var supplied = wrString_(request && request.token, 128);
   if (!supplied || supplied !== stored) return wrError_('denied', 'This request did not carry the connecting device token.');
   return null;
@@ -134,20 +136,37 @@ function doPost(e) {
   }
 }
 
-/**
- * First caller claims the script. Re-claiming requires the existing token, so a
- * stranger who finds the URL cannot take it over.
- */
 function wrClaim_() {
-  var props = wrProps_();
-  if (props.getProperty(WR_PROP_TOKEN)) {
-    return wrError_('already_claimed', 'This script is already connected to a device. Use "Forget this connection" in the Apps Script editor to reset it.');
+  return wrError_('owner_setup_required', 'Run setupWalkthroughOwner in the Apps Script editor as the deploying owner, then paste wr_admin_token from Script properties into AlloFlow.');
+}
+
+function wrRequireOwner_() {
+  var active = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();
+  var effective = wrOwnerEmail_();
+  var bound = wrProps_().getProperty('wr_owner_email');
+  if (!active || !effective || active !== effective || (bound && bound !== active)) {
+    throw new Error('Owner identity could not be verified. Run setupWalkthroughOwner in the Apps Script editor as the deploying owner.');
   }
-  var token = wrToken_();
-  props.setProperty(WR_PROP_TOKEN, token);
-  var owner = wrOwnerEmail_();
-  if (owner) props.setProperty(WR_PROP_DOMAIN, wrDomainOf_(owner));
-  return { ok: true, token: token, owner: owner, service: WR_SERVICE, version: WR_VERSION };
+  return active;
+}
+
+// Run from the editor. Re-running preserves the current connecting-device token.
+function setupWalkthroughOwner() {
+  return wrConfigureOwner_(false);
+}
+
+function wrConfigureOwner_(rotate) {
+  wrRequireOwner_();
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) throw new Error('Walkthrough setup is busy. Retry.');
+  try {
+    var owner = wrRequireOwner_();
+    var props = wrProps_();
+    if (!props.getProperty(WR_PROP_TOKEN) || rotate) props.setProperty(WR_PROP_TOKEN, wrToken_());
+    props.setProperty('wr_owner_email', owner);
+    if (!props.getProperty(WR_PROP_DOMAIN)) props.setProperty(WR_PROP_DOMAIN, wrDomainOf_(owner));
+    return 'Owner setup complete. Copy wr_admin_token from Project Settings > Script properties into the AlloFlow Owner token field. Keep it private.';
+  } finally { lock.releaseLock(); }
 }
 
 function wrSelfTest_(request) {
@@ -286,6 +305,5 @@ function wrRevoke_(request) {
  * Deliberately not exposed over HTTP: resetting the token is an owner action.
  */
 function forgetConnection() {
-  wrProps_().deleteProperty(WR_PROP_TOKEN);
-  return 'Connection forgotten. Reconnect from AlloFlow to issue a new token.';
+  return wrConfigureOwner_(true);
 }

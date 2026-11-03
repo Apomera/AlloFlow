@@ -3,9 +3,8 @@
  *
  * Lets multilingual users (teachers/students viewing the app in their own
  * language) suggest a correction to a translated string and send it to the
- * maintainers — the SAME way a bug report is sent (a pre-filled Google Form
- * opened in a new tab for review; no backend, no silent fetch). Reuses the
- * exact form + technique from error_reporter_module.js.
+ * maintainers through a private, time-limited review queue. A failed or
+ * unconfirmed send retains the draft in this window for retry.
  *
  * Why this exists: automation got the packs machine-clean (no broken Spanglish,
  * placeholders intact). What's left is native-speaker judgment — register,
@@ -33,34 +32,17 @@
   }
   window.AlloModules = window.AlloModules || {};
 
-  // ── Google Form config — SAME form as error_reporter_module.js ──
-  var FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform?usp=pp_url';
-  var ENTRY_TYPE    = '640908447';   // Type of Issue (add "Translation Correction" option to the form)
-  var ENTRY_WHAT    = '234547532';   // What happened? — we put the machine-parseable correction block here
-  var ENTRY_STEPS   = '1969020676';  // Steps / notes — user's free-text reason + URL
-  var ENTRY_BROWSER = '937961519';   // Browser & Device
-
-  // Primary submit path: the SAME Cloudflare Worker that accepts community lesson submissions
-  // (catalog/cloudflare-worker), new /submitTranslation route → commits to translations/pending/
-  // in the repo. If the worker is unreachable (e.g. not yet deployed), we fall back to the
-  // pre-filled Google Form so the user's input is never lost.
-  var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitTranslation';
+  // Versioned private intake: an older public-staging Worker cannot accept this route.
+  var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/v2/submitTranslation';
 
   // A managed support destination does not authorize independent community
-  // contributions. Any configured policy blocks this POST and form fallback;
+  // contributions. Any configured policy blocks this POST;
   // these payloads are never rerouted to a bug-report endpoint.
   function communityFeedbackBlocked() {
     try { return Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY'); }
     catch (_) { return true; }
   }
   var COMMUNITY_BLOCK_MESSAGE = 'Community feedback is disabled in this managed deployment. Your draft stays in this window. Contact your school\'s support team.';
-  function metadataPageUrl() {
-    try {
-      var parsed = new URL(location.href || '');
-      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '[embedded app]';
-      return parsed.origin;
-    } catch (_) { return '[embedded app]'; }
-  }
 
   var lastContext = null;   // {key, current, language}
   var pill = null, overlay = null;
@@ -76,27 +58,6 @@
     if (ctx && ctx.language) return ctx.language;
     try { if (window.__alloTextLanguage) return window.__alloTextLanguage; } catch (_) {}
     return 'English';
-  }
-
-  // ── Build the pre-filled Google Form URL (mirrors error_reporter technique) ──
-  function buildFormUrl(payload) {
-    if (communityFeedbackBlocked()) return '';
-    // Machine-parseable block for dev-tools/i18n/ingest_translation_feedback.cjs.
-    // Stable delimiters so the ingest regex is robust to user edits around it.
-    var what =
-      '[AlloFlow Translation Correction]\n' +
-      'language: ' + payload.language + '\n' +
-      'key: ' + (payload.key || '(unknown — see "current" text)') + '\n' +
-      'current: ' + payload.current + '\n' +
-      'suggested: ' + payload.suggested + '\n' +
-      'english: ' + (payload.english || '(n/a)');
-    var steps = (payload.note ? payload.note + '\n\n' : '') + 'URL: ' + metadataPageUrl();
-    var browser = navigator.userAgent + ' · viewport ' + (window.innerWidth || '?') + 'x' + (window.innerHeight || '?');
-    return FORM_BASE +
-      '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent('Translation Correction') +
-      '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(what.slice(0, 8000)) +
-      '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(steps.slice(0, 3000)) +
-      '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(browser.slice(0, 500));
   }
 
   // ── English-source lookup (lazy; fetched from the same public source the app uses) ──
@@ -209,7 +170,7 @@
         '<h2 style="margin:0;font:700 17px system-ui;color:#0f172a">✎ Suggest a translation fix</h2>' +
         '<button id="allo-tfb-x" type="button" aria-label="Close" style="border:none;background:none;font-size:22px;line-height:1;cursor:pointer;color:#64748b">×</button>' +
       '</div>' +
-      '<p style="margin:0 0 14px;font:13px/1.5 system-ui;color:#475569">Spotted a word that’s awkward, wrong, or unnatural in <strong>' + esc(lang) + '</strong>? Suggest a better version. It opens a short form for you to review before sending — the same way bug reports are sent.</p>' +
+      '<p style="margin:0 0 14px;font:13px/1.5 system-ui;color:#475569">Suggest a better translation. Your suggestion is stored privately for up to 30 days for maintainer review. Only reviewed corrections may be published. Do not include personal student details.</p>' +
       '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Language</div>' +
       '<input id="allo-tfb-lang" type="text" value="' + esc(lang) + '" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px" />' +
       keyRow + enRow + curRow +
@@ -220,7 +181,7 @@
       '<div id="allo-tfb-err" role="alert" style="display:' + (communityFeedbackBlocked() ? 'block' : 'none') + ';color:#dc2626;font:13px system-ui;margin-bottom:10px">' + (communityFeedbackBlocked() ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end">' +
         '<button id="allo-tfb-cancel" type="button" style="padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font:600 13px system-ui;cursor:pointer">Cancel</button>' +
-        '<button id="allo-tfb-send" type="button"' + (communityFeedbackBlocked() ? ' disabled' : '') + ' style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Open report form →</button>' +
+        '<button id="allo-tfb-send" type="button"' + (communityFeedbackBlocked() ? ' disabled' : '') + ' style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Send for private review →</button>' +
       '</div>';
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
@@ -237,15 +198,13 @@
       if (button) { button.disabled = true; button.textContent = 'Sending disabled'; }
     }
 
-    function showThanks(viaForm) {
+    function showThanks() {
       panel.innerHTML =
         '<div style="text-align:center;padding:12px">' +
           '<div style="font-size:34px" aria-hidden="true">🌍</div>' +
           '<h2 style="margin:8px 0;font:700 17px system-ui;color:#0f172a">Thank you!</h2>' +
           '<p style="margin:0 0 16px;font:13px/1.5 system-ui;color:#475569">' +
-            (viaForm
-              ? 'Your suggestion opened in a form in a new tab — submit it there to send it for review.'
-              : 'Your ' + esc(lang) + ' suggestion was sent for review. Maintainers apply accepted fixes to the language pack.') +
+            'Your ' + esc(lang) + ' suggestion was sent for review. Maintainers apply accepted fixes to the language pack.' +
           '</p>' +
           '<button id="allo-tfb-done" type="button" style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Done</button>' +
         '</div>';
@@ -269,29 +228,19 @@
       };
       var sendBtn = $('allo-tfb-send');
       sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; errEl.style.display = 'none';
-      var fellBack = false;
-      var fallbackToForm = function () {
+      var showSendFailure = function () {
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
-        if (fellBack) return; fellBack = true;
-        var formUrl = buildFormUrl(payload);
-        if (!formUrl) { showManagedBlock(); return; }
-        try { window.open(formUrl, '_blank', 'noopener,noreferrer'); }
-        catch (_) {
-          if (communityFeedbackBlocked()) { showManagedBlock(); return; }
-          errEl.textContent = 'The report form could not be opened. Your draft stays here. You can try again or contact your support team.';
-          errEl.style.display = 'block';
-          sendBtn.disabled = false; sendBtn.textContent = 'Try sending again';
-          return;
-        }
-        showThanks(true);
+        errEl.textContent = 'Submission was not confirmed. Your draft stays here. You can retry later or contact your support team.';
+        errEl.style.display = 'block';
+        sendBtn.disabled = false; sendBtn.textContent = 'Try sending again';
       };
       try {
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
         fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
-          .then(function (res) { if (res.ok && res.j && res.j.ok) showThanks(false); else fallbackToForm(); })
-          .catch(function () { fallbackToForm(); });
-      } catch (_) { fallbackToForm(); }
+          .then(function (res) { if (res.ok && res.j && res.j.ok && res.j.storage === 'private') showThanks(); else showSendFailure(); })
+          .catch(function () { showSendFailure(); });
+      } catch (_) { showSendFailure(); }
     };
     var first = $('allo-tfb-suggest'); if (first) first.focus();
   }

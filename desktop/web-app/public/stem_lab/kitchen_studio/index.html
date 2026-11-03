@@ -13,11 +13,34 @@
   <script defer src="../../vendor/three-r128/OrbitControls.js"></script>
   <script defer src="kitchen_studio_engine.js"></script>
   <script defer src="kitchen_studio_service.js"></script>
+  <script defer src="recipe_lab_burners.js"></script>
   <script defer src="kitchen_studio_gestures.js"></script>
+  <script defer src="kitchen_studio_knife_rock.js"></script>
   <script defer src="kitchen_studio_storage.js"></script>
   <script defer src="kitchen_studio_platter.js"></script>
   <script defer src="kitchen_studio_placement.js"></script>
+  <script defer src="kitchen_studio_probe.js"></script>
+  <script defer src="kitchen_studio_probe_depth.js"></script>
+  <script defer src="kitchen_studio_oven_door.js"></script>
+  <script defer src="kitchen_studio_pour.js"></script>
+  <script defer src="kitchen_studio_pour_flow.js"></script>
+  <script defer src="kitchen_studio_plating.js"></script>
+  <script defer src="kitchen_studio_wash.js"></script>
+  <script defer src="kitchen_studio_lid.js"></script>
+  <script defer src="kitchen_studio_stir.js"></script>
+  <script defer src="kitchen_studio_stir_contact.js"></script>
+  <script defer src="kitchen_studio_measure_view.js"></script>
+  <script defer src="kitchen_studio_pan_view.js"></script>
+  <script defer src="kitchen_studio_board_view.js"></script>
+  <script defer src="kitchen_studio_container_view.js"></script>
+  <script defer src="kitchen_studio_probe_view.js"></script>
+  <script defer src="kitchen_studio_oven_view.js"></script>
   <script defer src="kitchen_studio_touch.js"></script>
+  <script defer src="kitchen_studio_keyboard.js"></script>
+  <script defer src="kitchen_studio_feedback.js"></script>
+  <script defer src="kitchen_studio_rub_guide.js"></script>
+  <script defer src="kitchen_studio_discovery.js"></script>
+  <script defer src="kitchen_studio_drop_targets.js"></script>
   <script defer src="kitchen_studio.js"></script>
 </head>
 <body>
@@ -42,12 +65,136 @@
           <div class="scene-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h2 id="kitchenHeading" tabindex="-1">The practice kitchen</h2></div><button id="viewToggle" type="button" aria-pressed="false">Use text view</button></div>
           <div id="replayBanner" class="replay-banner" hidden><span>REPLAY · <strong id="replaySceneStep"></strong></span><div class="replay-scene-controls"><button id="replayScenePrevious" type="button" aria-label="Previous replay action">Previous</button><button id="replaySceneNext" type="button" aria-label="Next replay action">Next</button><button id="returnLatest" type="button">Return to latest</button></div></div><div class="scene-viewport"><div id="stationLens" class="station-lens" aria-hidden="true"><span id="lensTitle"></span><strong id="lensValue"></strong><span id="lensDetail"></span></div>
           <div id="scene" role="img" aria-label="Interactive 3D kitchen with sink, cutting board, hob, oven, measuring jug, and refrigerator. Equivalent controls follow below."></div>
-          <div id="studioPlacementHint" class="studio-placement-hint" hidden aria-hidden="true"><strong id="studioPlacementTitle"></strong><span id="studioPlacementDetail"></span></div>
+          <div id="studioPlacementHint" class="studio-placement-hint" hidden aria-hidden="true"><strong id="studioPlacementTitle"></strong><span id="studioPlacementDetail"></span><span id="studioDialScale" class="studio-dial-scale" hidden><span>Off</span><span>Low</span><span>Medium</span><span>High</span></span></div>
+          <div id="studioKeyboardPad" class="studio-keyboard-pad" hidden tabindex="-1" role="group" aria-label="Move the selected kitchen tool" aria-describedby="studioKeyboardHelp"><span id="studioKeyboardCursor" class="studio-keyboard-cursor" aria-hidden="true"></span><span id="studioKeyboardLabel" class="studio-keyboard-label" aria-hidden="true"></span></div>
+          <div id="studioDiscovery" class="studio-discovery" hidden aria-hidden="true">
+            <svg id="studioDiscoveryLeader" class="studio-discovery-leader" aria-hidden="true"><line id="studioDiscoveryLine"></line><circle id="studioDiscoveryDot" r="4"></circle></svg>
+            <div id="studioDiscoveryCard" class="studio-discovery-card"><span id="studioDiscoveryBadge"></span><strong id="studioDiscoveryTitle"></strong><p id="studioDiscoveryHint"></p><small>Esc hides this card</small></div>
+          </div>
+          <div id="studioDropTargets" class="studio-drop-targets" hidden aria-hidden="true"><svg id="studioDropLeaders" class="studio-drop-leaders" aria-hidden="true"></svg></div>
+          <div id="studioCarryNotice" class="studio-carry-notice" hidden aria-hidden="true"><strong id="studioCarryName"></strong><span id="studioCarryInstruction"></span></div>
+          <div id="studioProbeDepthGuide" class="studio-probe-depth-guide" hidden aria-hidden="true"><span>Surface</span><span>Centre</span></div>
+          <div id="studioCutGuide" class="studio-cut-guide" hidden aria-hidden="true"><span>Lift back ↑</span><span>Down ↓</span><i></i></div>
+          <div id="studioRubGuide" class="studio-rub-guide" hidden aria-hidden="true">
+            <strong id="studioRubTitle"></strong><span id="studioRubCount" class="studio-rub-count"></span>
+            <div id="studioRubPasses" class="studio-rub-passes"><span>1</span><span>2</span><span>3</span></div>
+            <span id="studioRubDirection" class="studio-rub-direction"></span>
+            <div id="studioRubTrack" class="studio-rub-track"><span id="studioRubArrow"></span><i id="studioRubDot"></i></div>
+          </div>
+          <div id="studioPlatingGuide" class="studio-pour-guide" hidden aria-hidden="true"><span>Level ↑</span><span>Tip ↓</span></div>
+          <div id="studioPourGuide" class="studio-pour-guide" hidden aria-hidden="true"><span>Upright ↑</span><span>Tip ↓</span></div>
           <div id="fallback" hidden><h3>Your kitchen, in words</h3><p>The sink and prep board are on the left. The hob and oven are in the center. The measuring jug and refrigerator are on the right. Every station and action is available in the controls below.</p></div>
           </div>
           <section id="studioTouch" class="studio-touch" aria-label="Hands-on kitchen controls" hidden>
             <div class="studio-touch-heading"><strong>Try it with your hands</strong><button id="studioInteractionMode" type="button" aria-pressed="true">Hands on</button></div>
+            <div id="studioCarryControls" class="studio-carry-controls"><button id="studioCarryMode" type="button" aria-pressed="false" aria-describedby="studioCarryHelp">Tap to place: off</button><button id="studioCarryCancel" type="button" hidden disabled>Cancel carried tool</button></div>
+            <p id="studioCarryHelp" hidden>Tap a carry tool to pick it up, then tap its destination to place it. Dragging also works. Other tools use their shown gestures. Escape or Cancel carried tool cancels the preview.</p>
+            <details id="studioKeyboard" class="studio-keyboard">
+              <summary>Use the 3D tools with keyboard</summary>
+              <p id="studioKeyboardHelp">Choose a tool and pick it up. Arrow keys move it; Shift moves farther. For smaller steps, select Fine movement before pickup or press F while holding a tool. T aims at the next available target. Enter or Space releases; Escape cancels. Tab leaves the interaction.</p>
+              <label for="studioKeyboardTool">Kitchen tool <select id="studioKeyboardTool"></select></label>
+              <label class="studio-keyboard-fine"><input id="studioKeyboardFine" type="checkbox"> Fine movement · smaller arrow steps</label>
+              <div class="studio-keyboard-buttons"><button id="studioKeyboardGrab" type="button">Pick up selected tool</button><button id="studioKeyboardCancel" type="button" disabled>Cancel keyboard movement</button></div>
+              <p id="studioKeyboardStatus" role="status" aria-live="polite" aria-atomic="true">Choose a tool to begin.</p>
+            </details>
+            <details id="studioFeedback" class="studio-feedback">
+              <summary>Tool feedback (optional)</summary>
+              <p>Gentle cues mark picking up a tool, reaching a release position, and putting it down. The burner dial clicks as its displayed setting changes. Choose sounds, touch pulses where supported, or both.</p>
+              <div class="studio-feedback-options"><label><input id="studioToolSounds" type="checkbox"> Tool sounds</label><label><input id="studioTouchPulses" type="checkbox"> Touch pulses</label></div>
+              <button id="studioFeedbackTry" type="button" disabled>Try feedback</button>
+              <p id="studioFeedbackStatus" role="status" aria-live="polite" aria-atomic="true">Tool sounds off. Touch pulses off.</p>
+            </details>
             <div id="studioToolFinder" class="studio-tool-finder" role="group" aria-label="Find a tool in the 3D view"></div>
+            <section id="studioWashControls" class="studio-wash-controls" aria-label="Handwashing rehearsal" hidden>
+              <strong>Rehearse a full handwash</strong>
+              <p>Rub the model hands side to side three times, then move them under the tap and release. These short gestures stand in for the full washing and drying routine.</p>
+              <p>In a real kitchen, scrub with soap for at least 20 seconds, then rinse and dry well. <a href="https://www.cdc.gov/clean-hands/about/" target="_blank" rel="noopener">Handwashing guidance · CDC</a></p>
+              <button id="studioWashStep" type="button">Model the full soap-and-water wash</button>
+            </section>
+            <section id="studioPourControls" class="studio-pour-controls" aria-label="Carton pouring technique" hidden>
+              <div role="group" aria-label="Choose a pouring technique"><button id="studioPortionPour" type="button" aria-pressed="true">150 mL portion</button><button id="studioControlledPour" type="button" aria-pressed="false">Controlled 50 mL pour</button></div>
+              <p id="studioPourHelp" hidden>Move the carton to the jug opening. Follow the guide down to tip, return upright, then release. The stream thickens as you tip and tapers as you return upright. Each completed pour adds up to 50 mL.</p>
+              <button id="studioPourStep" type="button" hidden>Pour one 50 mL measure</button>
+            </section>
+            <section id="studioProbeControls" class="studio-probe-controls" aria-label="Inspect thermometer placement" hidden>
+              <div><button id="studioProbeCutaway" type="button" aria-pressed="false" aria-describedby="studioProbeCutawayHelp">See probe placement</button><button id="studioProbeRead" type="button">Take a fresh reading</button></div>
+              <p id="studioProbeCutawayHelp" hidden>The orange dot marks the sensing tip. This cutaway illustrates placement; take a fresh reading after placing the probe.</p>
+              <p id="studioProbeReadout" role="status" aria-live="polite" aria-atomic="true"></p>
+            </section>
+            <section id="studioProbeView" class="studio-probe-view studio-pan-view" aria-label="Thermometer insertion workspace" hidden>
+              <button id="studioProbeOpen" type="button" aria-expanded="false" aria-controls="studioProbePanel">Work closer at the probe</button>
+              <div id="studioProbePanel" hidden>
+                <p>Drag the display down to insert the sensing tip, or up to withdraw it. Release at the surface or centre marker to place it, then take a fresh reading. Depth is illustrated.</p>
+                <label for="studioProbeDepth">Illustrated insertion depth <output id="studioProbeDepthLabel" for="studioProbeDepth">Surface</output></label>
+                <input id="studioProbeDepth" type="range" min="0" max="100" value="0" step="1" aria-describedby="studioProbeDepthReadout">
+                <p id="studioProbeDepthReadout" role="status" aria-live="polite" aria-atomic="true"></p>
+                <button id="studioProbePlace" type="button">Place sensing tip here</button>
+                <button id="studioProbeReset" type="button">Reset depth preview</button>
+                <button id="studioProbeClose" type="button">Return to previous view</button>
+              </div>
+            </section>
+            <section id="studioOvenView" class="studio-oven-view studio-pan-view" aria-label="Explore the oven" hidden>
+              <div class="studio-oven-buttons"><button id="studioOvenToggle" type="button" aria-expanded="false">Open oven</button><button id="studioOvenInspect" type="button" aria-expanded="false" aria-controls="studioOvenPanel">Work closer at the oven</button></div>
+              <p id="studioOvenReadout" role="status" aria-live="polite" aria-atomic="true"></p>
+              <div id="studioOvenPanel" hidden>
+                <p>Pull the handle down to open the door, or push up to close it. Explore the shelf, then return to the kitchen to move the chicken. Door exploration is separate from the simulated cooking step.</p>
+                <button id="studioOvenClose" type="button">Return to previous view</button>
+              </div>
+            </section>
+            <section id="studioBoardView" class="studio-board-view studio-pan-view" aria-label="Closer cutting workspace" hidden>
+              <button id="studioBoardOpen" type="button" aria-expanded="false" aria-controls="studioBoardPanel">Work closer at the board</button>
+              <div id="studioBoardPanel" hidden>
+                <p>Slide the mat under the board, curl the guide hand, then try a knife stroke. The movement guide shows when to lift back and release. The blade and handle rock together during the stroke.</p>
+                <label for="studioBoardAngle">Viewing angle <output id="studioBoardAngleLabel" for="studioBoardAngle">Raised view</output></label>
+                <input id="studioBoardAngle" type="range" min="0" max="100" value="65" step="1" aria-describedby="studioBoardReadout">
+                <p id="studioBoardReadout" role="status" aria-live="polite" aria-atomic="true"></p>
+                <button id="studioBoardClose" type="button">Return to previous view</button>
+              </div>
+            </section>
+            <section id="studioPanView" class="studio-pan-view" aria-label="Pan and burner workspace" hidden>
+              <button id="studioPanOpen" type="button" aria-expanded="false" aria-controls="studioPanPanel">Work closer at the pan</button>
+              <button id="studioDialOpen" type="button" aria-expanded="false" aria-controls="studioPanPanel">Work closer at the heat dial</button>
+              <div id="studioPanPanel" hidden>
+                <div id="studioPanPerspective">
+                <p>Use the tools here, or change the angle to inspect the pan.</p>
+                <label for="studioPanAngle">Viewing angle <output id="studioPanAngleLabel" for="studioPanAngle">Raised view</output></label>
+                <input id="studioPanAngle" type="range" min="0" max="100" value="65" step="1" aria-describedby="studioPanReadout">
+                </div>
+                <p id="studioDialHelp" hidden>Turn around the rim to preview a heat setting, then release to apply it. You can also drag the centre up for more heat or down toward Off. Changing the heat does not advance simulated cooking time.</p>
+                <p id="studioPanReadout" role="status" aria-live="polite" aria-atomic="true"></p>
+                <button id="studioDialReturn" type="button" hidden>See the whole pan</button>
+                <button id="studioPanClose" type="button">Return to previous view</button>
+              </div>
+            </section>
+            <section id="studioPlatingControls" class="studio-plating-controls studio-pour-controls" aria-label="Pan plating technique" hidden>
+              <div role="group" aria-label="Choose a plating technique"><button id="studioQuickPlate" type="button" aria-pressed="true">Quick plate transfer</button><button id="studioControlledPlate" type="button" aria-pressed="false">Tip onto the plate</button></div>
+              <p id="studioPlatingHelp" hidden>Carry the pan over the serving plate. Follow the guide down to tip, return level, then release. The food movement is a preview until you release.</p>
+              <button id="studioPlatingStep" type="button" hidden>Plate and switch off burner</button>
+            </section>
+            <section id="studioStirControls" class="studio-stir-controls" aria-label="Spatula technique" hidden>
+              <div role="group" aria-label="Choose how to use the spatula"><button id="studioArrangeMode" type="button" aria-pressed="true">Arrange mushrooms</button><button id="studioStirMode" type="button" aria-pressed="false">Stir and observe</button></div>
+              <p id="studioStirHelp" hidden>Move the spatula to the start ring, follow one circle, then release. Nearby mushrooms shift with the blade. Each completed stir represents 30 simulated seconds.</p>
+              <button id="studioStirStep" type="button" hidden>Stir one step · 30 simulated seconds</button>
+            </section>
+            <section id="studioContainerView" class="studio-container-view studio-pan-view" aria-label="Inspect leftovers containers" hidden>
+              <button id="studioContainerInspect" type="button" aria-expanded="false" aria-controls="studioContainerPanel">Look inside containers</button>
+              <div id="studioContainerPanel" hidden>
+                <p>Tap a container to look inside, or drag up to lift and down to close. The food depth is illustrated.</p>
+                <button id="studioLidToggle" type="button" aria-pressed="false">Lift lids</button>
+                <p id="studioContainerReadout" role="status" aria-live="polite" aria-atomic="true"></p>
+                <button id="studioContainerClose" type="button">Return to moving containers</button>
+              </div>
+            </section>
+            <div id="studioFridgeControls" class="studio-fridge-controls" hidden><button id="studioFridgeToggle" type="button" aria-expanded="false">Open refrigerator</button><span>Explore the door and shelves.</span></div>
+            <section id="studioMeasureView" class="studio-measure-view" aria-label="Inspect the measuring jug" hidden>
+              <button id="studioMeasureOpen" type="button" aria-expanded="false" aria-controls="studioMeasurePanel">Inspect jug at eye level</button>
+              <div id="studioMeasurePanel" hidden>
+                <label for="studioMeasureHeight">Lower your viewpoint <output id="studioMeasureAngle" for="studioMeasureHeight">Above the liquid</output></label>
+                <input id="studioMeasureHeight" type="range" min="0" max="100" value="100" step="1" aria-describedby="studioMeasureReadout">
+                <p id="studioMeasureReadout" role="status" aria-live="polite"></p>
+                <div class="studio-measure-buttons"><button id="studioMeasureAlign" type="button">Lower to liquid level</button><button id="studioMeasureCheck" type="button">Check this amount</button><button id="studioMeasureClose" type="button">Return to kitchen view</button></div>
+              </div>
+            </section>
             <p id="studioTouchHint">Tap the soap or the clean board. Drag empty space to look around.</p>
             <label id="studioCutChoice" hidden>Knife cut <select id="studioCutSize"><option value="dice">Small dice</option><option value="largeDice">Large dice</option></select></label>
             <progress id="studioTouchProgress" max="1" value="0" aria-label="Current gesture progress" hidden></progress>

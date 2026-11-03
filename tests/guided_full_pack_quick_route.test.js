@@ -67,6 +67,20 @@ function mountBanner(props) {
 }
 
 describe('quickest route from the source step', () => {
+  it('continues to the next resource after an exact source check, without a phase checkpoint or a skipped step', () => {
+    const handleGuidedJump = vi.fn(), markGuidedStepDone = vi.fn();
+    const phaseSteps = STEPS.map(item => ({ ...item, phase: item.id === 'source-input' ? 'plan' : 'understand' }));
+    const b = mountBanner(baseProps({ GUIDED_STEPS: phaseSteps, allGuidedSteps: phaseSteps, inputText: SOURCE,
+      guidedPhases: [{ id: 'plan', label: 'Plan' }, { id: 'understand', label: 'Understand' }],
+      history: [{ id: 'a1', type: 'analysis', data: { originalText: SOURCE } }], handleGuidedJump, markGuidedStepDone }));
+    expect(b.host.querySelector('.allo-guided-phase-checkpoint')).toBeNull();
+    const next = b.host.querySelector('[data-help-key="guided_next_step"]');
+    expect(next.textContent).toContain('Glossary');
+    act(() => next.click());
+    expect(markGuidedStepDone).toHaveBeenCalledWith('analysis');
+    expect(handleGuidedJump).toHaveBeenCalledWith(2, []);
+    b.cleanup();
+  });
   it('waits until the source text is in', () => {
     const b = mountBanner(baseProps({ inputText: '' }));
     expect(b.route()).toBeNull();

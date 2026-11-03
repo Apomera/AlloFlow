@@ -46,6 +46,7 @@ function seed(overrides = {}) {
       showTrail: true,
       showEnergy: true,
       estimateChallenge: false,
+      _predictDefaultV: 2,
       estimateValue: '',
       experiments: [],
       stats: { runs: 0, successful: 0, withinTen: 0 },

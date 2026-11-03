@@ -47,8 +47,8 @@ describe.each(lanes)('multilingual practice controls (%s)', (_, source) => {
     check(win.document, '.awp-preview-language-name');
     button(win.document, 'Present').click(); await vi.waitFor(() => expect(win.document.querySelector('.awp-player')).toBeTruthy());
     button(win.document, 'Show meaning').click();
-    check(win.document.querySelector('.awp-card'), '.awp-language-name'); check(win.document.querySelector('.awp-sr'), '.awp-language-name');
-    const doc = offline(win, pack, 'French').document; button(doc, 'Show meaning').click(); check(doc.querySelector('.awp-card'), '.awp-language-name'); check(doc.querySelector('.awp-sr'), '.awp-language-name');
+    check(win.document.querySelector('.awp-card'), '.awp-language-name'); check(win.document.querySelector('.awp-player > p.awp-sr[aria-live=polite]'), '.awp-language-name');
+    const doc = offline(win, pack, 'French').document; button(doc, 'Show meaning').click(); check(doc.querySelector('.awp-card'), '.awp-language-name'); check(doc.querySelector('.awp-player > p.awp-sr[aria-live=polite]'), '.awp-language-name');
     expect([...doc.querySelectorAll('.awp-card .awp-translation')].map(node => [node.lang, node.textContent])).toEqual([['ar-Latn', 'waraqa'], ['zh-Hant', '葉'], ['und', 'local word']]);
     expect(pack.words[0].translations.map(item => item.language)).toEqual(names);
   });
@@ -66,7 +66,7 @@ describe.each(lanes)('multilingual practice controls (%s)', (_, source) => {
     else { win.AlloModules.WordPractice.open(pack); button(win.document, 'Present').click(); await vi.waitFor(() => expect(win.document.querySelector('.awp-player')).toBeTruthy()); doc = win.document; }
     const next = button(doc, 'Next'), previous = button(doc, 'Previous'), stage = doc.querySelector('.awp-stage');
     next.focus(); next.click(); expect(doc.activeElement).toBe(next);
-    next.click(); expect(next.disabled).toBe(true); expect(doc.activeElement).toBe(stage);
+    next.click(); expect(next.disabled).toBe(false); expect(next.textContent).toBe('Finish round'); expect(doc.activeElement).toBe(next);
     previous.focus(); previous.click(); expect(doc.activeElement).toBe(previous);
     previous.click(); expect(previous.disabled).toBe(true); expect(doc.activeElement).toBe(stage);
     const reveal = button(doc, 'Show meaning'); reveal.focus(); reveal.click(); expect(reveal.disabled).toBe(true); expect(doc.activeElement).toBe(stage);

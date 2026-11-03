@@ -138,6 +138,36 @@
 // r-controlled vowel units). null denotes an unresolved pronunciation variant.
 function createWordSoundsCore(options = {}) {
   const VERSION = 1;
+  // BEGIN SHARED PREPARED SENTENCE PARTS
+  // The setup board stores trimmed fragments. Locate their edges in the
+  // authored sentence and replace only the answer, never its separators.
+  function preparedSentenceParts(sentence, before, target, after) {
+    if (![sentence, before, target, after].every(value => typeof value === 'string') || !target.trim()) return null;
+    const source = sentence.trim(), left = before.trim(), right = after.trim();
+    const fold = value => value.normalize('NFD').toLowerCase().replace(/\s+/gu, ' ');
+    let leftEnd = left.length, rightStart = source.length - right.length;
+    if (!source.startsWith(left) || !source.endsWith(right)) {
+      // Legacy fragments can differ in case, whitespace or Unicode form.
+      // Map the two comparison offsets back to actual source boundaries.
+      const leftUnits = fold(left).length, rightUnits = fold(source).length - fold(right).length;
+      leftEnd = leftUnits === 0 ? 0 : -1;
+      rightStart = rightUnits === 0 ? 0 : -1;
+      let units = 0;
+      for (const part of source.matchAll(/\s+|\S/gu)) {
+        units += fold(part[0]).length;
+        const end = part.index + part[0].length;
+        if (units === leftUnits) leftEnd = end;
+        if (units === rightUnits) rightStart = end;
+      }
+      if (leftEnd < 0 || rightStart < 0 || fold(source.slice(0, leftEnd)) !== fold(left) || fold(source.slice(rightStart)) !== fold(right)) return null;
+    }
+    if (rightStart < leftEnd) return null;
+    const gap = source.slice(leftEnd, rightStart), answer = gap.trim();
+    if (fold(answer) !== fold(target.trim())) return null;
+    const start = sentence.indexOf(source) + leftEnd + gap.indexOf(answer);
+    return { before: sentence.slice(0, start), answer, after: sentence.slice(start + answer.length) };
+  }
+  // END SHARED PREPARED SENTENCE PARTS
   // Shared, lazy pronunciation data: keep the full dictionary out of each of
   // the three embedded core copies and out of lessons saved for students.
   const root = typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : {};
@@ -1562,7 +1592,7 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
     return next;
   };
-  return {loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -6014,6 +6044,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       ".ws-present-answer{font-size:clamp(2rem,calc((3vw + 2vh)*var(--ws-ps,1)),4.5rem);line-height:1.1}",
       ".ws-present-model{font-size:clamp(1rem,calc((1vw + 1vh)*var(--ws-ps,1)),1.75rem);max-width:56rem}",
       ".ws-present-wide{max-width:64rem}",
+      ".ws-present-sentence{white-space:pre-wrap;overflow-wrap:anywhere}",
       ".ws-present-box{min-width:clamp(3rem,calc(6vw*var(--ws-ps,1)),6rem);min-height:clamp(3rem,calc(6vw*var(--ws-ps,1)),6rem)}",
       ".ws-present-pic{width:clamp(4rem,calc(10vw*var(--ws-ps,1)),9rem);height:clamp(4rem,calc(10vw*var(--ws-ps,1)),9rem)}",
       ".ws-present-answer-pic{max-height:min(calc(20vh*var(--ws-pv,1)*var(--ws-pa,1)),14rem)}",
@@ -6066,6 +6097,28 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     const wsPresentSound = (p) => String(typeof p === "string" ? p : (p && (p.phoneme || p.sound || p.ipa || p.grapheme)) || "").trim();
     const wsPresentList = (values) => (Array.isArray(values) ? values : []).map((v) => String(v == null ? "" : v).trim()).filter(Boolean);
     const wsPresentHas = (values, value) => values.some((v) => v.toLowerCase() === String(value || "").trim().toLowerCase());
+    const wsPresentSentenceParts = (sentence, board, word) => {
+      if (board.before != null || board.after != null) {
+        const part = WS_CORE.preparedSentenceParts(sentence, board.before, word, board.after);
+        if (part || board.before !== "" || board.after !== "") return part;
+      }
+      // Some early boards have no fragments. Recover only a unique whole target.
+      const literal = word.replace(/[.*+?^\${}()|[\]\\]/g, "\\$&");
+      const segments = typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+        ? new Intl.Segmenter(undefined, { granularity: "word" }).segment(sentence) : null;
+      let result = null;
+      for (const match of sentence.matchAll(new RegExp(literal, "giu"))) {
+        const start = match.index, end = start + match[0].length;
+        const before = sentence.slice(0, start), after = sentence.slice(end);
+        if (segments) {
+          const last = segments.containing(end - 1);
+          if (segments.containing(start).index !== start || last.index + last.segment.length !== end) continue;
+        } else if (/[\p{L}\p{M}\p{N}_'’]$/u.test(before) || /^[\p{L}\p{M}\p{N}_'’]/u.test(after)) continue;
+        if (result) return null;
+        result = WS_CORE.preparedSentenceParts(sentence, before, word, after);
+      }
+      return result;
+    };
     const wsPresentShuffle = (values, seedText) => {
       let seed = [...String(seedText || "")].reduce((n, c) => (Math.imul(n, 31) + c.charCodeAt(0)) >>> 0, 7);
       return values.map((v) => { seed = (Math.imul(seed, 1103515245) + 12345) >>> 0; return [seed, v]; })
@@ -6208,25 +6261,32 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           }
           case "read_sentence":
           case "read_passage": {
-            const text = board ? String((activity === "read_sentence" ? board.sentence : board.story) || "").trim() : "";
-            const options = board ? wsPresentList(board.options) : [];
-            if (!text || options.length < 2 || !wsPresentHas(options, word)) break;
+            const text = activity === "read_sentence" ? board?.sentence : String(board?.story || "").trim();
+            let options = board ? wsPresentList(board.options) : [];
+            if (typeof text !== "string" || !text.trim() || options.length < 2) break;
             let parts;
+            let correctChoice = word;
             if (activity === "read_passage") {
-              if (!Array.isArray(board.parts) || !board.parts.some((p) => p && !p.text)) break;
+              if (!wsPresentHas(options, word) || !Array.isArray(board.parts) || !board.parts.some((p) => p && !p.text)) break;
               parts = board.parts.map((p) => (p && p.text ? { text: String(p.text) } : { before: String((p && p.before) || ""), after: String((p && p.after) || "") }));
             } else {
-              let before = String(board.before || ""), after = String(board.after || "");
-              const at = text.toLowerCase().indexOf(lower);
-              if (!before && !after && at >= 0) { before = text.slice(0, at); after = text.slice(at + word.length); }
-              if (!before && !after) break;
-              parts = [{ before, after }];
+              const distinct = new Map();
+              for (const option of options) {
+                const identity = WS_CORE.packAudioKey(option.normalize("NFC"));
+                if (!distinct.has(identity)) distinct.set(identity, option);
+              }
+              correctChoice = distinct.get(WS_CORE.packAudioKey(word.normalize("NFC")));
+              if (distinct.size < 2 || !correctChoice) break;
+              options = [...distinct.values()];
+              const part = wsPresentSentenceParts(text, board, word);
+              if (!part) break;
+              parts = [part];
             }
             item = {
               prompt: activity === "read_sentence"
                 ? { key: "word_sounds.read_sentence_prompt", english: "Read the sentence. Which word finishes it?", params: {} }
                 : { key: "word_sounds.read_passage_prompt", english: "Read the story. Which word finishes it?", params: {} },
-              display: { kind: "text", parts }, audio: [], choices: options.map((o) => choice(o, false)), correct: [word],
+              display: { kind: "text", parts }, audio: [], choices: options.map((o) => choice(o, false)), correct: [correctChoice],
               answer: { label: word, audio: [{ text }], image: image(lower) },
             };
             break;
@@ -6453,13 +6513,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           return h("p", { className: "ws-present-word font-black tracking-wide text-slate-900", ...content }, display.text);
         }
         if (display.kind === "text") {
-          const blank = revealed
-            ? h("span", { className: "rounded-lg bg-emerald-100 px-2 text-emerald-900 underline decoration-4" }, item.word)
+          const isSentence = item.activity === "read_sentence";
+          const blank = (part) => revealed
+            ? h("span", { className: "rounded-lg bg-emerald-100 text-emerald-900 underline decoration-4" + (isSentence ? "" : " px-2") }, part.answer || item.word)
             : h("span", { "aria-label": tr("word_sounds.present_blank", "blank") }, "______");
-          return h("p", { className: "ws-present-big ws-present-wide font-semibold leading-snug text-slate-900", ...content },
+          return h("p", { className: "ws-present-big ws-present-wide font-semibold leading-snug text-slate-900" + (isSentence ? " ws-present-sentence" : ""), ...content },
             display.parts.map((part, i) => h(React.Fragment, { key: i },
               i > 0 ? " " : null,
-              part.text != null ? part.text : h(React.Fragment, null, part.before, blank, part.after))));
+              part.text != null ? part.text : h(React.Fragment, null, part.before, blank(part), part.after))));
         }
         return null;
       };
@@ -6614,7 +6675,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       ".print-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}",
       ".print-bar button{font:600 16px system-ui,sans-serif;padding:10px 18px;border:2px solid #000;border-radius:8px;background:#fff;color:#000;cursor:pointer}",
       "h1{font-size:30px;margin:0 0 8px}h2{font-size:22px;margin:20px 0 8px}p{margin:6px 0}",
-      ".ws-print-line{display:inline-block;min-width:3.5in;height:1.2em;border-bottom:2px solid #000;vertical-align:bottom}",
+      ".ws-print-line{display:inline-block;width:3.5in;max-width:100%;height:1.2em;border-bottom:2px solid #000;vertical-align:bottom}",
       ".ws-print-page{display:grid;grid-template-columns:1fr 1fr;border-top:2px dashed #000;border-inline-start:2px dashed #000;break-after:page;page-break-after:always}",
       ".ws-print-page:last-child{break-after:auto;page-break-after:auto}",
       ".ws-print-card{height:3.15in;box-sizing:border-box;border-bottom:2px dashed #000;border-inline-end:2px dashed #000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px;overflow:hidden;break-inside:avoid;page-break-inside:avoid}",
@@ -6654,12 +6715,18 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const scale = Math.max(10, Math.min(48, Number(settings && settings.baseFontSize) || 16)) / 16;
       const spacing = Math.max(0, Number(settings && settings.letterSpacing) || 0);
       const family = (settings && settings.fontFamily) || "system-ui,-apple-system,'Segoe UI',Arial,sans-serif";
+      const italic = ["font-andika-italic", "font-andika-bold-italic"].includes(settings && settings.fontClass);
       let ctx = null;
       try { ctx = document.createElement("canvas").getContext("2d"); } catch (_) { ctx = null; }
       const ems = (word) => {
         const letters = Math.max(1, [...word].length);
         let measured = 0;
-        try { if (ctx && typeof ctx.measureText === "function") { ctx.font = "700 100px " + family; measured = ctx.measureText(word).width / 100; } } catch (_) { measured = 0; }
+        try { if (ctx && typeof ctx.measureText === "function") {
+          ctx.font = (italic ? "italic " : "") + "700 100px " + family;
+          const metrics = ctx.measureText(word);
+          const inkWidth = Number(metrics.actualBoundingBoxLeft) + Number(metrics.actualBoundingBoxRight);
+          measured = Math.max(Number(metrics.width) || 0, Number.isFinite(inkWidth) ? inkWidth : 0) / 100;
+        } } catch (_) { measured = 0; }
         return Math.max(measured || 0, letters * 0.5) * 1.05 + letters * spacing;
       };
       return (word, px, width, height) => Math.max(12, Math.floor(Math.min(px * scale, width / ems(word), height / 1.1)));
@@ -6670,18 +6737,29 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     // dir="auto" and no lang. Without the helpers, RTL codes are listed here.
     const wsPrintLangAttrs = (language) => {
       const raw = String(language || "").trim();
-      let code = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(raw) ? raw : "";
-      let rtl = /^(ar|arc|he|iw|fa|prs|ur|ps|ku|ckb|sd|ug|yi|dv|syr|nqo)(?:-|$)/i.test(code);
+      const canonical = (value) => {
+        const tag = value.replace(/_/g, "-");
+        if (!/^[a-z]{2,3}(?:-[a-z0-9]{1,8})*$/i.test(tag)) return "";
+        try { return typeof Intl.getCanonicalLocales === "function" ? Intl.getCanonicalLocales(tag)[0] || "" : tag; }
+        catch (_) { return ""; }
+      };
+      let code = canonical(raw), extras = null;
       try {
-        const extras = window.AlloModules && window.AlloModules.ModuleScopeExtras;
+        extras = window.AlloModules && window.AlloModules.ModuleScopeExtras;
         if (!code && raw && extras && typeof extras.getSpeechLangCode === "function") {
-          const mapped = String(extras.getSpeechLangCode(raw) || "");
-          code = mapped === "en-US" && !/^english\b/i.test(raw) ? "" : mapped;
+          const mapped = canonical(String(extras.getSpeechLangCode(raw) || ""));
+          code = /^en(?:-|$)/i.test(mapped) && !/^english\b/i.test(raw) ? "" : mapped;
         }
-        if (extras && typeof extras.isRtlLang === "function") rtl = !!extras.isRtlLang(code || raw);
-      } catch (_) { /* keep the list's answer */ }
-      const lang = /^[a-z]{2,3}(?:-|$)/i.test(code) ? code : "";
-      return ' dir="' + (rtl ? "rtl" : lang ? "ltr" : "auto") + '"' + (lang ? ' lang="' + wsPrintEsc(lang) + '"' : "");
+      } catch (_) {}
+      const parts = code.split("-"), subtags = parts.slice(1);
+      const extension = subtags.findIndex((part) => part.length === 1);
+      const core = extension < 0 ? subtags : subtags.slice(0, extension);
+      const script = core.find((part) => /^[a-z]{4}$/i.test(part)) || "";
+      let rtl = /^(ar|arc|he|iw|fa|prs|ur|ps|ku|ckb|sd|ug|yi|dv|syr|nqo)$/i.test(parts[0]);
+      try { if (extras && typeof extras.isRtlLang === "function") rtl = rtl || !!extras.isRtlLang(code || raw); } catch (_) {}
+      if (script) rtl = /^(Arab|Hebr|Thaa|Nkoo|Adlm|Rohg|Syrc|Samr|Mand)$/i.test(script);
+      const dir = !code || (!script && /^(und|mul|zxx)$/i.test(parts[0])) ? "auto" : rtl ? "rtl" : "ltr";
+      return ' dir="' + dir + '"' + (code ? ' lang="' + wsPrintEsc(code) + '"' : "");
     };
     const wsPrintImage = (entry, library, key) => {
       const raw = [entry.image, library && library[key]].find((v) => typeof v === "string" && v && !v.startsWith("ref::"));

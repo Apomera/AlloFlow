@@ -244,10 +244,11 @@ function nativeManualClaw(dn, side, folded) {
 
 function keratinRingCenters(mesh) {
   const position = mesh.geometry.attributes.position;
-  return Array.from({ length: 12 }, (_, ring) => {
+  const sides = mesh.geometry.index.getX(1), rings = (position.count - 2) / sides;
+  return Array.from({ length: rings }, (_, ring) => {
     const center = v(0, 0, 0);
-    for (let side = 0; side < 12; side++) center.add(v(0, 0, 0).fromBufferAttribute(position, ring * 12 + side));
-    return mesh.localToWorld(center.multiplyScalar(1 / 12));
+    for (let side = 0; side < sides; side++) center.add(v(0, 0, 0).fromBufferAttribute(position, ring * sides + side));
+    return mesh.localToWorld(center.multiplyScalar(1 / sides));
   });
 }
 
@@ -278,7 +279,7 @@ describe('native manual claw curvature and core integration', () => {
         const points = built.core.geometry.attributes.position; let checked = 0;
         // Skip the shared basal cap plane. Every other sampled bony vertex
         // needs a sheath intersection in both directions across the thin axis.
-        for (let index = 12; index < points.count - 1; index += 3) {
+        for (let index = built.core.geometry.index.getX(1); index < points.count - 1; index += 3) {
           const point = built.core.localToWorld(v(0, 0, 0).fromBufferAttribute(points, index));
           for (const sign of [-1, 1]) {
             const hits = new THREE.Raycaster(point, v(0, sign, 0)).intersectObject(built.sheath, false);

@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { React, ReactDOMServer, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { React, ReactDOMClient, ReactDOMServer, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+const require = createRequire(import.meta.url);
+const { flushSync } = require(resolve('desktop/web-app/node_modules/react-dom'));
 
 const CASES = [
   ['deep-cooling', 'granite', ['grains', 'minerals']],
@@ -135,7 +140,7 @@ describe('field case investigations', () => {
     expect(app.store.rocks.fieldCases.records['rounded-river'].reasoning).toBe('The larger pieces have rounded edges.');
     app.store.rocks.mode = 'rocks';
     app.store.rocks.mode = 'fieldwork';
-    expect(app.find('data-rk-field-observe', 'grains').props.disabled).toBe(true);
+    expect(app.find('data-rk-field-observe', 'grains').props['aria-disabled']).toBe(true);
     expect(app.store.rocks.selectedType).toBe('sedimentary');
   });
 
@@ -223,5 +228,278 @@ describe('field notebook portability', () => {
     expect(document.querySelector('a[download="rocks-minerals-field-notebook.txt"]')).toBeNull();
     vi.runAllTimers();
     expect(revoke).toHaveBeenCalledWith('blob:field-notebook');
+  });
+});
+
+describe('field evidence and fragment measurement', () => {
+  const submit = app => app.find('data-rk-field-fragment-form').props.onSubmit({ preventDefault() {} });
+
+  it.each([
+    ['resistant-ridge', 'quartzite', ['mineral', 'map']],
+    ['resistant-ridge', 'quartzite', ['fracture', 'map']],
+    ['carbonate-contact', 'marble', ['texture', 'contact']],
+    ['rounded-river', 'conglom', ['shape', 'layers']],
+    ['floating-stone', 'pumice', ['walls', 'fragments']],
+  ])('accepts an alternative evidence pair in %s (%j, %j)', (id, answer, evidence) => {
+    const app = session({ activeId: id });
+    app.collect(evidence);
+    app.cite(evidence);
+    app.change('data-rk-field-claim', answer);
+    app.change('data-rk-field-reasoning', 'I compared both lines of evidence with the other candidates.');
+    app.click('data-rk-field-check');
+    expect(app.store.rocks.fieldCases.records[id].feedback).toBe('supported');
+  });
+
+  it('guides an unsupported quartzite claim toward a distinguishing observation', () => {
+    const app = session({ activeId: 'resistant-ridge' });
+    app.collect(['acid', 'map']);
+    app.cite(['acid', 'map']);
+    app.change('data-rk-field-claim', 'quartzite');
+    app.change('data-rk-field-reasoning', 'Acid did not react.');
+    app.click('data-rk-field-check');
+    expect(app.find('data-rk-field-feedback', 'revise-evidence')).toBeTruthy();
+    expect(app.html()).toContain('Several rocks resist erosion');
+    expect(app.html()).toContain('One observation to revisit: Read the mineral examination.');
+    expect(app.html()).not.toContain('data-rk-field-debrief=');
+  });
+
+  it('keeps historical look-alike hints tied to each original claim across cases and exports', () => {
+    const app = session({ activeId: 'deep-cooling' });
+    app.collect(['grains', 'minerals']); app.cite(['grains', 'minerals']);
+    app.change('data-rk-field-claim', 'gabbro');
+    app.change('data-rk-field-reasoning', 'I noticed the crystals.');
+    app.click('data-rk-field-check');
+    expect(app.html()).toContain('Large crystals also fit gabbro.');
+    app.change('data-rk-field-claim', 'rhyolite'); app.click('data-rk-field-check');
+    expect(app.html()).toContain('Rhyolite may contain quartz and feldspar.');
+    expect(app.html()).toContain('Large crystals also fit gabbro.');
+    app.click('data-rk-field-case', 'rounded-river');
+    app.click('data-rk-field-copy');
+    expect(app.find('data-rk-field-notebook-text').props.value).toContain('Large crystals also fit gabbro.');
+    expect(app.find('data-rk-field-notebook-text').props.value).toContain('Rhyolite may contain quartz and feldspar.');
+  });
+
+  it('supplies equivalent ruler observations and withholds the calculated width until comparison', () => {
+    const app = session({ activeId: 'rounded-river' });
+    const panel = app.find('data-rk-field-fragment');
+    const svg = findAll(panel, e => e.type === 'svg')[0];
+    expect(svg.props['aria-label']).toContain('5 mm and 25 mm');
+    expect(svg.props['aria-label']).toContain('no sharp corners');
+    expect(svg.props['aria-label']).not.toContain('20 mm across');
+    expect(app.html()).not.toContain('Reference measurement: 20 mm across');
+    expect(app.find('data-rk-field-fragment-estimate').props.value).toBe('');
+    expect(app.find('data-rk-field-fragment-shape').props.value).toBe('');
+    expect(app.find('data-rk-field-fragment-result').props.role).toBe('status');
+  });
+
+  it('retains a draft and compares width and shape independently while collecting the observations once', () => {
+    const app = session({ activeId: 'rounded-river' });
+    app.change('data-rk-field-fragment-estimate', '19,5');
+    app.change('data-rk-field-fragment-shape', 'angular');
+    app.click('data-rk-field-case', 'resistant-ridge'); app.click('data-rk-field-case', 'rounded-river');
+    expect(app.find('data-rk-field-fragment-estimate').props.value).toBe('19,5');
+    app.collect(['size']);
+    submit(app); submit(app);
+    const row = app.store.rocks.fieldCases.records['rounded-river'];
+    expect(row.observed).toEqual(['size', 'shape']);
+    expect(row.fragmentObservation).toEqual({ estimate: '19,5', shape: 'angular', compared: true });
+    expect(row.cited).toBeUndefined();
+    expect(row.solved).not.toBe(true);
+    expect(app.html()).toContain('Your estimate is within 2 mm');
+    expect(app.html()).toContain('An angular outline would have distinct sharp turns');
+    expect(app.html()).not.toContain('data-rk-field-debrief=');
+    app.click('data-rk-field-copy');
+    expect(app.find('data-rk-field-notebook-text').props.value).toContain('Estimated width in millimeters: 19,5');
+    expect(app.find('data-rk-field-notebook-text').props.value).toContain('Fragment outline: Angular');
+  });
+
+  it('validates the two observation fields before comparison and preserves the original estimate', () => {
+    const app = session({ activeId: 'rounded-river' });
+    app.change('data-rk-field-fragment-estimate', '1001');
+    const focus = vi.fn();
+    app.find('data-rk-field-fragment-form').props.onSubmit({ preventDefault() {}, currentTarget: { elements: { namedItem: () => ({ focus }) } } });
+    expect(focus).toHaveBeenCalled();
+    expect(app.find('data-rk-field-fragment-estimate').props['aria-invalid']).toBe(true);
+    expect(app.find('data-rk-field-fragment-shape').props['aria-invalid']).toBe(true);
+    expect(app.store.rocks.fieldCases.records['rounded-river'].observed).toBeUndefined();
+    app.change('data-rk-field-fragment-estimate', '25'); app.change('data-rk-field-fragment-shape', 'rounded');
+    submit(app);
+    expect(app.html()).toContain('25 mm minus 5 mm gives 20 mm');
+    expect(app.html()).toContain('Your outline description matches');
+    app.change('data-rk-field-fragment-estimate', '20');
+    expect(app.store.rocks.fieldCases.records['rounded-river'].fragmentObservation.estimate).toBe('25');
+  });
+
+  it('keeps keyboard focus on a collected observation button and ignores repeat activation', () => {
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    let store = { rocks: { mode: 'fieldwork', fieldCases: {} } };
+    function App() {
+      const [, force] = React.useState(0);
+      return window.StemLab._registry.rocks.render(makeCtx({ toolData: store, setToolData: (change) => {
+        store = typeof change === 'function' ? change(store) : change;
+        force(i => i + 1);
+      } }));
+    }
+    try {
+      flushSync(() => root.render(React.createElement(App)));
+      const button = host.querySelector('[data-rk-field-observe="grains"]');
+      button.focus(); flushSync(() => button.click()); flushSync(() => button.click());
+      expect(document.activeElement).toBe(button);
+      expect(button.disabled).toBe(false);
+      expect(button.getAttribute('aria-disabled')).toBe('true');
+      expect(host.querySelector('#' + button.getAttribute('aria-describedby')).textContent).toContain('Interlocking crystals');
+      expect(store.rocks.fieldCases.records['deep-cooling'].observed).toEqual(['grains']);
+    } finally { flushSync(() => root.unmount()); host.remove(); }
+  });
+});
+
+describe('resuming a field investigation', () => {
+  const river = { fragmentObservation: { estimate: '17', shape: '', compared: false } };
+  const ridge = { observed: ['acid', 'map'], cited: ['acid', 'map'], claim: 'quartzite', reasoning: 'I used the map and acid result.', feedback: 'revise-evidence' };
+  function mount(records, mode = 'fieldwork') {
+    vi.useFakeTimers();
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    let store = { rocks: { mode, fieldCases: { records } } };
+    function App() {
+      const [, force] = React.useState(0);
+      return window.StemLab._registry.rocks.render(makeCtx({ toolData: store, setToolData: change => {
+        store = typeof change === 'function' ? change(store) : change;
+        force(n => n + 1);
+      } }));
+    }
+    flushSync(() => root.render(React.createElement(App)));
+    const pick = (id, drain = true) => {
+      const picker = host.querySelector('[data-rk-field-picker]');
+      if (!picker.open) picker.querySelector('summary').click();
+      const button = host.querySelector('[data-rk-field-case="' + id + '"]');
+      button.focus(); flushSync(() => button.click());
+      if (drain) flushSync(() => vi.runOnlyPendingTimers());
+    };
+    return { host, pick, data: () => store.rocks.fieldCases, close() { flushSync(() => root.unmount()); host.remove(); vi.clearAllTimers(); } };
+  }
+
+  it('opens and cancels the chooser with keyboard focus and leaves the work intact', () => {
+    const records = { 'rounded-river': river };
+    const app = mount(records);
+    try {
+      const picker = app.host.querySelector('[data-rk-field-picker]');
+      const summary = picker.querySelector('summary');
+      expect(picker.open).toBe(false);
+      summary.focus(); flushSync(() => summary.click());
+      expect(picker.open).toBe(true);
+      const option = picker.querySelector('[data-rk-field-case="rounded-river"]');
+      option.focus();
+      const escape = new KeyboardEvent('keydown', { key:'Escape', bubbles:true, cancelable:true });
+      option.dispatchEvent(escape);
+      expect(escape.defaultPrevented).toBe(true);
+      expect(picker.open).toBe(false);
+      expect(document.activeElement).toBe(summary);
+      expect(app.data().records).toEqual(records);
+    } finally { app.close(); }
+  });
+
+  it('jumps between observation and explanation headings and keeps the review gated', () => {
+    const app = mount({ 'rounded-river': river });
+    try {
+      app.pick('rounded-river');
+      const picker = app.host.querySelector('[data-rk-field-picker]');
+      expect(picker.open).toBe(false);
+      expect(picker.querySelector('summary').textContent).toContain('Pebbles inside a cliff');
+      const stages = app.host.querySelector('[data-rk-field-stages]');
+      expect(stages.querySelector('[aria-current="step"]').dataset.rkFieldStage).toBe('observe');
+      for (const [id, heading] of [['explain','rk-field-explain-title'],['observe','rk-field-observe-title']]) {
+        const button = stages.querySelector('[data-rk-field-stage="' + id + '"]');
+        button.focus(); flushSync(() => button.click()); flushSync(() => vi.runOnlyPendingTimers());
+        expect(document.activeElement.id).toBe(heading);
+      }
+      const review = stages.querySelector('[data-rk-field-stage="review"]');
+      expect(review.disabled).toBe(true);
+      expect(app.host.querySelector('#' + review.getAttribute('aria-describedby')).textContent).toContain('Review opens');
+      const resume = app.host.querySelector('[data-rk-field-continue]');
+      expect(resume.textContent).toBe('Choose the fragment outline');
+      resume.focus(); flushSync(() => resume.click()); flushSync(() => vi.runOnlyPendingTimers());
+      expect(document.activeElement.id).toBe('rk-fragment-shape');
+      expect(app.host.querySelector('#rk-fragment-estimate').value).toBe('17');
+      expect(app.data().records['rounded-river']).toEqual(river);
+    } finally { app.close(); }
+  });
+
+  it('allows Review for a supported case and uses saved revision feedback for the current step', () => {
+    const supported = { solved:true };
+    const app = mount({ 'roofing-sheets':supported, 'resistant-ridge':ridge });
+    try {
+      app.pick('roofing-sheets');
+      const review = app.host.querySelector('[data-rk-field-stage="review"]');
+      expect(review.disabled).toBe(false);
+      expect(review.getAttribute('aria-current')).toBe('step');
+      review.focus(); flushSync(() => review.click()); flushSync(() => vi.runOnlyPendingTimers());
+      expect(document.activeElement.id).toBe('rk-field-debrief-title');
+      app.pick('resistant-ridge');
+      expect(app.host.querySelector('[data-rk-field-stage="observe"]').getAttribute('aria-current')).toBe('step');
+      const resume = app.host.querySelector('[data-rk-field-continue]');
+      resume.focus(); flushSync(() => resume.click()); flushSync(() => vi.runOnlyPendingTimers());
+      expect(document.activeElement.getAttribute('data-rk-field-observe')).toBe('mineral');
+      expect(app.data().records).toEqual({ 'roofing-sheets':supported, 'resistant-ridge':ridge });
+    } finally { app.close(); }
+  });
+
+  it('takes a learner with a saved 17 mm estimate directly to the missing outline and preserves the estimate', () => {
+    const app = mount({ 'rounded-river': river });
+    try {
+      expect(document.activeElement).toBe(document.body);
+      expect(app.host.querySelector('[data-rk-field-next="rounded-river"]').textContent).toBe('Choose the fragment outline');
+      app.pick('rounded-river');
+      expect(document.activeElement.id).toBe('rk-fragment-shape');
+      expect(app.host.querySelector('#rk-fragment-estimate').value).toBe('17');
+      expect(app.data().records['rounded-river']).toEqual(river);
+      expect(app.host.querySelector('[data-rk-field-debrief]')).toBeNull();
+    } finally { app.close(); }
+  });
+
+  it.each([
+    ['not yet collected', ridge, '[data-rk-field-observe="mineral"]'],
+    ['collected but not cited', { ...ridge, observed: [...ridge.observed, 'mineral'] }, '[data-rk-field-cite="mineral"]'],
+    ['previously supported but now under revision', { ...ridge, solved: true }, '[data-rk-field-observe="mineral"]'],
+    ['wrong identification', { ...ridge, claim: 'sandstone', feedback: 'revise-claim' }, '#rk-field-claim'],
+  ])('focuses the indicated revision control and associates it with the saved feedback: %s', (_, record, selector) => {
+    const app = mount({ 'resistant-ridge': record });
+    try {
+      app.pick('resistant-ridge');
+      expect(document.activeElement).toBe(app.host.querySelector(selector));
+      expect(document.activeElement.getAttribute('aria-describedby')).toContain('rk-field-feedback');
+      expect(app.host.querySelector('#rk-field-feedback').textContent).not.toBe('');
+      expect(app.data().records['resistant-ridge']).toEqual(record);
+    } finally { app.close(); }
+  });
+
+  it('opens an older supported interpretation and rechecks an explicitly edited supported draft', () => {
+    const prior = { observed: ['grains', 'minerals'], cited: ['grains', 'minerals'], claim: 'granite', reasoning: 'Older explanation.', result: 'supported' };
+    const revised = { ...prior, solved: true, feedback: '', reasoning: 'My revised explanation.', attempts: [prior] };
+    const app = mount({ 'roofing-sheets': { solved: true }, 'deep-cooling': revised });
+    try {
+      app.pick('roofing-sheets');
+      expect(document.activeElement.id).toBe('rk-field-debrief-title');
+      app.pick('deep-cooling');
+      expect(document.activeElement.hasAttribute('data-rk-field-check')).toBe(true);
+      expect(app.host.querySelector('#rk-field-reasoning').value).toBe('My revised explanation.');
+    } finally { app.close(); }
+  });
+
+  it('lands at the case setting on first entry, honors rapid changes, and yields to newer user focus', () => {
+    const app = mount({ 'rounded-river': river });
+    try {
+      app.pick('rounded-river', false);
+      app.pick('floating-stone');
+      expect(document.activeElement.id).toBe('rk-field-case-title');
+      expect(document.activeElement.getAttribute('data-rk-field-current')).toBe('floating-stone');
+      expect(app.data().records['floating-stone']).toBeUndefined();
+      app.pick('rounded-river', false);
+      const reasoning = app.host.querySelector('#rk-field-reasoning');
+      reasoning.focus();
+      flushSync(() => vi.runOnlyPendingTimers());
+      expect(document.activeElement).toBe(reasoning);
+    } finally { app.close(); }
   });
 });

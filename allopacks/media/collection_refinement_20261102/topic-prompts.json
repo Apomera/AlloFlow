@@ -1,0 +1,25 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "key": "egypt_context",
+      "prompt": "Use case: scientific-educational. Asset type: conceptual educational reference illustration. Square sophisticated abstract cut-paper collage with stencil printmaking grain on ivorypaper, indigo, teal and copper. No realism, cartoons, people, faces, mascots, words, letters, numbers, logos or watermarks. Shapes must be coherent and accessible. This is a symbolic concept reference, not new evidence or an answer to an activity. Subject: A winding river ribbon beside cultivated grain plots, a stylized grain-storage jar and a pottery fragment with no writing. A simple abstract stepped built form in the distance. Emphasize river, agriculture and material evidence rather than royalty, golden treasure or exotic spectacle.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-f15e52d1-9460-4b7b-835f-19e9bed131c5.png"
+    },
+    {
+      "key": "local_government_context",
+      "prompt": "Use case: scientific-educational. Asset type: conceptual educational reference illustration. Square sophisticated abstract cut-paper collage with stencil printmaking grain on ivorypaper, indigo, teal and copper. No realism, cartoons, people, faces, mascots, words, letters, numbers, logos or watermarks. Shapes must be coherent and accessible. This is a symbolic concept reference, not new evidence or an answer to an activity. Subject: A stylized civic building beside blank public-notice cards, a small public path and a few neutral coin-like circles near an empty planning board. Civic decisions involve limited resources and opportunities to learn and contribute; no voting results, solved budget or map of actual jurisdiction.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-45b077f6-3c11-41a7-9249-eaee2e0dba2b.png"
+    },
+    {
+      "key": "weather_timescales",
+      "prompt": "Use case: scientific-educational. Asset type: conceptual educational reference illustration. Square sophisticated abstract cut-paper collage with stencil printmaking grain on ivorypaper, indigo, teal and copper. No realism, cartoons, people, faces, mascots, words, letters, numbers, logos or watermarks. Shapes must be coherent and accessible. This is a symbolic concept reference, not new evidence or an answer to an activity. Subject: Two equal conceptual record cards: one has a single cloud, sun and wind swirl; the other has many small mixed weather symbols arranged across blank repeated record strips. Weather at a time and climate patterns across many observations. No assertion that tomorrow is known, no dates or numerical claims, no trend graph or forecast results.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-210cdd8e-eea5-481c-879f-f74e7eb2ffcc.png"
+    },
+    {
+      "key": "water_pathways",
+      "prompt": "Use case: scientific-educational. Asset type: conceptual educational reference illustration. Square sophisticated abstract cut-paper collage with stencil printmaking grain on ivorypaper, indigo, teal and copper. No realism, cartoons, people, faces, mascots, words, letters, numbers, logos or watermarks. Shapes must be coherent and accessible. This is a symbolic concept reference, not new evidence or an answer to an activity. Subject: A coherent abstract landscape cross-section: sun above water, vapor dots rising from water, a cloud releasing raindrops over land, a surface stream returning toward the water and some rain seeping through soil. Multiple connected paths, not one compulsory circle; no black arrow soup, text or scientific outcome data.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-975fadc4-6b85-4649-b687-d8b49f46b285.png"
+    }
+  ]
+}

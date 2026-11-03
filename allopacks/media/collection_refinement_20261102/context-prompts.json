@@ -1,0 +1,45 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "key": "crew_phone_notebook",
+      "prompt": "Use case: stylized-concept. Asset type: educational resource illustration. Square. Sophisticated abstract cut-paper collage and stencil printmaking, warm ivory papergrain, indigo, muted teal, copper. No realistic rendering or cartoons, no people, faces or mascots. No words, letters, digits, grading/check marks, watermarks or logos. Neutral scenario context; no solution, before/after success, moral judgement or diagnostic claim. Subject: A closed-screen smartphone beside an open notebook of blank pages and three overlapping blank communication cards, with gently layered abstract shapes. Phone is a tool whose use is decided by context, neither forbidden nor praised.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-e9630897-7f21-4225-9d22-5952d225b6e6.png"
+    },
+    {
+      "key": "crew_bag_calendar",
+      "prompt": "Use case: stylized-concept. Asset type: educational resource illustration. Square. Sophisticated abstract cut-paper collage and stencil printmaking, warm ivory papergrain, indigo, muted teal, copper. No realistic rendering or cartoons, no people, faces or mascots. No words, letters, digits, grading/check marks, watermarks or logos. Neutral scenario context; no solution, before/after success, moral judgement or diagnostic claim. Subject: An open backpack, a closed laptop and a blank weekly calendar grid with no marked tasks. Thoughtful arrangement of materials, no checklist completion or clocks indicating speed.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-e9015fef-5903-47f0-944a-cf2b39b54988.png"
+    },
+    {
+      "key": "crew_project_materials",
+      "prompt": "Use case: stylized-concept. Asset type: educational resource illustration. Square. Sophisticated abstract cut-paper collage and stencil printmaking, warm ivory papergrain, indigo, muted teal, copper. No realistic rendering or cartoons, no people, faces or mascots. No words, letters, digits, grading/check marks, watermarks or logos. Neutral scenario context; no solution, before/after success, moral judgement or diagnostic claim. Subject: A shared table viewed from above with several empty chairs, equal blank planning cards, paper pieces, pencils and a ruler. Open shared project awaiting participants, no finished answer or assigned roles.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-448ed8af-41d0-4617-8880-2bb3bff04c7d.png"
+    },
+    {
+      "key": "crew_shared_materials",
+      "prompt": "Use case: stylized-concept. Asset type: educational resource illustration. Square. Sophisticated abstract cut-paper collage and stencil printmaking, warm ivory papergrain, indigo, muted teal, copper. No realistic rendering or cartoons, no people, faces or mascots. No words, letters, digits, grading/check marks, watermarks or logos. Neutral scenario context; no solution, before/after success, moral judgement or diagnostic claim. Subject: A small speaker, a coiled unplugged charging cable, a paintbrush and blank paper cards on a common shelf. Resource-sharing scenario, all devices safe and unplugged, no repairs or broken items depicted.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-85b2beeb-7bef-421f-853c-0e0c8a74b77f.png"
+    },
+    {
+      "key": "crew_help_channels",
+      "prompt": "Use case: stylized-concept. Asset type: educational resource illustration. Square. Sophisticated abstract cut-paper collage and stencil printmaking, warm ivory papergrain, indigo, muted teal, copper. No realistic rendering or cartoons, no people, faces or mascots. No words, letters, digits, grading/check marks, watermarks or logos. Neutral scenario context; no solution, before/after success, moral judgement or diagnostic claim. Subject: Two empty chairs beside a table with an open blank notebook, pencil, and several distinct blank speech-shaped cards. Multiple ways to ask for help or communicate, no obligation to speak, make eye contact or share personal feelings.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-6bce434f-02b2-4b2e-98b5-bec3f5778edc.png"
+    },
+    {
+      "key": "zones_equal_colors",
+      "prompt": "Use case: stylized-concept. Asset type: educational resource illustration. Square. Sophisticated abstract cut-paper collage and stencil printmaking, warm ivory papergrain, indigo, muted teal, copper. No realistic rendering or cartoons, no people, faces or mascots. No words, letters, digits, grading/check marks, watermarks or logos. Neutral scenario context; no solution, before/after success, moral judgement or diagnostic claim. Subject: Four equally sized round paper color swatches: blue, green, yellow and red, arranged in an equal two-by-two grid. Give every swatch exactly equal scale, prominence and visual weight. No arrows or hierarchy, no traffic light, faces, body poses, labels, behaviors or judgement. The background remains neutral ivory and separate from the swatches.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-a2f6cb69-b84c-4418-8131-e3049facefe7.png"
+    },
+    {
+      "key": "zones_tool_options",
+      "prompt": "Use case: stylized-concept. Asset type: educational resource illustration. Square. Sophisticated abstract cut-paper collage and stencil printmaking, warm ivory papergrain, indigo, muted teal, copper. No realistic rendering or cartoons, no people, faces or mascots. No words, letters, digits, grading/check marks, watermarks or logos. Neutral scenario context; no solution, before/after success, moral judgement or diagnostic claim. Subject: Equal-sized blank choice cards depict a water glass, textured hand-held sensory object, quiet empty chair, and blank communication notebook. These are possible support choices, not a treatment or guarantee of any emotional change. No sequence or hierarchy.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-d0ac8cdd-6e89-4461-ab37-573e38aed31b.png"
+    },
+    {
+      "key": "materials_context",
+      "prompt": "Use case: stylized-concept. Asset type: educational resource illustration. Square. Sophisticated abstract cut-paper collage and stencil printmaking, warm ivory papergrain, indigo, muted teal, copper. No realistic rendering or cartoons, no people, faces or mascots. No words, letters, digits, grading/check marks, watermarks or logos. Neutral scenario context; no solution, before/after success, moral judgement or diagnostic claim. Subject: Three equal material samples made of paper, woven fabric and a translucent plastic rectangle beside a dropper, blank observation cards and a water dish. Comparison awaiting observation; no liquid on any sample, no results or ranked material.",
+      "output": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-6c292899-4998-4f6c-8560-e479e7728159.png"
+    }
+  ]
+}

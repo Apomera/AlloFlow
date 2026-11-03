@@ -191,7 +191,7 @@ function refineHost({ original = 'The quick brown fox jumps over the lazy dog ne
 }
 
 describe('AI refine source writes only to its own, unchanged resource', () => {
-  it('a late result lands on resource A without jumping the view or undoing a dismissal', async () => {
+  it('a late result lands on resource A without jumping the view or restoring stale findings', async () => {
     const h = refineHost();
     const pending = h.run();
     h.state.generatedContent = h.B;
@@ -201,7 +201,8 @@ describe('AI refine source writes only to its own, unchanged resource', () => {
     await pending;
     expect(h.state.generatedContent.id).toBe('analysis-b');
     expect(h.state.history[0].data.originalText).toBe(refined);
-    expect(h.state.history[0].data.grammar).toEqual(['✓ DISMISSED: Spelling: quiet']);
+    expect(h.state.history[0].data.analysisNeedsRecheck).toBe(true);
+    expect(h.state.history[0].data.grammar).toBeUndefined();
   });
 
   it('rejects empty output and a drastic length change', async () => {

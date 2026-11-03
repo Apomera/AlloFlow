@@ -3,14 +3,18 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),{factHash}=require('../dev-tools/lib/allopack_fact_review.cjs');
 const read=f=>JSON.parse(fs.readFileSync(f,'utf8').replace(/^\uFEFF/,''));
-const source=read('allopacks/body_systems_grade6.allopack.json'),illustrated=read('allopacks/illustrated/body_systems_grade6.allopack.json');
+const pack=read('allopacks/current/body_systems_grade6.allopack.json');
 const get=(p,t)=>p.history.find(r=>r.type===t).data;
-const clean=x=>JSON.parse(JSON.stringify(x),(k,v)=>/^(image|iconUrl|iconAlt)/.test(k)?undefined:v);
+const clean=x=>JSON.parse(JSON.stringify(x),(k,v)=>/^(image|iconUrl|iconAlt|visual)/.test(k)?undefined:v);
+const digest=x=>require('node:crypto').createHash('sha256').update(JSON.stringify(x)).digest('hex').slice(0,16);
 describe('Body Systems aligned investigation',()=>{
- it('keeps all native lesson content identical between editions, apart from picture directions',()=>{
-  for(const r of source.history){const actual=clean(illustrated.history.find(x=>x.id===r.id));if(r.type==='directions')actual.data.body=actual.data.body.split('\n\nPicture panels:')[0];expect(actual).toEqual(clean(r));}
+ it('keeps the native lesson content of the retired text edition, apart from pictures and picture directions',()=>{
+  // The text-only edition was retired 2026-11-02. Digests of its picture-free resources, pinned from git HEAD
+  // (allopacks/body_systems_grade6.allopack.json); a deliberate content edit must re-pin the changed resource.
+  const source={"bs-directions":"31d179230dd926d9","bs-reading":"4d82c1f91f1b5618","bs-glossary":"bdfc14e1ad3e1e22","bs-anchor":"1fa0592d7fcc18df","bs-outline":"81461c8e80985152","bs-memory":"0c3bd5dc1976813d","bs-sort":"c82aa19892ae4c71","bs-quiz":"075d3f2f25b9e8c7","bs-notes":"7a99e162fe3fce60","bs-faq":"2a061c87baf804c0","bs-challenge":"754888760b5af15e"};
+  for(const [id,hash] of Object.entries(source)){const actual=clean(pack.history.find(x=>x.id===id));if(actual.type==='directions'){expect(actual.data.body).toContain('\n\nPicture panels:');actual.data.body=actual.data.body.split('\n\nPicture panels:')[0];}expect(digest(actual),id).toBe(hash);}
  });
- for(const [edition,p] of [['original',source],['illustrated',illustrated]]){
+ for(const [edition,p] of [['current',pack]]){
   it(edition+' supplies complete fictional data for the required calculations',()=>{
    const c=get(p,'applied-challenge');expect(c.brief.context).toContain('not measurements of real people');
    const rows=[...c.brief.context.matchAll(/Case ([ABC]): rest (\d+) \/ (\d+); just after (\d+) \/ (\d+); two minutes after (\d+) \/ (\d+)/g)];

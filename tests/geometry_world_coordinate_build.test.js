@@ -106,10 +106,18 @@ describe('keyboard building refuses invalid or unsafe operations without mutatio
   it.each(['student','lesson','ground'])('never overwrites an occupied %s block',layer=>{
     const f=makeFixture(),mesh=seed(f,point(1),{_measurementLayer:layer,...(layer==='lesson'?{_lessonBlock:true}:{})});const before=snapshot(f);
     const plan=preview(f,{mode:'line'});expect(plan.ok).toBe(false);expect(plan.code).toBe('occupied');expect(snapshot(f)).toEqual(before);expect(f.engine.blocks['1,1,0']).toBe(mesh);
+    expect(plan.reason).toContain('A block is in the way. X 1, Y 1, Z 0');
+    expect(plan.reason).toContain(layer==='student'?'one of your blocks':layer==='ground'?'protected ground':'a protected lesson block');
+  });
+  it('reports the first blocked cell with signed coordinates without changing the world',()=>{
+    const f=makeFixture();seed(f,point(-3,2,-7));seed(f,point(-2,2,-7));const before=snapshot(f);
+    const plan=preview(f,{mode:'line',origin:point(-4,2,-7),axis:'x',length:'4'});
+    expect(plan).toMatchObject({ok:false,code:'occupied'});
+    expect(plan.reason).toContain('X -3, Y 2, Z -7');expect(snapshot(f)).toEqual(before);
   });
   it('rechecks a destination occupied after review before committing any cells',()=>{
     const f=makeFixture(),plan=preview(f,{mode:'line'});expect(plan.ok).toBe(true);seed(f,point(2));const before=snapshot(f);
-    expect(api.commitSelectionEdit(f.engine,plan)).toMatchObject({ok:false,code:'occupied'});expect(snapshot(f)).toEqual(before);expect(f.engine.blocks['0,1,0']).toBeUndefined();
+    expect(api.commitSelectionEdit(f.engine,plan)).toMatchObject({ok:false,code:'occupied',reason:expect.stringContaining('X 2, Y 1, Z 0')});expect(snapshot(f)).toEqual(before);expect(f.engine.blocks['0,1,0']).toBeUndefined();
   });
   it('enforces current capacity again at apply and preserves selection/history',()=>{
     const f=makeFixture(),plan=preview(f,{mode:'floor'});expect(plan.ok).toBe(true);f.engine.getConstructionBlockCount=()=>1498;const before=snapshot(f);

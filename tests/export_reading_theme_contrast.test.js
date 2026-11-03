@@ -126,7 +126,7 @@ describe('the WCAG fixer leaves reading-theme CSS alone', () => {
 // were white on lavender (1.23:1), Minimalist section titles missed 4.5:1 on tinted headers.
 describe('every export style and the teacher copy stay legible in Light', () => {
   let browser;
-  const pack = JSON.parse(readFileSync('allopacks/american_revolution_causes_grade5.allopack.json', 'utf8'));
+  const pack = JSON.parse(readFileSync('allopacks/current/american_revolution_causes_grade5.allopack.json', 'utf8'));
   // Resource types no pack carries; fluency word colors and brainstorm badges missed AA in Light.
   const extras = [
     { id: 'fl1', type: 'fluency-record', title: 'Fluency check', data: { metrics: { wcpm: 92, accuracy: 94, totalWords: 3, durationSeconds: 2 }, feedback: 'Slow down on names.',
@@ -230,7 +230,7 @@ describe('inkGuard re-inks text whose own color misses contrast in a reading the
       sourceSnapshot: snapshot, sourceFamilyId: 'src-justice', instructionalText: { schemaVersion: 1, role: 'supplemental', form: 'adapted' },
     };
     const glossary = { id: 'g1', type: 'glossary', title: 'Key Terms', data: [{ term: 'Colony', definition: 'A place ruled by a country far away.' }] };
-    const frames = JSON.parse(readFileSync('allopacks/argument_evidence_grade6.allopack.json', 'utf8')).history.find(item => item.type === 'sentence-frames');
+    const frames = JSON.parse(readFileSync('allopacks/current/argument_evidence_grade6.allopack.json', 'utf8')).history.find(item => item.type === 'sentence-frames');
     const html = pipeline.generateFullPackHTML([adapted, glossary, frames], 'Justice', false, {}, { ...cfg, includeGlossary: true, includeSimplified: true, includeSentenceFrames: true });
     browser = await chromium.launch({ headless: true });
     page = await browser.newPage();

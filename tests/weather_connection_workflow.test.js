@@ -83,6 +83,17 @@ describe('Live weather connection presentation and persistence', () => {
     expect(panel.querySelector('input[type="search"]').disabled).toBe(false);
   });
 
+  it('shows unknown and future model times as saved data in the connection panel', () => {
+    const unknown = connection(view({ liveWeather: { ...loaded(), observedAt: '2026-10-31T12:00', utcOffsetSeconds: null } }));
+    const unknownState = unknown.querySelector('[data-weather-connection-freshness]');
+    expect(unknownState.getAttribute('data-weather-connection-freshness')).toBe('unknown');
+    expect(unknownState.textContent).toContain('Saved model estimate');
+    const future = connection(view({ liveWeather: { ...loaded(), observedAt: new Date(Date.now() + 3600000).toISOString() } }));
+    const futureState = future.querySelector('[data-weather-connection-freshness]');
+    expect(futureState.getAttribute('data-weather-connection-freshness')).toBe('future');
+    expect(futureState.textContent).toContain('device time');
+  });
+
   it('shows a failed connection without discarding the saved location or forecast snapshot', () => {
     const work = savedWork();
     const original = JSON.stringify(work);

@@ -159,7 +159,7 @@ describe('separate catalog teacher-guide printing', () => {
   ])('preserves the complete native educator narrative and source links for %s', async (filename, id, preparation, teaching, sourceCount) => {
     win.AlloModules.InstructionalContext = require(resolve('instructional_context_module.js'));
     new Function('window', readFileSync('doc_pipeline_module.js', 'utf8'))(win);
-    const pack = JSON.parse(readFileSync(`allopacks/${filename}.allopack.json`, 'utf8')), before = JSON.stringify(pack);
+    const pack = JSON.parse(readFileSync(`allopacks/current/${filename}.allopack.json`, 'utf8')), before = JSON.stringify(pack);
     const html = await catalog._generateCatalogPreview(pack, { title: pack.allopack.title }, 'teacher');
     const parsed = new DOMParser().parseFromString(html, 'text/html'), text = parsed.body.textContent;
     expect(parsed.querySelectorAll('[data-alloflow-resource-id]')).toHaveLength(1);

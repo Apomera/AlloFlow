@@ -1060,7 +1060,10 @@ const InteractiveBlueprintCard = React.memo(({
       className: "block mt-1 opacity-80 break-words"
     }, t('blueprint.failure_log_help') || 'Technical details remain in the on-device error log; copied and downloaded diagnostics are sanitized.')), /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-700 leading-relaxed italic"
-    }, "\"", item.directive || "No specific instructions.", "\""), /*#__PURE__*/React.createElement("details", {
+    }, "\"", item.directive || "No specific instructions.", "\""), item.type === 'analysis' && _reusedVariants.length > 0 && !_newVariants.length && /*#__PURE__*/React.createElement("p", {
+      "data-testid": "bp-source-check-reused",
+      className: "mt-1 text-xs font-semibold text-emerald-800"
+    }, t('blueprint.analysis_reused') || 'Already checked, reused'), /*#__PURE__*/React.createElement("details", {
       "data-testid": "bp-row-details",
       className: "group/row-details mt-1"
     }, /*#__PURE__*/React.createElement("summary", {
@@ -1076,7 +1079,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "mt-1 text-[10px] leading-relaxed text-sky-900"
     }, _rowMatrixUnavailable ? /*#__PURE__*/React.createElement("span", {
       "data-testid": "bp-row-matrix-unavailable"
-    }, t('blueprint.row_matrix_unavailable') || 'Waiting for generation planning. This row will not run until exact duplicate and audience-version checks are available.') : _generationVariants.length ? `${_newVariants.length} ${t('blueprint.new_versions') || 'new'} / ${_reusedVariants.length} ${t('blueprint.reused_versions') || 'reused'}${_variantGrades.length ? `; ${_variantGrades.join(', ')}` : ''}${_variantLanguages.length ? `; ${_variantLanguages.join(', ')}` : ''}${item.type === 'glossary' && embeddedGlossaryLanguages.length ? `; ${t('blueprint.embedded_languages') || 'embedded'}: ${embeddedGlossaryLanguages.join(', ')}` : ''}` : t('blueprint.row_matrix_pending') || 'Reuse and audience variants will be checked before generation.'), _runtimeVariants.some(variant => variant && (variant.artifactId || variant.resourceId)) && /*#__PURE__*/React.createElement("ul", {
+    }, t('blueprint.row_matrix_unavailable') || 'Waiting for generation planning. This row will not run until exact duplicate and audience-version checks are available.') : item.type === 'analysis' && _reusedVariants.length && !_newVariants.length ? t('blueprint.analysis_reused') || 'Already checked, reused' : _generationVariants.length ? `${_newVariants.length} ${t('blueprint.new_versions') || 'new'} / ${_reusedVariants.length} ${t('blueprint.reused_versions') || 'reused'}${_variantGrades.length ? `; ${_variantGrades.join(', ')}` : ''}${_variantLanguages.length ? `; ${_variantLanguages.join(', ')}` : ''}${item.type === 'glossary' && embeddedGlossaryLanguages.length ? `; ${t('blueprint.embedded_languages') || 'embedded'}: ${embeddedGlossaryLanguages.join(', ')}` : ''}` : t('blueprint.row_matrix_pending') || 'Reuse and audience variants will be checked before generation.'), _runtimeVariants.some(variant => variant && (variant.artifactId || variant.resourceId)) && /*#__PURE__*/React.createElement("ul", {
       className: "mt-1 space-y-1 break-all text-[10px] text-slate-500"
     }, _runtimeVariants.map((variant, index) => variant && (variant.artifactId || variant.resourceId) ? /*#__PURE__*/React.createElement("li", {
       key: variant.generationIdentity || index

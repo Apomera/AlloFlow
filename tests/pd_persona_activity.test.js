@@ -203,7 +203,7 @@ describe('worker trust boundary', () => {
   function post(body) {
     return worker.fetch(new Request('https://worker.test/submitPd', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    }), { PD_SUBMISSIONS: fakeKv() });
+    }), { PD_SUBMISSIONS: fakeKv(), SUBMIT_RATE: fakeKv() });
   }
   function submission(activity) {
     return { pd_module: moduleWith(activity), credit: null, affirmations: { author_or_authorized: true, no_pii: true, license_agreed: true, age_eligible: true } };

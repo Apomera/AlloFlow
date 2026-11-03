@@ -412,7 +412,23 @@ function DbqView(props) {
   }));
   const resId = generatedContent.id;
   const r = studentResponses[resId] || {};
-  const dbqTab = r._dbqTab || 'documents';
+  const tabKeys = ['documents', 'corroboration', 'essay', 'rubric'];
+  const dbqTab = tabKeys.includes(r._dbqTab) ? r._dbqTab : 'documents';
+  const tabGroupId = 'dbq-sections-' + React.useId();
+  const tabRefs = React.useRef({});
+  const panelId = tabGroupId + '-panel';
+  React.useLayoutEffect(() => {
+    const tab = tabRefs.current[dbqTab];
+    const list = tab?.parentElement;
+    if (!list || typeof list.scrollBy !== 'function') return;
+    const item = tab.getBoundingClientRect(),
+      bounds = list.getBoundingClientRect();
+    const offset = item.left < bounds.left ? item.left - bounds.left : item.right > bounds.right ? item.right - bounds.right : 0;
+    if (offset) list.scrollBy({
+      left: offset,
+      behavior: 'instant'
+    });
+  }, [dbqTab]);
   const dbqActiveDoc = String(r._dbqActiveDoc || docs[0]?.id || 'A');
   // The briefing card (title, historical context, print/timer, progress steps)
   // is reference material, not work surface. On a short window, or with a long
@@ -503,6 +519,15 @@ function DbqView(props) {
     }, message) : null;
   };
   const setTab = tab => setDbq('_dbqTab', tab);
+  const onTabKeyDown = (event, tab) => {
+    const index = tabKeys.indexOf(tab);
+    const rtl = event.currentTarget.ownerDocument.defaultView.getComputedStyle(event.currentTarget.parentElement).direction === 'rtl';
+    let next;
+    if (event.key === 'ArrowRight') next = (index + (rtl ? -1 : 1) + tabKeys.length) % tabKeys.length;else if (event.key === 'ArrowLeft') next = (index + (rtl ? 1 : -1) + tabKeys.length) % tabKeys.length;else if (event.key === 'Home') next = 0;else if (event.key === 'End') next = tabKeys.length - 1;else return;
+    event.preventDefault();
+    setTab(tabKeys[next]);
+    tabRefs.current[tabKeys[next]]?.focus();
+  };
   const setDoc = docId => setDbq('_dbqActiveDoc', docId);
   const activeDoc = docs.find(d => d.id === dbqActiveDoc) || docs[0];
   const annotations = r._annotations || {};
@@ -792,8 +817,16 @@ function DbqView(props) {
     n: docs.length
   })], ['corroboration', '🔗 ' + L('dbq.step_corroborate', 'Corroborate')], ['essay', '✏️ ' + L('dbq.step_essay', 'Essay')], ['rubric', '📊 ' + L('dbq.rubric', 'Rubric')]].map(([id, label]) => /*#__PURE__*/React.createElement("button", {
     key: id,
+    type: "button",
     role: "tab",
+    id: tabGroupId + '-' + id,
+    "aria-controls": panelId,
     "aria-selected": dbqTab === id,
+    tabIndex: dbqTab === id ? 0 : -1,
+    ref: node => {
+      tabRefs.current[id] = node;
+    },
+    onKeyDown: event => onTabKeyDown(event, id),
     onClick: () => setTab(id),
     style: {
       ...tabBtnStyle(id),
@@ -920,6 +953,9 @@ function DbqView(props) {
   })(), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-3 sm:p-5",
     role: "tabpanel",
+    id: panelId,
+    "aria-labelledby": tabGroupId + '-' + dbqTab,
+    tabIndex: 0,
     style: {
       minHeight: 'min(60vh, 420px)'
     }

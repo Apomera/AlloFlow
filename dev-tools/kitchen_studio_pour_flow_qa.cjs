@@ -1,0 +1,121 @@
+/* Observe the delivered stream mesh while native inputs tip and level the carton. */
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const {chromium}=require('@playwright/test');
+const root=path.resolve(__dirname,'..'),out=path.join(root,'reports/kitchen-studio-pour-flow'),key='alloflow-kitchen-studio-v1';
+const helper=path.join(root,'stem_lab/kitchen_studio/kitchen_studio_pour_flow.js'),main=path.join(root,'stem_lab/kitchen_studio/kitchen_studio.js'),vendor=path.join(root,'vendor/three-r128/three.min.js');
+const mutation=process.argv.includes('--mutant-full-width'),clone=value=>JSON.parse(JSON.stringify(value));
+const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+function close(a,b,label,tolerance=1e-7){assert.ok(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=tolerance,label);}
+function distance(a,b){return Math.hypot(...a.map((value,index)=>value-b[index]));}
+function unchanged(before,after,label='A flow-width preview preserves every saved decision'){assert.deepEqual(after,before,label);}
+function onePour(before,after,action='add50',amount=50){assert.equal(after.log.length,before.log.length+1,'Exactly one decision per released pour');assert.equal(after.log.at(-1).action,action);assert.equal(after.log.at(-1).accepted,true);assert.equal(after.values.ml,Math.min(1000,(before.values.ml||0)+amount),'Existing capped quantity is preserved');}
+function reset(snapshot){assert.equal(snapshot.stream.visible,false,'Stopped flow is hidden');close(snapshot.stream.scale[0],1,'Hidden X width is reset');close(snapshot.stream.scale[2],1,'Hidden Z width is reset');}
+function sameMaterial(actual,baseline){assert.deepEqual(actual.stream.material,baseline.stream.material,'Width preserves the actual stream material');assert.deepEqual(actual.stream.geometry,baseline.stream.geometry,'Width preserves the original stream geometry');}
+function flow(actual,baseline,kind='partial'){
+  const stream=actual.stream;assert.equal(stream.visible,true,'A tipped carton has a visible actual stream');sameMaterial(actual,baseline);
+  close(stream.scale[0],stream.scale[2],'Actual stream scales X and Z together');
+  assert.ok(stream.scale[0]>0&&stream.scale[0]<=1,'Actual stream width stays positive and bounded');
+  if(kind==='partial')assert.ok(stream.scale[0]<.99,'Partial tilt produces a thinner actual stream');
+  if(kind==='full')close(stream.scale[0],1,'Full tilt or ordinary portion retains original stream width');
+  assert.ok(distance(stream.top,actual.spoutTop)<.003,'Actual stream remains connected to the rotated spout opening');
+  assert.ok(distance(stream.bottom,actual.surfaceWorld)<1e-7,'Actual stream ends at the jug liquid surface');
+  close(stream.scale[1],distance(stream.top,stream.bottom),'Y scale remains the endpoint distance');
+  return stream.scale[0];
+}
+function progression(thin,full,returned){assert.ok(thin>0&&thin<full,'The actual stream grows with more tilt');close(full,1,'The full stream has original width');close(thin,returned,'Returning to the same tilt restores the same width',1e-5);}
+function restored(before,after){assert.deepEqual(after.carton,before.carton,'Cancelling restores the exact carton pose');assert.deepEqual(after.surface,before.surface,'Cancelling restores the exact liquid surface');reset(after);sameMaterial(after,before);}
+function rendererObserver(){
+  const T=window.THREE,Native=T.WebGLRenderer;let scene=null,frames=0;
+  function ObservedRenderer(...args){const renderer=new Native(...args),render=renderer.render.bind(renderer);renderer.render=function(nextScene,nextCamera){scene=nextScene;frames++;return render(nextScene,nextCamera);};return renderer;}
+  ObservedRenderer.prototype=Native.prototype;Object.setPrototypeOf(ObservedRenderer,Native);T.WebGLRenderer=ObservedRenderer;
+  window.__pourFlowScene={snapshot(){
+    if(!scene)throw new Error('The delivered scene has not rendered');
+    const streams=[],cartons=[],surfaces=[],openings=[],near=(a,b)=>typeof a==='number'&&Math.abs(a-b)<1e-12;
+    scene.traverse(object=>{if(!object.geometry||object.userData.mission!=='measure')return;const p=object.geometry.parameters||{};
+      if(near(p.radiusTop,.012)&&near(p.radiusBottom,.017)&&near(p.height,1))streams.push(object);
+      if(near(p.width,.27)&&near(p.height,.48)&&near(p.depth,.25))cartons.push(object);
+      if(near(p.radiusTop,.24)&&near(p.radiusBottom,.24)&&near(p.height,.008))surfaces.push(object);
+      if(near(p.radiusTop,.034)&&near(p.radiusBottom,.034)&&near(p.height,.003))openings.push(object);
+    });
+    for(const [name,list] of Object.entries({streams,cartons,surfaces,openings}))if(list.length!==1)throw new Error('Expected one actual '+name+', found '+list.length);
+    const stream=streams[0],carton=cartons[0],surface=surfaces[0],opening=openings[0],pose=object=>({position:object.position.toArray(),quaternion:object.quaternion.toArray(),scale:object.scale.toArray(),visible:object.visible});
+    return {frames,stream:{...pose(stream),top:stream.localToWorld(new T.Vector3(0,.5,0)).toArray(),bottom:stream.localToWorld(new T.Vector3(0,-.5,0)).toArray(),geometry:{type:stream.geometry.type,parameters:{...stream.geometry.parameters}},material:{uuid:stream.material.uuid,color:stream.material.color.getHexString(),opacity:stream.material.opacity,transparent:stream.material.transparent,depthWrite:stream.material.depthWrite,roughness:stream.material.roughness,metalness:stream.material.metalness,side:stream.material.side}},carton:pose(carton),surface:pose(surface),surfaceWorld:surface.getWorldPosition(new T.Vector3()).toArray(),spoutTop:opening.localToWorld(new T.Vector3(0,.0015,0)).toArray()};
+  }};
+}
+function fullWidthOverride(){const api=window.KitchenStudioPourFlow;if(!api||typeof api.width!=='function')throw new Error('The delivered pour-flow helper is absent');api.width=function(tilt){return typeof tilt==='number'&&Number.isFinite(tilt)&&tilt>.4?1:0;};}
+function instrument(source,kind){return source+'\n;('+String(kind==='renderer'?rendererObserver:fullWidthOverride)+')();\n';}
+if(process.argv.includes('--selftest')){
+  const base={stream:{visible:false,scale:[1,1,1],top:[0,1,0],bottom:[0,0,0],material:{color:'e8bc68',opacity:1},geometry:{type:'CylinderGeometry'}},carton:{position:[0,0,0]},surface:{position:[0,0,0]},spoutTop:[0,1,0],surfaceWorld:[0,0,0]};
+  reset(base);const thin=clone(base);thin.stream.visible=true;thin.stream.scale=[.55,1,.55];flow(thin,base);const full=clone(thin);full.stream.scale=[1,1,1];flow(full,base,'full');progression(.55,1,.55);
+  assert.throws(()=>flow(full,base));assert.throws(()=>progression(1,1,1));assert.throws(()=>progression(.55,1,.7));
+  for(const change of [v=>v.stream.scale[2]=.4,v=>v.stream.scale[1]=.5,v=>v.stream.material.opacity=.2,v=>v.stream.top[0]=.1,v=>v.stream.bottom[2]=.1]){const bad=clone(thin);change(bad);assert.throws(()=>flow(bad,base));}
+  for(const change of [v=>v.stream.visible=true,v=>v.stream.scale[0]=.55,v=>v.stream.scale[2]=.55]){const bad=clone(base);change(bad);assert.throws(()=>reset(bad));}
+  restored(base,clone(base));const moved=clone(base);moved.carton.position[0]=1;assert.throws(()=>restored(base,moved));
+  const before={values:{},log:[]},after={values:{ml:50},log:[{action:'add50',accepted:true}]};onePour(before,after);assert.throws(()=>onePour(before,{...after,log:after.log.concat(after.log)}));assert.throws(()=>onePour(before,{...after,values:{ml:150}}));assert.throws(()=>unchanged(before,after));
+  assert.ok(instrument('/* original */','renderer').startsWith('/* original */'));assert.match(instrument('/* original */','helper'),/api\.width=function/);
+  console.log('PASS: actual partial/full/return width, spout/surface endpoints, unchanged material/Y distance, hidden reset, restored poses and one capped quantity reject deliberate failures.');process.exit(0);
+}
+const sourceBefore={helper:hash(helper),main:hash(main),vendor:hash(vendor)};let vendorResponses=0,mutantResponses=0;
+const server=http.createServer((request,response)=>{const file=path.resolve(root,'.'+new URL(request.url,'http://localhost').pathname);if(!file.startsWith(root+path.sep)){response.writeHead(403).end();return;}fs.readFile(file,(error,data)=>{if(error){response.writeHead(404).end();return;}if(file===vendor){data=Buffer.from(instrument(data.toString('utf8'),'renderer'));vendorResponses++;}if(mutation&&file===helper){data=Buffer.from(instrument(data.toString('utf8'),'helper'));mutantResponses++;}response.setHeader('Content-Type',({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'})[path.extname(file)]||'application/octet-stream');response.end(data);});});
+function controls(page){
+  const canvas=page.locator('#scene canvas'),saved=()=>page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key),current=async()=>{const data=await saved();return data.serviceActive?data.service.work:data.drafts[data.current];};
+  const action=id=>page.locator('[data-action="'+id+'"]').click(),scene=()=>page.evaluate(()=>window.__pourFlowScene.snapshot());
+  async function frame(){await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
+  async function points(){await canvas.evaluate(el=>el.scrollIntoView({block:'center',behavior:'auto'}));await frame();await page.waitForFunction(()=>{const el=document.querySelector('#scene canvas'),b=el.getBoundingClientRect();return Math.abs(Number(el.dataset.targetWidth)-b.width)<.1&&Math.abs(Number(el.dataset.targetHeight)-b.height)<.1;});return canvas.evaluate(el=>{const b=el.getBoundingClientRect();return Object.fromEntries(Object.entries(JSON.parse(el.dataset.targets)).map(([id,p])=>[id,{x:b.left+p.x,y:b.top+p.y}]));});}
+  async function station(){await page.locator('[data-station="measure"]').click();await page.locator('#focusView').click();await points();}
+  async function aim(){const p=await points();await page.mouse.move(p.stockCarton.x,p.stockCarton.y);await page.mouse.down();assert.equal(await canvas.getAttribute('data-held'),'stockCarton');await page.mouse.move(p.jugFill.x,p.jugFill.y,{steps:12});await page.waitForFunction(()=>document.querySelector('#scene canvas').dataset.pourPhase==='tilt');return {anchor:JSON.parse(await canvas.getAttribute('data-pour-anchor')),unit:(await canvas.boundingBox()).height/420};}
+  async function tilt(g,pixels){await page.mouse.move(g.anchor.x,g.anchor.y+pixels*g.unit,{steps:8});await frame();}
+  async function idle(){await page.waitForFunction(()=>document.querySelector('#scene canvas').dataset.held==='');await frame();assert.equal(await canvas.getAttribute('data-held'),'');assert.equal(await canvas.getAttribute('data-stock-stream'),'false');assert.equal(await canvas.getAttribute('data-measure-preview'),'');reset(await scene());}
+  async function keyboardGrab(){const panel=page.locator('#studioKeyboard');if(!(await panel.evaluate(el=>el.open)))await panel.locator('summary').click();await page.locator('#studioKeyboardTool').selectOption('stockCarton');await page.locator('#studioKeyboardFine').check();await page.locator('#studioKeyboardGrab').click();assert.equal(await canvas.getAttribute('data-held'),'stockCarton');assert.equal(await page.locator('#studioKeyboardPad').evaluate(el=>el===document.activeElement),true);}
+  async function keys(name,count=1){for(let i=0;i<count;i++)await page.keyboard.press(name);await frame();}
+  return {canvas,saved,current,action,scene,frame,points,station,aim,tilt,idle,keyboardGrab,keys};
+}
+(async()=>{
+  fs.mkdirSync(out,{recursive:true});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+  const report={checks:[],accessibility:[],screenshots:[],widths:[],errors:[],mutation,sourceBefore};let activePage;
+  async function open(options={}){const page=await browser.newPage({viewport:{width:1360,height:1000},reducedMotion:'reduce',...options});activePage=page;page.setDefaultTimeout(20000);page.on('pageerror',error=>report.errors.push(error.message));page.on('console',message=>{if(message.type()==='warning'&&message.text().startsWith('Kitchen Studio'))report.errors.push(message.text());});await page.goto('http://127.0.0.1:'+server.address().port+'/stem_lab/kitchen_studio/index.html');await page.locator('#scene canvas[data-targets]').waitFor();return page;}
+  async function shot(page,name){await page.locator('.scene-viewport').screenshot({path:path.join(out,name+'.png'),style:'.taskbar{visibility:hidden!important}'});report.screenshots.push(name+'.png');}
+  async function audit(page,label){await page.addScriptTag({path:path.join(root,'node_modules/axe-core/axe.min.js')});const issues=await page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','best-practice']}})).violations.map(issue=>({id:issue.id,targets:issue.nodes.map(node=>node.target)})));report.accessibility.push({label,issues});assert.deepEqual(issues,[],label);}
+  try{
+    const page=await open(),ui=controls(page);await ui.station();await page.locator('#studioControlledPour').click();let before=await ui.current(),baseline=await ui.scene(),g=await ui.aim();
+    await ui.tilt(g,15);reset(await ui.scene());assert.equal(await ui.canvas.getAttribute('data-measure-preview'),'0');unchanged(before,await ui.current());
+    await ui.tilt(g,25);let partial=await ui.scene(),thin=flow(partial,baseline);assert.equal(await ui.canvas.getAttribute('data-measure-preview'),'0');unchanged(before,await ui.current());await shot(page,'partial-flow-desktop');
+    await page.mouse.move(g.anchor.x,g.anchor.y+25*g.unit);await ui.frame();assert.deepEqual((await ui.scene()).stream,partial.stream,'Repeated sample does not accumulate stream scaling');
+    await ui.tilt(g,44);let full=flow(await ui.scene(),baseline,'full');assert.equal(await ui.canvas.getAttribute('data-measure-preview'),'50');unchanged(before,await ui.current());await shot(page,'full-flow-desktop');
+    await ui.tilt(g,25);let returned=flow(await ui.scene(),baseline);progression(thin,full,returned);assert.equal(await ui.canvas.getAttribute('data-measure-preview'),'50');unchanged(before,await ui.current());
+    await ui.tilt(g,0);reset(await ui.scene());assert.equal(await ui.canvas.getAttribute('data-pour-phase'),'ready');assert.equal(await ui.canvas.getAttribute('data-measure-preview'),'50');unchanged(before,await ui.current());await page.mouse.up();await ui.idle();onePour(before,await ui.current());const after=await ui.current();await page.mouse.up();unchanged(after,await ui.current());report.widths.push({input:'desktop',thin,full,returned});
+    report.checks.push('Actual stream width starts at the existing threshold, grows at full tilt, tapers on return, and remains connected to the rotated spout and unchanged liquid surface. Material/Y length stay correct, repeated samples do not accumulate, previews retain0/50mL semantics and one upright release adds50 once.');
+
+    for(const cancel of ['Escape','pointercancel','mode','text','resize','source']){
+      before=await ui.current();baseline=await ui.scene();g=await ui.aim();await ui.tilt(g,25);flow(await ui.scene(),baseline);unchanged(before,await ui.current());
+      if(cancel==='Escape')await page.keyboard.press('Escape');
+      if(cancel==='pointercancel')await ui.canvas.dispatchEvent('pointercancel',{pointerId:1,pointerType:'mouse',bubbles:true});
+      if(cancel==='mode')await page.locator('#studioPortionPour').evaluate(el=>el.click());
+      if(cancel==='text')await page.locator('#viewToggle').evaluate(el=>el.click());
+      if(cancel==='resize')await page.setViewportSize({width:1100,height:900});
+      if(cancel==='source')await page.locator('[data-action="add50"]').evaluate(el=>el.click());
+      await page.mouse.up();await ui.idle();if(cancel==='source'){onePour(before,await ui.current());assert.deepEqual((await ui.scene()).carton,baseline.carton);}else{unchanged(before,await ui.current(),cancel+' cancels without pouring');restored(baseline,await ui.scene());}
+      if(cancel==='mode')await page.locator('#studioControlledPour').click();if(cancel==='text')await page.locator('#viewToggle').click();if(cancel==='resize')await page.setViewportSize({width:1360,height:1000});
+    }
+    await page.locator('#studioPortionPour').click();before=await ui.current();baseline=await ui.scene();let p=await ui.points();await page.mouse.move(p.stockCarton.x,p.stockCarton.y);await page.mouse.down();await page.mouse.move(p.jugFill.x,p.jugFill.y,{steps:12});await ui.frame();flow(await ui.scene(),baseline,'full');unchanged(before,await ui.current());await page.mouse.up();await ui.idle();onePour(before,await ui.current(),'add150',150);
+    report.checks.push('Escape, pointer cancellation, technique/text/source changes and resize hide the stream and resetX/Z width. Cancelled carton and liquid poses restore exactly; the next ordinary150mL portion uses the original full-width stream and commits once.');
+
+    await page.locator('#studioControlledPour').click();before=await ui.current();baseline=await ui.scene();await ui.keyboardGrab();await ui.keys('t');await ui.keys('ArrowDown',13);thin=flow(await ui.scene(),baseline);assert.equal(await ui.canvas.getAttribute('data-measure-preview'),String(before.values.ml||0));unchanged(before,await ui.current());await ui.keys('ArrowDown',8);full=flow(await ui.scene(),baseline,'full');await ui.keys('ArrowUp',8);returned=flow(await ui.scene(),baseline);progression(thin,full,returned);unchanged(before,await ui.current());await page.keyboard.press('Escape');await ui.idle();restored(baseline,await ui.scene());unchanged(before,await ui.current());assert.equal(await page.locator('#studioKeyboardGrab').evaluate(el=>el===document.activeElement),true);
+    await ui.keyboardGrab();await ui.keys('t');await ui.keys('ArrowDown',21);await ui.keys('ArrowUp',21);reset(await ui.scene());unchanged(before,await ui.current());await page.keyboard.press('Enter');await ui.idle();onePour(before,await ui.current());report.widths.push({input:'Fine keyboard',thin,full,returned});
+    report.checks.push('Fine keyboard movement produces the same actual thinning/growth/taper. Escape restores the food-free measuring scene and Grab focus; a deliberate down/up cycle then releases one50mL action.');
+
+    await ui.action('empty');for(let i=0;i<6;i++)await ui.action('add150');await ui.action('add50');await ui.action('add50');before=await ui.current();g=await ui.aim();await ui.tilt(g,44);reset(await ui.scene());assert.equal(await ui.canvas.getAttribute('data-measure-preview'),'1000');unchanged(before,await ui.current());await ui.tilt(g,0);await page.mouse.up();await ui.idle();onePour(before,await ui.current());assert.equal((await ui.current()).values.ml,1000);
+    await page.locator('#retry').click();for(let i=0;i<3;i++)await ui.action('add150');await ui.action('check');assert.equal((await ui.current()).done,true);await page.locator('input[name=reason][value="0"]').check();await page.locator('#submit').click();if(!(await page.locator('#replayPanel').evaluate(el=>el.open)))await page.locator('#replayPanel>summary').click();await page.locator('#replayStep').fill('1');await page.locator('#replayStep').dispatchEvent('input');before=await ui.saved();baseline=await ui.scene();p=await ui.points();await page.mouse.move(p.stockCarton.x,p.stockCarton.y);await page.mouse.down();await page.mouse.move(p.jugFill.x,p.jugFill.y+44*(await ui.canvas.boundingBox()).height/420,{steps:12});await page.mouse.up();await ui.idle();unchanged(before,await ui.saved());restored(baseline,await ui.scene());assert.equal(await page.locator('#studioControlledPour').isDisabled(),true);await audit(page,'Desktop controlled flow and recorded measuring');await page.close();
+    report.checks.push('A full1000mL jug never streams or exceeds capacity. Completed/replayed measurements keep the exact original evidence, carton and liquid poses; locked controls and pointer gestures cannot create a flow or quantity.');
+
+    const phone=await open({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),mobile=controls(phone);await mobile.station();await phone.locator('#studioControlledPour').click();const cdp=await phone.context().newCDPSession(phone),touch=(type,q)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:['touchEnd','touchCancel'].includes(type)?[]:[{id:1,x:q.x,y:q.y,radiusX:4,radiusY:4,force:1}]});
+    async function touchAim(){const at=await mobile.points();await touch('touchStart',at.stockCarton);assert.equal(await mobile.canvas.getAttribute('data-held'),'stockCarton');for(let i=1;i<=12;i++)await touch('touchMove',{x:at.stockCarton.x+(at.jugFill.x-at.stockCarton.x)*i/12,y:at.stockCarton.y+(at.jugFill.y-at.stockCarton.y)*i/12});await mobile.frame();assert.equal(await mobile.canvas.getAttribute('data-pour-phase'),'tilt');return {anchor:JSON.parse(await mobile.canvas.getAttribute('data-pour-anchor')),unit:(await mobile.canvas.boundingBox()).height/420,last:0};}
+    async function touchTilt(at,pixels){for(let i=1;i<=8;i++)await touch('touchMove',{x:at.anchor.x,y:at.anchor.y+(at.last+(pixels-at.last)*i/8)*at.unit});at.last=pixels;await mobile.frame();}
+    before=await mobile.current();baseline=await mobile.scene();await mobile.points();const scroll=await phone.evaluate(()=>scrollY);g=await touchAim();await touchTilt(g,25);thin=flow(await mobile.scene(),baseline);unchanged(before,await mobile.current());await touchTilt(g,44);full=flow(await mobile.scene(),baseline,'full');await touchTilt(g,25);returned=flow(await mobile.scene(),baseline);progression(thin,full,returned);await touchTilt(g,0);reset(await mobile.scene());unchanged(before,await mobile.current());assert.equal(await phone.evaluate(()=>scrollY),scroll,'Real touch tipping does not scroll');await touch('touchEnd');await mobile.idle();onePour(before,await mobile.current());report.widths.push({input:'390px native touch',thin,full,returned});
+    await phone.setViewportSize({width:320,height:844});await mobile.points();before=await mobile.current();baseline=await mobile.scene();g=await touchAim();await touchTilt(g,25);thin=flow(await mobile.scene(),baseline);await shot(phone,'partial-flow-320');unchanged(before,await mobile.current());await touch('touchCancel');await mobile.idle();restored(baseline,await mobile.scene());unchanged(before,await mobile.current());assert.ok(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'320px measuring workspace has no horizontal overflow');await audit(phone,'320px controlled flow and native touch');await phone.close();report.widths.push({input:'320px native touch',thin});
+    report.checks.push('Native390px touch grows and tapers the actual stream without scrolling or premature additions. Native320px touch shows partial width, cancels to exact original poses, fits the viewport and passes accessibility checks.');
+    assert.deepEqual(report.errors,[]);report.pass=true;
+  }catch(error){report.pass=false;report.failure=error.stack;process.exitCode=1;if(activePage&&!activePage.isClosed()){report.canvas=await activePage.locator('#scene canvas').evaluate(el=>({...el.dataset})).catch(()=>null);report.scene=await activePage.evaluate(()=>window.__pourFlowScene.snapshot()).catch(()=>null);await activePage.screenshot({path:path.join(out,mutation?'mutation-failure.png':'failure.png')}).catch(()=>{});}}
+  finally{report.vendorResponses=vendorResponses;report.mutantResponses=mutantResponses;report.sourceAfter={helper:hash(helper),main:hash(main),vendor:hash(vendor)};report.sourceUnchanged=JSON.stringify(report.sourceBefore)===JSON.stringify(report.sourceAfter);if(!report.sourceUnchanged||!vendorResponses||mutation&&!mutantResponses){report.pass=false;report.failure=(report.failure||'')+'\nDisk-source or response-only observation integrity failed.';process.exitCode=1;}fs.writeFileSync(path.join(out,mutation?'mutation-results.json':'browser-results.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));await browser.close();await new Promise(resolve=>server.close(resolve));}
+})();

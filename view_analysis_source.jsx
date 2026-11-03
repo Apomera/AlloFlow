@@ -24,6 +24,18 @@ var _lazyIcon = function (name) {
   var ListOrdered = _lazyIcon('ListOrdered');
   var FileText = _lazyIcon('FileText');
   var Download = _lazyIcon('Download');
+  const analysisIdeaDrafts = new Map();
+  const analysisIdeaListeners = new Set();
+  const analysisIdeaSourceKey = text => { let a = 2166136261, b = 5381; for (let i = 0; i < text.length; i++) { a = Math.imul(a ^ text.charCodeAt(i), 16777619); b = Math.imul(b, 33) ^ text.charCodeAt(i); } return text.length + ':' + (a >>> 0).toString(16) + ':' + (b >>> 0).toString(16); };
+  function restoreAnalysisIdeaDrafts(saved, id, source) {
+    if (saved?.version !== 1 || saved.source !== analysisIdeaSourceKey(source) || !Array.isArray(saved.drafts)) return null;
+    const drafts = {};
+    saved.drafts.slice(-40).forEach(draft => {
+      if (!Number.isInteger(draft?.index) || draft.index < 0 || typeof draft.idea !== 'string' || draft.idea.length > 8000 || !['brainstorm', 'quiz', 'outline', 'sentence-frames'].includes(draft.type) || typeof draft.instructions !== 'string') return;
+      drafts[JSON.stringify([draft.index, draft.idea])] = { id, source, index: draft.index, idea: draft.idea, type: draft.type, instructions: draft.instructions.slice(0, 4000), pending: false, failed: !!(draft.failed || draft.pending) };
+    });
+    return { selected: Object.hasOwn(drafts, saved.selected) ? saved.selected : null, drafts };
+  }
   function AnalysisView(props) {
     // State reads
     var t = props.t;
@@ -100,6 +112,21 @@ var _lazyIcon = function (name) {
     </section>;
     // Model output can be malformed or from an older save: never dereference it blindly.
     const analysisData = generatedContent && generatedContent.data && typeof generatedContent.data === 'object' ? generatedContent.data : {};
+    const editedSource = analysisData.analysisNeedsRecheck === true;
+    const incomplete = analysisData.analysisIncomplete === true || window.AlloModules?.GenerationMatrix?.isIncompleteSourceAnalysis?.(generatedContent);
+    const coverage = window.AlloModules?.GenerationMatrix?.getSourceAnalysisCoverage?.(generatedContent);
+    const partial = coverage && !coverage.complete && !editedSource;
+    const needsRecheck = editedSource || incomplete || partial;
+    const [checkingEditedSource, setCheckingEditedSource] = React.useState(false);
+    const recheckInFlight = React.useRef(false);
+    async function recheckEditedSource() {
+      if (recheckInFlight.current || typeof props.onRecheckAnalysis !== 'function') return;
+      recheckInFlight.current = true;
+      setCheckingEditedSource(true);
+      try { await props.onRecheckAnalysis(generatedContent); }
+      catch (_) { addToast?.(analysisLabel('analysis.recheck_failed', 'The check did not finish. You can retry with the edited text.'), 'error'); }
+      finally { recheckInFlight.current = false; setCheckingEditedSource(false); }
+    }
     const asText = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '';
     const isUnreadableNote = value => !!value && typeof value === 'object';
     const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -131,15 +158,35 @@ var _lazyIcon = function (name) {
     const conceptList = (Array.isArray(concepts) ? concepts : [concepts]).map(asText).filter(concept => concept.trim());
     const baseReadingLevel = isRecord(analysisData.readingLevel) ? analysisData.readingLevel : null;
     const readingLevel = baseReadingLevel ? { ...baseReadingLevel, explanation: isRecord(reportData.readingLevel) ? reportData.readingLevel.explanation ?? baseReadingLevel.explanation : baseReadingLevel.explanation } : null;
-    const verifiedFactList = (Array.isArray(accuracy.verifiedFacts) ? accuracy.verifiedFacts : []).filter(fact => typeof fact === 'string' && fact.trim());
+    const factReader = window.AlloModules?.GenDispatcher?.getAnalysisFactRows;
+    const factRows = factReader ? factReader(baseAccuracy, translatedAccuracy) : ['verifiedFacts', 'unsourcedFacts'].flatMap(field =>
+      (Array.isArray(baseAccuracy[field]) ? baseAccuracy[field] : []).filter(fact => typeof fact === 'string' && fact.trim()).map(text => ({ text, sources: [] })));
+    const verifiedFactList = factRows.filter(row => row.sources.length);
+    const unsourcedFactList = factRows.filter(row => !row.sources.length);
     // Fit to the lesson's targets. The reading-level gap comes from the local Flesch-Kincaid
     // measurement and the grade calibration table, never from the AI's estimate. Depth of
     // Knowledge is the AI's estimate, shown with its reason.
     const fillLabel = (text, values) => String(text).replace(/\{(\w+)\}/g, (match, key) => values[key] != null ? values[key] : match);
-    const analysisTargets = isRecord(analysisData.analysisTargets) ? analysisData.analysisTargets : {};
-    const fitStats = isRecord(analysisData.localStats) ? analysisData.localStats : null;
+    const savedAnalysisTargets = isRecord(analysisData.analysisTargets) ? analysisData.analysisTargets : {};
+    const currentAnalysisTargets = isRecord(props.currentAnalysisTargets) ? props.currentAnalysisTargets : null;
+    const targetPair = targets => [asText(targets?.grade).trim(), asText(targets?.dok).trim()];
+    const targetsDiffer = !!currentAnalysisTargets && JSON.stringify(targetPair(currentAnalysisTargets)) !== JSON.stringify(targetPair(savedAnalysisTargets));
+    const comparisonKey = JSON.stringify([generatedContent?.id, analysisData.originalText, targetPair(savedAnalysisTargets), targetPair(currentAnalysisTargets)]);
+    const [selectedComparison, setSelectedComparison] = React.useState(null);
+    const comparingTargets = targetsDiffer && selectedComparison === comparisonKey;
+    const analysisTargets = comparingTargets ? currentAnalysisTargets : savedAnalysisTargets;
+    const measure = props.calculateReadability;
+    const savedStats = isRecord(analysisData.localStats) ? analysisData.localStats : null;
+    const fitStats = React.useMemo(() => {
+      const text = analysisData.originalText;
+      if (!savedStats || !measure || typeof text !== 'string') return savedStats;
+      // Some older reports measured a language excerpt. Only refresh a score
+      // when the current passage matches the words and syllables that were measured.
+      const fresh = measure(text);
+      return fresh && fresh.words === savedStats.words && fresh.syllables === savedStats.syllables ? fresh : savedStats;
+    }, [savedStats, measure, analysisData.originalText]);
     const complexityTarget = analysisTargets.grade && typeof readingApi?.getComplexityTarget === 'function' ? readingApi.getComplexityTarget(analysisTargets.grade) : null;
-    const measuredGrade = fitStats ? Number(fitStats.score) : NaN;
+    const measuredGrade = fitStats && fitStats.score != null && String(fitStats.score).trim() ? Number(fitStats.score) : NaN;
     const englishSource = typeof readingApi?.isEnglishLanguage !== 'function' || readingApi.isEnglishLanguage(asText(analysisData.sourceLanguage) || 'English');
     // The grade picker's own translated labels, keyed like its options.
     const gradeName = label => {
@@ -158,31 +205,119 @@ var _lazyIcon = function (name) {
     // The same level names the Depth of Knowledge setting shows (already translated).
     const dokName = level => analysisLabel('wizard.dok_levels.l' + level, ({ 1: 'Level 1: Recall & Reproduction', 2: 'Level 2: Skill/Concept', 3: 'Level 3: Strategic Thinking', 4: 'Level 4: Extended Thinking' })[level] || '');
     const dokIdeas = dok && Array.isArray(dok.ideas) ? dok.ideas.map(asText).filter(idea => idea.trim()) : [];
-    const targetFitCard = (gradeFit || (complexityTarget && !englishSource) || dok) && <section data-analysis-target-fit className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6 text-sm text-slate-700">
-      <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{analysisLabel('analysis.fit_title', 'Fit to your targets')}</h4>
+    const sourceText = asText(analysisData.originalText);
+    const detailed = generatedContent?.levelCheck;
+    const checkedLevel = detailed?.contentFingerprint && detailed.contentFingerprint === readingApi?.fingerprintText?.(sourceText)
+      && (!analysisTargets.grade || detailed.targetGradeLevel === analysisTargets.grade) ? detailed : null;
+    const estimate = asText(checkedLevel?.confirmedLevel || readingLevel?.range || (!readingLevel && analysisData.readingLevel));
+    // Compare only explicit school grade ranges, never a year, age or reading age.
+    const gradeRange = /^(?:grades?\s*)?(\d{1,2})(?:st|nd|rd|th)?(?:\s*(?:[-–—]|to)\s*(\d{1,2})(?:st|nd|rd|th)?)?(?:\s*grades?)?$/i.exec(estimate.trim());
+    const targetNumber = complexityTarget?.numericGrade;
+    const qualitativeFit = gradeRange && Number(gradeRange[1]) <= 12 && Number(gradeRange[2] || gradeRange[1]) <= 12 && Number.isFinite(targetNumber)
+      ? Number(gradeRange[1]) > targetNumber ? 'above' : Number(gradeRange[2] || gradeRange[1]) < targetNumber ? 'below' : 'within' : null;
+    const ideaDraftKey = JSON.stringify([generatedContent?.id, sourceText]);
+    if (!analysisIdeaDrafts.has(ideaDraftKey)) {
+      const restored = restoreAnalysisIdeaDrafts(analysisData.analysisIdeaDrafts, generatedContent?.id, sourceText);
+      if (restored) { analysisIdeaDrafts.set(ideaDraftKey, restored); while (analysisIdeaDrafts.size > 10) analysisIdeaDrafts.delete(analysisIdeaDrafts.keys().next().value); }
+    }
+    const [ideaState, setIdeaState] = React.useState(() => analysisIdeaDrafts.get(ideaDraftKey) || null);
+    const ideaOwnerRef = React.useRef(ideaDraftKey);
+    ideaOwnerRef.current = ideaDraftKey;
+    React.useEffect(() => { const update = (key, value) => { if (ideaOwnerRef.current === key) setIdeaState(value); }; analysisIdeaListeners.add(update); return () => analysisIdeaListeners.delete(update); }, []);
+    React.useEffect(() => { setIdeaState(analysisIdeaDrafts.get(ideaDraftKey) || null); }, [ideaDraftKey]);
+    const rememberIdeaState = (key, value) => {
+      if (value) { analysisIdeaDrafts.delete(key); analysisIdeaDrafts.set(key, value); while (analysisIdeaDrafts.size > 10) analysisIdeaDrafts.delete(analysisIdeaDrafts.keys().next().value); }
+      else analysisIdeaDrafts.delete(key);
+      analysisIdeaListeners.forEach(update => update(key, value));
+      const saved = value ? { version: 1, source: analysisIdeaSourceKey(sourceText), selected: value.selected, drafts: Object.values(value.drafts).slice(-40).map(({ index, idea, type, instructions, pending, failed }) => ({ index, idea, type, instructions, pending: !!pending, failed: !!failed })) } : null;
+      updateAnalysisResource(item => item?.id === generatedContent?.id && item.data?.originalText === sourceText ? { ...item, data: { ...item.data, analysisIdeaDrafts: saved } } : item);
+    };
+    const selectIdea = (index, idea) => {
+      const state = analysisIdeaDrafts.get(ideaDraftKey) || { selected: null, drafts: {} }, key = JSON.stringify([index, idea]);
+      rememberIdeaState(ideaDraftKey, { selected: state.selected === key ? null : key, drafts: { ...state.drafts, [key]: state.drafts[key] || { id: generatedContent.id, source: sourceText, index, idea, type: 'brainstorm', instructions: idea } } });
+    };
+    const setIdeaDraft = value => {
+      const state = analysisIdeaDrafts.get(ideaDraftKey);
+      if (state?.selected) rememberIdeaState(ideaDraftKey, { ...state, drafts: { ...state.drafts, [state.selected]: value } });
+    };
+    const submitAnalysisIdea = async event => {
+      event.preventDefault();
+      const state = analysisIdeaDrafts.get(ideaDraftKey), selected = state?.selected, draft = state?.drafts[selected];
+      if (!draft?.instructions.trim() || Object.values(state.drafts).some(value => value.pending) || isProcessing || !ideaTypes.some(([type]) => type === draft.type)) return;
+      const key = ideaDraftKey, pending = { ...draft, pending: true, failed: false };
+      rememberIdeaState(key, { ...state, drafts: { ...state.drafts, [selected]: pending } });
+      const finish = success => {
+        const latest = analysisIdeaDrafts.get(key);
+        if (latest?.drafts[selected] !== pending) return;
+        const drafts = { ...latest.drafts };
+        if (success) delete drafts[selected]; else drafts[selected] = { ...pending, pending: false, failed: true };
+        rememberIdeaState(key, { selected: success && latest.selected === selected ? null : latest.selected, drafts });
+      };
+      try { const result = await props.onGenerateFromIdea(pending.type, pending.instructions.trim()); finish(!!result?.id && result.type === pending.type); }
+      catch (_) { finish(false); }
+    };
+    const ideaDraft = ideaState?.drafts[ideaState.selected];
+    const activeIdea = ideaDraft?.id === generatedContent?.id && ideaDraft?.source === sourceText && dokIdeas[ideaDraft.index] === ideaDraft.idea ? ideaDraft : null;
+    const ideaTypes = [
+      ['brainstorm', analysisLabel('sidebar.tool_brainstorm', 'Discussion activity')],
+      ['quiz', analysisLabel('sidebar.tool_quiz', 'Quiz')],
+      ['outline', analysisLabel('sidebar.tool_outline', 'Graphic organizer')],
+      ['sentence-frames', analysisLabel('sidebar.tool_sentence_frames', 'Sentence frames')]
+    ];
+    const targetFitCard = (targetsDiffer || gradeFit || (complexityTarget && !englishSource) || dok) && <section data-analysis-target-fit className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6 text-sm text-slate-700">
+      <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{analysisLabel(comparingTargets ? 'analysis.fit_current_title' : 'analysis.fit_saved_title', comparingTargets ? 'Fit to current targets' : 'Fit to saved targets')}</h4>
+      {targetsDiffer && <div data-analysis-target-comparison className="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+        <p><strong>{analysisLabel('analysis.saved_targets', 'Saved report targets')}:</strong> {gradeName(savedAnalysisTargets.grade || '') || '—'} · {asText(savedAnalysisTargets.dok) || '—'}</p>
+        <p><strong>{analysisLabel('analysis.current_targets', 'Current settings')}:</strong> {gradeName(currentAnalysisTargets.grade || '') || '—'} · {asText(currentAnalysisTargets.dok) || '—'}</p>
+        <button type="button" aria-pressed={comparingTargets} className="my-2 min-h-11 rounded border border-indigo-600 bg-white px-3 font-semibold text-indigo-900" onClick={() => setSelectedComparison(comparingTargets ? null : comparisonKey)}>{comparingTargets ? analysisLabel('analysis.show_saved_targets', 'Show saved targets') : analysisLabel('analysis.compare_current_targets', 'Compare with current targets')}</button>
+        {comparingTargets && <p role="status">{analysisLabel('analysis.comparison_only', 'This comparison uses the report’s existing estimates. No new analysis is run, and the saved report is unchanged.')}</p>}
+      </div>}
       {gradeFit && englishSource && <div data-grade-fit={gradeFit.status} className="mb-3">
+        <p className="font-semibold">{analysisLabel('analysis.formula_estimate', 'Sentence and word length')}</p>
         <p className="leading-relaxed">{fillLabel(gradeFit.status === 'within' ? analysisLabel('analysis.fit_within', 'Reads within your target for {grade} (Flesch-Kincaid {range}).')
           : gradeFit.status === 'above' ? analysisLabel('analysis.fit_above', 'Reads above your target for {grade}: Flesch-Kincaid {score}, target {range}.')
-          : analysisLabel('analysis.fit_below', 'Reads below your target for {grade}: Flesch-Kincaid {score}, target {range}. That suits independent reading; for instruction, a richer text or more subject vocabulary would stretch students.'), gradeFit)}</p>
+          : analysisLabel('analysis.fit_below', 'Flesch-Kincaid {score} is below the reference range for {grade} ({range}).'), gradeFit)}</p>
         {gradeFit.status === 'above' && <ul className="mt-2 list-disc pl-5 space-y-1">
           {gradeFit.asl > gradeFit.aslMax && <li data-fit-tip="sentences">{fillLabel(analysisLabel('analysis.fit_sentences', 'Sentences average {value} words; for this grade aim for about {max} or fewer.'), { value: gradeFit.asl.toFixed(1), max: gradeFit.aslMax })}</li>}
           {gradeFit.asw > gradeFit.aswMax && <li data-fit-tip="syllables">{fillLabel(analysisLabel('analysis.fit_syllables', 'Words average {value} syllables; for this grade aim for about {max} or fewer.'), { value: gradeFit.asw.toFixed(2), max: gradeFit.aswMax.toFixed(2) })}</li>}
         </ul>}
       </div>}
       {complexityTarget && !englishSource && <p className="mb-3 leading-relaxed">{analysisLabel('analysis.fit_not_english', 'Readability formulas measure English text only, so there is no grade comparison for this source.')}</p>}
+      {complexityTarget && estimate && <div data-qualitative-fit={qualitativeFit || 'unclassified'} className="mb-3">
+        <p><strong>{analysisLabel('analysis.qualitative_estimate', 'AI estimate of reading demands')}</strong> · {gradeName(estimate)}</p>
+        {readingLevel?.explanation && !checkedLevel && <p>{formatInlineText(asText(readingLevel.explanation), false)}</p>}
+        {gradeFit && englishSource && qualitativeFit && qualitativeFit !== gradeFit.status && <p data-fit-disagreement className="mt-2 rounded-lg bg-amber-50 p-2 text-amber-950">{analysisLabel('analysis.fit_disagreement', 'The estimates differ. Consider the vocabulary, concepts and background knowledge this passage asks of your readers.')}</p>}
+      </div>}
+      {!comparingTargets && complexityTarget && sourceText && typeof props.onCheckSourceLevel === 'function' && <details className="mb-3 rounded-lg border p-3">
+        <summary className="cursor-pointer font-semibold">{analysisLabel('analysis.detailed_level', 'Detailed level check')}</summary>
+        {checkedLevel && <div className="mt-2" data-source-level-rubric><p>{asText(checkedLevel.nuanceSummary || checkedLevel.feedback)}</p>
+          <dl>{[['vocabulary', 'Vocabulary'], ['sentenceStructure', 'Sentence structure'], ['conceptDensity', 'Concept density']].map(([key, label]) => {
+            const row = checkedLevel.rubric?.[key]; return row && <React.Fragment key={key}><dt className="mt-2 font-semibold">{analysisLabel('analysis.rubric_' + key, label)}{Number.isFinite(row.score) ? ' (' + (row.score > 0 ? '+' : '') + row.score + ')' : ''}</dt><dd>{asText(row.reason)}</dd></React.Fragment>;
+          })}</dl>{checkedLevel.checkedChars < checkedLevel.totalChars && <p>{fillLabel(analysisLabel('analysis.checked_excerpt', 'Based on the first {count} characters.'), { count: checkedLevel.checkedChars })}</p>}</div>}
+        <p className="my-2">{analysisLabel('analysis.level_help', 'Use the same two-pass review as Adapted Text to check vocabulary, sentence structure and concept density against your target grade.')}</p>
+        <button type="button" disabled={props.isCheckingLevel === true || isProcessing} onClick={props.onCheckSourceLevel} className="min-h-11 rounded border px-3 font-bold">{props.isCheckingLevel === true ? analysisLabel('simplified.checking', 'Checking…') : analysisLabel('simplified.check_level', 'Check level')}</button>
+      </details>}
       {dok && <div data-dok-level={dok.level} data-dok-target={dokTarget || undefined}>
         <p className="leading-relaxed"><strong>{fillLabel(analysisLabel('analysis.dok_supports', 'This text supports up to Depth of Knowledge {name}.'), { name: dokName(dok.level) })}</strong>{asText(dok.reason) ? ' ' : ''}{formatInlineText(asText(dok.reason), false)}</p>
         {dokTarget && <p className="mt-1 leading-relaxed">{fillLabel(dok.level >= dokTarget ? analysisLabel('analysis.dok_target_met', 'Your target is DOK {target}; this text can support it.') : analysisLabel('analysis.dok_target_below', 'Your target is DOK {target}; this text alone reaches DOK {level}.'), { target: dokTarget, level: dok.level })}</p>}
         {dokIdeas.length > 0 && <><h5 className="mt-3 text-xs font-bold text-slate-600">{dokTarget && dok.level < dokTarget ? analysisLabel('analysis.dok_ideas_reach', 'Ideas to reach your target') : analysisLabel('analysis.dok_ideas_beyond', 'Ideas to go further')}</h5>
-          <ul className="mt-1 list-disc pl-5 space-y-1">{dokIdeas.map((idea, index) => <li key={index}>{formatInlineText(idea, false)}</li>)}</ul></>}
+          <ul className="mt-1 list-disc pl-5 space-y-2">{dokIdeas.map((idea, index) => <li key={index}>{formatInlineText(idea, false)}
+            {!comparingTargets && sourceText && typeof props.onGenerateFromIdea === 'function' && <button type="button" className="ms-2 min-h-11 rounded px-2 font-semibold text-indigo-800 underline" disabled={isProcessing || !!activeIdea?.pending} aria-expanded={activeIdea?.index === index} onClick={() => selectIdea(index, idea)}>{analysisLabel('analysis.use_idea', 'Use this idea')}</button>}
+            {!comparingTargets && activeIdea?.index === index && <form className="mt-2 grid gap-2 rounded-lg border p-3" onSubmit={submitAnalysisIdea}>
+              {activeIdea.failed && <p role="status">{analysisLabel('analysis.idea_retry_kept', 'Generation did not finish. Your resource choice and instructions are still here. Edit them or try again.')}</p>}
+              <label>{analysisLabel('analysis.idea_resource', 'Resource to create')} <select disabled={isProcessing || !!activeIdea.pending} value={activeIdea.type} onChange={event => setIdeaDraft({ ...activeIdea, type: event.target.value })}>{ideaTypes.map(([type, label]) => <option key={type} value={type}>{label}</option>)}</select></label>
+              <label>{analysisLabel('analysis.idea_instructions', 'Instructions for this resource')}<textarea className="mt-1 block w-full rounded border p-2" rows={3} maxLength={4000} disabled={isProcessing || !!activeIdea.pending} value={activeIdea.instructions} onChange={event => setIdeaDraft({ ...activeIdea, instructions: event.target.value })} /></label>
+              <button type="submit" disabled={isProcessing || !!activeIdea.pending || !activeIdea.instructions.trim()} className="min-h-11 justify-self-start rounded-lg bg-indigo-700 px-3 font-bold text-white">{analysisLabel('analysis.generate_resource', 'Generate resource')}</button>
+            </form>}</li>)}</ul></>}
       </div>}
     </section>;
     // Only a web search with attributable sources verifies accuracy. Older reports carry no
     // marker; their citations are the evidence that a search ran.
-    const accuracyVerified = baseAccuracy.verification === 'web-search' || (!baseAccuracy.verification && !!asText(baseAccuracy.citations).trim());
+    const accuracyVerified = verifiedFactList.length > 0 || (factReader && factReader({ ...baseAccuracy,
+      verifiedFacts: baseAccuracy.discrepancies, unsourcedFacts: [] }).some(row => row.sources.length));
     const showAiRating = !accuracyVerified && baseAccuracy.verificationNote !== 'search-unavailable' && !/^not (?:web-)?verified$/i.test(accuracyRating);
     const accuracyBadge = accuracyVerified
-      ? <span data-accuracy-verification="web-search" className={`px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border ${accuracyRating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{accuracyRating}</span>
+      ? <span data-accuracy-verification="web-search" className={`px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border ${accuracyRating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{fillLabel(analysisLabel('analysis.accuracy_ai_rating', 'AI rating: {rating}'), { rating: accuracyRating })}</span>
       : <span data-accuracy-verification="ai-estimate" className="flex flex-wrap items-center gap-2"><span className="px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide border bg-slate-100 text-slate-700 border-slate-300">{analysisLabel('analysis.accuracy_ai_estimate', 'AI estimate, not verified')}</span>{showAiRating && <span className="text-xs text-slate-600">{fillLabel(analysisLabel('analysis.accuracy_ai_rating', 'AI rating: {rating}'), { rating: accuracyRating })}</span>}</span>;
     const DISCREPANCY_FIXED_PREFIX = '✓ FIXED: ';
     const isFixedDiscrepancy = note => typeof note === 'string' && note.startsWith('✓ FIXED:');
@@ -262,9 +397,31 @@ var _lazyIcon = function (name) {
     const reportLanguageControl = reportLanguages.length > 0 && <section data-analysis-report-language className="rounded-xl border border-slate-300 bg-white p-4 text-sm text-slate-800"><label className="flex flex-wrap items-center gap-3 font-bold">{analysisLabel('analysis.report_language', 'Report language')}<select aria-label={analysisLabel('analysis.report_language', 'Report language')} value={selectedReportLanguage} onChange={event => changeReportLanguage(event.target.value)} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3"><option value={baseReportLanguage}>{baseReportLanguage || analysisLabel('analysis.original_report', 'Original report')}</option>{reportLanguages.map(language => <option key={language} value={language}>{language}</option>)}</select></label><p className="mt-2 text-xs text-slate-600">{analysisLabel('analysis.report_source_note', 'All report languages describe the original source. Reading-level results apply to that source.')}</p>{isTranslatedReport && <p role="status" className="mt-2 text-xs text-slate-700">{analysisLabel('analysis.report_correction_note', 'Select the original report language to correct or dismiss findings.')}</p>}</section>;
     const includeTitle = analysisLabel('analysis.include_in_correction', 'Include in correction');
     const ignoreTitle = analysisLabel('analysis.ignore_this_error', 'Ignore this error');
-    return <div className="space-y-6">{isTeacherMode ? readingRoleControl : readWithSupportsButton}{isTeacherMode && reportLanguageControl}{isTeacherMode && <><div className="bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6"><p className="text-sm text-slate-800" dangerouslySetInnerHTML={{
+    return <div className="space-y-6">{isTeacherMode ? readingRoleControl : readWithSupportsButton}
+      {isTeacherMode && needsRecheck && <section data-analysis-needs-recheck className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+        <h4 className="font-bold">{editedSource ? analysisLabel('analysis.needs_recheck', 'Needs recheck') : partial ? analysisLabel('analysis.partial', 'Partial analysis') : analysisLabel('analysis.incomplete', 'Analysis incomplete')}</h4>
+        <p className="mt-1">{editedSource ? analysisLabel('analysis.recheck_reason', 'The source text changed. Run the analysis again to check its concepts, accuracy and reading demands.') : partial ? (coverage.legacy ? analysisLabel('analysis.legacy_excerpt', 'This earlier local check used an excerpt. Check all sections to verify the full passage.') : fillLabel(analysisLabel('analysis.coverage_progress', 'AI checked {through} of {total} characters. The readability estimate uses the full passage.'), coverage)) : analysisLabel('analysis.incomplete_reason', 'The check did not return a usable report. Your source is saved. You can retry the analysis.')}</p>
+        {englishSource && Number.isFinite(measuredGrade) && <p className="mt-2" data-current-local-readability>{fillLabel(analysisLabel('analysis.edited_readability', 'Current Flesch–Kincaid estimate: {score}.'), { score: measuredGrade.toFixed(1) })}</p>}
+        {typeof props.onRecheckAnalysis === 'function' && <button type="button" disabled={isProcessing || checkingEditedSource || !sourceText.trim()} aria-busy={checkingEditedSource} onClick={recheckEditedSource} className="mt-2 min-h-11 rounded-lg bg-indigo-700 px-3 font-bold text-white disabled:opacity-50">{checkingEditedSource ? analysisLabel('simplified.checking', 'Checking…') : editedSource ? analysisLabel('analysis.recheck_action', 'Recheck edited source') : partial ? (coverage.legacy ? analysisLabel('analysis.check_all_sections', 'Check all sections') : analysisLabel('analysis.check_remaining', 'Check remaining sections')) : analysisLabel('analysis.retry', 'Retry analysis')}</button>}
+      </section>}
+      {isTeacherMode && coverage?.sections.length > 0 && <section data-analysis-coverage className="rounded-xl border border-slate-300 bg-white p-4 text-sm">
+        <h4 className="font-bold">{analysisLabel('analysis.section_findings', 'AI findings by section')}</h4>
+        {coverage.complete && <p>{fillLabel(analysisLabel('analysis.coverage_progress', 'AI checked {through} of {total} characters. The readability estimate uses the full passage.'), coverage)}</p>}
+        {coverage.sections.map(({ start, end, report }, index) => <details key={start} className="mt-2 rounded-lg border border-slate-200 p-2">
+          <summary className="cursor-pointer font-semibold">{fillLabel(analysisLabel('analysis.section_range', 'Section {number} · characters {start}–{end}'), { number: index + 1, start: start + 1, end })}</summary>
+          <blockquote className="my-2 border-l-2 pl-2">{sourceText.slice(start, Math.min(end, start + 150))}{end - start > 150 ? '…' : ''}</blockquote>
+          <p>{[report.readingLevel?.range, report.readingLevel?.explanation].map(asText).filter(Boolean).join(' · ')}</p>
+          {Array.isArray(report.concepts) && <p>{report.concepts.map(asText).filter(Boolean).join(', ')}</p>}
+          {report.depthOfKnowledge?.level && <p>DOK {asText(report.depthOfKnowledge.level)} · {asText(report.depthOfKnowledge.reason)}</p>}
+          <p>{[report.accuracy?.rating, report.accuracy?.reason].map(asText).filter(Boolean).join(' · ')}</p>
+          {partial && factReader && factReader({ ...report.accuracy, verification: 'ai-estimate' }).map((row, i) =>
+            <p key={i}><strong>{analysisLabel('analysis.needs_source', 'Needs a source')}</strong> · {row.text}</p>)}
+          {Array.isArray(report.grammar) && report.grammar.map((note, i) => <p key={i}>{asText(note)}</p>)}
+        </details>)}
+      </section>}
+      {isTeacherMode && !needsRecheck && reportLanguageControl}{isTeacherMode && !needsRecheck && <><div className="bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6"><p className="text-sm text-slate-800" dangerouslySetInnerHTML={{
           __html: t('analysis.header_description')
-        }} /></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_complexity')}</h4>{readingLevel ? <><div className="text-2xl font-bold text-indigo-600 mb-2">{asText(readingLevel.range) || 'N/A'}</div><div className="text-sm text-slate-600 leading-relaxed">{formatInlineText(asText(readingLevel.explanation), false)}</div></> : <div className="text-2xl font-bold text-indigo-600">{asText(analysisData.readingLevel)}</div>}{generatedContent?.data.localStats && <div className="mt-auto pt-4 border-t border-slate-100"><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-slate-600">{t('analysis.readability.fk_score')}</span><span className="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded cursor-help border border-indigo-100" title={`${t('analysis.readability.formula')}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n\n${t('analysis.readability.words')}: ${generatedContent?.data.localStats.words}\n${t('analysis.readability.sentences')}: ${generatedContent?.data.localStats.sentences}\n${t('analysis.readability.syllables')}: ${generatedContent?.data.localStats.syllables}\n\nASL (${t('analysis.readability.asl')}): ${(generatedContent?.data.localStats.words / generatedContent?.data.localStats.sentences).toFixed(2)}\nASW (${t('analysis.readability.asw')}): ${(generatedContent?.data.localStats.syllables / generatedContent?.data.localStats.words).toFixed(2)}`}>{generatedContent?.data.localStats.score}</span></div><div className="grid grid-cols-3 gap-2 text-[11px] text-slate-600 text-center"><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{generatedContent?.data.localStats.words}</span> {t('analysis.readability.label_words')}</div><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{generatedContent?.data.localStats.sentences}</span> {t('analysis.readability.label_sent')}</div><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{generatedContent?.data.localStats.syllables}</span> {t('analysis.readability.label_syll')}</div></div></div>}</div><div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_concepts')}</h4><div className="flex flex-wrap gap-2 content-start">{conceptList.map((concept, idx) => <span key={idx} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium border border-indigo-100">{formatInlineText(concept, false)}</span>)}</div></div></div>{targetFitCard}{learnerBarriersCard}<div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"><div className="flex flex-wrap items-center gap-3 mb-3"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_verification')}</h4>{accuracyBadge}</div><p className="text-sm text-slate-600 leading-relaxed">{formatInlineText(asText(accuracy.reason), false)}</p>{asText(accuracy.verificationDetails) && <div className="mt-4 pt-4 border-t border-slate-100"><h5 className="text-[11px] font-bold text-blue-500 uppercase tracking-wider mb-2 flex items-center gap-1"><Search size={10} /> {t('analysis.verification_details')}</h5><div className="text-xs text-slate-600 bg-blue-50 p-3 rounded border border-blue-100 leading-relaxed">{renderFormattedText(asText(accuracy.verificationDetails), false)}</div></div>}{(() => {
+        }} /></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_complexity')}</h4>{readingLevel ? <><div className="text-2xl font-bold text-indigo-600 mb-2">{asText(readingLevel.range) || 'N/A'}</div><div className="text-sm text-slate-600 leading-relaxed">{formatInlineText(asText(readingLevel.explanation), false)}</div></> : <div className="text-2xl font-bold text-indigo-600">{asText(analysisData.readingLevel)}</div>}{fitStats && <div className="mt-auto pt-4 border-t border-slate-100"><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-slate-600">{t('analysis.readability.fk_score')}</span><span className="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded cursor-help border border-indigo-100" title={`${t('analysis.readability.formula')}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n\n${t('analysis.readability.words')}: ${fitStats.words}\n${t('analysis.readability.sentences')}: ${fitStats.sentences}\n${t('analysis.readability.syllables')}: ${fitStats.syllables}\n\nASL (${t('analysis.readability.asl')}): ${(fitStats.words / fitStats.sentences).toFixed(2)}\nASW (${t('analysis.readability.asw')}): ${(fitStats.syllables / fitStats.words).toFixed(2)}`}>{fitStats.score}</span></div><div className="grid grid-cols-3 gap-2 text-[11px] text-slate-600 text-center"><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{fitStats.words}</span> {t('analysis.readability.label_words')}</div><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{fitStats.sentences}</span> {t('analysis.readability.label_sent')}</div><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{fitStats.syllables}</span> {t('analysis.readability.label_syll')}</div></div></div>}</div><div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_concepts')}</h4><div className="flex flex-wrap gap-2 content-start">{conceptList.map((concept, idx) => <span key={idx} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium border border-indigo-100">{formatInlineText(concept, false)}</span>)}</div></div></div>{targetFitCard}{learnerBarriersCard}<div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"><div className="flex flex-wrap items-center gap-3 mb-3"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_verification')}</h4>{accuracyBadge}</div><p className="text-sm text-slate-600 leading-relaxed">{formatInlineText(asText(accuracy.reason), false)}</p>{asText(accuracy.verificationDetails) && <div className="mt-4 pt-4 border-t border-slate-100"><h5 className="text-[11px] font-bold text-blue-500 uppercase tracking-wider mb-2 flex items-center gap-1"><Search size={10} /> {t('analysis.verification_details')}</h5><div className="text-xs text-slate-600 bg-blue-50 p-3 rounded border border-blue-100 leading-relaxed">{renderFormattedText(asText(accuracy.verificationDetails), false)}</div></div>}{(() => {
           const shownDiscrepancies = Array.isArray(accuracy.discrepancies) ? accuracy.discrepancies : [];
           const baseDiscrepancies = Array.isArray(baseAccuracy.discrepancies) ? baseAccuracy.discrepancies : [];
           // A translated report keeps the fixed status of the source-language note it explains.
@@ -287,8 +444,14 @@ var _lazyIcon = function (name) {
           const hasDiscrepancies = realDiscrepancies.length > 0;
           const hasVerifiedFacts = verifiedFactList.length > 0;
           const unreadableNotice = unreadableDiscrepancies > 0 && <p role="status" className="mt-4 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded p-2">{analysisLabel('analysis.accuracy_unreadable', 'Some accuracy notes could not be read. Run the analysis again to review them.')}</p>;
-          if (!hasDiscrepancies && !hasVerifiedFacts) return unreadableNotice || null;
-          return <>{unreadableNotice}<div className={`mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 ${hasDiscrepancies ? 'md:grid-cols-2' : ''} gap-4`}>{hasVerifiedFacts && <div className="bg-green-50 p-3 rounded border border-green-100"><h5 className="text-[11px] font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-1"><CheckCircle2 size={10} /> {t('analysis.verified_facts')}</h5><div className="text-xs text-slate-700 leading-relaxed space-y-1">{verifiedFactList.map((f, i) => <div key={i} className="flex items-start gap-2"><span className="font-bold text-green-800 min-w-[2em] text-right shrink-0">{i + 1}.</span><div className="flex-1"><BilingualFieldRenderer text={f} /></div></div>)}</div></div>}{hasDiscrepancies && <div className="bg-red-50 p-3 rounded border border-red-100 relative"><h5 className="text-[11px] font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1"><AlertCircle size={10} /> {t('analysis.discrepancies')}</h5><div className="space-y-2 mb-3">{rawDiscrepancies.map((d, i) => {
+          if (!hasDiscrepancies && !hasVerifiedFacts && !unsourcedFactList.length) return unreadableNotice || null;
+          return <>{unreadableNotice}<div className={`mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 ${hasDiscrepancies ? 'md:grid-cols-2' : ''} gap-4`}>{hasVerifiedFacts && <section data-analysis-facts="verified" className="rounded border border-green-100 bg-green-50 p-3">
+              <h5 className="mb-2 text-xs font-bold text-green-800">{t('analysis.verified_facts')}</h5>
+              <ol className="list-decimal space-y-3 pl-5 text-sm">{verifiedFactList.map((row, i) => <li key={i}>
+                <p>{row.text}</p><ul className="mt-1 flex flex-wrap gap-x-3">{row.sources.map(source => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-800 underline">{source.title}</a></li>)}</ul>
+              </li>)}</ol></section>}
+              {unsourcedFactList.length > 0 && <section data-analysis-facts="unsourced" className="rounded border border-amber-200 bg-amber-50 p-3"><h5 className="mb-2 text-xs font-bold text-amber-900">{analysisLabel('analysis.needs_source', 'Needs a source')}</h5>
+                <ul className="list-disc space-y-2 pl-5 text-sm">{unsourcedFactList.map((row, i) => <li key={i}>{row.text}</li>)}</ul></section>}{hasDiscrepancies && <div className="bg-red-50 p-3 rounded border border-red-100 relative"><h5 className="text-[11px] font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1"><AlertCircle size={10} /> {t('analysis.discrepancies')}</h5><div className="space-y-2 mb-3">{rawDiscrepancies.map((d, i) => {
                   if (isInvalidDiscrepancy(d)) return null;
                   if (isFixedDiscrepancy(d)) return <div key={i} data-discrepancy-fixed className="flex items-start gap-2 p-1.5 rounded bg-green-50 border border-green-100"><CheckCircle2 size={14} className="text-green-700 mt-0.5 shrink-0" aria-hidden="true" /><div className="text-xs text-slate-700 leading-relaxed w-full"><BilingualFieldRenderer text={d.slice(DISCREPANCY_FIXED_PREFIX.length)} /> <span className="inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-200 text-green-900">{analysisLabel('analysis.factual_fixed_tag', 'Fixed in source')}</span></div></div>;
                   const isSelected = isTranslatedReport || selectedDiscrepancies.has(i);

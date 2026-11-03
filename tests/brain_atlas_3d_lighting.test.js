@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createRequire } from 'node:module';
-import { loadTool, makeCtx, newStore, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
-
-const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
-const flatten = node => !node || typeof node !== 'object' ? [] : (Array.isArray(node) ? node.flatMap(flatten) : [node, ...flatten(node.props?.children)]);
+import { resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { mountBrainAtlasScene, THREE } from './helpers/brain_atlas_3d_scene.js';
 let frames;
 let nextFrame;
 let activeState;
@@ -40,39 +37,7 @@ async function mountScene() {
   const root = new THREE.Group();
   root.add(mesh);
 
-  // Keep actual THREE scene, camera, materials, lights, and matrix transforms.
-  // Only the GPU boundary, pointer controls, and network model load are stubbed.
-  class Renderer {
-    setClearColor() {}
-    setPixelRatio() {}
-    setSize() {}
-    render = vi.fn(scene => scene.updateMatrixWorld(true));
-    dispose = vi.fn();
-  }
-  class Controls extends THREE.EventDispatcher {
-    target = new THREE.Vector3();
-    update() {}
-    dispose() {}
-  }
-  class Loader {
-    setMeshoptDecoder() {}
-    load(url, onLoad) { onLoad({ scene: root }); }
-  }
-  window.__alloBrainAtlas3DDependencies = Promise.resolve({
-    THREE: { ...THREE, WebGLRenderer: Renderer, OrbitControls: Controls, GLTFLoader: Loader },
-    MeshoptDecoder: {}
-  });
-  const tool = loadTool('stem_lab/stem_tool_brainatlas.js', 'brainAtlas');
-  const store = newStore({ brainAtlas: { view: 'lateral', atlasDisplayMode: '3d' } });
-  const nodes = flatten(tool.render(makeCtx({}, store)));
-  const canvasNode = nodes.find(node => node.props?.['data-brainatlas-3d-canvas'] === 'true');
-  const stage = document.createElement('div');
-  const canvas = document.createElement('canvas');
-  stage.appendChild(canvas);
-  document.body.appendChild(stage);
-  canvasNode.ref(canvas);
-  await Promise.resolve();
-  activeState = canvas._brain3DState;
+  activeState = (await mountBrainAtlasScene(root)).state;
   expect(activeState.ready).toBe(true);
   originalMaterial.dispose();
   return { state: activeState, geometry, positions, normals };

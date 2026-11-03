@@ -332,33 +332,44 @@ describe('walkthrough copilot panel delivery setup', () => {
   });
 
   it('connects, self-tests, and reports the owner', async () => {
-    fetchResponder = (body) => body.action === 'claim'
-      ? { ok: true, token: 'tok-abc', owner: 'principal@school.org', version: 1 }
-      : { ok: true, owner: 'principal@school.org', folderName: 'AlloFlow Walkthrough Records', allowedDomain: 'school.org', canSendMail: true };
+    fetchResponder = () => ({ ok: true, owner: 'principal@school.org', folderName: 'AlloFlow Walkthrough Records', allowedDomain: 'school.org', canSendMail: true });
 
     const c = mount();
     clickText(c, 'Set up delivery');
     setField(c, '#wcop-exec-url', EXEC_URL);
+    expect(c.querySelector('#wcop-owner-token').type).toBe('password');
+    setField(c, '#wcop-owner-token', 'tok-abc');
     await act(async () => {
       buttons(c).find((b) => b.textContent.includes('Connect'))
         .dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
     });
 
-    expect(fetchCalls[0].body.action).toBe('claim');
+    expect(fetchCalls).toHaveLength(1);
+    expect(fetchCalls[0].body).toMatchObject({ action: 'selftest', token: 'tok-abc' });
     expect(fetchCalls[0].options.headers['Content-Type']).toMatch(/text\/plain/);
     expect(c.textContent).toMatch(/Connected to principal@school\.org|Self-test passed/);
   });
 
   it('surfaces a refusal from the script rather than claiming success', async () => {
-    fetchResponder = () => ({ ok: false, code: 'already_claimed', error: 'This script is already connected to a device.' });
+    fetchResponder = () => ({ ok: false, code: 'denied', error: 'Invalid owner token.' });
     const c = mount();
     clickText(c, 'Set up delivery');
     setField(c, '#wcop-exec-url', EXEC_URL);
+    setField(c, '#wcop-owner-token', 'tok-invalid');
     await act(async () => {
       buttons(c).find((b) => b.textContent.includes('Connect'))
         .dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
     });
-    expect(c.textContent).toMatch(/already connected to a device/i);
+    expect(c.textContent).toMatch(/Invalid owner token/i);
+  });
+
+  it('requires an owner token without contacting the script', async () => {
+    const c = mount();
+    clickText(c, 'Set up delivery');
+    setField(c, '#wcop-exec-url', EXEC_URL);
+    clickText(c, 'Connect');
+    expect(c.textContent).toMatch(/Paste the owner token/);
+    expect(fetchCalls).toHaveLength(0);
   });
 
   it('offers setup from the copy step when nothing is connected', () => {

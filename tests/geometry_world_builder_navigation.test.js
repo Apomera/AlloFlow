@@ -45,7 +45,7 @@ function mount({empty=false,initial={}}={}){
   }
   const root=ReactDOMClient.createRoot(host);React.act(()=>root.render(React.createElement(Host)));mounted={root,host};
   const button=text=>Array.from(host.querySelectorAll('button')).find(node=>node.textContent===text);
-  return {engine,host,root,announce,navigate,state:()=>current,button,patch:values=>React.act(()=>patch(values)),click:node=>React.act(()=>node.click()),tick:ms=>React.act(()=>vi.advanceTimersByTime(ms)),print:()=>host.querySelector('[aria-label="Send selected build to Print Lab"]'),step:()=>host.querySelector('.gwe-workflow [aria-current="step"]')?.textContent};
+  return {engine,host,root,announce,navigate,state:()=>current,button,patch:values=>React.act(()=>patch(values)),click:node=>React.act(()=>node.click()),tick:ms=>React.act(()=>vi.advanceTimersByTime(ms)),print:()=>host.querySelector('.gwe-builder-quick-actions [data-gwe-prepare="print"]'),step:()=>host.querySelector('.gwe-workflow [aria-current="step"]')?.textContent};
 }
 function immutableState(app){
   return JSON.stringify({blocks:app.engine.blocks,selection:app.engine._builderSelection,undo:app.engine._undoStack,redo:app.engine._redoStack,camera:app.engine.camera,placed:app.engine.blocksPlaced,print:app.state().builderPrintContext,recipe:[app.state().selectedBlock,app.state().selectedShape,app.state().blockRotation]});
@@ -53,15 +53,16 @@ function immutableState(app){
 describe('Free Build dock guides the current stage',()=>{
   it('prioritizes building and explains unavailable printing in an empty world despite old placement totals',()=>{
     const app=mount({empty:true});
-    expect(app.step()).toBe('1Build');expect(app.button('Start building')).toBeTruthy();expect(app.print().disabled).toBe(true);
-    const help=app.host.querySelector('#'+app.print().getAttribute('aria-describedby'));expect(help?.textContent).toContain('Then choose Select build');
-    app.click(app.print());expect(app.navigate).not.toHaveBeenCalled();
+    expect(app.step()).toBe('1Build');expect(app.button('Start building')).toBeTruthy();expect(app.print()).toBeNull();
+    expect(app.host.querySelector('#gwe-build-guidance').textContent).toContain('Then use Choose blocks');
+    app.click(app.button('Build by coordinates'));app.tick(80);
+    expect(app.host.querySelector('.gwe-coordinate-builder').open).toBe(true);expect(app.navigate).not.toHaveBeenCalled();
   });
   it('tracks actual block presence when the first block is built, then removed',()=>{
     const app=mount({empty:true});app.engine.blocks['0,1,0']=mesh();app.tick(250);
-    expect(app.step()).toBe('2Select');expect(app.button('Select build')).toBeTruthy();expect(app.print().disabled).toBe(false);
+    expect(app.step()).toBe('2Select');expect(app.button('Choose blocks')).toBeTruthy();expect(app.print().disabled).toBe(false);
     delete app.engine.blocks['0,1,0'];app.tick(250);
-    expect(app.step()).toBe('1Build');expect(app.button('Start building')).toBeTruthy();expect(app.print().disabled).toBe(true);
+    expect(app.step()).toBe('1Build');expect(app.button('Start building')).toBeTruthy();expect(app.print()).toBeNull();
   });
   it.each(['Start building','Back to building'])('%s restores the world focus and preserves project data',label=>{
     const app=mount({empty:true}),before=immutableState(app);app.click(app.button(label));app.tick(40);

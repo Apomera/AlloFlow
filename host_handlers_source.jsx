@@ -2135,7 +2135,11 @@ const handleSyncRosterToSession = async () => {
   };
 const calculateReadability = (text) => {
     if (!text) return null;
-    let cleanText = text
+    // Score paragraph and list boundaries, but treat single line breaks in
+    // running prose as spaces (for example, lines pasted from a PDF).
+    const cleanText = text.replace(/\r\n?/g, '\n')
+        .replace(/^[ \t]{0,3}#{1,6}[ \t]+([^\n]+)/gm, '\n\n$1\n\n')
+        .replace(/^[ \t]*(?:[-*+•]|\d+[.)])[ \t]+/gm, '\n\n')
         .replace(/https?:\/\/[^\s]+/g, '')
         .replace(/\[.*?\]\(.*?\)/g, (match) => {
             return match.match(/\[(.*?)\]/)?.[1] || "";
@@ -2144,15 +2148,23 @@ const calculateReadability = (text) => {
         .replace(/[#*`]/g, '');
     if (cleanText.trim().length === 0) return null;
     const sentenceText = cleanText
-        .replace(/(\r\n|\n|\r)/gm, '|')
-        .replace(/^[-*•]\s+/gm, '')
+        .replace(/\n[ \t]*\n/g, '|')
+        .replace(/\n/g, ' ')
+        .replace(/(\d)\.(?=\d)/g, '$1\u2060')
+        .replace(/\b(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St)\.(?=\s+[A-Za-z0-9])/gi, value => value.replace('.', '\u2060'))
+        .replace(/\b(?:e\.g|i\.e)\.(?=\s*\S)/gi, value => value.replace(/\./g, '\u2060'))
+        .replace(/\b(?:[A-Za-z]\.){2,}/g, value => value.slice(0, -1).replace(/\./g, '\u2060') + '.')
+        .replace(/\b(?:[A-Za-z]\u2060)+[A-Za-z]\.(?=\s+[a-z])/g, value => value.replace(/\./g, '\u2060'))
+        .replace(/\b(?:[A-Z]\.[ \t]+)+[A-Z]\.(?=[ \t]+[A-Z][a-z])/g, value => value.replace(/\./g, '\u2060'))
+        .replace(/\b(?:[Ff]ig|[Nn]o)\.(?=\s+\d)/g, value => value.replace('.', '\u2060'))
+        .replace(/\b(?:[Ee]tc|[Vv]s|[Aa]pprox)\.(?=\s+[a-z0-9])/g, value => value.replace('.', '\u2060'))
         .replace(/([.!?]+)/g, '$1|');
     const sentencesArray = sentenceText.split('|').filter(s => {
         const trimmed = s.trim();
         return trimmed.length > 0 && /[a-zA-Z]/.test(trimmed);
     });
     const sentences = Math.max(1, sentencesArray.length);
-    const wordsArray = cleanText.match(/[a-zA-ZÀ-ÿ]+(?:[''-][a-zA-ZÀ-ÿ]+)*/g) || [];
+    const wordsArray = cleanText.match(/[a-zA-ZÀ-ÿ]+(?:['’-][a-zA-ZÀ-ÿ]+)*/g) || [];
     const words = Math.max(1, wordsArray.length);
     let syllables = 0;
     wordsArray.forEach(word => {
@@ -6625,6 +6637,12 @@ const _analysisDataForSourceEdit = (previous, text) => {
     const data = { ...previous, originalText: text };
     if (previous?.analysisSourceVersion === 1) data.rawEnglishText = text;
     if (previous?.originalText !== text) {
+        // Local measurements can be recomputed from the edit. The model's
+        // findings and verification belong to the passage it actually read.
+        data.analysisNeedsRecheck = true;
+        delete data.analysisCoverage;
+        delete data.analysisIncomplete;
+        for (const field of ['readingLevel', 'concepts', 'depthOfKnowledge', 'learnerBarriers', 'accuracy', 'grammar', 'grammarUnreadable']) delete data[field];
         delete data.reportTranslations;
         delete data.sourceTranslations;
         delete data.displayReportLanguage;
@@ -6641,9 +6659,10 @@ const onCorrectAnalysisText = (resourceId, expectedOriginalText, correctedText, 
     const accepted = __d.onUpdateResource(resourceId, previous => {
       if (previous.data?.originalText !== expectedOriginalText) return previous;
       const evidence = _getFreshTextComplexityEvidence(previous, correctedText);
-      const data = { ..._analysisDataForSourceEdit(previous.data, correctedText),
-        grammar: (Array.isArray(previous.data.grammar) ? previous.data.grammar : []).map(note => selectedNotes.has(note) ? '✓ FIXED: ' + note : note)
-      };
+      const data = _analysisDataForSourceEdit(previous.data, correctedText);
+      // Keep correction bookkeeping only for an applied grammar fix. It is
+      // never displayed as a current finding while the report needs rechecking.
+      if (selectedNotes.size) data.grammar = (Array.isArray(previous.data.grammar) ? previous.data.grammar : []).map(note => selectedNotes.has(note) ? '✓ FIXED: ' + note : note);
       if (evidence.localStats) data.localStats = evidence.localStats;
       else delete data.localStats;
       const next = { ...previous, data, targetGradeLevel: evidence.targetGrade, instructionalText: evidence.instructionalText };
@@ -6922,18 +6941,66 @@ const applyGuidedPlanToRemaining = (preset) => {
     try { localStorage.removeItem('allo_guided_readiness_checks'); } catch (_) {}
   };
 const handleCompleteGuidedMode = (summary = {}) => {
-    const completedAt = new Date().toISOString();
-    const entry = { version: 1, completedAt, selectedIds: __d.guidedSelectedIds, completedSteps: __d.guidedCompletedIds, skippedSteps: __d.guidedSkippedIds, createdHistoryIds: __d.guidedCreatedHistoryIds, deliveryEvidence: __d.guidedDeliveryEvidence, ...summary };
+    const completedAt = typeof summary.completedAt === 'string' && Number.isFinite(Date.parse(summary.completedAt)) ? summary.completedAt : new Date().toISOString();
+    const entry = { selectedIds: __d.guidedSelectedIds, completedSteps: __d.guidedCompletedIds, skippedSteps: __d.guidedSkippedIds, createdHistoryIds: __d.guidedCreatedHistoryIds, deliveryEvidence: __d.guidedDeliveryEvidence, ...summary, version: 1, completedAt,
+      completionId: typeof summary.completionId === 'string' && summary.completionId ? summary.completionId : 'guided-completion-' + completedAt + '-' + Math.random().toString(36).slice(2, 10) };
+    let stage = 'history', previousLast = null, previousReadiness = null, previousProgress = null, nextLast = null, nextPending = null, archiveWritten = false;
     try {
-      const prior = JSON.parse(localStorage.getItem('allo_guided_completed_runs') || '[]');
-      localStorage.setItem('allo_guided_completed_runs', JSON.stringify([entry, ...(Array.isArray(prior) ? prior : [])].slice(0, 10)));
-      localStorage.setItem('allo_guided_last_completion', JSON.stringify(entry));
-      localStorage.removeItem('allo_guided_progress');
+      const archiveText = localStorage.getItem('allo_guided_completed_runs');
+      const archive = archiveText === null ? [] : JSON.parse(archiveText);
+      previousLast = localStorage.getItem('allo_guided_last_completion');
+      const last = previousLast === null ? null : JSON.parse(previousLast);
+      if (!Array.isArray(archive) || (last !== null && (typeof last !== 'object' || Array.isArray(last)))) throw new Error('Unreadable completion history');
+      const pendingText = localStorage.getItem('allo_guided_pending_completion');
+      const pending = pendingText === null ? null : JSON.parse(pendingText);
+      if (pending !== null && (!pending || typeof pending !== 'object' || Array.isArray(pending) || typeof pending.completionId !== 'string' || !pending.completionId)) throw new Error('Unreadable pending completion');
+      const progress = previousProgress = localStorage.getItem('allo_guided_progress');
+      previousReadiness = localStorage.getItem('allo_guided_readiness_checks');
+      if (progress) {
+        const snapshot = JSON.parse(progress);
+        if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) throw new Error('Unreadable active Guided progress');
+        const semantic = { ...snapshot }; delete semantic.savedAt;
+        const stable = value => Array.isArray(value) ? value.map(stable) : value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])])) : value;
+        const signature = JSON.stringify({ progress: stable(semantic), source: typeof __d.inputText === 'string' ? __d.inputText : '' });
+        let first = 2166136261, second = 5381;
+        for (let index = 0; index < signature.length; index++) { first = Math.imul(first ^ signature.charCodeAt(index), 16777619); second = Math.imul(second, 33) ^ signature.charCodeAt(index); }
+        entry.completionKey = 'v2:' + signature.length + ':' + (first >>> 0).toString(16) + ':' + (second >>> 0).toString(16);
+        if (pending?.completionKey === entry.completionKey) { entry.completionId = pending.completionId; entry.completedAt = pending.completedAt || entry.completedAt; }
+      }
+      const nextArchive = JSON.stringify([entry, ...archive.filter(item => item?.completionId !== entry.completionId)].slice(0, 10));
+      nextLast = JSON.stringify(entry);
+      nextPending = JSON.stringify({ version: 1, completionKey: entry.completionKey || null, completionId: entry.completionId, completedAt: entry.completedAt }); stage = 'save';
+      localStorage.setItem('allo_guided_pending_completion', nextPending);
+      if (localStorage.getItem('allo_guided_pending_completion') !== nextPending) throw new Error('Pending completion save could not be verified');
+      localStorage.setItem('allo_guided_last_completion', nextLast);
+      localStorage.setItem('allo_guided_completed_runs', nextArchive); archiveWritten = true;
+      if (localStorage.getItem('allo_guided_last_completion') !== nextLast || localStorage.getItem('allo_guided_completed_runs') !== nextArchive) throw new Error('Completion save could not be verified');
+      stage = 'cleanup';
       localStorage.removeItem('allo_guided_readiness_checks');
-    } catch (_) {}
+      if (localStorage.getItem('allo_guided_readiness_checks') !== null) throw new Error('Readiness cleanup could not be verified');
+      localStorage.removeItem('allo_guided_pending_completion');
+      if (localStorage.getItem('allo_guided_pending_completion') !== null) throw new Error('Pending completion cleanup could not be verified');
+      localStorage.removeItem('allo_guided_progress');
+      if (localStorage.getItem('allo_guided_progress') !== null) throw new Error('Progress cleanup could not be verified');
+    } catch (_) {
+      try {
+        if (stage === 'save' && !archiveWritten && localStorage.getItem('allo_guided_last_completion') === nextLast) {
+          if (previousLast === null) localStorage.removeItem('allo_guided_last_completion'); else localStorage.setItem('allo_guided_last_completion', previousLast);
+        }
+        if (stage === 'cleanup') {
+          if (nextPending !== null && localStorage.getItem('allo_guided_pending_completion') === null) localStorage.setItem('allo_guided_pending_completion', nextPending);
+          if (previousReadiness !== null && localStorage.getItem('allo_guided_readiness_checks') === null) localStorage.setItem('allo_guided_readiness_checks', previousReadiness);
+          if (previousProgress !== null && localStorage.getItem('allo_guided_progress') === null) localStorage.setItem('allo_guided_progress', previousProgress);
+        }
+      } catch (_) {}
+      __d.addToast(__d.t('guided.completion_not_saved') || 'The completion summary could not be saved. Guided Mode is still open; retry or download a summary backup.', 'error');
+      return { ok: false, entry, reason: stage === 'history' ? 'history-unreadable' : 'storage' };
+    }
     __d.setGuidedMode(false); __d.setGuidedStep(0); __d.setGuidedSelectedIds(null); __d.setGuidedCompletedIds([]); __d.setGuidedSkippedIds([]); __d.setGuidedCreatedHistoryIds([]); __d.setGuidedDeliveryEvidence({}); __d.setGuidedPlanBrief(null); __d.setGuidedAdvanceNotice(null); __d.setGuidedNavigationUndo(null); __d.setGuidedProgressSaveState({ status: 'idle', at: null });
     __d.addToast(__d.t('guided.completed_toast') || 'Guided lesson completed. Your summary is saved on this device.', 'success');
+    return { ok: true, entry };
   };
+
 const _alloRunActivityGeneration = async ({ prompt, jsonMode = false, parse }) => {
     let currentPrompt = String(prompt || '');
     let lastError = null;
@@ -9129,8 +9196,9 @@ const toggleLetterSelection = (r, c) => {
       }
   };
 const handleUrlFetch = async (urlOverride = null) => {
+      // Resolves true only when the source text was replaced; callers must not report success otherwise.
       let targetUrl = urlOverride || __d.urlToFetch;
-      if (!targetUrl || !targetUrl.trim()) return;
+      if (!targetUrl || !targetUrl.trim()) return false;
       targetUrl = targetUrl.trim();
       __d.setIsExtracting(true);
       __d.setGenerationStep(__d.t('status_steps.extracting_text'));
@@ -9144,10 +9212,14 @@ const handleUrlFetch = async (urlOverride = null) => {
             __d.setShowUrlInput(false);
             __d.setUrlToFetch('');
             __d.addToast(__d.t('quick_start.article_imported'), "success");
+            return true;
         }
+        __d.setError(__d.t('quick_start.error_extract'));
+        return false;
       } catch (err) {
         __d.warnLog("Main URL Fetch Error:", err);
         __d.setError(err.message || __d.t('quick_start.error_extract'));
+        return false;
       } finally {
         __d.setIsExtracting(false);
         __d.flyToElement('tour-input-panel');
@@ -10770,6 +10842,7 @@ const _followAnalysisInSourceBox = (previousText, value) => {
 const handleAnalysisTextChange = (value) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'analysis') return;
     const previousAnalysisText = (__d.generatedContent.data && __d.generatedContent.data.originalText) || '';
+    if (value === previousAnalysisText) return;
     __d._recordTextChange('analysis', __d.generatedContent.id, previousAnalysisText, value);
     _followAnalysisInSourceBox(previousAnalysisText, value);
     const evidence = __d._getFreshTextComplexityEvidence(__d.generatedContent, value);

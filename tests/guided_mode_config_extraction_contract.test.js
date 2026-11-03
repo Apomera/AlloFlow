@@ -30,9 +30,21 @@ describe('GuidedModeConfig extraction contract', () => {
       'GUIDED_STEP_IDS', 'GUIDED_DELIVERY_EVIDENCE_KEYS', 'GUIDED_PHASES',
       'GUIDED_DELIVERY_GROUPS', 'GUIDED_STEPS', 'GUIDED_PRESETS', 'GUIDED_TOUR_MAP',
       'normalizeGuidedPlanBrief', 'normalizeGuidedProgress', 'generateGuidedPlanFromGoal',
+      'guidedLinkFingerprint', 'createGuidedLessonMatcher', 'guidedLearnerResources', 'resolveGuidedLearnerLink',
     ].sort());
   });
 
+  it('restores only route-specific review results and completion keys, without persisting document contents', () => {
+    const { normalizeGuidedProgress, guidedLinkFingerprint } = moduleApi();
+    const key = guidedLinkFingerprint('lesson selection');
+    const saved = normalizeGuidedProgress({ deliveryEvidence: {
+      documentReviews: { print: { key, hasKey: true, html: 'private copy' }, lms: { key: 'obsolete', hasKey: false } },
+      documentExports: { print: key, lms: false },
+    } }).deliveryEvidence;
+    expect(saved.documentReviews).toEqual({ print: { key, hasKey: true } });
+    expect(saved.documentExports).toEqual({ print: key });
+    expect(JSON.stringify(saved)).not.toContain('private copy');
+  });
   it('runs AI planning only through injected dependencies and retains the local fallback', async () => {
     const api = moduleApi();
     let capturedPrompt = '';

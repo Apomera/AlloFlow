@@ -75,7 +75,7 @@ describe('Cornell print copies preserve guidance and usable response space', () 
     const filenames = ['academic_discourse_reading_space_grade6', 'academic_discourse_more_practice_grade6', 'reading_decisions_grade6'];
     let checked = 0;
     for (const filename of filenames) {
-      const pack = JSON.parse(readFileSync(`allopacks/${filename}.allopack.json`, 'utf8'));
+      const pack = JSON.parse(readFileSync(`allopacks/current/${filename}.allopack.json`, 'utf8'));
       for (const item of pack.history.filter(resource => resource.type === 'note-taking')) {
         const doc = parse(pipeline.generateResourceHTML(item, false, {}, { isWorksheet: true }));
         expect([...doc.querySelectorAll('[data-cornell-print-guidance]')].map(node => node.textContent)).toEqual(item.data.cues.map(cue => cue.guidance));

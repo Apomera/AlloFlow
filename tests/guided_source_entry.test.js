@@ -17,13 +17,13 @@ const steps = [
   { id: '_final', label: 'Finish', action: 'Finish this lesson.' },
 ];
 const presets = [{ id: 'reading-access', label: 'Reading adaptation', description: 'Adapt a passage.', stepIds: steps.map(step => step.id) }];
-let Banner, Shell, sampleText, host, root, originalModules, originalCapability, originalSetup;
+let Banner, Shell, SourceView, sampleText, host, root, originalModules, originalCapability, originalSetup;
 
 beforeAll(() => {
   global.IS_REACT_ACT_ENVIRONMENT = true;
   const compile = name => transformSync(readFileSync(name, 'utf8'), { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false }).code;
   ({ Banner, sampleText } = new Function('React', compile('view_guided_mode_banner_source.jsx') + '\nreturn { Banner: GuidedModeBanner, sampleText: GUIDED_SAMPLE_TEXT };')(React));
-  Shell = new Function('React', compile('view_sidebar_panels_source.jsx') + '\nreturn SourceInputShellView;')(React);
+  ({ Shell, SourceView } = new Function('React', compile('view_sidebar_panels_source.jsx') + '\nreturn { Shell: SourceInputShellView, SourceView };')(React));
 }, 30000);
 beforeEach(() => {
   localStorage.clear();
@@ -58,6 +58,35 @@ function bannerProps(extra = {}) {
 function button(label) { return [...host.querySelectorAll('button')].find(node => node.textContent.includes(label)); }
 
 describe('Guided source-first entry', () => {
+  it('unlocks a short passage when the teacher uses that exact version in Source', () => {
+    const next = vi.fn();
+    function Lesson({ text, step = 0 }) {
+      const [record, setRecord] = React.useState(null);
+      return React.createElement(React.Fragment, null,
+        React.createElement(SourceView, { inputText: text, setInputText: vi.fn(), sourceRecord: record, setSourceRecord: setRecord, t: () => '', aiTextAvailable: false }),
+        React.createElement(Banner, bannerProps({ inputText: text, acceptedSourceText: record?.inUse?.text, guidedStep: step, guidedCompletedIds: ['source-input'], handleGuidedSkip: next })));
+    }
+    const count = () => Array.from(host.querySelectorAll('[role="listitem"]')).find(item => item.lastElementChild?.textContent === 'Completed')?.firstElementChild?.textContent;
+    const draft = 'The sun is hot.';
+    render(Lesson, { text: draft });
+    expect(button('Next step')).toBeFalsy();
+    expect(host.querySelector('.allo-guided-quick-route')).toBeNull();
+    expect(host.textContent).toContain('choose Use this source');
+    act(() => host.querySelector('[data-source-use]').click());
+    expect(host.querySelector('.allo-guided-quick-route')).toBeTruthy();
+    act(() => button('Next step').click());
+    expect(next).toHaveBeenCalledWith(false);
+    render(Lesson, { text: draft, step: steps.length - 1 });
+    expect(count()).toBe('1');
+    render(Lesson, { text: 'A', step: steps.length - 1 });
+    expect(count()).toBe('0');
+    render(Lesson, { text: 'A' });
+    expect(button('Next step')).toBeFalsy();
+    expect(host.querySelector('.allo-guided-quick-route')).toBeNull();
+    expect(host.textContent).toContain('choose Use this version');
+    act(() => host.querySelector('[data-source-use]').click());
+    expect(button('Next step')).toBeTruthy();
+  });
   it('starts with the source action and a compact path, not a mandatory planner', () => {
     const props = bannerProps(); render(Banner, props);
     expect(host.textContent).toContain('Add the text to adapt.');

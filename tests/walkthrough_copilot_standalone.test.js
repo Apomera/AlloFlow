@@ -185,6 +185,16 @@ describe('walkthrough copilot standalone surface', () => {
     expect(fetchCalls, 'a malformed URL must not be contacted').toHaveLength(0);
   });
 
+  it('requires an owner token without contacting the endpoint', () => {
+    click('Set up delivery');
+    const url = document.getElementById('exec-url');
+    url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
+    url.dispatchEvent(new window.Event('input'));
+    clickId('connect-btn');
+    expect(text()).toMatch(/Paste your Owner token/);
+    expect(fetchCalls).toHaveLength(0);
+  });
+
   it('connects, stores the token, and self-tests', async () => {
     fetchResponder = (body) => {
       if (body.action === 'claim') return { ok: true, token: 'tok-abc', owner: 'principal@school.org', version: 1 };
@@ -193,15 +203,20 @@ describe('walkthrough copilot standalone surface', () => {
     };
     click('Set up delivery');
     const url = document.getElementById('exec-url');
+    const token = document.getElementById('owner-token');
+    expect(token.type).toBe('password');
+    token.value = 'tok-abc';
+    token.dispatchEvent(new window.Event('input'));
     url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
     url.dispatchEvent(new window.Event('input'));
     clickId('connect-btn');
 
     await vi.waitFor(() => expect(text()).toMatch(/Self-test passed/));
-    expect(fetchCalls[0].body.action).toBe('claim');
+    expect(fetchCalls).toHaveLength(1);
+    expect(fetchCalls[0].body.action).toBe('selftest');
     // Apps Script cannot answer a preflight, so the body must be text/plain.
     expect(fetchCalls[0].options.headers['Content-Type']).toMatch(/text\/plain/);
-    expect(fetchCalls[1].body.token, 'the claimed token must travel on later calls').toBe('tok-abc');
+    expect(fetchCalls[0].body.token, 'the supplied owner token must authenticate the connection').toBe('tok-abc');
     expect(text()).toContain('AlloFlow Walkthrough Records');
 
     // And it survives a reload, because the connection is config, not content.
@@ -213,6 +228,10 @@ describe('walkthrough copilot standalone surface', () => {
     fetchResponder = () => ({ ok: true, token: 'tok-abc', owner: 'principal@school.org' });
     click('Set up delivery');
     const url = document.getElementById('exec-url');
+    const token = document.getElementById('owner-token');
+    expect(token.type).toBe('password');
+    token.value = 'tok-abc';
+    token.dispatchEvent(new window.Event('input'));
     url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
     url.dispatchEvent(new window.Event('input'));
     clickId('connect-btn');
@@ -225,14 +244,41 @@ describe('walkthrough copilot standalone surface', () => {
     expect(saved).not.toContain('suggestions');
   });
 
-  it('reports a refusal from the script instead of claiming success', async () => {
-    fetchResponder = () => ({ ok: false, code: 'already_claimed', error: 'This script is already connected to a device.' });
+  it('does not save a changed token when an older connection check finishes', async () => {
+    let finish;
+    fetchResponder = () => new Promise(resolve => { finish = resolve; });
     click('Set up delivery');
     const url = document.getElementById('exec-url');
     url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
     url.dispatchEvent(new window.Event('input'));
+    const token = document.getElementById('owner-token');
+    token.value = 'tok-checked';
+    token.dispatchEvent(new window.Event('input'));
     clickId('connect-btn');
-    await vi.waitFor(() => expect(text()).toMatch(/already connected to a device/i));
+    await vi.waitFor(() => expect(finish).toBeTypeOf('function'));
+    const pendingToken = document.getElementById('owner-token');
+    expect(pendingToken.disabled).toBe(true);
+    // Even a programmatic edit cannot make the old response verify new values.
+    pendingToken.value = 'tok-never-checked';
+    pendingToken.dispatchEvent(new window.Event('input'));
+    finish({ ok: true, owner: 'principal@school.org' });
+    await vi.waitFor(() => expect(text()).toMatch(/Connection details changed/));
+    expect(window.localStorage.getItem('allo_wcop_delivery_v1')).toBeNull();
+    expect(fetchCalls[0].body.token).toBe('tok-checked');
+  });
+
+  it('reports a refusal from the script instead of claiming success', async () => {
+    fetchResponder = () => ({ ok: false, code: 'denied', error: 'Invalid owner token.' });
+    click('Set up delivery');
+    const url = document.getElementById('exec-url');
+    const token = document.getElementById('owner-token');
+    expect(token.type).toBe('password');
+    token.value = 'tok-abc';
+    token.dispatchEvent(new window.Event('input'));
+    url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
+    url.dispatchEvent(new window.Event('input'));
+    clickId('connect-btn');
+    await vi.waitFor(() => expect(text()).toMatch(/Invalid owner token/i));
   });
 
   it('never offers to send practice material to a colleague', async () => {
@@ -241,6 +287,10 @@ describe('walkthrough copilot standalone surface', () => {
       : { ok: true, owner: 'principal@school.org', allowedDomain: 'school.org', canSendMail: true };
     click('Set up delivery');
     const url = document.getElementById('exec-url');
+    const token = document.getElementById('owner-token');
+    expect(token.type).toBe('password');
+    token.value = 'tok-abc';
+    token.dispatchEvent(new window.Event('input'));
     url.value = 'https://script.google.com/macros/s/AKfycbxTEST_id/exec';
     url.dispatchEvent(new window.Event('input'));
     clickId('connect-btn');

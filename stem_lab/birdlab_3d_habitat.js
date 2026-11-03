@@ -406,6 +406,71 @@
     var ridge = new THREE.Mesh(ridgeGeo, material({ color: 0xffffff, vertexColors: true, roughness: 1 }));
     ridge.name = 'distant-connected-woodland-ridge'; root.add(ridge);
 
+    // Overlapping far crowns continue the wooded margin into the hills. They
+    // use their own hash stream, never the clearing's placement seed, and add
+    // only two static draws: no alpha maps, wind, shadows or walk obstacles.
+    function distantCrownGeometry(pine) {
+      var profile = pine ? [[0,.75],[.08,.92],[.18,.79],[.28,.48],[.29,.73],[.40,.61],[.50,.33],[.51,.53],[.65,.39],[.76,.19],[.77,.28]] :
+        [[0,.96],[.20,1],[.43,.94],[.65,.81],[.83,.59],[.95,.31]];
+      var sides = detailed ? 16 : 12, vertices = [], faces = [];
+      for (var level = 0; level < profile.length; level++) {
+        for (var spoke = 0; spoke < sides; spoke++) {
+          var turn = spoke / sides * Math.PI * 2;
+          var lobes = pine ? 1 + .035 * Math.sin(turn * 3 + level * .7) :
+            1 + .10 * Math.sin(turn * 3 + profile[level][0] * 4) + .035 * Math.cos(turn * 5 - level * .6);
+          var crownHeight = profile[level][0] + (pine ? 0 : Math.sin(turn * 3 + .6) * .018 * profile[level][0]);
+          vertices.push(Math.cos(turn) * profile[level][1] * lobes, crownHeight, Math.sin(turn) * profile[level][1] * lobes);
+          if (level) {
+            var lower = (level - 1) * sides + spoke, next = (spoke + 1) % sides;
+            faces.push(lower, level * sides + spoke, level * sides + next,
+              lower, level * sides + next, (level - 1) * sides + next);
+          }
+        }
+      }
+      var foot = vertices.length / 3, tip = foot + 1, last = (profile.length - 1) * sides;
+      vertices.push(0,0,0, 0,1,0);
+      for (var rim = 0; rim < sides; rim++) {
+        var after = (rim + 1) % sides;
+        faces.push(foot, rim, after, last + rim, tip, last + after);
+      }
+      var crown = geometry(new THREE.BufferGeometry());
+      crown.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      crown.setIndex(faces); crown.computeVertexNormals(); return crown;
+    }
+    function distantWoodland() {
+      var populations = [[], []], layerCounts = detailed ? [192,144] : [112,80];
+      for (var layer = 0; layer < 2; layer++) {
+        for (var treeIndex = 0; treeIndex < layerCounts[layer]; treeIndex++) {
+          var id = treeIndex + layer * 607;
+          var bearing = (treeIndex + (hash(id,811) - .5) * .7) / layerCounts[layer] * Math.PI * 2 + layer * .23;
+          bearing = (bearing + Math.PI * 2) % (Math.PI * 2);
+          var distance = (layer ? 121 : 82) + (hash(id,827) - .5) * (layer ? 12 : 6);
+          var x = Math.cos(bearing) * distance, z = Math.sin(bearing) * distance;
+          var elevation = smooth((distance - 62) / 90) * (8 + Math.sin(bearing * 3.2 + .6) * 4 + Math.sin(bearing * 7.3) * 1.5);
+          var pine = hash(id,853) < .18;
+          populations[pine ? 1 : 0].push({x:x,z:z,y:groundHeight(x,z) - 1.3 + elevation,
+            height:(layer ? 4.2 : 3.9) + hash(id,863) * 2.8,
+            width:(pine ? 2.3 : 4.5) + hash(id,877) * (pine ? 1.1 : 2),
+            turn:hash(id,881) * Math.PI * 2, layer:layer, shade:.87 + hash(id,887) * .23});
+        }
+      }
+      populations.forEach(function (population, kind) {
+        var crowns = new THREE.InstancedMesh(distantCrownGeometry(kind === 1),
+          material({color:0xffffff,vertexColors:false,roughness:1}), population.length);
+        crowns.name = kind ? 'distant-woodland-conifer-crowns' : 'distant-woodland-broadleaf-crowns';
+        population.forEach(function (entry, index) {
+          dummy.position.set(entry.x,entry.y,entry.z); dummy.rotation.set(0,entry.turn,0);
+          dummy.scale.set(entry.width,entry.height,entry.width * (.80 + hash(index,907) * .22));
+          dummy.updateMatrix(); crowns.setMatrixAt(index,dummy.matrix);
+          var color = linear(entry.layer ? 0x536c5d : kind ? 0x3d5542 : 0x465e40);
+          crowns.setColorAt(index,color.multiplyScalar(entry.shade));
+        });
+        crowns.instanceMatrix.needsUpdate = true; crowns.instanceColor.needsUpdate = true;
+        crowns.frustumCulled = false; root.add(crowns);
+      });
+    }
+    distantWoodland();
+
     // Continuous, gently warped grain carries shallow cracks and scattered
     // lichen. Height is independent of albedo: a pale lichen fleck is not a ridge.
     // Keep the existing random draws below so material refinements never move
@@ -1216,12 +1281,13 @@
       };
       mat.customProgramCacheKey = function () { return 'birdlab-woodland-wind-v4-' + kind + (atlas ? '-spray-atlas' : ''); };
     }
-    function applyLeafTransmission(mat) {
+    function applyLeafTransmission(mat, grass) {
       if (!detailed) return;
       // A thin living lamina passes some filtered sunlight through its back.
       // Use Three's shadowed incident light, so shaded leaves cannot glow and
       // front-lit surfaces retain their existing diffuse/specular response.
       var previous = mat.onBeforeCompile, previousKey = mat.customProgramCacheKey.call(mat);
+      var transmissionTint = grass ? 'vec3(.18,.24,.115)' : 'vec3(.36,.48,.23)';
       mat.onBeforeCompile = function (shader, renderer) {
         previous.call(this, shader, renderer);
         shader.fragmentShader = shader.fragmentShader.replace('#include <lights_physical_pars_fragment>', [
@@ -1233,13 +1299,13 @@
           '#ifndef PHYSICALLY_CORRECT_LIGHTS',
           'irradiance*=PI;',
           '#endif',
-          'reflectedLight.directDiffuse+=irradiance*BRDF_Diffuse_Lambert(material.diffuseColor*vec3(.36,.48,.23));',
+          'reflectedLight.directDiffuse+=irradiance*BRDF_Diffuse_Lambert(material.diffuseColor*' + transmissionTint + ');',
           '}',
           '#undef RE_Direct',
           '#define RE_Direct blLeafDirect'
         ].join('\n'));
       };
-      mat.customProgramCacheKey = function () { return previousKey + '|birdlab-thin-leaf-v1'; };
+      mat.customProgramCacheKey = function () { return previousKey + (grass ? '|birdlab-thin-grass-v1' : '|birdlab-thin-leaf-v1'); };
     }
     leaves.forEach(function (batch, kind) {
       if (!batch.length) return;
@@ -1427,6 +1493,7 @@
         map: fern ? fernMap : null, alphaTest: fern ? 0.35 : 0 });
       applyWind(mat, 'grass');
       if (fern) applyLeafTransmission(mat);
+      else applyLeafTransmission(mat, true);
       var plants = new THREE.InstancedMesh(grassGeometry(fern), mat, count);
       plants.name = fern ? 'woodland-fern-fronds' : 'fine-meadow-grasses';
       var index = 0;

@@ -4766,7 +4766,7 @@
     { id: 'cleaner_wrasse', group: 'fish', scientific: 'Labroides dimidiatus', iucn: 'LC', iucnYear: 2008, lookalikes: [] },
     { id: 'clown_triggerfish', group: 'fish', scientific: 'Balistoides conspicillum', iucn: 'LC', iucnYear: 2022, lookalikes: [] },
     { id: 'porcupinefish', group: 'fish', scientific: 'Diodon hystrix', iucn: 'LC', iucnYear: 2011, lookalikes: ['yellow_boxfish'] },
-    { id: 'yellow_boxfish', group: 'fish', scientific: 'Ostracion cubicus', iucn: 'LC', iucnYear: 2023, lookalikes: ['porcupinefish'] },
+    { id: 'yellow_boxfish', group: 'fish', scientific: 'Ostracion cubicum', scientificAliases:['Ostracion cubicus'], iucn: 'LC', iucnYear: 2023, lookalikes: ['porcupinefish'] },
     { id: 'giant_moray', group: 'fish', scientific: 'Gymnothorax javanicus', iucn: 'LC', iucnYear: 2011, lookalikes: [] },
     { id: 'whitetip_reef_shark', group: 'fish', scientific: 'Triaenodon obesus', iucn: 'VU', iucnYear: 2020, lookalikes: [] },
     { id: 'bluespotted_stingray', group: 'fish', scientific: 'Taeniura lymma', iucn: 'LC', iucnYear: 2020, lookalikes: [] },
@@ -4829,10 +4829,16 @@
     {"id":"longfin_bannerfish","group":"fish","scientific":"Heniochus acuminatus","iucn":"LC","iucnYear":2009,"lookalikes":["moorish_idol","threadfin_butterflyfish"]},
     {"id":"bigfin_reef_squid","group":"invertebrate","scientific":"Sepioteuthis lessoniana (species complex)","iucn":"DD","iucnYear":2014,"lookalikes":["broadclub_cuttlefish","day_octopus"]},
     { id: 'goldmouth_sea_squirt', group: 'invertebrate', scientific: 'Polycarpa aurata', iucn: 'NE', iucnYear: null, lookalikes: ['barrel_sponge', 'orange_cup_coral'] },
-    { id: 'feather_duster_worm', group: 'invertebrate', scientific: 'Sabellastarte spectabilis', iucn: 'NE', iucnYear: null, lookalikes: ['christmas_tree_worm', 'bennetts_feather_star'] }
+    { id: 'feather_duster_worm', group: 'invertebrate', scientific: 'Sabellastarte spectabilis', iucn: 'NE', iucnYear: null, lookalikes: ['christmas_tree_worm', 'bennetts_feather_star'] },
+    { id:'acropora_clathrata', group:'coral', scientific:'Acropora clathrata', lookalikes:['table_coral','foliose_coral'] },
+    { id:'acropora_humilis', group:'coral', scientific:'Acropora humilis', lookalikes:['acropora_millepora','staghorn_coral'] },
+    { id:'acropora_millepora', group:'coral', scientific:'Acropora millepora', lookalikes:['acropora_humilis','cauliflower_coral'] }
   ];
   function speciesText(__alloT) {
     return {
+      acropora_clathrata: acroporaGuideText('clathrata'),
+      acropora_humilis: acroporaGuideText('humilis'),
+      acropora_millepora: acroporaGuideText('millepora'),
       goldmouth_sea_squirt: { name: __alloT('stem.coralreef.sp_goldmouth_sea_squirt_name', 'Gold-mouth sea squirt'),
         marks: [__alloT('stem.coralreef.sp_goldmouth_sea_squirt_mark1', 'An upright, vase-like body stays attached at its base'),
           __alloT('stem.coralreef.sp_goldmouth_sea_squirt_mark2', 'Two separate openings, called siphons, project from the top and side'),
@@ -4867,35 +4873,35 @@
           __alloT('stem.coralreef.sp_parrotfish_mark3', 'Males: green with pink scale edges and a large whitish rectangle on the cheek'),
           __alloT('stem.coralreef.sp_parrotfish_mark4', 'Females: dark brown with 3-4 broad pale bars')],
         role: __alloT('stem.coralreef.sp_parrotfish_role', 'Grazes algae off dead coral and rock, helping keep seaweed from taking over space young corals need.'),
-        fact: __alloT('stem.coralreef.sp_parrotfish_fact', 'Parrotfish make sand. On one Maldives reef flat, parrotfish produced more than 85% of the new sand-grade sediment, about 5.7 kg per square metre each year, and that sediment helps build reef islands.') },
+        fact: __alloT('stem.coralreef.sp_parrotfish_fact', "Parrotfish help make coral sand. At one reef in the Maldives, researchers estimated that the local parrotfish community produced over 85% of new sand-grade sediment on the outer reef flat. That finding covers several parrotfish species, rather than this species alone.") },
       bumphead_parrotfish: { name: __alloT('stem.coralreef.sp_bumphead_parrotfish_name', 'Bumphead parrotfish (green humphead parrotfish)'),
         marks: [__alloT('stem.coralreef.sp_bumphead_parrotfish_mark1', 'The largest parrotfish: a huge blue-green to grey fish'),
           __alloT('stem.coralreef.sp_bumphead_parrotfish_mark2', 'Big bulging bump on the forehead'),
           __alloT('stem.coralreef.sp_bumphead_parrotfish_mark3', 'Usually seen feeding in schools'),
           __alloT('stem.coralreef.sp_bumphead_parrotfish_mark4', 'Exposed beak-like teeth')],
         role: __alloT('stem.coralreef.sp_bumphead_parrotfish_role', 'Bites off chunks of live coral, dead coral and algae, and grinds them up. This recycles reef rock into sand.'),
-        fact: __alloT('stem.coralreef.sp_bumphead_parrotfish_fact', 'Each bumphead parrotfish swallows over 5 tonnes of reef limestone a year, and almost half of it is living coral.') },
+        fact: __alloT('stem.coralreef.sp_bumphead_parrotfish_fact', "A large bumphead parrotfish may consume as much as 5 tonnes of reef material in a year. It eats both living coral and algae; that estimate is not a yearly amount for every individual.") },
       moorish_idol: { name: __alloT('stem.coralreef.sp_moorish_idol_name', 'Moorish idol'),
         marks: [__alloT('stem.coralreef.sp_moorish_idol_mark1', 'Long tube-shaped snout with a yellow-orange saddle on top'),
           __alloT('stem.coralreef.sp_moorish_idol_mark2', 'Two broad black vertical bands on a white and yellow body'),
           __alloT('stem.coralreef.sp_moorish_idol_mark3', 'Very long white streamer trailing from the top fin'),
-          __alloT('stem.coralreef.sp_moorish_idol_mark4', 'Mostly black fins (bannerfish have a yellow tail)')],
+          __alloT('stem.coralreef.sp_moorish_idol_mark4', "Black tail with a pale outer edge; adults have two small bony projections above the eyes")],
         role: __alloT('stem.coralreef.sp_moorish_idol_role', 'Feeds mostly on encrusting sponges, plus coral polyps and tunicates.'),
-        fact: __alloT('stem.coralreef.sp_moorish_idol_fact', 'It is the only species in its whole family (Zanclidae). It looks so much like a bannerfish (a butterflyfish) that Reef Check training warns surveyors not to count it as one.') },
+        fact: __alloT('stem.coralreef.sp_moorish_idol_fact', "The Moorish idol is the only living species in the family Zanclidae. Adults develop small bony projections above their eyes; the name cornutus refers to these horns. Its long streamer does not make it a bannerfish, which belongs to the butterflyfish family.") },
       threadfin_butterflyfish: { name: __alloT('stem.coralreef.sp_threadfin_butterflyfish_name', 'Threadfin butterflyfish'),
         marks: [__alloT('stem.coralreef.sp_threadfin_butterflyfish_mark1', 'White body with thin dark lines meeting at an angle in a chevron pattern'),
           __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark2', 'Black band running down through the eye'),
           __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark3', 'Rear of body and fins yellow'),
-          __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark4', 'Adults: black eyespot near the rear of the top fin with a thin thread trailing behind')],
+          __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark4', "Adults have a thin dorsal-fin filament; the illustrated form also has a black spot on the rear dorsal fin")],
         role: __alloT('stem.coralreef.sp_threadfin_butterflyfish_role', 'Picks at the reef, tearing bits off polychaete worms, anemones, coral polyps and algae.'),
-        fact: __alloT('stem.coralreef.sp_threadfin_butterflyfish_fact', 'Reef Check volunteers count every butterflyfish they see, because butterflyfish are collected for the aquarium trade. Their numbers help show where collecting is affecting a reef.') },
+        fact: __alloT('stem.coralreef.sp_threadfin_butterflyfish_fact', "The dorsal filament develops in adults. The black spot near the rear of the dorsal fin is a colour marking, separate from the real eye in the dark head band. Red Sea individuals lack the conspicuous rear spot, so identification should use several features.") },
       emperor_angelfish: { name: __alloT('stem.coralreef.sp_emperor_angelfish_name', 'Emperor angelfish'),
         marks: [__alloT('stem.coralreef.sp_emperor_angelfish_mark1', 'Adults: many thin diagonal yellow and blue-purple stripes'),
           __alloT('stem.coralreef.sp_emperor_angelfish_mark2', 'Black mask across the eyes with a blue edge'),
           __alloT('stem.coralreef.sp_emperor_angelfish_mark3', 'Large black patch behind the head and gills'),
           __alloT('stem.coralreef.sp_emperor_angelfish_mark4', 'Juveniles: dark blue with white and blue rings')],
         role: __alloT('stem.coralreef.sp_emperor_angelfish_role', 'Feeds mainly on sponges and other encrusting animals, plus tunicates.'),
-        fact: __alloT('stem.coralreef.sp_emperor_angelfish_fact', 'Young emperor angelfish look like a completely different fish: dark blue with white and blue rings. They keep this pattern until they are up to about 14 cm long, then change to the striped adult colours.') },
+        fact: __alloT('stem.coralreef.sp_emperor_angelfish_fact', "The striped model represents an adult. Juveniles are dark blue-black with a white ring toward the rear, surrounded by partial blue-and-white circles. The pattern changes as the fish grows; the ringed juvenile and striped adult are the same species.") },
       anthias: { name: __alloT('stem.coralreef.sp_anthias_name', 'Sea goldie (scalefin anthias)'),
         marks: [__alloT('stem.coralreef.sp_anthias_mark1', 'Small fish hovering in large orange clouds just above the reef'),
           __alloT('stem.coralreef.sp_anthias_mark2', 'Females: golden-orange with a violet streak below the eye'),
@@ -4913,56 +4919,56 @@
         marks: [__alloT('stem.coralreef.sp_lionfish_mark1', 'Bold red-brown and white vertical stripes'),
           __alloT('stem.coralreef.sp_lionfish_mark2', 'Huge fan-like side fins'),
           __alloT('stem.coralreef.sp_lionfish_mark3', 'Long, separate spines along the back (venomous)')],
-        role: __alloT('stem.coralreef.sp_lionfish_role', 'Night hunter of small fishes, shrimps and crabs. It herds prey into a corner with its spread fins, then swallows it in one gulp.'),
-        fact: __alloT('stem.coralreef.sp_lionfish_fact', 'On this reef the lionfish is a native. In the western Atlantic it is an invader: the first one was caught near Dania, Florida, in 1985, and by the early 2000s lionfish were established there.') },
+        role: __alloT('stem.coralreef.sp_lionfish_role', "Predator of small fishes, shrimps and crabs. It spreads its large pectoral fins while stalking and cornering prey, then captures food with a rapid snap of its jaws."),
+        fact: __alloT('stem.coralreef.sp_lionfish_fact', "The red lionfish is native to the Indo-Pacific represented here and introduced in the western Atlantic. Venom is delivered through spines in its dorsal, anal and pelvic fins. The broad pectoral fins help with hunting; they are not the venom-delivery spines.") },
       peacock_grouper: { name: __alloT('stem.coralreef.sp_peacock_grouper_name', 'Peacock grouper (peacock hind)'),
-        marks: [__alloT('stem.coralreef.sp_peacock_grouper_mark1', 'Dark brown body covered in small black-edged blue spots'),
+        marks: [__alloT('stem.coralreef.sp_peacock_grouper_mark1', "Dark brown head, body and fins carry small black-edged blue spots"),
           __alloT('stem.coralreef.sp_peacock_grouper_mark2', 'Often 5-6 pale bars on the rear half of the body'),
           __alloT('stem.coralreef.sp_peacock_grouper_mark3', 'Large pale area over the chest'),
           __alloT('stem.coralreef.sp_peacock_grouper_mark4', 'Rests on the bottom with a big mouth and protruding lower jaw')],
-        role: __alloT('stem.coralreef.sp_peacock_grouper_role', 'Ambush predator. Adults eat mainly fishes (75-95% of the diet), plus crustaceans.'),
-        fact: __alloT('stem.coralreef.sp_peacock_grouper_fact', 'Peacock groupers live in social groups of up to 12 adults with one dominant male, in territories as large as 2,000 square metres.') },
+        role: __alloT('stem.coralreef.sp_peacock_grouper_role', "An ambush predator that feeds mainly on smaller fishes, with crustaceans also taken. Diet proportions depend on the population and study, so a single percentage is not a fixed rule for every reef."),
+        fact: __alloT('stem.coralreef.sp_peacock_grouper_fact', "In a 1991 Gulf of Aqaba study, peacock groupers occupied territories of up to 2,000 square metres, subdivided among females and patrolled by a dominant male. That describes the study population, not a fixed territory size or group size for every reef.") },
       humphead_wrasse: { name: __alloT('stem.coralreef.sp_humphead_wrasse_name', 'Humphead wrasse (Napoleon wrasse)'),
         marks: [__alloT('stem.coralreef.sp_humphead_wrasse_mark1', 'Huge greenish-blue fish, swimming slowly by flapping its side fins'),
           __alloT('stem.coralreef.sp_humphead_wrasse_mark2', 'Bulging hump on the forehead of large adults'),
           __alloT('stem.coralreef.sp_humphead_wrasse_mark3', 'Thick lips'),
-          __alloT('stem.coralreef.sp_humphead_wrasse_mark4', 'Eyes that move independently')],
+          __alloT('stem.coralreef.sp_humphead_wrasse_mark4', "Two dark lines trail behind each eye, with fine wavy markings over the face and chest")],
         role: __alloT('stem.coralreef.sp_humphead_wrasse_role', 'Eats molluscs, fishes, sea urchins, crustaceans and other invertebrates. It is one of the few predators of toxic animals such as sea hares, boxfishes and crown-of-thorns starfish.'),
-        fact: __alloT('stem.coralreef.sp_humphead_wrasse_fact', 'This giant can live at least 32 years, but it is Endangered. Since 2004 it has been listed on CITES Appendix II, which controls international trade in the species.') },
+        fact: __alloT('stem.coralreef.sp_humphead_wrasse_fact', "The name undulatus refers to its wavy markings. The forehead hump becomes prominent in large adults; young fish have a different outline and colour pattern.") },
       cleaner_wrasse: { name: __alloT('stem.coralreef.sp_cleaner_wrasse_name', 'Bluestreak cleaner wrasse'),
         marks: [__alloT('stem.coralreef.sp_cleaner_wrasse_mark1', 'Small, slim fish with a black stripe from snout to tail that widens toward the tail'),
           __alloT('stem.coralreef.sp_cleaner_wrasse_mark2', 'Pale front half, bright blue rear half'),
           __alloT('stem.coralreef.sp_cleaner_wrasse_mark3', 'Bobs up and down in a \'dance\' at a cleaning station while bigger fish wait')],
         role: __alloT('stem.coralreef.sp_cleaner_wrasse_role', 'Runs cleaning stations where it eats parasites (mostly tiny gnathiid isopods) and mucus off visiting fish.'),
-        fact: __alloT('stem.coralreef.sp_cleaner_wrasse_fact', 'On the Great Barrier Reef, a single cleaner wrasse inspected about 2,300 fish a day and ate about 1,200 parasites.') },
+        fact: __alloT('stem.coralreef.sp_cleaner_wrasse_fact', "A study at Lizard Island on the Great Barrier Reef estimated that each cleaner wrasse inspected about 2,300 clients and ate about 1,200 parasites per day on average. These are study estimates, not a fixed daily rate everywhere.") },
       clown_triggerfish: { name: __alloT('stem.coralreef.sp_clown_triggerfish_name', 'Clown triggerfish'),
         marks: [__alloT('stem.coralreef.sp_clown_triggerfish_mark1', 'Black body with large white spots on the belly'),
           __alloT('stem.coralreef.sp_clown_triggerfish_mark2', 'Yellow net-like pattern on the back'),
           __alloT('stem.coralreef.sp_clown_triggerfish_mark3', 'Yellow-orange mouth and a pale band across the snout in front of the eyes'),
           __alloT('stem.coralreef.sp_clown_triggerfish_mark4', 'Broad white band across the tail')],
         role: __alloT('stem.coralreef.sp_clown_triggerfish_role', 'Eats sea urchins, crabs and other crustaceans, molluscs and tunicates.'),
-        fact: __alloT('stem.coralreef.sp_clown_triggerfish_fact', 'Its \'trigger\' is a locking spine. The base of the second back spine slots into a groove in the first, holding it upright, so triggerfish can wedge themselves into crevices.') },
+        fact: __alloT('stem.coralreef.sp_clown_triggerfish_fact', "The large first dorsal spine can be locked upright by the second spine, helping the fish brace itself in a crevice. The first dorsal fin has three spines; the study model shows their raised external form, without simulating the internal locking mechanism.") },
       porcupinefish: { name: __alloT('stem.coralreef.sp_porcupinefish_name', 'Spotted porcupinefish'),
         marks: [__alloT('stem.coralreef.sp_porcupinefish_mark1', 'Pale body covered in small black spots, including on the fins'),
           __alloT('stem.coralreef.sp_porcupinefish_mark2', 'Long spines lying flat against the body'),
           __alloT('stem.coralreef.sp_porcupinefish_mark3', 'Large eyes and a beak-like mouth'),
           __alloT('stem.coralreef.sp_porcupinefish_mark4', 'Puffs up into a spiky ball when threatened')],
         role: __alloT('stem.coralreef.sp_porcupinefish_role', 'Solitary night hunter of hard-shelled animals such as sea urchins, snails and hermit crabs, which it crushes with fused, beak-like teeth.'),
-        fact: __alloT('stem.coralreef.sp_porcupinefish_fact', 'When threatened it swallows water to blow itself up into a spiky ball. Its spines are modified scales.') },
+        fact: __alloT('stem.coralreef.sp_porcupinefish_fact', "Its teeth are fused into one continuous beak-like plate in each jaw. The upper and lower plates work together to crush hard-shelled prey. Each plate lacks a central split into left and right halves.") },
       yellow_boxfish: { name: __alloT('stem.coralreef.sp_yellow_boxfish_name', 'Yellow boxfish'),
         marks: [__alloT('stem.coralreef.sp_yellow_boxfish_mark1', 'Box-shaped body inside a hard bony shell'),
           __alloT('stem.coralreef.sp_yellow_boxfish_mark2', 'Juveniles: bright yellow with black spots'),
           __alloT('stem.coralreef.sp_yellow_boxfish_mark3', 'Adults: dull mustard to bluish, with fewer, smaller spots and yellowish seams between the plates'),
-          __alloT('stem.coralreef.sp_yellow_boxfish_mark4', 'Small mouth; hovers and paddles slowly with its fins')],
+          __alloT('stem.coralreef.sp_yellow_boxfish_mark4', "Small terminal mouth and short gill openings beside the head; small fins steer the rigid body")],
         role: __alloT('stem.coralreef.sp_yellow_boxfish_role', 'Eats algae, microorganisms and small animals such as sponges, molluscs, worms and crustaceans.'),
-        fact: __alloT('stem.coralreef.sp_yellow_boxfish_fact', 'When stressed, boxfish release a toxin called pahutoxin from their skin. Scientists found it in the defensive skin secretion of this very species in the Red Sea.') },
+        fact: __alloT('stem.coralreef.sp_yellow_boxfish_fact', "The bright yellow, black-spotted model represents a juvenile. Adults can become much duller and differently patterned. WoRMS lists the species as Ostracion cubicum; the spelling Ostracion cubicus remains common in older field guides and studies.") },
       giant_moray: { name: __alloT('stem.coralreef.sp_giant_moray_name', 'Giant moray'),
         marks: [__alloT('stem.coralreef.sp_giant_moray_mark1', 'Very large, thick eel with its head out of a hole'),
           __alloT('stem.coralreef.sp_giant_moray_mark2', 'Opens and closes its mouth as it breathes'),
           __alloT('stem.coralreef.sp_giant_moray_mark3', 'Leopard-like dark spots behind the head'),
           __alloT('stem.coralreef.sp_giant_moray_mark4', 'Black patch around the gill opening')],
         role: __alloT('stem.coralreef.sp_giant_moray_role', 'Top predator that eats mainly fish and some crustaceans.'),
-        fact: __alloT('stem.coralreef.sp_giant_moray_fact', 'In the Red Sea, roving coral groupers recruit giant morays as hunting partners. The grouper shakes its head at the moray\'s hole, and the moray came out in 58% of cases. The eel then chases fish out of cracks while the grouper catches those that flee into open water.') },
+        fact: __alloT('stem.coralreef.sp_giant_moray_fact', "Researchers in the Red Sea observed giant morays hunting with roving coral groupers. A grouper could recruit a moray with head shakes. Their hunting methods complement each other: a moray enters narrow reef spaces while a grouper pursues fish in open water.") },
       whitetip_reef_shark: { name: __alloT('stem.coralreef.sp_whitetip_reef_shark_name', 'Whitetip reef shark'),
         marks: [__alloT('stem.coralreef.sp_whitetip_reef_shark_mark1', 'Slim grey shark with bright white tips on the first back fin and the upper tail'),
           __alloT('stem.coralreef.sp_whitetip_reef_shark_mark2', 'Often lies still on sand or in caves during the day'),
@@ -4988,7 +4994,7 @@
           __alloT('stem.coralreef.sp_oriental_sweetlips_mark3', 'Black spots on the yellow back, belly and tail fins'),
           __alloT('stem.coralreef.sp_oriental_sweetlips_mark4', 'Thick, rubbery lips; rests in small groups under ledges by day')],
         role: __alloT('stem.coralreef.sp_oriental_sweetlips_role', 'Night-time hunter (nocturnal carnivore). By day it rests alone or in small groups.'),
-        fact: __alloT('stem.coralreef.sp_oriental_sweetlips_fact', 'Young oriental sweetlips look nothing like adults. They have yellow heads and irregular broad black stripes or blotches, which slowly break up into the neat adult stripes.') },
+        fact: __alloT('stem.coralreef.sp_oriental_sweetlips_fact', "The striped model represents an adult. Juveniles have connected dark blotches and spots that gradually reorganise into horizontal stripes. Their rounded tail becomes more square-ended as they grow.") },
       reef_manta: { name: __alloT('stem.coralreef.sp_reef_manta_name', 'Reef manta ray'),
         marks: [__alloT('stem.coralreef.sp_reef_manta_mark1', 'Huge diamond-shaped ray with two flaps (head fins) beside a wide mouth at the front of the head'),
           __alloT('stem.coralreef.sp_reef_manta_mark2', 'Black back with pale shoulder patches that blur into a \'V\' shape (oceanic mantas have a sharp \'T\')'),
@@ -4996,100 +5002,100 @@
         role: __alloT('stem.coralreef.sp_reef_manta_role', 'Filter-feeds on zooplankton and probably small fishes, often near coral reefs.'),
         fact: __alloT('stem.coralreef.sp_reef_manta_fact', 'Every reef manta has its own pattern of spots on its belly. Scientists photograph the belly to identify individuals, like a fingerprint.') },
       green_turtle: { name: __alloT('stem.coralreef.sp_green_turtle_name', 'Green turtle'),
-        marks: [__alloT('stem.coralreef.sp_green_turtle_mark1', 'One pair of large scales between the eyes (hawksbill has two pairs)'),
+        marks: [__alloT('stem.coralreef.sp_green_turtle_mark1', "One pair of large prefrontal scales on top of the snout, between and in front of the eyes (hawksbill has two pairs)"),
           __alloT('stem.coralreef.sp_green_turtle_mark2', 'Rounded head with a short, blunt beak (no hawk-like point)'),
           __alloT('stem.coralreef.sp_green_turtle_mark3', 'Smooth, dark brown to olive shell with plates that do not overlap; pale yellow-white underside')],
         role: __alloT('stem.coralreef.sp_green_turtle_role', 'Adults are mainly plant-eaters, grazing seagrass and algae.'),
-        fact: __alloT('stem.coralreef.sp_green_turtle_fact', 'It is named for the green colour of its fat, not its shell. And good news: in October 2025 the IUCN moved it from Endangered to Least Concern, after protection helped its numbers grow about 28% since the 1970s.') },
+        fact: __alloT('stem.coralreef.sp_green_turtle_fact', "Its name refers to the green colour of its fat. The IUCN global assessment published in 2025 lists green turtles as Least Concern after a recovery in numbers. Some regional populations remain threatened, and the global listing does not remove local threats or legal protections.") },
       hawksbill_turtle: { name: __alloT('stem.coralreef.sp_hawksbill_turtle_name', 'Hawksbill turtle'),
         marks: [__alloT('stem.coralreef.sp_hawksbill_turtle_mark1', 'Narrow head with a sharp, hawk-like pointed beak'),
-          __alloT('stem.coralreef.sp_hawksbill_turtle_mark2', 'Two pairs of scales between the eyes'),
+          __alloT('stem.coralreef.sp_hawksbill_turtle_mark2', "Two pairs of prefrontal scales on top of the snout, between and in front of the eyes"),
           __alloT('stem.coralreef.sp_hawksbill_turtle_mark3', 'Shell mottled amber, orange, red, yellow, black and brown, with overlapping plates and a jagged (serrated) rear edge')],
         role: __alloT('stem.coralreef.sp_hawksbill_turtle_role', 'Specialist predator of sponges; it also eats algae, corals, molluscs and other animals.'),
-        fact: __alloT('stem.coralreef.sp_hawksbill_turtle_fact', 'It is the only sea turtle that can survive on a diet mostly of sponges, which are full of tiny glassy spikes. One study called it \'a diet of glass\'.') },
+        fact: __alloT('stem.coralreef.sp_hawksbill_turtle_fact', "Hawksbills can feed mainly on sponges, including sponges with tiny glassy skeletal pieces. Diet varies by place: NOAA reports that Hawaiian hawksbills take a wider mixture of animals and algae.") },
       magnificent_anemone: { name: __alloT('stem.coralreef.sp_magnificent_anemone_name', 'Magnificent sea anemone'),
         marks: [__alloT('stem.coralreef.sp_magnificent_anemone_mark1', 'Big anemone sitting on top of exposed rock or coral'),
           __alloT('stem.coralreef.sp_magnificent_anemone_mark2', 'Column (the \'stalk\') often bright red to purple and fully visible'),
           __alloT('stem.coralreef.sp_magnificent_anemone_mark3', 'Dense finger-like tentacles (up to about 7.5 cm) with rounded, often brightly coloured tips'),
           __alloT('stem.coralreef.sp_magnificent_anemone_mark4', 'When disturbed it pulls into a ball rather than vanishing into the reef')],
         role: __alloT('stem.coralreef.sp_magnificent_anemone_role', 'Home base for clownfish, which shelter among its stinging tentacles. It also carries symbiotic algae in its tissues that make food from sunlight.'),
-        fact: __alloT('stem.coralreef.sp_magnificent_anemone_fact', 'Only about 10 kinds of sea anemone host anemonefish at all, and this one can host 12 different anemonefish species.') },
+        fact: __alloT('stem.coralreef.sp_magnificent_anemone_fact', "A magnificent anemone is one animal polyp; a branching soft coral is a colony of many polyps. The anemone's algal partners live inside its tissues, while anemonefish shelter among its tentacles. These are two different partnerships.") },
       giant_clam: { name: __alloT('stem.coralreef.sp_giant_clam_name', 'Elongate giant clam (maxima clam)'),
         marks: [__alloT('stem.coralreef.sp_giant_clam_mark1', 'Brightly patterned mantle (blue, green, brown or gold) fills the wavy gap between the two shell halves'),
           __alloT('stem.coralreef.sp_giant_clam_mark2', 'Shell often partly sunk into rock or coral'),
           __alloT('stem.coralreef.sp_giant_clam_mark3', 'Shell ridges carry rows of short, close-set scales (the fluted giant clam has big leaf-like scales)')],
         role: __alloT('stem.coralreef.sp_giant_clam_role', 'Filter-feeds on plankton and also \'farms\' symbiotic algae in its colourful mantle, which make food from sunlight.'),
-        fact: __alloT('stem.coralreef.sp_giant_clam_fact', 'Giant clams have several hundred tiny pinhole eyes dotted over their exposed mantle.') },
+        fact: __alloT('stem.coralreef.sp_giant_clam_fact', "Several hundred small pinhole eyes lie on the exposed mantle. In a 2003 study of Tridacna maxima, moving dark patterns could trigger withdrawal even without shading the whole animal. The model shows a sample of these tiny eyes, not the complete count.") },
       crown_of_thorns: { name: __alloT('stem.coralreef.sp_crown_of_thorns_name', 'Crown-of-thorns starfish'),
         marks: [__alloT('stem.coralreef.sp_crown_of_thorns_mark1', 'Large sea star with many arms (up to 21) covered in long, sharp spines'),
           __alloT('stem.coralreef.sp_crown_of_thorns_mark2', 'Colour varies: grey, purple, reddish or blue-green'),
           __alloT('stem.coralreef.sp_crown_of_thorns_mark3', 'By day often tucked under plate corals or inside branching thickets'),
           __alloT('stem.coralreef.sp_crown_of_thorns_mark4', 'Fresh, bright-white patches of bare coral skeleton nearby (feeding scars, often over 15 cm)')],
-        role: __alloT('stem.coralreef.sp_crown_of_thorns_role', 'Eats living coral tissue, preferring plate and branching Acropora. A single crown-of-thorns can eat up to about 10 m² of living coral a year, so outbreaks can strip whole reefs.'),
-        fact: __alloT('stem.coralreef.sp_crown_of_thorns_fact', 'An average-sized female releases about 29-38 million eggs in one spawning season, and more than 100 million has been recorded. That is how outbreaks can explode.') },
+        role: __alloT('stem.coralreef.sp_crown_of_thorns_role', "A native Indo-Pacific predator of living coral. Adults often feed on branching and plate-forming corals. At outbreak densities, feeding can remove living coral faster than it regrows."),
+        fact: __alloT('stem.coralreef.sp_crown_of_thorns_fact', "A female can release millions of eggs. Egg production alone does not explain an outbreak: food for larvae, water conditions, predators and the survival of young starfish also matter.") },
       blue_sea_star: { name: __alloT('stem.coralreef.sp_blue_sea_star_name', 'Blue sea star (blue linckia)'),
         marks: [__alloT('stem.coralreef.sp_blue_sea_star_mark1', 'Bright blue sea star (sometimes pale blue or purplish)'),
           __alloT('stem.coralreef.sp_blue_sea_star_mark2', 'Five long, smooth, tube-shaped arms with blunt tips'),
           __alloT('stem.coralreef.sp_blue_sea_star_mark3', 'Often sits out in the open on rock, rubble or dead coral')],
         role: __alloT('stem.coralreef.sp_blue_sea_star_role', 'Feeds on detritus and the thin film of organic matter on rock and dead coral.'),
-        fact: __alloT('stem.coralreef.sp_blue_sea_star_fact', 'Blue sea stars are often seen regrowing lost arms. Some close relatives in the same genus can grow a whole new star from a single arm, which for a while looks like a comet: one long arm with tiny new ones.') },
+        fact: __alloT('stem.coralreef.sp_blue_sea_star_fact', "A tiny compound eye sits near the tip of each arm. Experiments with blue sea stars showed that these low-resolution eyes help them navigate back toward nearby reef habitat.") },
       long_spined_urchin: { name: __alloT('stem.coralreef.sp_long_spined_urchin_name', 'Long-spined sea urchin (black diadema urchin)'),
         marks: [__alloT('stem.coralreef.sp_long_spined_urchin_mark1', 'Black ball bristling with very long, thin, needle-sharp spines'),
           __alloT('stem.coralreef.sp_long_spined_urchin_mark2', 'Bright orange (sometimes red) ring around the raised cone on top'),
           __alloT('stem.coralreef.sp_long_spined_urchin_mark3', 'Five small white spots on the body between the spines')],
         role: __alloT('stem.coralreef.sp_long_spined_urchin_role', 'Night-time grazer of algae on dead coral and rubble, keeping seaweed in check. It hides in crevices by day.'),
-        fact: __alloT('stem.coralreef.sp_long_spined_urchin_fact', 'Reef Check counts Diadema urchins on every survey and calls them \'the keystone algae-grazers\', essential for keeping algae under control.') },
+        fact: __alloT('stem.coralreef.sp_long_spined_urchin_fact', "The orange ring surrounds the anus on a raised cone; it is not an eye. Alongside the five pale spots, paired rows of small blue dots help identify this species. Its night-time grazing removes algae from reef surfaces.") },
       nudibranch: { name: __alloT('stem.coralreef.sp_nudibranch_name', 'Anna\'s chromodoris (nudibranch)'),
         marks: [__alloT('stem.coralreef.sp_nudibranch_mark1', 'Soft, slug-like body, bright blue with black lines running lengthwise'),
           __alloT('stem.coralreef.sp_nudibranch_mark2', 'Tiny dark specks in the blue areas (a key clue)'),
           __alloT('stem.coralreef.sp_nudibranch_mark3', 'Orange-yellow feathery gills on the back and two orange-yellow \'horns\' (rhinophores)'),
           __alloT('stem.coralreef.sp_nudibranch_mark4', 'Orange-yellow border around the edge of the body')],
         role: __alloT('stem.coralreef.sp_nudibranch_role', 'Grazes on sponges.'),
-        fact: __alloT('stem.coralreef.sp_nudibranch_fact', 'It eats toxic sponges and stores a sponge toxin (latrunculin A) mostly in the rim of its body, the part a predator would bite first. Its bright colours are thought to warn predators away.') },
+        fact: __alloT('stem.coralreef.sp_nudibranch_fact', "A 2016 study found the sponge-derived chemical latrunculin A in Anna's chromodoris and four related Chromodoris species. The compound was stored in mantle tissue, supporting a role in chemical defence. This does not mean all nudibranchs use the same chemical.") },
       cleaner_shrimp: { name: __alloT('stem.coralreef.sp_cleaner_shrimp_name', 'Pacific cleaner shrimp (skunk cleaner shrimp)'),
         marks: [__alloT('stem.coralreef.sp_cleaner_shrimp_mark1', 'A white stripe down the middle of the back'),
           __alloT('stem.coralreef.sp_cleaner_shrimp_mark2', 'Wider bright red bands on either side of the white stripe'),
           __alloT('stem.coralreef.sp_cleaner_shrimp_mark3', 'Long white antennae'),
-          __alloT('stem.coralreef.sp_cleaner_shrimp_mark4', 'Waits at a cleaning station in a crevice or under a ledge')],
+          __alloT('stem.coralreef.sp_cleaner_shrimp_mark4', "Small claws on the first two leg pairs; a short toothed rostrum projects between the eyes")],
         role: __alloT('stem.coralreef.sp_cleaner_shrimp_role', 'Picks parasites and dead tissue off fish that visit its cleaning station.'),
-        fact: __alloT('stem.coralreef.sp_cleaner_shrimp_fact', 'Each shrimp starts life as a male and later becomes a hermaphrodite that can produce both eggs and sperm at the same time.') },
+        fact: __alloT('stem.coralreef.sp_cleaner_shrimp_fact', "Its first reproductive phase is male. After further molts, a mature shrimp can function as both male and female when mating with another shrimp. This is called protandric simultaneous hermaphroditism.") },
       christmas_tree_worm: { name: __alloT('stem.coralreef.sp_christmas_tree_worm_name', 'Christmas tree worm'),
-        marks: [__alloT('stem.coralreef.sp_christmas_tree_worm_mark1', 'Pair of colourful spiral \'Christmas trees\' sticking out of live coral'),
+        marks: [__alloT('stem.coralreef.sp_christmas_tree_worm_mark1', "Two colourful spiral crowns belonging to one worm, emerging together from its tube"),
           __alloT('stem.coralreef.sp_christmas_tree_worm_mark2', 'Many colours: red, orange, yellow, blue or white'),
           __alloT('stem.coralreef.sp_christmas_tree_worm_mark3', 'Vanishes into its tube in a flash when startled, and plugs it with a lid (operculum)')],
         role: __alloT('stem.coralreef.sp_christmas_tree_worm_role', 'Filter-feeds: its feathery crowns catch plankton and also act as gills. It lives in a hard tube embedded in living coral, often boulder coral (Porites).'),
-        fact: __alloT('stem.coralreef.sp_christmas_tree_worm_fact', 'By counting growth bands in the host coral around their tubes, scientists estimated that some Christmas tree worms were more than 40 years old.') },
+        fact: __alloT('stem.coralreef.sp_christmas_tree_worm_fact', "In a 1996 study of worms in Porites corals at Okinawa, researchers indirectly estimated some ages above 40 years using annual growth bands in the host coral. The paper called the worms Spirobranchus giganteus. This is a result from that study, not the lifespan of every Christmas tree worm.") },
       day_octopus: { name: __alloT('stem.coralreef.sp_day_octopus_name', 'Day octopus (big blue octopus)'),
         marks: [__alloT('stem.coralreef.sp_day_octopus_mark1', 'Octopus out hunting in daylight, often near a den in rubble or coral'),
           __alloT('stem.coralreef.sp_day_octopus_mark2', 'Changes colour and skin texture constantly, from smooth to bumpy'),
           __alloT('stem.coralreef.sp_day_octopus_mark3', 'Often trailed by fish such as goatfish and groupers while it hunts')],
         role: __alloT('stem.coralreef.sp_day_octopus_role', 'Daytime hunter of crabs, clams and snails, which it finds by feeling into holes with its arms.'),
-        fact: __alloT('stem.coralreef.sp_day_octopus_fact', 'Day octopuses hunt in mixed teams with fish. The fish (especially goatfish) help choose where to search, but the octopus decides whether and when the group moves, and it sometimes punches fish partners, apparently to keep them in line.') },
+        fact: __alloT('stem.coralreef.sp_day_octopus_fact', "In a Red Sea study, day octopuses foraged with groups of fish. Goatfish helped determine where to search, while the octopus strongly influenced group movement. Researchers also observed octopuses displacing fish with arm strikes; this does not mean every octopus hunts in a team.") },
       sea_cucumber: { name: __alloT('stem.coralreef.sp_sea_cucumber_name', 'Pinkfish (pink sea cucumber)'),
         marks: [__alloT('stem.coralreef.sp_sea_cucumber_mark1', 'Dark (black to reddish-black) on top, pink underneath'),
-          __alloT('stem.coralreef.sp_sea_cucumber_mark2', 'Smooth skin with no bumps or spikes'),
-          __alloT('stem.coralreef.sp_sea_cucumber_mark3', 'Round in cross-section, about the size of a hot dog'),
+          __alloT('stem.coralreef.sp_sea_cucumber_mark2', "Pliable skin with small scattered bumps; short tube feet underneath"),
+          __alloT('stem.coralreef.sp_sea_cucumber_mark3', "Elongated, roughly cylindrical body, reaching about 30 cm"),
           __alloT('stem.coralreef.sp_sea_cucumber_mark4', 'Lies on sand between coral patches')],
         role: __alloT('stem.coralreef.sp_sea_cucumber_role', 'Swallows sand and digests the organic matter and microbes coating the grains, recycling nutrients on the reef floor.'),
-        fact: __alloT('stem.coralreef.sp_sea_cucumber_fact', 'Sea cucumbers are the reef\'s vacuum cleaners. On Heron Reef in Australia, sea cucumbers were estimated to move more than 64,000 tonnes of sediment a year.') },
+        fact: __alloT('stem.coralreef.sp_sea_cucumber_fact', "This sea cucumber takes in sediment and digests organic material coating the grains. As it feeds and passes the grains out again, it mixes the surface sediment.") },
       sea_fan: { name: __alloT('stem.coralreef.sp_sea_fan_name', 'Giant sea fan (gorgonian)'),
         marks: [__alloT('stem.coralreef.sp_sea_fan_mark1', 'A big, flat fan made of a fine mesh of branches, like a net'),
           __alloT('stem.coralreef.sp_sea_fan_mark2', 'Stands upright, broadside to the current'),
-          __alloT('stem.coralreef.sp_sea_fan_mark3', 'On lower reef slopes and walls where tidal currents are strong')],
+          __alloT('stem.coralreef.sp_sea_fan_mark3', "Living tissue covers the connected branches; its small polyps each have eight feathery tentacles")],
         role: __alloT('stem.coralreef.sp_sea_fan_role', 'Thousands of tiny polyps on the fan strain plankton from the passing current. The fan is also home to tiny animals such as pygmy seahorses.'),
-        fact: __alloT('stem.coralreef.sp_sea_fan_fact', 'Denise\'s pygmy seahorse, usually less than 2 cm long, lives on sea fans like this one and blends in so well that divers rarely spot it.') },
+        fact: __alloT('stem.coralreef.sp_sea_fan_fact', "Researchers have recorded Denise's pygmy seahorse on Annella mollis and other Annella sea fans. The seahorse resembles its host's colours and polyp pattern. A suitable fan does not necessarily have a seahorse living on it.") },
       barrel_sponge: { name: __alloT('stem.coralreef.sp_barrel_sponge_name', 'Giant barrel sponge'),
         marks: [__alloT('stem.coralreef.sp_barrel_sponge_mark1', 'Huge barrel- or vase-shaped sponge with a wide opening at the top'),
           __alloT('stem.coralreef.sp_barrel_sponge_mark2', 'Thick walls with a rough, ridged outer surface'),
-          __alloT('stem.coralreef.sp_barrel_sponge_mark3', 'Firm, hard body')],
+          __alloT('stem.coralreef.sp_barrel_sponge_mark3', "Outer growth can be ridged, finger-like or comparatively smooth; appearance varies")],
         role: __alloT('stem.coralreef.sp_barrel_sponge_role', 'Filter-feeds by pumping seawater through its body and straining out bacteria and tiny particles.'),
-        fact: __alloT('stem.coralreef.sp_barrel_sponge_fact', 'DNA tests at Lembeh, Indonesia, found that barrel sponges all identified as this one species actually belong to at least two separate lineages that do not seem to interbreed. Even big, obvious animals can hide surprises.') },
+        fact: __alloT('stem.coralreef.sp_barrel_sponge_fact', "A 2013 study at Lembeh Island, Indonesia, compared sponge shapes and DNA. Sponges identified as Xestospongia testudinaria included genetic groups consistent with at least two reproductively isolated lineages. A large, conspicuous animal can still conceal diversity that appearance alone does not resolve.") },
       soft_coral: { name: __alloT('stem.coralreef.sp_soft_coral_name', 'Tree soft coral (carnation coral)'),
-        marks: [__alloT('stem.coralreef.sp_soft_coral_mark1', 'Brightly coloured (pink, red, orange, purple or white) branching \'tree\' with clusters of polyps at the tips'),
-          __alloT('stem.coralreef.sp_soft_coral_mark2', 'No hard skeleton: soft, fleshy and see-through-looking'),
-          __alloT('stem.coralreef.sp_soft_coral_mark3', 'Swells up and stands tall when the current flows; collapses when it stops')],
+        marks: [__alloT('stem.coralreef.sp_soft_coral_mark1', "A colourful branching colony with clusters of small polyps, each with eight feathery tentacles"),
+          __alloT('stem.coralreef.sp_soft_coral_mark2', "Soft tissue contains tiny calcareous pieces called sclerites, rather than a continuous stony skeleton"),
+          __alloT('stem.coralreef.sp_soft_coral_mark3', "Can expand or deflate; its branch posture changes with its state and water flow")],
         role: __alloT('stem.coralreef.sp_soft_coral_role', 'Catches drifting food with its polyps. Unlike reef-building corals, it has no symbiotic algae, so it relies entirely on what it catches.'),
-        fact: __alloT('stem.coralreef.sp_soft_coral_fact', 'It has no sunlight-powered algae, and scientists found that a Red Sea Dendronephthya feeds almost entirely on phytoplankton, the plant plankton. That makes it a coral \'herbivore\'.') },
+        fact: __alloT('stem.coralreef.sp_soft_coral_fact', "This entry represents Dendronephthya, a genus containing many species. Each colony is made of numerous animal polyps. Colony shape and colour alone may not identify the species; specialists examine features such as the arrangement and shape of its sclerites.") },
       brain_coral: { name: __alloT('stem.coralreef.sp_brain_coral_name', 'Brain coral (maze coral)'),
         marks: [__alloT('stem.coralreef.sp_brain_coral_mark1', 'Rounded boulder covered in winding, maze-like valleys and ridges'),
           __alloT('stem.coralreef.sp_brain_coral_mark2', 'Valleys separated by thick walls'),
@@ -5164,7 +5170,7 @@
           __alloT("stem.coralreef.sp_copperband_butterflyfish_mark3", "A dark-edged orange bar passes through the real eye"),
           __alloT("stem.coralreef.sp_copperband_butterflyfish_mark4", "A black false eyespot sits near the rear of the dorsal fin")],
         role: __alloT("stem.coralreef.sp_copperband_butterflyfish_role", "Picks small bottom-dwelling invertebrates from reef crevices with its narrow snout."),
-        fact: __alloT("stem.coralreef.sp_copperband_butterflyfish_fact", "Its long adult snout develops after the young fish settles on the reef; the earliest stages already have similar markings.") },
+        fact: __alloT("stem.coralreef.sp_copperband_butterflyfish_fact", "The very long snout develops after the larval fish settles on the reef. A young fish can therefore have a much shorter face than the adult shown in the study model.") },
       spotted_garden_eel: { name: __alloT("stem.coralreef.sp_spotted_garden_eel_name", "Spotted garden eel"),
         marks: [__alloT("stem.coralreef.sp_spotted_garden_eel_mark1", "Extremely slender, straw-like body rather than a broad fish silhouette"),
           __alloT("stem.coralreef.sp_spotted_garden_eel_mark2", "Pale adult body densely sprinkled with small dark spots"),
@@ -5187,7 +5193,7 @@
         role: __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_role", "Probes reef crevices for small animals and nips pieces from larger invertebrates."),
         fact: __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_fact", "Its genus name, Forcipiger, means forceps-bearing, a reference to the elongated jaws.") },
       pajama_cardinalfish: { name: __alloT("stem.coralreef.sp_pajama_cardinalfish_name", "Pajama cardinalfish"),
-        marks: [__alloT("stem.coralreef.sp_pajama_cardinalfish_mark1", "Yellowish head with a conspicuous red-to-orange eye"),
+        marks: [__alloT("stem.coralreef.sp_pajama_cardinalfish_mark1", "Yellowish head with a red bar passing through the iris"),
           __alloT("stem.coralreef.sp_pajama_cardinalfish_mark2", "A broad, dark vertical bar crosses the middle of the body"),
           __alloT("stem.coralreef.sp_pajama_cardinalfish_mark3", "Rounded purple-to-brown spots scatter across the pale rear body"),
           __alloT("stem.coralreef.sp_pajama_cardinalfish_mark4", "Two separate dorsal fins, with the front dorsal fin and pelvic fins dark")],
@@ -5199,14 +5205,14 @@
           __alloT("stem.coralreef.sp_banggai_cardinalfish_mark3", "Two separate dorsal fins: a tasseled front fin and a long, tapering second fin"),
           __alloT("stem.coralreef.sp_banggai_cardinalfish_mark4", "A deeply forked tail and elongated lower anal fin create a pointed outline")],
         role: __alloT("stem.coralreef.sp_banggai_cardinalfish_role", "Feeds on tiny crustaceans and other plankton around shallow reef and seagrass habitats."),
-        fact: __alloT("stem.coralreef.sp_banggai_cardinalfish_fact", "The father broods eggs and developing young in his mouth, then releases fully formed juveniles.") },
+        fact: __alloT("stem.coralreef.sp_banggai_cardinalfish_fact", "The father broods eggs and developing young in his mouth, then releases fully formed juveniles. This species has no pelagic larval phase: its young do not disperse as drifting larvae.") },
       giant_triton: { name: __alloT("stem.coralreef.sp_giant_triton_name", "Giant triton (Triton’s trumpet)"),
         marks: [__alloT("stem.coralreef.sp_giant_triton_mark1", "Large spiral shell with a tall, pointed spire and a swollen final whorl"),
           __alloT("stem.coralreef.sp_giant_triton_mark2", "Cream-coloured shell patterned with brown markings and spiral ridges"),
           __alloT("stem.coralreef.sp_giant_triton_mark3", "A broad, orange shell opening with a light-and-dark striped inner edge"),
           __alloT("stem.coralreef.sp_giant_triton_mark4", "The flared outer lip has small teeth along its inner edge")],
         role: __alloT("stem.coralreef.sp_giant_triton_role", "Predator of sea stars and other echinoderms. Its feeding alone is not enough to control crown-of-thorns outbreaks."),
-        fact: __alloT("stem.coralreef.sp_giant_triton_fact", "Researchers have seen crown-of-thorns starfish move away from water carrying a triton snail’s scent.") },
+        fact: __alloT("stem.coralreef.sp_giant_triton_fact", "AIMS researchers observed crown-of-thorns starfish moving away from water that had held a giant triton. This is evidence of a response to a chemical cue, not proof that adding snails will control a reef-wide outbreak.") },
       blue_velvet_headshield_slug: { name: __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_name", "Blue velvet headshield slug"),
         marks: [__alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark1", "Deep black body outlined by thin, vivid blue lines"),
           __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark2", "A broad headshield with a blue line along its centre"),
@@ -5220,10 +5226,10 @@
           __alloT("stem.coralreef.sp_regal_angelfish_mark3", "The anal fin carries curved yellow and blue stripes"),
           __alloT("stem.coralreef.sp_regal_angelfish_mark4", "A yellow tail contrasts with the blue-grey chest of this Pacific adult")],
         role: __alloT("stem.coralreef.sp_regal_angelfish_role", "Predator of sponges and tunicates, linking these reef invertebrates to the fish food web."),
-        fact: __alloT("stem.coralreef.sp_regal_angelfish_fact", "Colour varies geographically: Indian Ocean and Red Sea fish have yellow chests, while the Pacific form shown here has a blue-grey chest.") },
+        fact: __alloT("stem.coralreef.sp_regal_angelfish_fact", "Colour varies geographically: Indian Ocean and Red Sea fish have yellow chests, while the Pacific form shown here has a blue-grey chest. Juveniles also differ from this adult: they have fewer body bars and a large false eyespot toward the rear of the dorsal fin.") },
       mandarin_dragonet: { name: __alloT("stem.coralreef.sp_mandarin_dragonet_name", "Mandarin dragonet"),
         marks: [__alloT("stem.coralreef.sp_mandarin_dragonet_mark1", "Winding blue-green and orange bands cover the body"),
-          __alloT("stem.coralreef.sp_mandarin_dragonet_mark2", "A broad head leads into a smooth, elongated body"),
+          __alloT("stem.coralreef.sp_mandarin_dragonet_mark2", "A broad head leads into a smooth, scaleless body"),
           __alloT("stem.coralreef.sp_mandarin_dragonet_mark3", "The first dorsal fin has an extended spine in this adult male"),
           __alloT("stem.coralreef.sp_mandarin_dragonet_mark4", "A fan-shaped orange-red tail has a bright blue edge")],
         role: __alloT("stem.coralreef.sp_mandarin_dragonet_role", "Small predator of bottom-dwelling invertebrates among reef rubble and coral crevices."),
@@ -5238,10 +5244,10 @@
       spotted_seahorse: { name: __alloT("stem.coralreef.sp_spotted_seahorse_name", "Spotted seahorse"),
         marks: [__alloT("stem.coralreef.sp_spotted_seahorse_mark1", "Deep, upright body with a horse-like head and thick tubular snout"),
           __alloT("stem.coralreef.sp_spotted_seahorse_mark2", "A low, rounded crown bends toward the back of the head"),
-          __alloT("stem.coralreef.sp_spotted_seahorse_mark3", "Armoured body rings bear low rounded bumps rather than long sharp spines"),
+          __alloT("stem.coralreef.sp_spotted_seahorse_mark3", "Armoured body rings bear low, rounded tubercles (bumps), rather than long sharp spines"),
           __alloT("stem.coralreef.sp_spotted_seahorse_mark4", "A long gripping tail can coil around a holdfast and has no tail fin")],
         role: __alloT("stem.coralreef.sp_spotted_seahorse_role", "Small predator of planktonic crustaceans in coastal food webs."),
-        fact: __alloT("stem.coralreef.sp_spotted_seahorse_fact", "The male carries developing young in a brood pouch and releases them as tiny seahorses.") },
+        fact: __alloT("stem.coralreef.sp_spotted_seahorse_fact", "Adult males have a brood pouch that carries the developing young and releases them as tiny seahorses. Pregnancy and birth are not animated in this study model.") },
       bennetts_feather_star: { name: __alloT("stem.coralreef.sp_bennetts_feather_star_name", "Bennett’s feather star"),
         marks: [__alloT("stem.coralreef.sp_bennetts_feather_star_mark1", "Dozens of long arms spread upward and outward into a feeding crown"),
           __alloT("stem.coralreef.sp_bennetts_feather_star_mark2", "Fine side branches called pinnules give each arm a feather-like outline"),
@@ -5269,7 +5275,7 @@
           __alloT("stem.coralreef.sp_leaf_scorpionfish_mark3", "Small skin fringes surround the mouth and rise above the eyes"),
           __alloT("stem.coralreef.sp_leaf_scorpionfish_mark4", "Broad fan-shaped side fins support a mottled, rough-skinned body")],
         role: __alloT("stem.coralreef.sp_leaf_scorpionfish_role", "A small bottom-dwelling ambush predator of fishes and crustaceans."),
-        fact: __alloT("stem.coralreef.sp_leaf_scorpionfish_fact", "It periodically sheds its outer skin, removing attached growth. Its colour can change after a moult.") },
+        fact: __alloT("stem.coralreef.sp_leaf_scorpionfish_fact", "It periodically sheds its outer skin. Individuals can be white, pink, red or green, so colour alone is a poor guide to identification.") },
       longnose_hawkfish: { name: __alloT("stem.coralreef.sp_longnose_hawkfish_name", "Longnose hawkfish"),
         marks: [__alloT("stem.coralreef.sp_longnose_hawkfish_mark1", "A very long pointed snout extends from a slender body"),
           __alloT("stem.coralreef.sp_longnose_hawkfish_mark2", "Red lengthwise lines cross red bars to form a grid on a pale body"),
@@ -5290,7 +5296,7 @@
           __alloT("stem.coralreef.sp_porcelain_anemone_crab_mark3", "Three pairs of walking legs spread from the sides, with long thin antennae ahead"),
           __alloT("stem.coralreef.sp_porcelain_anemone_crab_mark4", "Feathery feeding fans extend beside the mouth")],
         role: __alloT("stem.coralreef.sp_porcelain_anemone_crab_role", "A small suspension feeder that gathers plankton while living around large sea anemones."),
-        fact: __alloT("stem.coralreef.sp_porcelain_anemone_crab_fact", "Its delicate feeding fans are bristly mouthparts. They gather tiny food particles from the water, while the much larger claws serve other roles.") },
+        fact: __alloT("stem.coralreef.sp_porcelain_anemone_crab_fact", "Its delicate feeding fans are bristly mouthparts. They gather tiny food particles from the water, while the much larger claws serve other roles. The stalked compound eyes contain many small visual units called ommatidia.") },
       varicose_phyllidia: { name: __alloT("stem.coralreef.sp_varicose_phyllidia_name", "Varicose phyllidia"),
         marks: [__alloT("stem.coralreef.sp_varicose_phyllidia_mark1", "Blue-grey ridges with yellow-tipped knobs run lengthwise over a dark body"),
           __alloT("stem.coralreef.sp_varicose_phyllidia_mark2", "Two yellow, finely layered rhinophores stand near the front"),
@@ -5322,17 +5328,17 @@
         role: __alloT("stem.coralreef.sp_orange_cup_coral_role", "A colony of small predators that catches drifting animal plankton. It grows on hard surfaces without building a large reef framework."),
         fact: __alloT("stem.coralreef.sp_orange_cup_coral_fact", "It has no photosynthetic algae living in its tissues, so it can feed and grow in shaded places. Introduced populations can compete with native corals in the Atlantic.") },
       banded_sea_krait: { name: __alloT("stem.coralreef.sp_banded_sea_krait_name", "Banded sea krait (yellow-lipped sea krait)"),
-        marks: [__alloT("stem.coralreef.sp_banded_sea_krait_mark1", "A long, slender body has dark rings around a blue-grey background"), __alloT("stem.coralreef.sp_banded_sea_krait_mark2", "The small head has a yellow snout and upper lip"), __alloT("stem.coralreef.sp_banded_sea_krait_mark3", "The tail is flattened from side to side into a vertical paddle"), __alloT("stem.coralreef.sp_banded_sea_krait_mark4", "Broad belly scales run underneath the body, which has no fins")],
+        marks: [__alloT("stem.coralreef.sp_banded_sea_krait_mark1", "A long, slender body has dark rings around a blue-grey background"), __alloT("stem.coralreef.sp_banded_sea_krait_mark2", "The small head has a yellow snout and upper lip"), __alloT("stem.coralreef.sp_banded_sea_krait_mark3", "The tail is flattened from side to side into a vertical paddle"), __alloT("stem.coralreef.sp_banded_sea_krait_mark4", "Broad belly scales form transverse plates underneath the body, which has no fins")],
         role: __alloT("stem.coralreef.sp_banded_sea_krait_role", "An eel-hunting reptile that searches narrow reef crevices for prey."),
-        fact: __alloT("stem.coralreef.sp_banded_sea_krait_fact", "Its life links land and sea: it hunts underwater, then comes ashore to rest, shed its skin and lay eggs.") },
+        fact: __alloT("stem.coralreef.sp_banded_sea_krait_fact", "Its life links land and sea: it hunts underwater and comes ashore to rest and shed its skin. Females lay eggs in sheltered places on land.") },
       white_spotted_hermit_crab: { name: __alloT("stem.coralreef.sp_white_spotted_hermit_crab_name", "White-spotted hermit crab"),
         marks: [__alloT("stem.coralreef.sp_white_spotted_hermit_crab_mark1", "Orange-red legs and claws carry pale spots edged with dark rings"), __alloT("stem.coralreef.sp_white_spotted_hermit_crab_mark2", "The left claw is larger than the right claw"), __alloT("stem.coralreef.sp_white_spotted_hermit_crab_mark3", "Reddish bristles fringe the legs, and long pale antennae extend forward"), __alloT("stem.coralreef.sp_white_spotted_hermit_crab_mark4", "The front body emerges from the opening of a carried spiral shell")],
         role: __alloT("stem.coralreef.sp_white_spotted_hermit_crab_role", "A bottom-dwelling predator and scavenger that feeds on a variety of animals."),
-        fact: __alloT("stem.coralreef.sp_white_spotted_hermit_crab_fact", "The shell is borrowed from a sea snail. It protects the soft abdomen, while the legs and claws reach out through the opening.") },
+        fact: __alloT("stem.coralreef.sp_white_spotted_hermit_crab_fact", "The shell is borrowed from a sea snail. It protects the soft abdomen, while the legs and claws reach out through the opening. Each stalk carries a compound eye containing many small visual units.") },
       longfin_bannerfish: { name: __alloT("stem.coralreef.sp_longfin_bannerfish_name", "Longfin bannerfish"),
         marks: [__alloT("stem.coralreef.sp_longfin_bannerfish_mark1", "A deep, flattened white body carries two broad, slanting black bands"), __alloT("stem.coralreef.sp_longfin_bannerfish_mark2", "A very long, tapering white filament trails from the front of the back fin"), __alloT("stem.coralreef.sp_longfin_bannerfish_mark3", "The tail and the soft rear part of the back fin are bright yellow"), __alloT("stem.coralreef.sp_longfin_bannerfish_mark4", "The rear black band continues past the corner of the pointed anal fin")],
         role: __alloT("stem.coralreef.sp_longfin_bannerfish_role", "Feeds on drifting zooplankton and small animals living on the reef bottom."),
-        fact: __alloT("stem.coralreef.sp_longfin_bannerfish_fact", "The similar schooling bannerfish has a shorter snout and a rounder chest. A long white streamer alone is not enough to tell them apart.") },
+        fact: __alloT("stem.coralreef.sp_longfin_bannerfish_fact", "This bannerfish belongs to the butterflyfish family, Chaetodontidae. In Heniochus acuminatus, the second black band reaches beyond the corner of the anal fin. Check that band and body shape when comparing it with the similar schooling bannerfish; a long streamer alone is insufficient.") },
       bigfin_reef_squid: { name: __alloT("stem.coralreef.sp_bigfin_reef_squid_name", "Bigfin reef squid"),
         marks: [__alloT("stem.coralreef.sp_bigfin_reef_squid_mark1", "A long, muscular mantle tapers toward the rear of the body"), __alloT("stem.coralreef.sp_bigfin_reef_squid_mark2", "Broad, rounded side fins run almost the full mantle length and are widest toward the rear"), __alloT("stem.coralreef.sp_bigfin_reef_squid_mark3", "Eight arms surround the mouth, with two longer feeding tentacles ending in wider clubs"), __alloT("stem.coralreef.sp_bigfin_reef_squid_mark4", "Large eyes sit beside the head; skin markings can shift from dark bands to nearly transparent")],
         role: __alloT("stem.coralreef.sp_bigfin_reef_squid_role", "An active coastal predator that catches fish, prawns and other small crustaceans."),
@@ -5395,7 +5401,7 @@
     bluespotted_stingray: [1, 0.1], bluestripe_snapper: [2, 0.4], oriental_sweetlips: [2, 0.4], reef_manta: [1, 0.2], green_turtle: [1, 0.2], hawksbill_turtle: [1, 0.4],
     magnificent_anemone: [3, 0.4], giant_clam: [3, 0.3], crown_of_thorns: [1, 0], blue_sea_star: [3, 0.2], long_spined_urchin: [4, 0], nudibranch: [4, 0.4],
     cleaner_shrimp: [2, 0.4], christmas_tree_worm: [5, 0.8], day_octopus: [1, 0.4], sea_cucumber: [3, 0], sea_fan: [6, 0.5], barrel_sponge: [5, 0.2], soft_coral: [8, 0.6],
-    brain_coral: [10, 1], staghorn_coral: [12, 1], table_coral: [8, 1], mushroom_coral: [10, 1], boulder_coral: [8, 1], cauliflower_coral: [3, 1], foliose_coral: [3, 1],
+    brain_coral: [10, 1], staghorn_coral: [10, 1], table_coral: [7, 1], mushroom_coral: [10, 1], boulder_coral: [8, 1], cauliflower_coral: [3, 1], foliose_coral: [3, 1],
     firefish: [3, 0.35], copperband_butterflyfish: [2, 0.45],
     spotted_garden_eel: [6, 0.15],
     banded_pipefish: [3, 0.4],
@@ -5422,7 +5428,8 @@
     ocellated_eagle_ray: [1, 0.1], textile_cone: [2, 0.2],
     orange_cup_coral: [3, 0.15], banded_sea_krait: [1, 0.25],
     white_spotted_hermit_crab: [2, 0.15], longfin_bannerfish: [3, 0.5], bigfin_reef_squid: [2, 0.2],
-    goldmouth_sea_squirt: [1, 0.15], feather_duster_worm: [1, 0.2]
+    goldmouth_sea_squirt: [1, 0.15], feather_duster_worm: [1, 0.2],
+    acropora_clathrata:[1,1], acropora_humilis:[1,1], acropora_millepora:[1,1]
   };
   function populationFor(site) {
     var out = [], cover = site.health.coralCover / 0.55;
@@ -7042,6 +7049,7 @@
       learning ? h('div', { style: { margin: '12px 0' } },
         h(SpeciesFacts, { env: env, id: f.speciesId, TX: TX }),
         h('p', { style: mutedStyle(P,{margin:'8px 0 0',fontSize:14}) }, __alloT('stem.coralreef.dx_learning_note', 'You are learning freely. This does not count as an identification.'))) : null,
+      known || right || learning ? h(MarineDiveReference,{key:f.uid,env:env,id:f.speciesId,tx:text}) : null,
       h('div', { className: 'crf-actions' },
         known || right || learning ? h('button', { ref: profileButton, type: 'button', 'data-open-profile': f.speciesId, style: btnStyle(P,false), onClick: function () { env.set({ guideSpeciesId: f.speciesId }); env.go('guide'); } }, __alloT('stem.coralreef.dx_read_profile', 'Read the full species profile')) : null,
         learning ? h('button', { type: 'button', style: btnStyle(P,false), onClick: function () { learningFocus.current = { to: 'choices', uid: f.uid }; setLearnedUid(null); } }, __alloT('stem.coralreef.dx_show_choices', 'Show identification choices')) : null,
@@ -7377,24 +7385,27 @@
 
   function marineProfiles(__alloT) {
     return {
+      acropora_clathrata: acroporaLife('clathrata',__alloT),
+      acropora_humilis: acroporaLife('humilis',__alloT),
+      acropora_millepora: acroporaLife('millepora',__alloT),
       goldmouth_sea_squirt: {
         habitat: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_habitat', 'Indo-West Pacific reefs, fixed to hard surfaces. SeaLifeBase lists records from about 3 to 20 m deep; this is a reported range, not a strict boundary.'),
         diet: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_diet', 'Tiny plankton and suspended organic particles. Water enters one siphon, food is trapped inside the filtering pharynx, and water leaves through the other.'),
-        behavior: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_behavior', 'The adult remains attached. Its two siphons serve different routes through the body; they are not a pair of mouths.'),
-        observe: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_observe', 'Turn the specimen to find both openings. Compare this single animal with the barrel sponge and with the many separate polyps of orange cup coral. The colours shown are one illustrative appearance.'),
+        behavior: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_behavior', "The adult remains attached. Water enters the oral siphon, passes through the filtering pharynx, then leaves through the atrial siphon. These openings carry different water routes through one animal; they are not a pair of mouths."),
+        observe: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_observe', "Choose Above to inspect the upper oral siphon, then rotate toward Side to find the projecting atrial siphon. Follow the orange lips into their darker throats. Compare this single animal with the barrel sponge and with the separate polyps of orange cup coral. The colours shown are one illustrative appearance."),
         sources: ['dx-worms-goldmouth_sea_squirt', 'dx-hawaii-tunicates', 'dx-morph-goldmouth_sea_squirt', 'dx-slb-goldmouth_sea_squirt'] },
       feather_duster_worm: {
         habitat: __alloT('stem.coralreef.dx_feather_duster_worm_habitat', 'Indo-Pacific reef crevices and sandy reef surfaces. Researchers recorded Indonesian specimens along reef flats and coral heads at 3 to 16 m; those collection depths do not define its full range.'),
         diet: __alloT('stem.coralreef.dx_feather_duster_worm_diet', 'Suspended plankton and organic particles. Tiny beating hairs, called cilia, move captured food along mucus-lined grooves toward the mouth.'),
-        behavior: __alloT('stem.coralreef.dx_feather_duster_worm_behavior', 'Spreads its crown into the water to feed. Fan worms can withdraw the crown into their tube when disturbed; the study model shows an extended crown.'),
-        observe: __alloT('stem.coralreef.dx_feather_duster_worm_observe', 'Compare its broad, two-lobed fan with the Christmas tree worm\'s spiralling crowns. Bennett\'s feather star is an echinoderm with arms and gripping cirri, not a tube worm. This illustrated specimen is not a complete identification key.'),
+        behavior: __alloT('stem.coralreef.dx_feather_duster_worm_behavior', "Spreads its two-lobed crown to collect suspended food and exchange gases. Fan worms can withdraw the crown into their tube when disturbed; the study model shows an extended crown. The gentle sway illustrates exposure to water movement, not the microscopic beating of feeding cilia."),
+        observe: __alloT('stem.coralreef.dx_feather_duster_worm_observe', "Choose Above to follow the radioles around both fan-like lobes, then Side to find the sand-coated tube below them. Fine side branches, called pinnules, give each radiole its feathery edge. Compare this broad crown with the Christmas tree worm’s spiralling crowns and tube-closing plug; this feather-duster has no such plug. Bennett’s feather star has arms and gripping cirri. This illustrated specimen is not a complete identification key."),
         sources: ['dx-worms-feather_duster_worm', 'dx-peerj-feather_duster_worm', 'dx-museum-fanworms', 'dx-qatar-feather_duster_worm'] },
       clownfish: {
-        habitat: __alloT("stem.coralreef.dx_clownfish_habitat", "Anemone homes on sheltered and exposed coral reefs and lagoons."),
+        habitat: __alloT("stem.coralreef.dx_clownfish_habitat", "Coral and rocky reef areas with a suitable host sea anemone. Documented natural hosts include the magnificent anemone and the carpet anemones Stichodactyla gigantea and Stichodactyla mertensii."),
         diet: __alloT("stem.coralreef.dx_clownfish_diet", "Small drifting animals and algae; its host anemone provides a protected feeding base."),
-        behavior: __alloT("stem.coralreef.dx_clownfish_behavior", "A small group shares one host, with a dominant female and breeding male."),
+        behavior: __alloT("stem.coralreef.dx_clownfish_behavior", "The fish associates with particular host anemones. Acclimation and its protective mucous coating help it live among the stinging tentacles. Host associations are specific, and the fish and anemone remain separate animals."),
         observe: __alloT("stem.coralreef.dx_clownfish_observe", "Count the three white bands, then watch how closely the fish stays beside its host's tentacles."),
-        sources: ["dx-foa-clownfish","dx-adw-clownfish","trnski2020"]
+        sources: ["dx-foa-clownfish","dx-adw-clownfish","trnski2020","dx-flm-ocellaris-hosts"]
       },
       blue_tang: {
         habitat: __alloT("stem.coralreef.dx_blue_tang_habitat", "Clear outer reefs and reef channels where currents bring drifting food."),
@@ -7408,7 +7419,7 @@
         diet: __alloT("stem.coralreef.dx_parrotfish_diet", "Grazes algae and associated material from reef surfaces with fused, beak-like teeth."),
         behavior: __alloT("stem.coralreef.dx_parrotfish_behavior", "Biting and grinding reef material contributes to the production of coral sand."),
         observe: __alloT("stem.coralreef.dx_parrotfish_observe", "Watch its side fins move, then look for pale grazing scars or a small sand puff."),
-        sources: ["dx-foa-parrotfish"]
+        sources: ["dx-foa-parrotfish","dx-parrotfish-sediment-study"]
       },
       bumphead_parrotfish: {
         habitat: __alloT("stem.coralreef.dx_bumphead_parrotfish_habitat", "Outer lagoons, seaward reefs and reef flats, often with other large parrotfish."),
@@ -7421,22 +7432,22 @@
         habitat: __alloT("stem.coralreef.dx_moorish_idol_habitat", "Coastal and offshore coral and rocky reefs, including reef lagoons."),
         diet: __alloT("stem.coralreef.dx_moorish_idol_diet", "Picks mainly at encrusting sponges, with coral polyps, tunicates and other small attached animals."),
         behavior: __alloT("stem.coralreef.dx_moorish_idol_behavior", "Often travels as a pair, although larger gatherings also occur."),
-        observe: __alloT("stem.coralreef.dx_moorish_idol_observe", "Trace the long white dorsal streamer, tube-shaped snout and yellow saddle across the nose."),
+        observe: __alloT("stem.coralreef.dx_moorish_idol_observe", "Use Front and Studio light to look for the two short projections above the eyes of this adult. Then compare its tubular snout, yellow saddle and black tail with the longfin bannerfish's shorter snout and yellow tail."),
         sources: ["dx-foa-moorish_idol"]
       },
       threadfin_butterflyfish: {
         habitat: __alloT("stem.coralreef.dx_threadfin_butterflyfish_habitat", "Coral reef habitats across the tropical Indo-Pacific, from sheltered reef areas to outer reefs."),
         diet: __alloT("stem.coralreef.dx_threadfin_butterflyfish_diet", "Uses its small mouth to pick worms, anemones, coral polyps and algae from the reef."),
         behavior: __alloT("stem.coralreef.dx_threadfin_butterflyfish_behavior", "The trailing back-fin filament becomes a useful clue on adults; regional markings can vary."),
-        observe: __alloT("stem.coralreef.dx_threadfin_butterflyfish_observe", "Find the eye band, fine angled lines and rear eyespot together; color alone is less reliable."),
-        sources: ["dx-foa-threadfin_butterflyfish"]
+        observe: __alloT("stem.coralreef.dx_threadfin_butterflyfish_observe", "Find the real eye inside the black head band, then follow the fine chevrons, yellow rear body and adult dorsal filament. The illustrated form has a rear dorsal eyespot; Red Sea fish lack that conspicuous mark."),
+        sources: ["dx-foa-threadfin_butterflyfish","dx-threadfin-adult-filament"]
       },
       emperor_angelfish: {
         habitat: __alloT("stem.coralreef.dx_emperor_angelfish_habitat", "Clear lagoons, reef channels and seaward reefs with rich coral growth and ledges."),
         diet: __alloT("stem.coralreef.dx_emperor_angelfish_diet", "Feeds mainly on attached sponges and tunicates among the reef's crevices."),
         behavior: __alloT("stem.coralreef.dx_emperor_angelfish_behavior", "Juveniles have blue-and-white rings that change into the adult's yellow-and-blue stripes."),
-        observe: __alloT("stem.coralreef.dx_emperor_angelfish_observe", "Check the dark face mask and stripes, and compare the adult pattern with the juvenile description."),
-        sources: ["dx-foa-emperor_angelfish"]
+        observe: __alloT("stem.coralreef.dx_emperor_angelfish_observe", "Use Side to follow the adult's yellow-and-blue stripes and dark eye band. Compare these features with the ringed juvenile described in the entry, keeping the life stage in mind when identifying a fish."),
+        sources: ["dx-foa-emperor_angelfish","dx-am-emperor-growth"]
       },
       anthias: {
         habitat: __alloT("stem.coralreef.dx_anthias_habitat", "Water just above reef outcrops, where a current delivers plankton."),
@@ -7455,58 +7466,58 @@
       lionfish: {
         habitat: __alloT("stem.coralreef.dx_lionfish_habitat", "Coral reefs and rocky reef shelter, with crevices available between feeding trips."),
         diet: __alloT("stem.coralreef.dx_lionfish_diet", "Swallows small fishes and crustaceans after cornering them with its spread fins."),
-        behavior: __alloT("stem.coralreef.dx_lionfish_behavior", "A native Indo-Pacific predator that is especially active as a hunter at night."),
-        observe: __alloT("stem.coralreef.dx_lionfish_observe", "Identify the striped body and separate long back spines while giving its spread fins plenty of space."),
-        sources: ["dx-foa-lionfish"]
+        behavior: __alloT("stem.coralreef.dx_lionfish_behavior", "Often shelters during the day, but feeding can occur in daylight as well as at night. Its activity varies; it is not an exclusively nocturnal hunter."),
+        observe: __alloT("stem.coralreef.dx_lionfish_observe", "Distinguish the broad pectoral fans at the sides from the long spines along the back. Check body stripes and fin details together: similar Pterois species occur. The study model is red lionfish, not every striped lionfish."),
+        sources: ["dx-foa-lionfish","dx-flm-lionfish-anatomy"]
       },
       peacock_grouper: {
         habitat: __alloT("stem.coralreef.dx_peacock_grouper_habitat", "Reef slopes and coral-rich shelter; younger fish often remain among dense shallow coral."),
         diet: __alloT("stem.coralreef.dx_peacock_grouper_diet", "An ambush hunter of fishes and crustaceans, using a large mouth to take prey."),
         behavior: __alloT("stem.coralreef.dx_peacock_grouper_behavior", "Adults can live in social groups within a defended area of reef."),
-        observe: __alloT("stem.coralreef.dx_peacock_grouper_observe", "Pause near a ledge and search for black-edged blue spots and pale bars on the rear body."),
-        sources: ["dx-foa-peacock_grouper"]
+        observe: __alloT("stem.coralreef.dx_peacock_grouper_observe", "Choose Side and zoom to inspect the dark rims around blue spots on the body and fins. Rotate to check both faces of the tail and paired pectoral fins, then find the pale chest patch. Five or six pale bars may show on the rear body, but can be faint or absent; use several features together."),
+        sources: ["dx-foa-peacock_grouper","dx-grouper-territory-study","dx-grouper-diet-context","dx-stri-grouper-spots"]
       },
       humphead_wrasse: {
         habitat: __alloT("stem.coralreef.dx_humphead_wrasse_habitat", "Indo-Pacific reefs, with large individuals moving among coral formations and reef slopes."),
         diet: __alloT("stem.coralreef.dx_humphead_wrasse_diet", "Eats hard-bodied invertebrates and fishes, including some animals avoided by many other predators."),
-        behavior: __alloT("stem.coralreef.dx_humphead_wrasse_behavior", "A slow-moving, long-lived fish whose prominent forehead develops as it grows."),
-        observe: __alloT("stem.coralreef.dx_humphead_wrasse_observe", "Compare the thick lips and rounded head with the sharper beak and steep face of a bumphead parrotfish."),
-        sources: ["dx-foa-humphead_wrasse"]
+        behavior: __alloT("stem.coralreef.dx_humphead_wrasse_behavior", "The study model shows a large adult. Smaller fish have a less developed forehead hump and can differ in colour. Large individuals roam reef slopes and shelter around caves and ledges."),
+        observe: __alloT("stem.coralreef.dx_humphead_wrasse_observe", "Use Side to compare the fine wavy lines on the face and chest with the short dark marks on the large body scales. Check both thick lips and the rounded tail, then compare the face with a bumphead parrotfish."),
+        sources: ["dx-foa-humphead_wrasse","dx-am-humphead-form","dx-wa-humphead-scales"]
       },
       cleaner_wrasse: {
         habitat: __alloT("stem.coralreef.dx_cleaner_wrasse_habitat", "Prominent reef outcrops that act as meeting places for fish seeking a cleaning service."),
         diet: __alloT("stem.coralreef.dx_cleaner_wrasse_diet", "Picks parasites and mucus from the skin, gills and mouths of client fishes."),
-        behavior: __alloT("stem.coralreef.dx_cleaner_wrasse_behavior", "Clients often hold still and spread their fins while the cleaner moves along their bodies."),
-        observe: __alloT("stem.coralreef.dx_cleaner_wrasse_observe", "Stay back and watch the interaction: a waiting client and the cleaner's dark lengthwise stripe are useful clues."),
-        sources: ["fishaus-labroides","bansemer2002","titus2015"]
+        behavior: __alloT("stem.coralreef.dx_cleaner_wrasse_behavior", "This model shows adult colouring. Juveniles are mostly black with a narrow neon-blue stripe. At a cleaning station, clients may hold still and spread their fins while a cleaner searches their surfaces."),
+        observe: __alloT("stem.coralreef.dx_cleaner_wrasse_observe", "Use Front and zoom to find the small mouth at the tip of the pointed snout. From Side, follow the widening black stripe onto the tail. The similar false cleanerfish has its mouth farther under the snout, so use mouth position as well as colour."),
+        sources: ["fishaus-labroides","bansemer2002","titus2015","dx-cleaner-rates-study","dx-rls-cleaner-mouth","dx-randall-cleaner-fins"]
       },
       clown_triggerfish: {
         habitat: __alloT("stem.coralreef.dx_clown_triggerfish_habitat", "Tropical coral reefs with holes and crevices that provide secure shelter."),
         diet: __alloT("stem.coralreef.dx_clown_triggerfish_diet", "Feeds on sea urchins, crustaceans, molluscs and other bottom-dwelling animals."),
         behavior: __alloT("stem.coralreef.dx_clown_triggerfish_behavior", "Its locking dorsal spine helps it brace itself inside a reef crevice."),
-        observe: __alloT("stem.coralreef.dx_clown_triggerfish_observe", "Look for the combination of white belly spots, a patterned back and bright lips."),
-        sources: ["dx-foa-clown_triggerfish"]
+        observe: __alloT("stem.coralreef.dx_clown_triggerfish_observe", "Choose Side to trace the stout first dorsal spine and the two shorter spines behind it, ahead of the soft dorsal fin. Then check the white belly spots, patterned back and orange-yellow lips together."),
+        sources: ["dx-foa-clown_triggerfish","dx-trigger-dorsal-family"]
       },
       porcupinefish: {
         habitat: __alloT("stem.coralreef.dx_porcupinefish_habitat", "Coral and rocky reefs with caves or ledges for shelter."),
         diet: __alloT("stem.coralreef.dx_porcupinefish_diet", "Crushes hard-shelled prey such as sea urchins, snails and crabs with its fused teeth."),
-        behavior: __alloT("stem.coralreef.dx_porcupinefish_behavior", "Usually solitary, it can inflate defensively by taking water into its body."),
-        observe: __alloT("stem.coralreef.dx_porcupinefish_observe", "Use the spots on both body and fins and the long resting spines to identify it calmly."),
-        sources: ["dx-foa-porcupinefish"]
+        behavior: __alloT("stem.coralreef.dx_porcupinefish_behavior", "The model shows an uninflated animal with its long spines lying back. For defence, a porcupinefish can swallow water and inflate, which raises the spines. Inflation is not simulated in this study model."),
+        observe: __alloT("stem.coralreef.dx_porcupinefish_observe", "Choose Front and zoom to compare the upper and lower dental plates, separated by a narrow mouth gap. From Side, look for small dark spots on both the body and fins. Spotted fins help distinguish this species from the similar balloonfish, Diodon holocanthus."),
+        sources: ["dx-foa-porcupinefish","dx-diodontid-jaws","dx-flm-porcupine-identification"]
       },
       yellow_boxfish: {
         habitat: __alloT("stem.coralreef.dx_yellow_boxfish_habitat", "Relatively sheltered coastal and offshore reefs with places to hover and forage."),
         diet: __alloT("stem.coralreef.dx_yellow_boxfish_diet", "Takes algae and a variety of small animals living on or near the bottom."),
         behavior: __alloT("stem.coralreef.dx_yellow_boxfish_behavior", "The rigid, plated body changes color and shape with age, while small fins provide control."),
-        observe: __alloT("stem.coralreef.dx_yellow_boxfish_observe", "Identify the box-like outline first; bright yellow with black spots is the juvenile pattern."),
-        sources: ["dx-foa-yellow_boxfish"]
+        observe: __alloT("stem.coralreef.dx_yellow_boxfish_observe", "Choose Front and zoom to inspect the small recessed mouth. From Side, find the short gill slit just ahead of the pectoral fin, then compare the rounded black spots across the shell. This is the bright yellow juvenile pattern; body shape and markings change with growth. The accepted name and older spelling refer to the same entry."),
+        sources: ["dx-foa-yellow_boxfish","dx-worms-boxfish-name","dx-am-boxfish-growth","dx-nmns-boxfish-form"]
       },
       giant_moray: {
         habitat: __alloT("stem.coralreef.dx_giant_moray_habitat", "Reef holes and crevices that conceal its long body while the head remains visible."),
         diet: __alloT("stem.coralreef.dx_giant_moray_diet", "Feeds mostly on fishes, with some crustaceans also taken."),
-        behavior: __alloT("stem.coralreef.dx_giant_moray_behavior", "The repeated opening of its mouth moves water over its gills for breathing."),
-        observe: __alloT("stem.coralreef.dx_giant_moray_observe", "Look for a black gill patch and spotted head from outside the crevice, without reaching in."),
-        sources: ["dx-foa-giant_moray"]
+        behavior: __alloT("stem.coralreef.dx_giant_moray_behavior", "A resting moray opens and closes its mouth to move water over its gills. The model illustrates this repeated motion. Its nostrils sample scents in the water, separately from the mouth-and-gill route used for breathing."),
+        observe: __alloT("stem.coralreef.dx_giant_moray_observe", "Choose Front and zoom to inspect the short pair of tubular nostrils near the snout tip. From Side, find the eye and the black patch surrounding the separate gill opening farther back. The front tubes shown here are nostrils."),
+        sources: ["dx-foa-giant_moray","dx-moray-hunt-study","dx-moray-nasal-anatomy","dx-fish-smell-route"]
       },
       whitetip_reef_shark: {
         habitat: __alloT("stem.coralreef.dx_whitetip_reef_shark_habitat", "Reef caves, ledges and nearby sandy resting areas in tropical waters."),
@@ -7533,8 +7544,8 @@
         habitat: __alloT("stem.coralreef.dx_oriental_sweetlips_habitat", "Coral reef shelter, often beneath ledges where adults rest during the day."),
         diet: __alloT("stem.coralreef.dx_oriental_sweetlips_diet", "A night-time carnivore that searches for animal prey after its daytime rest."),
         behavior: __alloT("stem.coralreef.dx_oriental_sweetlips_behavior", "Adults may rest alone or in small groups; juveniles have a very different, irregular pattern."),
-        observe: __alloT("stem.coralreef.dx_oriental_sweetlips_observe", "Look for thick lips and spotted yellow fins in addition to the adult's black-and-white stripes."),
-        sources: ["dx-foa-oriental_sweetlips"]
+        observe: __alloT("stem.coralreef.dx_oriental_sweetlips_observe", "Use Side to compare the adult stripes and thick lips, then inspect the separate dark dots on the yellow dorsal, anal and tail fins. The adult pectoral fins are plain yellow. Keep this adult pattern separate from the blotched juvenile described in the entry."),
+        sources: ["dx-foa-oriental_sweetlips","dx-nmns-sweetlips-adult"]
       },
       reef_manta: {
         habitat: __alloT("stem.coralreef.dx_reef_manta_habitat", "Reef-associated waters with plankton-rich feeding areas and established cleaning stations."),
@@ -7547,106 +7558,106 @@
         habitat: __alloT("stem.coralreef.dx_green_turtle_habitat", "Coastal feeding grounds, including shallow seagrass and algal habitats near reefs."),
         diet: __alloT("stem.coralreef.dx_green_turtle_diet", "Adults mainly graze seagrasses and algae; diet can vary with life stage and location."),
         behavior: __alloT("stem.coralreef.dx_green_turtle_behavior", "Breathes air and alternates underwater activity with visits to the surface."),
-        observe: __alloT("stem.coralreef.dx_green_turtle_observe", "Check its blunt beak and smooth shell while leaving a clear path to the surface."),
-        sources: ["dx-noaa-green_turtle","swot2024"]
+        observe: __alloT("stem.coralreef.dx_green_turtle_observe", "Choose Above and zoom toward the head to find one pair of prefrontal scales. Compare the blunt beak and smooth, non-overlapping shell plates with the hawksbill. Both turtles breathe air; in the wild, leave a clear path to the surface."),
+        sources: ["dx-noaa-green_turtle","swot2024","dx-green-turtle-global-2025","dx-widecast-head-scales"]
       },
       hawksbill_turtle: {
         habitat: __alloT("stem.coralreef.dx_hawksbill_turtle_habitat", "Coral reefs and other coastal feeding grounds with sponge-rich crevices and resting ledges."),
-        diet: __alloT("stem.coralreef.dx_hawksbill_turtle_diet", "Specializes in sponges while also eating other invertebrates and some algae."),
+        diet: __alloT("stem.coralreef.dx_hawksbill_turtle_diet", "Sponges are preferred food in many reef habitats, but diet varies by place. It also eats other invertebrates and algae; Hawaiian hawksbills take a wider mixture where sponges are limited."),
         behavior: __alloT("stem.coralreef.dx_hawksbill_turtle_behavior", "Its narrow pointed beak helps it reach food in small reef openings."),
-        observe: __alloT("stem.coralreef.dx_hawksbill_turtle_observe", "Compare the hawk-like beak and overlapping shell plates with the green turtle's rounded features."),
-        sources: ["dx-noaa-hawksbill_turtle","swot2024"]
+        observe: __alloT("stem.coralreef.dx_hawksbill_turtle_observe", "Choose Above and zoom toward the head to find two pairs of prefrontal scales. From Side, compare the pointed beak, overlapping shell plates and serrated rear edge with the green turtle. Use these features together, rather than shell colour alone."),
+        sources: ["dx-noaa-hawksbill_turtle","swot2024","dx-widecast-head-scales"]
       },
       magnificent_anemone: {
         habitat: __alloT("stem.coralreef.dx_magnificent_anemone_habitat", "Clear tropical reef water, usually anchored to exposed rock where currents reach its tentacles."),
         diet: __alloT("stem.coralreef.dx_magnificent_anemone_diet", "Receives energy from symbiotic algae and captures small animals with stinging tentacles."),
-        behavior: __alloT("stem.coralreef.dx_magnificent_anemone_behavior", "Its soft body can contract into a rounded ball while clownfish use the tentacles as shelter."),
-        observe: __alloT("stem.coralreef.dx_magnificent_anemone_observe", "Look at the visible colored column and rounded tentacle tips, then watch the clownfish partnership."),
-        sources: ["dx-adw-anemone","beldade2017"]
+        behavior: __alloT("stem.coralreef.dx_magnificent_anemone_behavior", "A basal pedal disc attaches this single polyp to rock. Tentacles surround one central mouth on the oral disc. Food enters and undigested material leaves through that same opening; there is no separate anus."),
+        observe: __alloT("stem.coralreef.dx_magnificent_anemone_observe", "Choose Above to find the narrow central mouth between the tentacles, then Below to study the basal attachment disc. The coloured column, oral disc and tentacles are parts of one animal. Tiny column folds are surface detail, not separate polyps."),
+        sources: ["dx-adw-anemone","beldade2017","dx-worms-magnificent-anemone","dx-anthozoan-opening"]
       },
       giant_clam: {
         habitat: __alloT("stem.coralreef.dx_giant_clam_habitat", "Shallow reefs and lagoons, often with part of the heavy shell embedded in reef material."),
         diet: __alloT("stem.coralreef.dx_giant_clam_diet", "Symbiotic algae supply energy; the clam also filters particles from the water."),
-        behavior: __alloT("stem.coralreef.dx_giant_clam_behavior", "The exposed mantle carries rows of tiny eyes and can withdraw into the protective shell."),
-        observe: __alloT("stem.coralreef.dx_giant_clam_observe", "Find the colorful living mantle between the shell halves and look for the paired water openings."),
-        sources: ["dx-oca-giant_clam","brahmi2021"]
+        behavior: __alloT("stem.coralreef.dx_giant_clam_behavior", "Small mantle eyes help detect approaching dark objects and dimming. The soft mantle and siphons can withdraw toward the protective shell. These simple eyes do not provide the detailed vision of a fish."),
+        observe: __alloT("stem.coralreef.dx_giant_clam_observe", "Choose Above and zoom in to find small dark-centred eyes along the living mantle margins. They are separate from the larger water openings: the long inhalant slit and the raised exhalant siphon. The model includes only a sample of the real eye count."),
+        sources: ["dx-oca-giant_clam","brahmi2021","dx-clam-eyes-study"]
       },
       crown_of_thorns: {
         habitat: __alloT("stem.coralreef.dx_crown_of_thorns_habitat", "Coral-rich reef areas, often sheltered within branches or beneath plates during the day."),
-        diet: __alloT("stem.coralreef.dx_crown_of_thorns_diet", "Consumes living coral tissue, frequently feeding on branching and plate-forming Acropora."),
-        behavior: __alloT("stem.coralreef.dx_crown_of_thorns_behavior", "Feeding leaves a pale patch of bare skeleton; unusually large outbreaks can remove extensive living coral."),
-        observe: __alloT("stem.coralreef.dx_crown_of_thorns_observe", "Look for many thorn-covered arms and a nearby feeding scar while keeping clear of the spines."),
-        sources: ["nps-cots"]
+        diet: __alloT("stem.coralreef.dx_crown_of_thorns_diet", "Adults digest living coral tissue by spreading an everted stomach over it. Early juveniles commonly feed on coralline algae before switching to coral; the illustrated animal is an adult."),
+        behavior: __alloT("stem.coralreef.dx_crown_of_thorns_behavior", "Moves using small tube feet underneath its arms. Feeding removes coral tissue and leaves pale scars of exposed skeleton. Its ecological effect depends on abundance and reef conditions."),
+        observe: __alloT("stem.coralreef.dx_crown_of_thorns_observe", "Compare Above with Below in the study viewer: the long defensive spines are on the back, while paired tube feet lie under the arms. The central oral surface is shown at rest, with the stomach inside the body."),
+        sources: ["nps-cots","dx-cots-outbreaks","dx-cots-life-stages","dx-noaa-star-tube-feet"]
       },
       blue_sea_star: {
         habitat: __alloT("stem.coralreef.dx_blue_sea_star_habitat", "Reef surfaces, including rock, rubble and dead coral skeletons."),
         diet: __alloT("stem.coralreef.dx_blue_sea_star_diet", "Grazes organic films and detritus on reef surfaces; feeding can be difficult to see directly."),
         behavior: __alloT("stem.coralreef.dx_blue_sea_star_behavior", "Moves slowly over the bottom; eyes near its arm tips help it find nearby reef habitat."),
-        observe: __alloT("stem.coralreef.dx_blue_sea_star_observe", "Count the long smooth arms and notice their rounded tips as the star crosses the reef surface."),
+        observe: __alloT("stem.coralreef.dx_blue_sea_star_observe", "Count the five long, rounded arms. In the study viewer, use Below to look for paired tube feet and the tiny sensory structures at the arm tips. The eyes are close-inspection features, not large face-like eyes."),
         sources: ["dx-linckia-study"]
       },
       long_spined_urchin: {
         habitat: __alloT("stem.coralreef.dx_long_spined_urchin_habitat", "Shallow coral and rocky reefs, with crevices that offer daytime shelter."),
         diet: __alloT("stem.coralreef.dx_long_spined_urchin_diet", "Grazes algae from dead coral and rubble, helping keep exposed reef surfaces cropped."),
-        behavior: __alloT("stem.coralreef.dx_long_spined_urchin_behavior", "Its long movable spines defend a small central body while it travels over the bottom."),
-        observe: __alloT("stem.coralreef.dx_long_spined_urchin_observe", "Observe the five pale spots and orange-ringed raised cone from a distance clear of the spines."),
-        sources: ["dx-nmns-urchin","rc"]
+        behavior: __alloT("stem.coralreef.dx_long_spined_urchin_behavior", "Movable spines protect the central body as it grazes, mostly at night. The raised cone carries the anus, separate from the feeding mouth on the underside. This model illustrates spine movement while the body stays in place."),
+        observe: __alloT("stem.coralreef.dx_long_spined_urchin_observe", "In the study viewer, choose Above and Studio light to find the five pale spots, paired dotted blue markings and raised orange-ringed cone. Zoom toward the dark opening inside the ring: it surrounds the anus, not an eye. Compare all three identification clues together, and keep clear of the long brittle spines on a real reef."),
+        sources: ["dx-nmns-urchin","dx-wa-diadema","rc"]
       },
       nudibranch: {
         habitat: __alloT("stem.coralreef.dx_nudibranch_habitat", "Reef surfaces where its sponge food grows, often easy to miss among small reef organisms."),
         diet: __alloT("stem.coralreef.dx_nudibranch_diet", "Feeds on sponges, taking its food from attached growth on the reef."),
-        behavior: __alloT("stem.coralreef.dx_nudibranch_behavior", "Crawls with a soft muscular foot; the feathery structures on its back are exposed gills."),
-        observe: __alloT("stem.coralreef.dx_nudibranch_observe", "Look for dark speckles within the blue areas, black lines and the orange-yellow border together."),
-        sources: ["dx-museum-nudibranch"]
+        behavior: __alloT("stem.coralreef.dx_nudibranch_behavior", "Crawls on a muscular foot beneath the overhanging mantle. The paired rhinophores near the head sample chemicals in the water; the feathery rear gill crown serves a different function, breathing."),
+        observe: __alloT("stem.coralreef.dx_nudibranch_observe", "Use Rear to find the short foot tail projecting beyond the mantle, with a yellow-orange margin, then Below to inspect the pale sole. Compare the front rhinophores with the rear gill crown. The fine speckles in the blue areas, black lines and mantle border remain important identification clues."),
+        sources: ["dx-museum-nudibranch","dx-chromodoris-chemical-defence","dx-slug-foot-pattern","dx-slug-chemical-senses"]
       },
       cleaner_shrimp: {
         habitat: __alloT("stem.coralreef.dx_cleaner_shrimp_habitat", "Reef crevices and ledges that serve as cleaning stations for visiting fishes."),
-        diet: __alloT("stem.coralreef.dx_cleaner_shrimp_diet", "Picks parasites and dead tissue from clients, gaining a meal while cleaning them."),
+        diet: __alloT("stem.coralreef.dx_cleaner_shrimp_diet", "An omnivore that eats parasites and dead tissue from fish, as well as other available food. Cleaning is one way it obtains a meal."),
         behavior: __alloT("stem.coralreef.dx_cleaner_shrimp_behavior", "Long white antennae advertise the station and explore the space around its body."),
-        observe: __alloT("stem.coralreef.dx_cleaner_shrimp_observe", "Look for the white stripe between two red bands and watch for a fish waiting nearby."),
-        sources: ["dx-aop-cleaner_shrimp"]
+        observe: __alloT("stem.coralreef.dx_cleaner_shrimp_observe", "In the study viewer, compare Front and Below to find the stalked eyes, short rostrum and tiny claws. Follow the white back stripe between the red bands, then compare it with the long white antennae."),
+        sources: ["dx-aop-cleaner_shrimp","dx-oca-cleaner-shrimp-anatomy"]
       },
       christmas_tree_worm: {
-        habitat: __alloT("stem.coralreef.dx_christmas_tree_worm_habitat", "A hard tube embedded in living coral, often a massive boulder-like colony."),
+        habitat: __alloT("stem.coralreef.dx_christmas_tree_worm_habitat", "A hard calcium-carbonate tube usually embedded in a living coral colony. The worm secretes its tube, and the growing host coral surrounds it, leaving the entrance exposed."),
         diet: __alloT("stem.coralreef.dx_christmas_tree_worm_diet", "The twin spiral crowns trap drifting plankton and also exchange gases for breathing."),
         behavior: __alloT("stem.coralreef.dx_christmas_tree_worm_behavior", "Can withdraw its crowns rapidly into the tube and close the entrance with a protective lid."),
-        observe: __alloT("stem.coralreef.dx_christmas_tree_worm_observe", "Find the paired colorful spirals on the coral surface and wait quietly for their natural movement."),
-        sources: ["dx-worm-study"]
+        observe: __alloT("stem.coralreef.dx_christmas_tree_worm_observe", "Find the two spiral crowns sharing one tube entrance. In the study viewer, use Above to look for the pale tube rim and its small spiny plug, called an operculum. Colour alone does not identify the exact species."),
+        sources: ["dx-worm-study","dx-am-christmas-tree","dx-worm-age-1996","dx-worm-tube-settlement"]
       },
       day_octopus: {
         habitat: __alloT("stem.coralreef.dx_day_octopus_habitat", "Reef rock and rubble with holes that can be used as dens."),
         diet: __alloT("stem.coralreef.dx_day_octopus_diet", "Hunts crabs, clams and snails, probing small spaces with its arms."),
-        behavior: __alloT("stem.coralreef.dx_day_octopus_behavior", "Forages in daylight and can quickly alter its skin color and texture."),
-        observe: __alloT("stem.coralreef.dx_day_octopus_observe", "Search for an eye, an arm outline or a texture change beside a den before looking for the whole body."),
-        sources: ["dx-octopus-diet"]
+        behavior: __alloT("stem.coralreef.dx_day_octopus_behavior", "Eight arms surround a central mouth on the underside. A hard beak lies within the mouth. The muscular funnel near the head expels water; it is separate from the feeding opening."),
+        observe: __alloT("stem.coralreef.dx_day_octopus_observe", "Choose Below to locate the central mouth between the arm bases, then follow the paired rows of suckers along an arm. The beak is kept inside the resting mouth in this model. Compare that opening with the separate funnel near the head."),
+        sources: ["dx-octopus-diet","dx-octopus-team-study","dx-octopus-oral-anatomy"]
       },
       sea_cucumber: {
         habitat: __alloT("stem.coralreef.dx_sea_cucumber_habitat", "Shallow tropical reef sand and rubble, with shelter beneath stones or coral slabs."),
         diet: __alloT("stem.coralreef.dx_sea_cucumber_diet", "Swallows sediment to digest organic films and other material coating its grains."),
-        behavior: __alloT("stem.coralreef.dx_sea_cucumber_behavior", "Its slow feeding mixes the surface sediment, and it often shelters during the day."),
-        observe: __alloT("stem.coralreef.dx_sea_cucumber_observe", "Look for the smooth dark back and pink lower side, then trace its position along the sand."),
-        sources: ["dx-wa-sea_cucumber"]
+        behavior: __alloT("stem.coralreef.dx_sea_cucumber_behavior", "Its oral tentacles collect sediment from the bottom. Each ends in a small lobed feeding pad, a shape called peltate. The separate tube feet help it move. The model shows extended tentacles and gentle body movement; collecting sediment and bringing it to the mouth are not animated."),
+        observe: __alloT("stem.coralreef.dx_sea_cucumber_observe", "Compare the dark back with the pink underside. Use Below and zoom toward the front mouth to find twenty short tentacles ending in lobed pads. Follow the underside rearward to the smaller tube feet, which serve movement rather than feeding. The model shows the tentacles extended."),
+        sources: ["dx-wa-sea_cucumber","dx-fao-sea-cucumber","dx-slb-sea-cucumber"]
       },
       sea_fan: {
         habitat: __alloT("stem.coralreef.dx_sea_fan_habitat", "Current-swept reef slopes and walls where water passes through its broad branching mesh."),
         diet: __alloT("stem.coralreef.dx_sea_fan_diet", "Tiny polyps capture plankton carried through the fan by the current."),
-        behavior: __alloT("stem.coralreef.dx_sea_fan_behavior", "The colony grows as a connected net, creating habitat for very small reef animals."),
-        observe: __alloT("stem.coralreef.dx_sea_fan_observe", "Observe the open mesh and its broadside orientation, then compare it with a bushy soft coral."),
-        sources: ["vanoppen2005"]
+        behavior: __alloT("stem.coralreef.dx_sea_fan_behavior", "Many connected animal polyps share the colony. Each expanded polyp has eight feather-like tentacles. The fan's mesh lets water pass between its branches while the polyps capture suspended food."),
+        observe: __alloT("stem.coralreef.dx_sea_fan_observe", "Turn the fan and compare its raised main branches with the finer net. Pale speckling suggests polyp sites; the model does not resolve individual tentacles. Compare with the enlarged eight-tentacle diagram in the tree soft-coral entry. Species identification may require microscopic sclerites."),
+        sources: ["vanoppen2005","dx-seahorse-fan-hosts","dx-gorgonian-polyp-anatomy"]
       },
       barrel_sponge: {
         habitat: __alloT("stem.coralreef.dx_barrel_sponge_habitat", "Attached to reef substrate, with its wide opening projecting into the surrounding water."),
         diet: __alloT("stem.coralreef.dx_barrel_sponge_diet", "Pumps water through its porous body, taking dissolved organic matter, detritus and microscopic food."),
         behavior: __alloT("stem.coralreef.dx_barrel_sponge_behavior", "Water exits through the large opening; the barrel is one living sponge, not an empty pot."),
-        observe: __alloT("stem.coralreef.dx_barrel_sponge_observe", "Look for rough thick walls and a deep central opening while keeping fins clear of the rim."),
-        sources: ["dx-sponge-feeding"]
+        observe: __alloT("stem.coralreef.dx_barrel_sponge_observe", "Use Above to look into the wide water outlet, called an osculum, then compare the rough outer wall with the inner cavity. Water is drawn through small pores and leaves through the outlet; the opening is not a mouth."),
+        sources: ["dx-sponge-feeding","dx-barrel-lineages"]
       },
       soft_coral: {
         habitat: __alloT("stem.coralreef.dx_soft_coral_habitat", "Reef places with flowing water that carries suspended food to its branching crown."),
         diet: __alloT("stem.coralreef.dx_soft_coral_diet", "Captures drifting food with its polyps; Dendronephthya lacks sunlight-feeding algal partners."),
-        behavior: __alloT("stem.coralreef.dx_soft_coral_behavior", "Its fleshy branches expand in flowing water and can become less erect when the current eases."),
-        observe: __alloT("stem.coralreef.dx_soft_coral_observe", "Compare the soft tree-shaped crown and clustered tip polyps with a sea fan's flatter net."),
-        sources: ["fabricius1995"]
+        behavior: __alloT("stem.coralreef.dx_soft_coral_behavior", "Many polyps form one connected colony. Water pressure helps support the branches, while tiny sclerites reinforce the tissues. The colony can change its degree of inflation."),
+        observe: __alloT("stem.coralreef.dx_soft_coral_observe", "Zoom in on a polyp to trace its eight tentacles. High detail also shows small side branches, called pinnules, that give the tentacles their feather-like shape. Compare this living colony with the flatter net of a sea fan."),
+        sources: ["fabricius1995","dx-soft-coral-herbivory","dx-dendronephthya-anatomy","dx-am-octocoral-tentacles"]
       },
       brain_coral: {
         habitat: __alloT("stem.coralreef.dx_brain_coral_habitat", "A variety of reef settings, with Platygyra daedalea especially common near back-reef margins."),
@@ -7721,7 +7732,7 @@
       firefish: {
         habitat: __alloT("stem.coralreef.dx_firefish_habitat", "Sandy patches and burrows on the upper parts of outer reef slopes in the Indo-Pacific."),
         diet: __alloT("stem.coralreef.dx_firefish_diet", "Zooplankton carried by the current, including copepods and crustacean larvae."),
-        behavior: __alloT("stem.coralreef.dx_firefish_behavior", "Often seen alone or as a pair, hovering above a nearby refuge rather than joining a large school."),
+        behavior: __alloT("stem.coralreef.dx_firefish_behavior", "Individuals or pairs hover above the bottom, facing into the current to take drifting prey. They stay near a burrow and dart back inside when disturbed."),
         observe: __alloT("stem.coralreef.dx_firefish_observe", "Compare the tall pennant with its slim body, then check the rounded tail and pale-to-red color change."),
         sources: ["dx-foa-firefish","dx-fao-firefish","dx-cas-firefish"]
       },
@@ -7729,50 +7740,50 @@
         habitat: __alloT("stem.coralreef.dx_copperband_butterflyfish_habitat", "Shallow coastal reefs, rocky shores, bays and estuaries in the Indo-West Pacific, often in sheltered or silty water."),
         diet: __alloT("stem.coralreef.dx_copperband_butterflyfish_diet", "Small animals living on the bottom, reached by probing cracks and holes in the reef."),
         behavior: __alloT("stem.coralreef.dx_copperband_butterflyfish_behavior", "Encountered singly or in pairs; adults form pairs during breeding."),
-        observe: __alloT("stem.coralreef.dx_copperband_butterflyfish_observe", "Locate the real eye in its orange bar, then look toward the tail to find the false eyespot. Compare its long snout and broad bars with a threadfin butterflyfish."),
+        observe: __alloT("stem.coralreef.dx_copperband_butterflyfish_observe", "Use Side to find the real eye within its dark-edged orange bar. Follow the body toward the tail to find the black false eyespot on the soft part of the dorsal fin. That eyespot is a colour marking."),
         sources: ["dx-foa-copperband_butterflyfish","dx-am-copperband_butterflyfish","dx-cas-copperband_butterflyfish","dx-ga-copperband_butterflyfish"]
       },
       spotted_garden_eel: {
         habitat: __alloT("stem.coralreef.dx_spotted_garden_eel_habitat", "Sandy flats and slopes bordering tropical Indo-Pacific coral reefs, often in colonies."),
         diet: __alloT("stem.coralreef.dx_spotted_garden_eel_diet", "Zooplankton carried past its burrow by the current."),
-        behavior: __alloT("stem.coralreef.dx_spotted_garden_eel_behavior", "Rises partway from its burrow to feed, generally facing into the current with neighboring eels. It retreats rapidly when threatened."),
-        observe: __alloT("stem.coralreef.dx_spotted_garden_eel_observe", "Follow the thin, spotted body from its sandy opening to the head. Look for the larger dark patch behind the head among the tiny spots."),
+        behavior: __alloT("stem.coralreef.dx_spotted_garden_eel_behavior", "Rises partway from its burrow to take food carried by the current, often alongside neighbouring eels. In the wild it can retreat rapidly when threatened. The model illustrates gentle current bending while its attachment remains fixed; a full retreat into sand is not animated."),
+        observe: __alloT("stem.coralreef.dx_spotted_garden_eel_observe", "Choose Side and zoom toward the curved head to inspect the eyes and narrow mouth. Follow the fine spots down to the larger dark patch around the gill opening. Compare this plankton-feeding burrow dweller with the heavier, fish-eating giant moray; only part of the garden eel is above the sand."),
         sources: ["dx-am-spotted_garden_eel","dx-cas-spotted_garden_eel","dx-foa-spotted_garden_eel","dx-ga-spotted_garden_eel"]
       },
       banded_pipefish: {
         habitat: __alloT("stem.coralreef.dx_banded_pipefish_habitat", "Sheltered tropical western Pacific reefs and lagoons, especially caves, crevices and spaces beneath ledges."),
         diet: __alloT("stem.coralreef.dx_banded_pipefish_diet", "Its detailed wild diet is poorly documented; it is thought to take tiny crustaceans, like other pipefishes."),
-        behavior: __alloT("stem.coralreef.dx_banded_pipefish_behavior", "Often found as a pair near shelter; it may also occur alone or in small groups. It can hover in recesses beneath reef ledges."),
-        observe: __alloT("stem.coralreef.dx_banded_pipefish_observe", "Trace the long snout, then follow the alternating bands to the tail. Look for the pale tail margins and central spot or spots."),
-        sources: ["dx-am-banded_pipefish","dx-foa-banded_pipefish","dx-lkc-banded_pipefish","dx-ea-banded_pipefish"]
+        behavior: __alloT("stem.coralreef.dx_banded_pipefish_behavior", "Often found as a pair near shelter, though individuals and small groups also occur. Males brood eggs attached to their trunk without an enclosing pouch; this study specimen does not show a male carrying eggs."),
+        observe: __alloT("stem.coralreef.dx_banded_pipefish_observe", "Choose Side and zoom to the small mouth at the end of the long tubular snout. Trace the fine armour rings separately from the broader colour bands, then inspect the tail fin’s pale upper and lower margins and central spots. Compare this fin with the spotted seahorse’s curled gripping tail, which has no tail fin. Ring detail is illustrative, not an identification count."),
+        sources: ["dx-am-banded_pipefish","dx-foa-banded_pipefish","dx-lkc-banded_pipefish","dx-ea-banded_pipefish","dx-wa-pipefish-anatomy"]
       },
       yellow_longnose_butterflyfish: {
         habitat: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_habitat", "Reef flats, crests, slopes and sheltered ledges across the tropical Indo-Pacific and into the eastern Pacific."),
         diet: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_diet", "Small crustaceans, hydroids, worm tentacles and echinoderm tube feet; also fish eggs."),
         behavior: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_behavior", "Often encountered in pairs, with single fish and small groups also reported."),
-        observe: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_observe", "Follow the narrow snout to the two-tone head. Compare its yellow body with the copperband butterflyfish’s bars, then locate the spot below the tail."),
+        observe: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_observe", "Look for the black spot on the rear anal fin, below the tail base. The eye is about midway between the snout tip and pectoral-fin base. The similar Forcipiger longirostris has a longer snout and usually rows of small dark spots on the chest."),
         sources: ["dx-am-yellow_longnose_butterflyfish","dx-foa-yellow_longnose_butterflyfish","dx-wa-yellow_longnose_butterflyfish","dx-iucn-yellow_longnose_butterflyfish"]
       },
       pajama_cardinalfish: {
         habitat: __alloT("stem.coralreef.dx_pajama_cardinalfish_habitat", "Sheltered bays, lagoons and coastal reefs in the eastern Indian Ocean and western Pacific, near branching live corals."),
         diet: __alloT("stem.coralreef.dx_pajama_cardinalfish_diet", "Small shrimps, crabs and other crustaceans; also zooplankton."),
         behavior: __alloT("stem.coralreef.dx_pajama_cardinalfish_behavior", "Groups hover close to branching corals by day; fish leave that shelter at night to feed near the bottom."),
-        observe: __alloT("stem.coralreef.dx_pajama_cardinalfish_observe", "Compare the yellow head, single broad bar and spotted rear body. Turn the specimen to see the two separate dorsal fins."),
+        observe: __alloT("stem.coralreef.dx_pajama_cardinalfish_observe", "Use Side and zoom to look for the red bar through the iris, around the dark pupil. Then compare the yellow head, broad dark body bar and spotted rear body. Rotate the specimen to see the two separate dorsal fins."),
         sources: ["dx-foa-pajama_cardinalfish","dx-oregon-pajama_cardinalfish","dx-ga-pajama_cardinalfish","dx-fao-pajama_cardinalfish","dx-iucn-pajama_cardinalfish"]
       },
       banggai_cardinalfish: {
         habitat: __alloT("stem.coralreef.dx_banggai_cardinalfish_habitat", "Calm, shallow reefs and seagrass beds native to Indonesia’s Banggai Archipelago; introduced populations also occur outside that natural range."),
         diet: __alloT("stem.coralreef.dx_banggai_cardinalfish_diet", "Mainly copepods, with other small plankton and bottom-dwelling crustaceans also taken."),
-        behavior: __alloT("stem.coralreef.dx_banggai_cardinalfish_behavior", "Often hovers in groups near shelter. Young fish can hide among long-spined sea urchins or anemone tentacles."),
-        observe: __alloT("stem.coralreef.dx_banggai_cardinalfish_observe", "Compare its three dark bars, white dots and long fin tips with the pajama cardinalfish’s single broad bar and spotted rear body."),
-        sources: ["dx-noaa-banggai_cardinalfish","dx-na-banggai_cardinalfish","dx-ga-banggai_cardinalfish","dx-iucn-banggai_cardinalfish"]
+        behavior: __alloT("stem.coralreef.dx_banggai_cardinalfish_behavior", "Often hovers in groups near shelter. Young fish can hide among long-spined sea urchins or anemone tentacles. A brooding male carries developing young inside an enlarged mouth cavity; brooding is not animated in this study model."),
+        observe: __alloT("stem.coralreef.dx_banggai_cardinalfish_observe", "Use Side to compare the three dark bars and long fin tips, then turn the fish to inspect white dots on the soft dorsal, anal, pelvic and tail fins. Dot patterns vary between individual fish; this study specimen uses a simplified illustrative pattern."),
+        sources: ["dx-noaa-banggai_cardinalfish","dx-na-banggai_cardinalfish","dx-ga-banggai_cardinalfish","dx-iucn-banggai_cardinalfish","dx-fao-banggai-development"]
       },
       giant_triton: {
         habitat: __alloT("stem.coralreef.dx_giant_triton_habitat", "Hard and sandy bottoms around coral reefs across the tropical Indo-Pacific."),
         diet: __alloT("stem.coralreef.dx_giant_triton_diet", "Sea stars, including crown-of-thorns, and other echinoderms such as sea cucumbers."),
-        behavior: __alloT("stem.coralreef.dx_giant_triton_behavior", "Uses scent to locate prey and hunts across the reef, often at night."),
-        observe: __alloT("stem.coralreef.dx_giant_triton_observe", "Follow the spiral ridges toward the pointed tip, then turn the specimen to study the orange opening, striped edge and small lip teeth."),
-        sources: ["dx-aims-giant_triton","dx-wa-giant_triton","dx-fao-giant_triton","dx-noaa-giant_triton","dx-csiro-giant_triton"]
+        behavior: __alloT("stem.coralreef.dx_giant_triton_behavior", "Crawls on a broad muscular foot and uses chemical cues to locate prey such as sea stars. AIMS also studied how crown-of-thorns respond to the snail’s scent; those experiments do not by themselves demonstrate effective outbreak control."),
+        observe: __alloT("stem.coralreef.dx_giant_triton_observe", "Choose Side to follow the spiral ridges toward the pointed spire, then rotate toward Below to inspect the orange shell aperture, striped edge and small lip teeth. Beneath the shell, find the head, muscular foot and short feeding tube, or proboscis. The mouth is at the proboscis tip; the large shell aperture is a different opening. The model shows a relaxed illustrative pose, without feeding or internal mouth structures."),
+        sources: ["dx-aims-giant_triton","dx-wa-giant_triton","dx-fao-giant_triton","dx-noaa-giant_triton","dx-csiro-giant_triton","dx-bose-giant_triton"]
       },
       blue_velvet_headshield_slug: {
         habitat: __alloT("stem.coralreef.dx_blue_velvet_headshield_slug_habitat", "Sand around reefs and sandy reef slopes across the tropical Indo-West Pacific."),
@@ -7785,14 +7796,14 @@
         habitat: __alloT("stem.coralreef.dx_regal_angelfish_habitat", "Coral-rich lagoons and seaward reefs, often around caves and ledges. The species ranges from East Africa and the Red Sea across the tropical Indo-Pacific to the Tuamotu region."),
         diet: __alloT("stem.coralreef.dx_regal_angelfish_diet", "Feeds on sponges and tunicates, including sea squirts."),
         behavior: __alloT("stem.coralreef.dx_regal_angelfish_behavior", "Usually encountered alone or in pairs, occasionally in small groups. Young fish shelter in coral cracks and crevices."),
-        observe: __alloT("stem.coralreef.dx_regal_angelfish_observe", "Follow the bars down this adult’s sides, then compare the emperor angelfish’s finer, mostly horizontal stripes. Check the tail, fin patterns and chest colour together; juveniles and regional forms differ."),
+        observe: __alloT("stem.coralreef.dx_regal_angelfish_observe", "Choose Side to follow the adult’s dark-edged pale bars, blue rear dorsal pattern and yellow tail. Compare the emperor angelfish’s finer, mostly horizontal adult stripes. This model has adult markings; the juvenile dorsal eyespot described in the entry is a different life stage."),
         sources: ["dx-am-regal_angelfish","dx-foa-regal_angelfish","dx-phylogeography-regal_angelfish","dx-iucn-regal_angelfish","dx-usgs-emperor-regal_angelfish"]
       },
       mandarin_dragonet: {
         habitat: __alloT("stem.coralreef.dx_mandarin_dragonet_habitat", "Sheltered reefs and lagoons around the western Pacific, from southern Japan through Southeast Asia to northern Australia and nearby island groups. Often close to coral rubble and other shelter."),
         diet: __alloT("stem.coralreef.dx_mandarin_dragonet_diet", "Tiny bottom-dwelling invertebrates, including copepods and other small crustaceans picked from sediment and reef crevices."),
         behavior: __alloT("stem.coralreef.dx_mandarin_dragonet_behavior", "Usually stays close to the bottom, sometimes in pairs or loose local groups. At dusk, courting pairs may rise together into the water to spawn."),
-        observe: __alloT("stem.coralreef.dx_mandarin_dragonet_observe", "Trace the winding colour bands, then inspect the broad head and fan-shaped tail. The long first dorsal spine belongs to the adult male shown here; females have a shorter first dorsal fin."),
+        observe: __alloT("stem.coralreef.dx_mandarin_dragonet_observe", "Choose Side and follow the winding colour bands across the scaleless skin, then inspect the broad head and blue-edged fan tail. Find the tall first dorsal fin separately from the shorter second dorsal fin. The long first dorsal spine belongs to the adult male shown here; females have a shorter first dorsal fin."),
         sources: ["dx-georgia-mandarin_dragonet","dx-dallas-mandarin_dragonet","dx-field-mandarin_dragonet","dx-smithsonian-mandarin_dragonet","dx-oregon-mandarin_dragonet","dx-iucn-mandarin_dragonet"]
       },
       harlequin_shrimp: {
@@ -7806,14 +7817,14 @@
         habitat: __alloT("stem.coralreef.dx_spotted_seahorse_habitat", "Indo-West Pacific coastal habitats, including Singapore estuaries with seagrass and macroalgae over silty sand. It also occurs around sheltered sandy and reef habitats."),
         diet: __alloT("stem.coralreef.dx_spotted_seahorse_diet", "Tiny crustaceans and other zooplankton, drawn through the tubular snout by suction."),
         behavior: __alloT("stem.coralreef.dx_spotted_seahorse_behavior", "Often grips vegetation or another support with its prehensile tail. Small dorsal and pectoral fins help it move and steer; it can leave its holdfast to swim."),
-        observe: __alloT("stem.coralreef.dx_spotted_seahorse_observe", "Compare the upright trunk and curled gripping tail with the banded pipefish’s slender body and distinct tail fin. Then inspect the rounded crown and thick snout. Yellow is only one appearance: Singapore adults also occur in greenish brown with dark dots."),
-        sources: ["dx-nus-spotted_seahorse","dx-guide-spotted_seahorse","dx-waikikiguide-spotted_seahorse","dx-iucnsg-spotted_seahorse","dx-fishbase-spotted_seahorse","dx-cas-spotted_seahorse","dx-camins-spotted_seahorse"]
+        observe: __alloT("stem.coralreef.dx_spotted_seahorse_observe", "Choose Side and zoom to inspect the armoured rings and low rounded bumps, then the crown and thick snout. Compare its curled, finless gripping tail with the banded pipefish’s distinct tail fin. Yellow is only one appearance: Singapore adults also occur in greenish brown with dark dots."),
+        sources: ["dx-nus-spotted_seahorse","dx-guide-spotted_seahorse","dx-waikikiguide-spotted_seahorse","dx-iucnsg-spotted_seahorse","dx-fishbase-spotted_seahorse","dx-cas-spotted_seahorse","dx-camins-spotted_seahorse","dx-cmfri-spotted-seahorse"]
       },
       bennetts_feather_star: {
         habitat: __alloT("stem.coralreef.dx_bennetts_feather_star_habitat", "Tropical Indo-West Pacific reefs and sponge gardens, often perched above the surrounding bottom where water flows past exposed coral heads or sponges."),
         diet: __alloT("stem.coralreef.dx_bennetts_feather_star_diet", "Suspended plankton and fine organic particles. Tiny tube feet along the arms and pinnules capture food and pass it toward the mouth."),
-        behavior: __alloT("stem.coralreef.dx_bennetts_feather_star_behavior", "Spreads its arms into flowing water while gripping a perch with its cirri. It is often conspicuous in the open by day as well as at night."),
-        observe: __alloT("stem.coralreef.dx_bennetts_feather_star_observe", "Follow one main arm into its fine pinnules, then look underneath for the thicker gripping cirri. Compare this whole animal with the Christmas tree worm’s paired spiral crowns: they are unrelated forms. Yellow and brown are only one appearance; colour alone does not identify this feather star."),
+        behavior: __alloT("stem.coralreef.dx_bennetts_feather_star_behavior", "Spreads its arms into flowing water while gripping a perch with its cirri. It is often conspicuous in the open by day as well as at night. Captured food travels along grooves toward the mouth on the upper disc; microscopic ciliary transport is not animated."),
+        observe: __alloT("stem.coralreef.dx_bennetts_feather_star_observe", "Follow one main arm into its fine pinnules. Choose Above and zoom toward the small mouth on the upper disc, then Below for the thicker gripping cirri. Compare the chocolate chip sea star’s mouth on its underside and the Christmas tree worm’s paired spiral crowns: they are unrelated forms. Yellow and brown are only one appearance; colour alone does not identify this feather star."),
         sources: ["dx-wam-bennetts_feather_star","dx-lifg-bennetts_feather_star","dx-kogo-bennetts_feather_star","dx-messing-bennetts_feather_star","dx-morphology-bennetts_feather_star","dx-worms-bennetts_feather_star","dx-sealifebase-bennetts_feather_star","dx-umich-bennetts_feather_star"]
       },
       peacock_mantis_shrimp: {
@@ -7827,36 +7838,36 @@
         habitat: __alloT("stem.coralreef.dx_ribbon_eel_habitat", "Tropical Indo-West Pacific lagoon and seaward reefs, using burrows in sand or rubble beside coral reefs."),
         diet: __alloT("stem.coralreef.dx_ribbon_eel_diet", "Small fishes. It is a predator rather than a plankton-feeding garden eel."),
         behavior: __alloT("stem.coralreef.dx_ribbon_eel_behavior", "Usually shelters with its head or part of its slender body protruding from a burrow. This resting view shows an exposed forebody; much of the animal remains concealed."),
-        observe: __alloT("stem.coralreef.dx_ribbon_eel_observe", "Find the flared nostrils and little jaw projections first, then compare its narrow ribbon-shaped body with the giant moray’s heavier head and mottled body. Black, blue-and-yellow and largely yellow appearances are reported, so combine shape and colour rather than relying on one hue."),
-        sources: ["dx-am-ribbon_eel","dx-foa-ribbon_eel","dx-shen-ribbon_eel","dx-preininger-ribbon_eel","dx-fishbase-ribbon_eel","dx-iucn-ribbon_eel","dx-eschmeyer-ribbon_eel"]
+        observe: __alloT("stem.coralreef.dx_ribbon_eel_observe", "Choose Front to inspect the two flared nostrils, then Side to follow the thin dorsal and anal fin margins. The nostrils detect scents; breathing uses the mouth and gills. Compare its fins with the finless sea krait and its narrow body with the heavier giant moray. Black, blue-and-yellow and largely yellow appearances are reported, so combine shape and colour."),
+        sources: ["dx-am-ribbon_eel","dx-foa-ribbon_eel","dx-shen-ribbon_eel","dx-preininger-ribbon_eel","dx-fishbase-ribbon_eel","dx-iucn-ribbon_eel","dx-eschmeyer-ribbon_eel","dx-fish-smell-route"]
       },
       leaf_scorpionfish: {
         habitat: __alloT("stem.coralreef.dx_leaf_scorpionfish_habitat", "Tropical Indo-Pacific reef bottoms, including sand, rock, coral and algae-covered areas."),
         diet: __alloT("stem.coralreef.dx_leaf_scorpionfish_diet", "Small fishes and crustaceans caught by ambush."),
         behavior: __alloT("stem.coralreef.dx_leaf_scorpionfish_behavior", "Often stays in place and rocks with water movement, resembling a loose leaf. The gentle sway here illustrates that camouflage."),
-        observe: __alloT("stem.coralreef.dx_leaf_scorpionfish_observe", "Look for the flattened outline, tall continuous back fin and small facial fringes. Compare the red lionfish’s separate long spines and striped body. Colour varies widely, so use shape as well as colour. Observe without touching its venomous spines."),
+        observe: __alloT("stem.coralreef.dx_leaf_scorpionfish_observe", "Use Side to compare the flattened, leaf-like outline, tall back fin and small facial fringes with the red lionfish's separate long spines. This study specimen shows one mottled appearance; other individuals may look very different in colour. Observe without touching its venomous spines."),
         sources: ["dx-foa-leaf_scorpionfish","dx-stri-leaf_scorpionfish","dx-am-leaf_scorpionfish","dx-iucn-leaf_scorpionfish","dx-csiro-leaf_scorpionfish"]
       },
       longnose_hawkfish: {
         habitat: __alloT("stem.coralreef.dx_longnose_hawkfish_habitat", "Tropical Indo-Pacific and eastern Pacific reefs, especially steep outer slopes with sea fans or black corals. Often found deeper than 25 m."),
         diet: __alloT("stem.coralreef.dx_longnose_hawkfish_diet", "Small planktonic and bottom-dwelling crustaceans."),
         behavior: __alloT("stem.coralreef.dx_longnose_hawkfish_behavior", "Often rests among branches of gorgonian sea fans and black corals. This specimen shows a perched pose with gentle fin movement; its support is an illustrative branch."),
-        observe: __alloT("stem.coralreef.dx_longnose_hawkfish_observe", "Follow the red grid, then look for the long snout and tiny dorsal tassels. Compare its slender body with the deeper yellow body of the yellow longnose butterflyfish: a long snout alone is not enough to identify either fish."),
+        observe: __alloT("stem.coralreef.dx_longnose_hawkfish_observe", "Use Side to trace the red net-like pattern and long snout. Turn toward Front or Below to inspect the thick lower pectoral-fin rays used for perching, then check the small cirri at the dorsal-spine tips."),
         sources: ["dx-am-longnose_hawkfish","dx-foa-longnose_hawkfish","dx-stri-longnose_hawkfish","dx-catalog-longnose_hawkfish","dx-fishbase-longnose_hawkfish","dx-iucn-longnose_hawkfish"]
       },
       chocolate_chip_sea_star: {
         habitat: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_habitat", "Shallow sand flats and seagrass habitats in the western Pacific region, including sheltered areas near reefs."),
         diet: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_diet", "Microbial and algal films, detritus and tiny organisms on sediment and seagrass surfaces."),
-        behavior: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_behavior", "Moves over the seafloor using many tube feet on its underside and feeds along sediment and seagrass surfaces."),
-        observe: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_observe", "Compare the thick arms and raised knobs with the longer, smoother arms of the blue sea star. In the 3D inspector, use Above to inspect the knobs and Below to find the tube feet; colour alone is not enough for identification."),
-        sources: ["dx-nparks-chocolate_chip_sea_star","dx-worms-chocolate_chip_sea_star","dx-range-chocolate_chip_sea_star","dx-feeding-chocolate_chip_sea_star","dx-motion-chocolate_chip_sea_star","dx-slb-chocolate_chip_sea_star","dx-local-chocolate_chip_sea_star"]
+        behavior: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_behavior", "Moves over the seafloor using many tube feet on its underside and feeds along sediment and seagrass surfaces. The water vascular system operates the feet. The study view shows small foot probes while the body stays in place; it does not animate full crawling."),
+        observe: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_observe", "Compare the thick arms and raised knobs with the longer, smoother arms of the blue sea star. Choose Above and zoom toward the small pale grooved plate beside the centre. This madreporite connects with the water vascular system; it is separate from the mouth. Choose Below to find the central mouth and tube feet in five grooves. The fine pore openings are not resolved here; colour alone is not enough for identification."),
+        sources: ["dx-nparks-chocolate_chip_sea_star","dx-worms-chocolate_chip_sea_star","dx-range-chocolate_chip_sea_star","dx-feeding-chocolate_chip_sea_star","dx-motion-chocolate_chip_sea_star","dx-slb-chocolate_chip_sea_star","dx-local-chocolate_chip_sea_star","dx-seastar-water-vascular"]
       },
       porcelain_anemone_crab: {
         habitat: __alloT("stem.coralreef.dx_porcelain_anemone_crab_habitat", "Shallow coral and rocky reefs across the Indo-West Pacific, living on or around large sea anemones."),
         diet: __alloT("stem.coralreef.dx_porcelain_anemone_crab_diet", "Tiny suspended organisms, including planktonic algae and small crustaceans, caught with bristles on the mouthparts."),
-        behavior: __alloT("stem.coralreef.dx_porcelain_anemone_crab_behavior", "Shelters among anemone tentacles and extends its feathery mouthparts into the water to collect food. Spot size and colour vary between individuals."),
-        observe: __alloT("stem.coralreef.dx_porcelain_anemone_crab_observe", "Look between the broad claws for the much finer feeding fans, then count the three visible walking-leg pairs. Compare this compact, spotted body with the slender striped body of the cleaner shrimp."),
-        sources: ["dx-worms-porcelain_anemone_crab","dx-wam-porcelain_anemone_crab","dx-osawa-porcelain_anemone_crab","dx-haig-porcelain_anemone_crab","dx-hkbm-porcelain_anemone_crab","dx-slb-porcelain_anemone_crab","dx-guide-porcelain_anemone_crab"]
+        behavior: __alloT("stem.coralreef.dx_porcelain_anemone_crab_behavior", "Shelters among anemone tentacles and extends its feathery mouthparts into the water to collect food. Spot size and colour vary between individuals. The study view shows gentle feeding-fan movement; the host anemone is not shown."),
+        observe: __alloT("stem.coralreef.dx_porcelain_anemone_crab_observe", "Choose Front and zoom toward the short stalked eyes, then compare them with the long antennae and much finer feeding fans between the broad claws. Count the three visible walking-leg pairs. The eye surface suggests many small optical units; its illustrated pattern is not a species-identification clue. Compare its compact, spotted body with the cleaner shrimp’s slender striped body and the shell-carrying white-spotted hermit crab."),
+        sources: ["dx-worms-porcelain_anemone_crab","dx-wam-porcelain_anemone_crab","dx-osawa-porcelain_anemone_crab","dx-haig-porcelain_anemone_crab","dx-hkbm-porcelain_anemone_crab","dx-slb-porcelain_anemone_crab","dx-guide-porcelain_anemone_crab","dx-crustacean-compound-eye"]
       },
       varicose_phyllidia: {
         habitat: __alloT("stem.coralreef.dx_varicose_phyllidia_habitat", "Tropical coral reefs across the Indo-West Pacific, including the Red Sea and central Pacific."),
@@ -7884,9 +7895,9 @@
         sources: ["dx-foa-ocellated_eagle_ray","dx-behavior-ocellated_eagle_ray","dx-iucn-ocellated_eagle_ray","dx-safs-ocellated_eagle_ray"] },
       textile_cone: { habitat: __alloT("stem.coralreef.dx_textile_cone_habitat", "Indo-Pacific reefs, sandy areas and coral rubble, often beneath rocks. The Conus Biodiversity Website records it from the intertidal zone to about 50 m deep."),
         diet: __alloT("stem.coralreef.dx_textile_cone_diet", "Mainly other sea snails, including cowries and other cone snails."),
-        behavior: __alloT("stem.coralreef.dx_textile_cone_behavior", "Moves on a muscular foot, usually sheltering by day and hunting at night. A flexible siphon draws water into the mantle cavity."),
-        observe: __alloT("stem.coralreef.dx_textile_cone_observe", "Rotate to find the long opening, then compare the low spire and tapered shape with the giant triton. The giant clam instead has two hinged shells."),
-        sources: ["dx-worms-textile_cone","dx-ummz-textile_cone","dx-qm-textile_cone","dx-qatar-textile_cone"] },
+        behavior: __alloT("stem.coralreef.dx_textile_cone_behavior", "Moves on a muscular foot, usually sheltering by day and hunting at night. The flexible siphon draws water into the mantle cavity for respiration. The venom-delivering feeding proboscis is a separate structure; feeding is not animated in this model."),
+        observe: __alloT("stem.coralreef.dx_textile_cone_observe", "Choose Front and zoom toward the red-tipped siphon to inspect its small opening. Rotate to find the shell’s long aperture and the pale mottled foot, then compare the short spire with the giant triton’s taller spiral. The visible siphon is a water-intake tube. Observe living cone snails without handling them."),
+        sources: ["dx-worms-textile_cone","dx-ummz-textile_cone","dx-qm-textile_cone","dx-qatar-textile_cone","dx-aims-cone-siphon"] },
       orange_cup_coral: { habitat: __alloT("stem.coralreef.dx_orange_cup_coral_habitat", "Shaded rock, overhangs and artificial surfaces. Native to the Indo-Pacific and eastern Pacific; introduced in parts of the Atlantic. Smithsonian reports it at depths down to 60 m."),
         diet: __alloT("stem.coralreef.dx_orange_cup_coral_diet", "Tiny drifting animals, called zooplankton, caught by the tentacles."),
         behavior: __alloT("stem.coralreef.dx_orange_cup_coral_behavior", "Polyps often extend their tentacles at night to feed, then draw them back into their hard cups. New polyps can bud from the colony."),
@@ -7895,28 +7906,88 @@
       banded_sea_krait: { habitat: __alloT("stem.coralreef.dx_banded_sea_krait_habitat", "Tropical Indo-Pacific coral reefs, rocky shores and nearby islands. Often found in shallow water; the New Zealand Herpetological Society reports hunting dives to 60 m."),
         diet: __alloT("stem.coralreef.dx_banded_sea_krait_diet", "Mostly eels, with some other small fish. Larger females can take larger prey than males."),
         behavior: __alloT("stem.coralreef.dx_banded_sea_krait_behavior", "Usually searches for prey alone, bending its body through reef gaps. It returns to sheltered places on land between trips to sea."),
-        observe: __alloT("stem.coralreef.dx_banded_sea_krait_observe", "Compare its paddle tail and broad belly scales with the long fin edging the giant moray and ribbon eel. In the wild, watch from a distance without touching this venomous animal."),
+        observe: __alloT("stem.coralreef.dx_banded_sea_krait_observe", "Choose Below and zoom to compare the broad belly plates with the smaller scales along the sides. From Side, find the vertical paddle tail. Unlike the giant moray and ribbon eel, this snake has no fin edging its body. In the wild, watch from a distance without touching this venomous animal."),
         sources: ["dx-worms-banded_sea_krait","dx-auckland-banded_sea_krait","dx-nparks-banded_sea_krait","dx-nzhs-banded_sea_krait","dx-reptiledb-banded_sea_krait"] },
       white_spotted_hermit_crab: { habitat: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_habitat", "Indo-Pacific reef flats, rocky slopes, seagrass beds and mangrove areas. A Raffles Bulletin of Zoology survey gives a depth range from the intertidal zone to about 50 m."),
         diet: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_diet", "Small animals such as worms and molluscs, plus carrion. A 2023 study also documented predation on juvenile sandfish sea cucumbers."),
-        behavior: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_behavior", "Walks across the seabed while carrying its shell and uses its claws to handle food. It can pull back inside the shell when disturbed."),
-        observe: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_observe", "Find the larger left claw and the legs emerging from the shell. Compare the compact, flattened porcelain anemone crab and the long, segmented peacock mantis shrimp; shell shape alone cannot identify the occupant."),
-        sources: ["dx-worms-white_spotted_hermit_crab","dx-raffles-white_spotted_hermit_crab","dx-doris-white_spotted_hermit_crab","dx-predation-white_spotted_hermit_crab","dx-spc-white_spotted_hermit_crab"] },
+        behavior: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_behavior", "In nature it walks across the seabed while carrying its shell, handles food with its claws and can pull back inside the shell when disturbed. The study view illustrates gentle antenna and limb movement; walking and retreat into the shell are not animated there."),
+        observe: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_observe", "Choose Front and zoom toward the brown-green eyes above their red stalks. Compare the eyes with the long pale antennae, then find the larger left claw and four exposed walking legs. Follow the black-rimmed pale spots and fine bristles. Compare the porcelain anemone crab’s feeding fans; shell shape alone cannot identify the hermit occupant."),
+        sources: ["dx-worms-white_spotted_hermit_crab","dx-raffles-white_spotted_hermit_crab","dx-doris-white_spotted_hermit_crab","dx-predation-white_spotted_hermit_crab","dx-spc-white_spotted_hermit_crab","dx-crustacean-compound-eye"] },
       longfin_bannerfish: { habitat: __alloT("stem.coralreef.dx_longfin_bannerfish_habitat", "Sheltered bays, lagoons, channels and coral reef slopes across the tropical Indo-West and Central Pacific. Usually found between about 2 and 75 m deep."),
         diet: __alloT("stem.coralreef.dx_longfin_bannerfish_diet", "Zooplankton and bottom-dwelling invertebrates. Juveniles sometimes remove parasites from other fish."),
         behavior: __alloT("stem.coralreef.dx_longfin_bannerfish_behavior", "Adults often swim as pairs near the reef; young fish are frequently solitary. Small groups also occur."),
-        observe: __alloT("stem.coralreef.dx_longfin_bannerfish_observe", "Compare its yellow tail and shorter snout with the Moorish idol, then compare its broad bands with the finer diagonal lines of the threadfin butterflyfish. These study contrasts do not replace the extra checks needed for closely similar bannerfish."),
+        observe: __alloT("stem.coralreef.dx_longfin_bannerfish_observe", "Compare its yellow tail and shorter snout with the adult Moorish idol's black tail, yellow snout saddle and small forehead projections. For similar Heniochus species, also check where the second black band meets the anal fin."),
         sources: ["dx-csiro-longfin_bannerfish","dx-am-longfin_bannerfish","dx-foa-longfin_bannerfish","dx-fishbase-longfin_bannerfish"] },
       bigfin_reef_squid: { habitat: __alloT("stem.coralreef.dx_bigfin_reef_squid_habitat", "Warm coastal waters across the Indo-Pacific, including coral reefs, seagrass meadows and sandy areas, from the surface to about 100 m. Introduced populations also occur in the Mediterranean."),
         diet: __alloT("stem.coralreef.dx_bigfin_reef_squid_diet", "Mainly fish and prawns, with other crustaceans such as crabs and mantis shrimps."),
         behavior: __alloT("stem.coralreef.dx_bigfin_reef_squid_behavior", "Can gather in groups of similar-sized animals. Rippling fins and gentle water jets help it hover; stronger mantle contractions drive rapid jet swimming."),
-        observe: __alloT("stem.coralreef.dx_bigfin_reef_squid_observe", "Use a view from above to follow the broad side fins, then look beneath the head for the arms and feeding tentacles. Compare its long mantle with the broadclub cuttlefish and the finless body of the day octopus. Colour alone cannot identify it."),
+        observe: __alloT("stem.coralreef.dx_bigfin_reef_squid_observe", "Choose Above to follow the broad side fins along the mantle, then Below to find the funnel beneath the head. Water expelled through this funnel provides jet propulsion; it is separate from the mouth surrounded by arms and feeding tentacles. Compare the long mantle with the broadclub cuttlefish and the finless day octopus. Colour alone cannot identify it."),
         sources: ["dx-worms-bigfin_reef_squid","dx-am-bigfin_reef_squid","dx-fao-bigfin_reef_squid","dx-slb-bigfin_reef_squid","dx-genetics-bigfin_reef_squid","dx-motion-bigfin_reef_squid"] }
     };
   }
 
   function marineProfileSources() {
     return [
+      {"id":"dx-seastar-water-vascular","text":"Smithsonian Ocean. Sea Stars, Urchins, and Relatives. Reviewed by Christopher Mah, Smithsonian NMNH. Madreporite, water vascular system and sea-star anatomy; general anatomy rather than a species-specific pore count.","url":"https://ocean.si.edu/ocean-life/invertebrates/sea-stars-urchins-and-relatives"},
+      {"id":"dx-crustacean-compound-eye","text":"Natural History Museum of Los Angeles County. Crustacea Glossary: Compound eye. A paired array of ommatidia; general crustacean anatomy, not a species-specific optical measurement.","url":"https://research.nhm.org/glossary/define.html?termID=177"},
+
+      {"id":"dx-aims-cone-siphon","text":"Australian Institute of Marine Science (2010, archived). Cone shell. The siphon takes in water for respiration; the feeding proboscis is a separate structure. Used here for external anatomy.","url":"https://www.aims.gov.au/docs/projectnet/cone-shell.html"},
+      {"id":"dx-nmns-boxfish-form","text":"National Museum of Nature and Science, Japan. Fishes of Andaman Sea: Ostracion cubicus. Quadrangular spineless carapace, juvenile round black spots, and adult growth changes. The source uses the familiar older species spelling.","url":"https://www.kahaku.go.jp/research/db/zoology/Fishes_of_Andaman_Sea/contents/ostraciidae/02.html"},
+      {"id":"dx-stri-grouper-spots","text":"Smithsonian Tropical Research Institute. Shorefishes of the Greater Caribbean: Cephalopholis argus. Head, body and fins bear small dark-edged blue spots; rear bars, pale chest area and rounded tail aid identification.","url":"https://biogeodb.stri.si.edu/caribbean/en/thefishes/species/5572"},
+      {"id":"dx-widecast-head-scales","text":"WIDECAST. Terminology: diagnostic head scales. Green turtles have one pair of prefrontal scales; hawksbills have two pairs. Diagrams distinguish head scales, upper-shell scutes and lower-shell plates.","url":"https://www.widecast.org/Biology/Terminology/"},
+      {"id":"dx-cmfri-spotted-seahorse","text":"Ignatius, B. and Joseph, S. (2017). Hippocampus kuda. ICAR–Central Marine Fisheries Research Institute, Prioritized Species for Mariculture in India, pp.261–265. Rounded body bumps, thick snout and the adult male brood pouch.","url":"https://eprints.cmfri.org.in/14955/"},
+      {"id":"dx-moray-nasal-anatomy","text":"Huang, W.-C., et al. (2025). Annotated checklist of moray eels in Singapore. Raffles Bulletin of Zoology74:574–602, Gymnothorax javanicus account: tubular anterior nostril, posterior nasal rim, gill blotch and reddish-brown iris.","url":"https://lkcnhm.nus.edu.sg/wp-content/uploads/sites/11/2025/11/RBZ-2025-0038.pdf#page=11"},
+      {"id":"dx-fish-smell-route","text":"University of Hawaii at Manoa. Exploring Our Fluid Earth: Structure and Function, Fish. Nostrils circulate water for detecting dissolved chemical cues; gills provide gas exchange.","url":"https://manoa.hawaii.edu/exploringourfluidearth/biological/fish/structure-and-function-fish"},
+      {"id":"dx-nmns-sweetlips-adult","text":"National Museum of Nature and Science, Japan. Fishes of Andaman Sea: Plectorhinchus vittatus. Adult yellow fins with black spots on median fins, juvenile connected blotches, and rounded juvenile versus truncate adult tail.","url":"https://www.kahaku.go.jp/research/db/zoology/Fishes_of_Andaman_Sea/contents/haemulidae/05.html"},
+      {"id":"dx-fao-banggai-development","text":"Allen, G. R. (1999). Apogonidae, FAO Western Central Pacific species guide, p.2609. Pterapogon kauderni: brooding, absence of a pelagic larval stage and juvenile shelter. Historical egg-count and uniqueness claims are not used here.","url":"https://www.fao.org/4/x2400e/x2400e47.pdf#page=8"},
+      {"id":"dx-am-humphead-form","text":"McGrouther, M. Australian Museum. Humphead Maori Wrasse: adult forehead hump, thick body, rounded tail, two post-eye lines and the meaning of undulatus.","url":"https://australian.museum/learn/animals/fishes/humphead-maori-wrasse-cheilinus-undulatus/"},
+      {"id":"dx-wa-humphead-scales","text":"Western Australian fisheries. North Coast fish identification guide, Humphead Maori wrasse (p.49): maze-like head/chest lines and short dark bars on body scales; life-stage differences.","url":"https://www.fish.wa.gov.au/Documents/occasional_publications/fop080.pdf"},
+      {"id":"dx-rls-cleaner-mouth","text":"Reef Life Survey. Labroides dimidiatus: terminal mouth versus the underside mouth of false cleanerfish, widening lateral stripe and juvenile colour pattern.","url":"https://reeflife.org/species/labroides-dimidiatus/"},
+      {"id":"dx-randall-cleaner-fins","text":"Randall, J. E., and Victor, B. C. (2022). Labridae, Coastal Fishes of the Western Indian Ocean. Labroides dimidiatus: adult dorsal midline, spinous dorsal and basal anal-fin markings, with a lateral stripe reaching the tail.","url":"https://coralreeffish.com/pubpdfs/Randall%20%26%20Victor%202022%20Labridae%20of%20WIO%20chapter.pdf"},
+      {"id":"dx-trigger-dorsal-family","text":"Bray, D. J. Triggerfishes, BALISTIDAE, Fishes of Australia. Three first-dorsal spines and locking of the large first spine by the second; general family anatomy.","url":"https://fishesofaustralia.net.au/Home/family/135"},
+      {"id":"dx-diodontid-jaws","text":"Australian Museum. Diodontidae – Porcupinefishes. Fused teeth form a beak in the two jaws and crush hard-bodied prey; water-driven defensive inflation.","url":"https://australian.museum/learn/animals/fishes/diodontidae-porcupinefishes/"},
+      {"id":"dx-flm-porcupine-identification","text":"Florida Museum. Porcupinefish, Diodon hystrix. Spines lie back when uninflated; small spots occur on the body and fins, contrasting with Diodon holocanthus.","url":"https://www.floridamuseum.ufl.edu/discover-fish/species-profiles/porcupinefish/"},
+      {"id":"dx-am-emperor-growth","text":"McGrouther, M. Australian Museum. Emperor Angelfish: adult stripes and eye band, juvenile rear ring and incomplete circles, and colour change with growth.","url":"https://australian.museum/learn/animals/fishes/emperor-angelfish-pomacanthus-imperator/"},
+      {"id":"dx-flm-ocellaris-hosts","text":"Florida Museum. Clown Anemonefish, Amphiprion ocellaris. Natural host associations, acclimation, mucous coating and social hierarchy. The magnificent-anemone host is published under its former name Heteractis magnifica.","url":"https://www.floridamuseum.ufl.edu/discover-fish/species-profiles/clown-anemonefish/"},
+      {"id":"dx-grouper-diet-context","text":"USGS Nonindigenous Aquatic Species. Peacock hind: qualitative diet and the location-specific Hawaiian diet study. Read alongside the native-range account; a Hawaiian percentage is not used as a universal reef estimate.","url":"https://nas.er.usgs.gov/queries/FactSheet.aspx?speciesID=964"},
+      {"id":"dx-slug-foot-pattern","text":"SEASLUG.WORLD. Chromodoris annae species account, with references to Bergh and modern taxonomic work: yellow foot margin, mantle pattern and species-identification limits.","url":"https://en.seaslug.world/species/chromodoris_annae"},
+      {"id":"dx-slug-chemical-senses","text":"Western Australia Department of Primary Industries and Regional Development. Nudibranch fact sheet: chemical-sensing head appendages. A general nudibranch account, not a claim that every species has the same anatomy or diet.","url":"https://marinewaters.fish.wa.gov.au/resource/fun-fact-sheet-nudibranch/"},
+      {"id":"dx-octopus-oral-anatomy","text":"Waikiki Aquarium, University of Hawaii. Octopus: day and night octopuses, central underside mouth and beak, and the separate water-expelling funnel.","url":"https://www.waikikiaquarium.org/experience/animal-guide/invertebrates/molluscs/octopus/"},
+      {"id":"dx-grouper-territory-study","text":"Shpigel, M. and Fishelson, L. (1991). Territoriality and associated behaviour in three species of Cephalopholis in the Gulf of Aqaba, Red Sea. Journal of Fish Biology 38:887–896. Local social organization and C. argus territories up to 2000 square metres.","url":"https://doi.org/10.1111/j.1095-8649.1991.tb03628.x"},
+      {"id":"dx-worms-boxfish-name","text":"World Register of Marine Species, AphiaID403462. Ostracion cubicum Linnaeus,1758 accepted; Ostracion cubicus listed as the original/unaccepted spelling. Accessed November2026.","url":"https://www.marinespecies.org/aphia.php?id=403462&p=taxdetails"},
+      {"id":"dx-am-boxfish-growth","text":"McGrouther, M. Australian Museum. Yellow Boxfish: juvenile spots, changes in markings with growth, and reef habitat. The page uses the older spelling Ostracion cubicus.","url":"https://australian.museum/learn/animals/fishes/yellow-boxfish-ostracion-cubicus/"},
+      {"id":"dx-anthozoan-opening","text":"Smithsonian National Zoo. Corals and sea anemones (Anthozoa): single digestive opening and surrounding tentacles. General anthozoan anatomy, rather than a species-specific identification guide.","url":"https://www.nationalzoo.si.edu/animals/corals-and-sea-anemones-anthozoa"},
+      {"id":"dx-gorgonian-polyp-anatomy","text":"Menzel, L. P., et al. (2015). Histology and ultrastructure of the coenenchyme of the octocoral Swiftia exserta. General gorgonian anatomy includes eight pinnate tentacles. The study species differs from the illustrated Annella.","url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC4380826/"},
+      {"id":"dx-flm-lionfish-anatomy","text":"Florida Museum. Red Lionfish (Pterois volitans): native range, dorsal/anal/pelvic venom spines, pectoral hunting fans and feeding during both day and night.","url":"https://www.floridamuseum.ufl.edu/discover-fish/species-profiles/red-lionfish/"},
+      {"id":"dx-threadfin-adult-filament","text":"McGrouther, M. Threadfin Butterflyfish, Australian Museum. Adult dorsal filament, chevrons, real-eye band and rear dorsal colour spot.","url":"https://australian.museum/learn/animals/fishes/threadfin-butterflyfish-chaetodon-auriga-forsskal-1775/"},
+      {"id":"dx-cots-life-stages","text":"Great Barrier Reef Marine Park Authority. Coral predator outbreaks: native crown-of-thorns, adult stomach feeding, juvenile coralline-algae diet and outbreak context.","url":"https://www.gbrmpa.gov.au/our-work/programs-and-projects/crown-thorns-starfish/coral-predator-outbreaks"},
+      {"id":"dx-noaa-star-tube-feet","text":"NOAA National Ocean Service. Are starfish really fish? Echinoderm classification and movement with tube feet on the underside.","url":"https://oceanservice.noaa.gov/facts/starfish.html"},
+      {"id":"dx-dendronephthya-anatomy","text":"Nativ, H., et al. (2023). New Record of Dendronephthya sp. from Mediterranean Israel: Evidence for Tropicalization? Biology 12:1220. Genus anatomy, eight pinnate tentacles, hydrostatic support, sclerites and identification limits.","url":"https://doi.org/10.3390/biology12091220"},
+      {"id":"dx-am-octocoral-tentacles","text":"Australian Museum. Soft Coral: polyps with eight feathery tentacles. The account illustrates a different soft-coral genus; the eight-tentacle feature is shared by octocorals.","url":"https://australian.museum/learn/animals/jellyfish/soft-coral/"},
+      {"id":"dx-chromodoris-chemical-defence","text":"Cheney, K. L., et al. (2016). Choose Your Weaponry: Selective Storage of a Single Toxic Compound, Latrunculin A, by Closely Related Nudibranch Molluscs. PLOS ONE 11:e0145134. Includes Chromodoris annae and comparative chemical-defence assays.","url":"https://doi.org/10.1371/journal.pone.0145134"},
+      {"id":"dx-worms-magnificent-anemone","text":"World Register of Marine Species. Radianthus magnifica (Quoy & Gaimard, 1833): accepted name and the former Heteractis magnifica combination (accessed November 2026).","url":"https://www.marinespecies.org/aphia.php?p=taxlist&tName=Radianthus%20magnifica"},
+      {"id":"dx-oca-cleaner-shrimp-anatomy","text":"Taiwan Ocean Conservation Administration (2022). Pacific cleaner shrimp, Lysmata amboinensis: short six-toothed rostrum, claws on the first two leg pairs, colour pattern and antennae.","url":"https://www.oca.gov.tw/ch/home.jsp?dataserno=202202220004&id=522&mcustomize=ocamaritime_view.jsp&parentpath=0%2C298%2C386"},
+      {"id":"dx-am-christmas-tree","text":"Kupriyanova, E. (2015). Australian Museum: Exploring the diversity of Christmas tree worms in Indo-Pacific coral reefs. Variable opercula and the corniculatus complex.","url":"https://australian.museum/blog-archive/amri-news/amri-exploring-the-diversity-of-christmas-tree-worms/"},
+      {"id":"dx-worm-age-1996","text":"Nishi, E., and Nishihira, M. (1996). Age-estimation of the Christmas Tree Worm Spirobranchus giganteus living buried in the coral skeleton from the coral-growth band of the host coral. Fisheries Science 62:400-403. Okinawa study and indirect age method.","url":"https://doi.org/10.2331/fishsci.62.400"},
+      {"id":"dx-worm-tube-settlement","text":"Hoeksema et al. (2019). Coral injuries caused by Spirobranchus opercula with and without epibiotic turf algae at Curacao. Marine Biology. Introduction: secreted calcareous tubes become embedded as the host grows.","url":"https://doi.org/10.1007/s00227-019-3504-6"},
+      {"id":"dx-seahorse-fan-hosts","text":"Reijnen, B. T., van der Meij, S. E. T., and van Ofwegen, L. P. (2011). Fish, fans and hydroids: host species of pygmy seahorses. ZooKeys 103:1-26. Annella morphology, sclerites and documented host associations.","url":"https://doi.org/10.3897/zookeys.103.953"},
+      {"id":"dx-barrel-lineages","text":"Swierts, T., et al. (2013). Lock, Stock and Two Different Barrels: Comparing the Genetic Composition of Morphotypes of the Indo-Pacific Sponge Xestospongia testudinaria. PLOS ONE 8:e74396. Lembeh morphology and genetic lineages.","url":"https://doi.org/10.1371/journal.pone.0074396"},
+      {id:"dx-wa-diadema",text:"Western Australian Museum Collections. Diadema setosum: five white spots, orange-red anal ring, nocturnal grazing and brittle spines.",url:"https://museum.wa.gov.au/online-collections/names/Diadema-setosum/"},
+      {id:'dx-slb-sea-cucumber',text:'SeaLifeBase. Holothuria edulis field guide: ventral mouth and twenty grey oral tentacles (accessed October 2026).',url:'https://sealifebase.ca/FieldGuide/FieldGuideSummary.php?GenusName=Holothuria&SpeciesName=edulis&pda=&sps='},
+      {"id":"dx-parrotfish-sediment-study","text":"Perry, C. T., et al. (2015). Linking reef ecology to island building: Parrotfish identified as major producers of island-building sediment in the Maldives. Geology 43:503-506. Community-level sediment estimate.","url":"https://doi.org/10.1130/G36623.1"},
+      {"id":"dx-cleaner-rates-study","text":"Grutter, A. S. (1996). Parasite removal rates by the cleaner wrasse Labroides dimidiatus. Marine Ecology Progress Series 130:61-70. Estimated daily averages at Lizard Island.","url":"https://doi.org/10.3354/meps130061"},
+      {"id":"dx-moray-hunt-study","text":"Bshary, R., et al. (2006). Interspecific communicative and coordinated hunting between groupers and giant moray eels in the Red Sea. PLOS Biology 4:e431.","url":"https://doi.org/10.1371/journal.pbio.0040431"},
+      {"id":"dx-green-turtle-global-2025","text":"IUCN Red List (2025). Chelonia mydas, global assessment, e.T4615A285108125. A global category differs from regional status and national protection.","url":"https://doi.org/10.2305/IUCN.UK.2025-2.RLTS.T4615A285108125.en"},
+      {"id":"dx-clam-eyes-study","text":"Land, M. F. (2003). The spatial resolution of the pinhole eyes of giant clams (Tridacna maxima). Proceedings of the Royal Society B 270:185-188.","url":"https://pubmed.ncbi.nlm.nih.gov/12590758/"},
+      {"id":"dx-cots-outbreaks","text":"Australian Institute of Marine Science. Causes of crown-of-thorns starfish outbreaks: larval food, predators and survival.","url":"https://www.aims.gov.au/research-topics/environmental-issues/crown-thorns-starfish/causes-crown-thorns-starfish-outbreaks"},
+      {"id":"dx-octopus-team-study","text":"Sampaio, E., et al. (2024). Multidimensional social influence drives leadership and composition-dependent success in octopus-fish hunting groups. Nature Ecology & Evolution 8:2072-2084. Red Sea field observations.","url":"https://doi.org/10.1038/s41559-024-02525-2"},
+      {"id":"dx-fao-sea-cucumber","text":"Purcell, S. W., Samyn, Y., and Conand, C. (2012). Commercially important sea cucumbers of the world. FAO Species Catalogue for Fishery Purposes 6, pages 48-49: Holothuria edulis body and tube feet.","url":"https://www.fao.org/4/i1918e/i1918e.pdf"},
+      {"id":"dx-soft-coral-herbivory","text":"Fabricius, K. E., Genin, A., and Benayahu, Y. (1995). Flow-dependent herbivory and growth in zooxanthellae-free soft corals. Limnology and Oceanography 40:1290-1301. Northern Red Sea feeding study.","url":"https://doi.org/10.4319/lo.1995.40.7.1290"},
+      {id:'dx-acropora-humilis',text:'Corals of the World. Acropora humilis: colony, corallites and habitat.',url:acroporaSource('humilis')},
+      {id:'dx-acropora-millepora',text:'Corals of the World. Acropora millepora: growth form and habitat.',url:acroporaSource('millepora')},
+      {id:'dx-acropora-clathrata',text:'Corals of the World. Acropora clathrata: growth form and habitat.',url:acroporaSource('clathrata')},
+      {id:'dx-acropora-marks-millepora',text:'Marine Savers. Acropora millepora: branch texture and polyp extension.',url:'https://marinesavers.com/corals/acropora-millepora/'},
+      {id:'dx-acropora-marks-clathrata',text:'Habitat and growth account adapted from Western Australian Museum Collections, Acropora clathrata.',url:'https://museum.wa.gov.au/online-collections/names/acropora-clathrata/',license:'CC BY 4.0',licenseUrl:'https://creativecommons.org/licenses/by/4.0/'},
       { id: 'dx-worms-goldmouth_sea_squirt', text: 'WoRMS. Polycarpa aurata (Quoy & Gaimard, 1834), accepted name and classification, AphiaID 251001 (accessed October 2026).', url: 'https://www.marinespecies.org/aphia.php?id=251001&p=taxdetails', urlLabel: 'marinespecies.org' },
       { id: 'dx-hawaii-tunicates', text: 'University of Hawaii at Manoa. Exploring Our Fluid Earth: Phylum Chordata. Tunicate anatomy, feeding and life cycle; illustrated Polycarpa aurata.', url: 'https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-chordata', urlLabel: 'manoa.hawaii.edu' },
       { id: 'dx-morph-goldmouth_sea_squirt', text: 'Herwin et al. (2026). Molecular Analysis and Activities of Bioactive Compounds from Symbiont Bacteria Isolates Polycarpa aurata. Traditional Medicine Journal 31(1):123-139. Page 132 documents the identified animal\'s shape, two siphons and colour variation.', url: 'https://journal.ugm.ac.id/TradMedJ/article/viewFile/105930/43949', urlLabel: 'journal.ugm.ac.id' },
@@ -8262,6 +8333,12 @@
         "urlLabel": "library.dbca.wa.gov.au"
       },
       {
+        "id": "dx-wa-pipefish-anatomy",
+        "text": "Waikīkī Aquarium, University of Hawaiʻi. Animal Guide: Pipefish. General pipefish anatomy: bony armour rings and a small mouth at the end of a tubular snout; not a species-specific feeding study or ring-count measurement. Accessed November 2026.",
+        "url": "https://www.waikikiaquarium.org/experience/animal-guide/fishes/seahorses-seadragons-and-pipefishes/pipefish/",
+        "urlLabel": "waikikiaquarium.org"
+      },
+      {
         "id": "dx-am-yellow_longnose_butterflyfish",
         "text": "McGrouther, M. (2021). Australian Museum: Forceps Fish, Forcipiger flavissimus. Accessed October 2026.",
         "url": "https://australian.museum/learn/animals/fishes/forceps-fish-forcipiger-flavissimus/",
@@ -8350,6 +8427,12 @@
         "text": "Waikīkī Aquarium, University of Hawaiʻi. Animal Guide: Triton’s Trumpet Snail. Accessed October 2026.",
         "url": "https://www.waikikiaquarium.org/experience/animal-guide/invertebrates/molluscs/tritons-trumpet-snail/",
         "urlLabel": "waikikiaquarium.org"
+      },
+      {
+        "id": "dx-bose-giant_triton",
+        "text": "Bose, U., Wang, T., Zhao, M., Motti, C.A., Hall, M.R. & Cummins, S.F. (2017). Multiomics analysis of the giant triton snail salivary gland, a crown-of-thorns starfish predator. Scientific Reports 7: 6000, Figure 1. Species-specific Charonia tritonis oral anatomy and proboscis extension during feeding; not a reconstruction of resting mouth shape or colour.",
+        "url": "https://doi.org/10.1038/s41598-017-05974-x",
+        "urlLabel": "doi.org"
       },
       {
         "id": "dx-fao-giant_triton",
@@ -10731,6 +10814,44 @@
     '@media(max-width:600px){[data-coralreef-root] .crob-prompts{grid-template-columns:minmax(0,1fr)}[data-coralreef-root] .crob-head{gap:12px;align-items:flex-start}[data-coralreef-root] .crob-portrait{width:82px;flex-basis:82px}[data-coralreef-root] .crob-portrait img{height:76px}}'
   ].join('');
 
+  function marineEntrySources(profile) {
+    var library = sourceList().concat(marineProfileSources());
+    return (profile.sources || []).map(function(id){return library.find(function(source){return source.id===id;});}).filter(Boolean);
+  }
+  function marineEntryCitation(h, source) {
+    var linkStyle = {color:'var(--reef-accent)',overflowWrap:'anywhere'};
+    return h('li',{key:source.id,style:{marginBottom:6}},source.url ? h('a',{href:source.url,style:linkStyle,target:'_blank',rel:'noopener noreferrer'},source.text) : source.text,
+      source.licenseUrl ? h('span',null,' · ',h('a',{href:source.licenseUrl,style:linkStyle,target:'_blank',rel:'noopener noreferrer'},source.license)) : null);
+  }
+
+  function MarineDiveReference(props) {
+    var env=props.env,h=env.h,__alloT=env.t,state=env.React.useState(false);
+    var meta=speciesMeta(props.id);
+    if (!meta || meta.group==='structure') return null;
+    var body = null;
+    if (state[0]) {
+      var tx=props.tx, profile=props.profile || marineProfiles(__alloT)[meta.id];
+      var notes = [
+        [__alloT('stem.coralreef.dx_habitat','Where it lives'),profile.habitat],
+        [__alloT('stem.coralreef.dx_diet','What it eats'),profile.diet],
+        [__alloT('stem.coralreef.dx_behavior','How it behaves'),profile.behavior],
+        [__alloT('stem.coralreef.dx_deeper','A little deeper'),tx.fact]
+      ];
+      body=h('article',{'aria-label':tx.name,style:{padding:'0 0 12px',lineHeight:1.6}},
+        h('p',{style:{margin:'4px 0',color:env.P.muted}},h('i',null,meta.scientific),' · ',groupNames(__alloT)[meta.group]),
+        h('p',{style:{maxWidth:'68ch'}},tx.role),
+        h('h4',{style:{margin:'14px 0 4px'}},__alloT('stem.coralreef.g_marks','Field marks')),
+        h('ul',{style:{margin:'0 0 14px',paddingInlineStart:22}},tx.marks.map(function(mark){return h('li',{key:mark},mark);})),
+        h('dl',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,230px),1fr))',gap:10}},notes.map(function(note){
+          return h('div',{key:note[0],style:{padding:12,border:'1px solid '+env.P.border,borderRadius:12,background:env.P.cardAlt}},
+            h('dt',{style:{fontWeight:700}},note[0]),h('dd',{style:{margin:'4px 0 0'}},note[1]));
+        })),h('h4',{style:{margin:'14px 0 4px'}},__alloT('stem.coralreef.dx_sources','Sources and further reading')),
+        h('ul',{style:{margin:0,paddingInlineStart:22}},marineEntrySources(profile).map(function(source){return marineEntryCitation(h,source);})));
+    }
+    return h('details',{'data-dive-reference':meta.id,open:state[0],onToggle:function(e){state[1](e.currentTarget.open);},
+      style:{marginTop:12,overflowWrap:'anywhere'}},
+      h('summary',{style:{cursor:'pointer',minHeight:44,padding:'10px 0',fontWeight:700}},__alloT('stem.coralreef.rc_open_profile','Species profile'),' · ',props.tx.name),body);
+  }
   function MarineObservationDock(props) {
     var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, fill = env.fill;
     var id = props.id, meta = speciesMeta(id), TX = speciesText(__alloT), tx = TX[id];
@@ -10805,6 +10926,7 @@
         canHealthy ? h('button', { type: 'button', 'data-observation-healthy': true, style: btnStyle(P, true), onClick: function () { setNotice(''); setResume(false); env.set({ diveSiteId: 'healthy' }); } }, __alloT('stem.coralreef.ob_healthy', 'Look on the healthy reef')) : null,
         h('button', { type: 'button', 'data-observation-return': true, style: btnStyle(P, false), onClick: props.onReturn }, __alloT('stem.coralreef.ob_return', 'Return to species profile')),
         h('button', { type: 'button', 'data-observation-close': true, style: btnStyle(P, false), onClick: props.onClose }, __alloT('stem.coralreef.ob_close', 'Close observation card'))),
+      h(MarineDiveReference,{key:id,env:env,id:id,tx:tx,profile:profile}),
       typeof MarineFieldNotes === 'function' ? h('details', { className: 'crob-note-toggle' }, h('summary', null, __alloT('stem.coralreef.ob_notes', 'Keep a field note')), h('div', null, h(MarineFieldNotes, { env: env, id: id }))) : null);
   }
 
@@ -10903,6 +11025,176 @@
         }))) : null);
   }
 
+  // Original field accounts, shared by the plate, guide and observation card.
+  var ACROPORA_PLATES = [
+    { species:'humilis', form:'branching', mark:'Thick, finger-like branches taper toward rounded tips.', habitat:'Look on shallow reef flats and the exposed upper slopes of the reef.',
+      clues:['A large skeletal cup sits at the tip of each main branch.','Smaller cups dot the sides, with some of the larger ones arranged in rows.','Short new branches can rise beside the bases of the main fingers.'],
+      role:'A colony of small animals that builds a rigid skeleton on the reef.',
+      fact:'A corallite is the hard cup that houses a coral polyp. The cup at the tip of each branch is especially conspicuous in this species.',
+      behavior:'The colony stays attached as it grows. New branchlets near the bases of older branches give it a clustered outline.',
+      observe:'Start with the outline, then zoom in on a branch tip. Compare its large terminal cup with the smaller cups down its sides.',
+      colors:['#514769','#a18ca9','#e6d5de'], detail:'83 27 100 65' },
+    { species:'millepora', form:'branching', mark:'Many short branches of similar length form a cushion-shaped colony.', detailMark:'The rims of small skeletal cups give the branch surface a scale-like appearance.',
+      clues:['The cups on the sides of the branches are similar in size.','Each side cup has a flared lower rim, which gives the surface a scale-like appearance.','A tube-shaped cup sits at each growing branch tip.'],
+      role:'A reef-building coral whose living polyps share a branching skeleton.',
+      fact:'The scale-like marks are part of the coral skeleton. Each one is the rim of a cup that houses a polyp.',
+      behavior:'Polyps can extend during daylight. When many extend together, their soft tissue makes the branch surface look fuzzy.',
+      observe:'Compare the tips with the stout fingers of Acropora humilis. Then zoom in and look for the repeated flared rims along a branch.',
+      markSource:'https://marinesavers.com/corals/acropora-millepora/', markCredit:'Marine Savers',
+      habitat:'This coral grows on shallow reef flats and also occurs in lagoons and on upper reef slopes.',
+      colors:['#704f42','#b58869','#efc5a0'], detail:'91 32 100 65' },
+    { species:'clathrata', form:'plate', mark:'Branches grow outward from the side of a reef surface into a broad shelf.',
+      clues:['Viewed from above, branches join to form a network.','Few or no upright branchlets interrupt the upper surface.','From the side, the colony is much wider than it is tall.'],
+      role:'A reef-building coral whose connected branches form a horizontal shelf.',
+      fact:'Some colonies have open spaces between the branches. In others, so many branches join that the shelf looks almost solid.',
+      behavior:'As the colony grows, neighbouring branches can meet and fuse. The connected surface can spread sideways from its attachment point.',
+      observe:'Swim above the shelf to find the joins. Then look along its edge and compare it with the upright brush of the table coral.',
+      markSource:'https://museum.wa.gov.au/online-collections/names/acropora-clathrata/', markCredit:'Western Australian Museum',
+      habitat:'It lives on reef slopes and along the back edge of the reef, in both sheltered and wave-exposed places.',
+      colors:['#455944','#809979','#cccf9b'], detail:'104 56 100 65' }
+  ];
+
+  function acroporaGuideText(species) {
+    var plate = ACROPORA_PLATES.find(function(p){return p.species===species;});
+    return {name:'Acropora '+species, marks:[plate.mark].concat(plate.clues), role:plate.role, fact:plate.fact};
+  }
+  function acroporaLife(species, __alloT) {
+    var plate = ACROPORA_PLATES.find(function(p){return p.species===species;});
+    var sources = ['dx-acropora-'+species,'dx-noaa-corals','dx-noaa-coral-algae'];
+    if (plate.markSource) sources.push('dx-acropora-marks-'+species);
+    return {habitat:plate.habitat,diet:__alloT('stem.coralreef.dx_staghorn_coral_diet','Algal partners supply energy, and the animal polyps also capture tiny drifting food.'),
+      behavior:plate.behavior,observe:plate.observe,sources:sources};
+  }
+
+  function acroporaSource(species) {
+    return 'https://www.coralsoftheworld.org/species_factsheets/species_factsheet_summary/acropora-'+species+'/';
+  }
+
+  function AcroporaDrawing(props) {
+    var h = props.env.h, plate = props.plate, colors = plate.colors;
+    var id = 'cr-plate-' + props.env.React.useId().replace(/:/g, '');
+    var column = plate.species === 'humilis', net = plate.species === 'clathrata';
+    function paint(name) { return 'url(#' + id + '-' + name + ')'; }
+    var finger = column ? 'M -18 2 Q -12 -9 -13 -24 C -15 -38 -10 -56 -9 -64 Q -7 -75 -2 -77 Q 4 -80 8 -72 C 11 -63 8 -52 11 -43 Q 15 -27 13 -18 Q 13 -7 20 2 Q 1 8 -18 2 Z'
+      : 'M -10 1 Q -6 -10 -8 -21 C -9 -32 -4 -43 -5 -52 Q -4 -60 0 -61 Q 5 -61 6 -55 Q 5 -42 7 -31 Q 6 -14 10 2 Q 1 5 -10 1 Z';
+    var cups = [];
+    for (var row = 0; row < 6; row++) {
+      for (var side = -1; side <= 1; side++) {
+        var x = side * (column ? 8 : 4) + Math.sin(row*4+side)*1.1, y = -9 - row * (column ? 10 : 8) + (side === 0 ? 3 : 0);
+        var width = column ? (side === 0 ? 2.7 : 1.4) : 2.4;
+        cups.push(column ? h('g',{key:row+':'+side,transform:'translate('+x+' '+y+') rotate('+side*17+')'},
+          h('ellipse',{rx:width,ry:2.1,fill:colors[0]}),h('path',{d:'M '+(-width)+' 0 Q 0 3.8 '+width+' -0.4',fill:'none',stroke:colors[2],strokeWidth:1.3}))
+          : h('path', {key:row+':'+side,d:'M '+(x-width)+' '+y+' q '+width+' 4 '+(width*2)+' -0.6 q '+(-width)+' 1.4 '+(-width*2)+' 0.6',fill:colors[0],stroke:colors[2],strokeWidth:.85}));
+      }
+    }
+    // Place rear branches first. Short basal sprouts and a few tall, thick fingers
+    // distinguish humilis from the close-set branchlets of the millepora cushion.
+    var branches = column ? [
+      [46,117,-28,.69],[78,105,-10,.78],[102,108,-4,.91],[140,112,6,.95],[182,116,24,.78],
+      [61,126,-29,.74],[87,128,-17,.99],[115,126,-5,1.16],[149,123,8,1.03],[170,129,22,.82],
+      [62,131,-36,.32],[91,133,-25,.41],[129,134,-3,.46],[156,133,14,.34],[184,129,30,.33]
+    ] : [];
+    if (!column && !net) {
+      for (var layer = 0; layer < 3; layer++) {
+        for (var i = 0; i < 10; i++) {
+          var spread = (i - 4.5) / 4.5;
+          branches.push([45+i*17+(layer%2)*5, 101+layer*11+spread*spread*10,
+            spread*27+Math.sin(i*3+layer)*6, .73 + (1-spread*spread)*.47 - layer*.10 + Math.sin(i+layer)*.06]);
+        }
+      }
+    }
+    // Lateral attachment at left, with radiating branches that fuse with their
+    // neighbours. Draw the mesh in one stroke layer so junctions read as tissue.
+    var lattice = [], pores = [];
+    if (net) {
+      var rays = [];
+      for (var ray = 0; ray < 14; ray++) {
+        var nodes = [], theta = -1.32 + ray * .175, length = 118 + Math.cos(theta)*63 + Math.sin(ray*4)*4;
+        for (var j = 0; j <= 8; j++) {
+          var r = j / 8, angle = theta + .041*Math.sin(j*1.8+ray)*r;
+          nodes.push([39+r*length*Math.cos(angle),86+r*length*.41*Math.sin(angle)-12*Math.sin(Math.PI*r)]);
+        }
+        rays.push(nodes);
+      }
+      rays.forEach(function(nodes,ray){
+        var segments = [];
+        for (var j = 1; j < nodes.length; j++) {
+          var point = nodes[j], prev = nodes[j-1];
+          segments.push('Q '+(prev[0]*.4+point[0]*.6)+' '+(prev[1]*.4+point[1]*.6+2.5*Math.sin(ray+j))+' '+point.join(' '));
+          if (j > 1) pores.push(h('ellipse',{key:ray+':'+j,cx:point[0]-2,cy:point[1],rx:1,ry:.6,fill:colors[0]}));
+          if (ray > 0 && j > 1 && (j+ray)%4!==0) {
+            var other = rays[ray-1][j-((ray+j)%2)];
+            lattice.push('M '+point.join(' ')+' Q '+(point[0]*.5+other[0]*.5-3)+' '+(point[1]*.5+other[1]*.5+1)+' '+other.join(' '));
+          }
+        }
+        lattice.push('M '+nodes[0].join(' ')+' '+segments.join(' '));
+      });
+    }
+    return h('svg', {viewBox:props.zoom ? plate.detail : '0 0 248 160', preserveAspectRatio:'xMidYMid meet',
+      focusable:'false','aria-hidden':'true',style:{display:'block',width:'100%',height:'auto',aspectRatio:'248 / 160',background:'#153d48',borderRadius:12}},
+      h('defs', null,
+        h('linearGradient',{id:id+'-water',x2:'.3',y2:'1'},h('stop',{stopColor:'#326873'}),h('stop',{offset:1,stopColor:'#102e39'})),
+        h('linearGradient',{id:id+'-skin'},h('stop',{stopColor:colors[0]}),h('stop',{offset:'.36',stopColor:colors[1]}),h('stop',{offset:'.64',stopColor:colors[2]}),h('stop',{offset:1,stopColor:colors[0]})),
+        h('linearGradient',{id:id+'-rock',x1:'0%',y1:'0%',x2:'30%',y2:'100%'},h('stop',{stopColor:'#64746c'}),h('stop',{offset:1,stopColor:'#293e43'})),
+        h('pattern',{id:id+'-grain',width:7,height:9,patternUnits:'userSpaceOnUse'},h('path',{d:'M1 2 l.5 .9 M4.3 6.7 l.6 -.3 M6 1 l-.3 .6',stroke:colors[2],opacity:.6,strokeWidth:.7})),
+        h('g',{id:id+'-branch'},h('path',{d:finger,fill:paint('skin')}),h('path',{d:finger,fill:paint('grain')}),cups,
+          h('ellipse',{cx:0,cy:column?-74:-58,rx:column?4.7:2.4,ry:1.65,fill:colors[0],stroke:colors[2],strokeWidth:1.3}))),
+      h('rect',{width:248,height:160,fill:paint('water')}),
+      h('ellipse',{cx:124,cy:137,rx:101,ry:8,fill:'#0d2d34',opacity:.7}),
+      h('path',{d:net?'M5 121 Q11 105 22 103 L31 85 Q43 75 54 86 L69 101 Q62 119 45 123 Z'
+        :'M22 136 Q29 124 46 123 L61 115 Q79 109 96 112 Q112 100 130 108 Q149 111 170 113 L196 123 Q212 124 215 134 Q181 143 143 140 L100 143 Q55 142 22 136 Z',fill:paint('rock')}),
+      net ? h('g',{fill:'none',strokeLinecap:'round',strokeLinejoin:'round'},
+        h('path',{d:lattice.join(' '),stroke:colors[0],strokeWidth:6.2,transform:'translate(0 1.8)'}),
+        h('path',{d:lattice.join(' '),stroke:colors[1],strokeWidth:5.3}),h('path',{d:lattice.join(' '),stroke:colors[2],strokeWidth:2.6,opacity:.6,transform:'translate(0 -.8)'}),pores)
+        : h('g',null,h('path',{d:'M33 130 Q47 111 77 117 Q108 108 135 112 Q173 108 205 130 Q186 140 143 136 Q72 141 33 130 Z',fill:paint('skin')}),
+          branches.map(function(b,index){return h('use',{key:index,href:'#'+id+'-branch',transform:'translate('+b[0]+' '+b[1]+') rotate('+b[2]+') scale('+b[3]+')'}); })));
+  }
+
+  function AcroporaPlate(props) {
+    var env = props.env, h = env.h, __alloT = env.t, plate = props.plate;
+    var zoom = env.React.useState(false), name = 'Acropora ' + plate.species;
+    var source = acroporaSource(plate.species);
+    var action = zoom[0] ? __alloT('stem.coralreef.st_reset','Reset view') : __alloT('stem.coralreef.st_zoom_in','Zoom in');
+    return h('article',{className:'cr-plate-card','data-acropora-species':plate.species},
+      h('h4',null,h('i',{lang:'la'},name)),
+      h(AcroporaDrawing,{env:env,plate:plate,zoom:zoom[0]}),
+      h('div',{className:'cr-plate-tools'},h('span',null,formNames(__alloT)[plate.form]),
+        h('button',{type:'button','data-plate-zoom':zoom[0]?'detail':'colony',style:btnStyle(env.P,false,{minHeight:44}),
+          'aria-label':env.fill(__alloT('stem.coralreef.dx_action_named','{action}: {name}'),{action:action,name:name}),
+          onClick:function(){zoom[1](!zoom[0]);}},action)),
+      h('dl',null,
+        h('dt',null,__alloT('stem.coralreef.g_marks','Field marks')),
+        h('dd',{lang:'en'},plate.mark),
+        plate.detailMark ? h('dd',{lang:'en'},plate.detailMark) : null,
+        h('dt',null,__alloT('stem.coralreef.dx_habitat','Where it lives')),
+        h('dd',{lang:'en'},plate.habitat)),
+      h('div',{className:'cr-plate-sources'},
+        plate.markSource ? h('a',{href:plate.markSource,target:'_blank',rel:'noopener noreferrer'},plate.species==='clathrata'?'Adapted from '+plate.markCredit:plate.markCredit,' · ',h('i',{lang:'la'},name)) : null,
+        plate.species==='clathrata' ? h('a',{href:'https://creativecommons.org/licenses/by/4.0/',target:'_blank',rel:'noopener noreferrer'},'CC BY 4.0') : null,
+        h('a',{href:source,target:'_blank',rel:'noopener noreferrer'},'Corals of the World · ',h('i',{lang:'la'},name))),
+      h('div',{className:'crdx-actions',style:{marginTop:10}},
+        h('button',{type:'button','data-plate-study':plate.species,style:btnStyle(env.P,false),onClick:function(){props.onStudy('acropora_'+plate.species);}},__alloT('stem.coralreef.rc_open_profile','Species profile')),
+        h('button',{type:'button','data-plate-observe':plate.species,style:btnStyle(env.P,true),onClick:function(){props.onObserve('acropora_'+plate.species);}},__alloT('stem.coralreef.ob_open','Observe on the reef'))));
+  }
+
+  function AcroporaShelf(props) {
+    var env = props.env, h = env.h, __alloT = env.t, state = env.React.useState(!!props.restorePlate);
+    var title = 'Acropora · ' + __alloT('stem.coralreef.dx_practice_workspace_title','Compare the field marks');
+    var cards = h(env.React.Fragment,null,h('p',{className:'cr-plate-caption'},__alloT('stem.coralreef.ex_vision_illustrative','Illustrative view')),
+      h('div',{className:'cr-plate-grid'},props.plates.map(function(plate){return h(AcroporaPlate,{key:plate.species,env:env,plate:plate,onStudy:props.onStudy,onObserve:props.onObserve});})));
+    return h('section',{className:'cr-plate-shelf','data-acropora-shelf':'true','aria-label':title},
+      h('style',null,
+        '[data-coralreef-root] .cr-plate-shelf{margin:16px 0;border:1px solid var(--reef-border);border-radius:16px;background:var(--reef-card);padding:0 clamp(12px,2vw,22px)}'+
+        '[data-coralreef-root] .cr-plate-shelf summary,[data-coralreef-root] .cr-plate-shelf h3{font-size:17px;font-weight:700;padding:13px 0;margin:0;overflow-wrap:anywhere}[data-coralreef-root] .cr-plate-shelf summary{cursor:pointer;min-height:44px}'+
+        '[data-coralreef-root] .cr-plate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr));gap:12px;padding:0 0 16px}'+
+        '[data-coralreef-root] .cr-plate-card{min-width:0;display:flex;flex-direction:column;padding:12px;border-radius:12px;background:var(--reef-alt);color:var(--reef-text)}'+
+        '[data-coralreef-root] .cr-plate-card h4{margin:0 0 10px;font-size:18px}[data-coralreef-root] .cr-plate-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:8px;font-size:14px}'+
+        '[data-coralreef-root] .cr-plate-card dl{margin:0 0 12px}[data-coralreef-root] .cr-plate-card dt{font-weight:bold;margin-top:10px}[data-coralreef-root] .cr-plate-card dd{margin:0}[data-coralreef-root] .cr-plate-caption{font-size:14px;color:var(--reef-muted);margin:0 0 10px}'+
+        '[data-coralreef-root] .cr-plate-sources{display:grid;gap:4px;margin-top:auto}[data-coralreef-root] .cr-plate-card a{color:var(--reef-accent);overflow-wrap:anywhere}'),
+      props.search ? h(env.React.Fragment,null,h('h3',null,title),cards)
+        : h('details',{open:state[0],onToggle:function(e){state[1](e.currentTarget.open);}},h('summary',null,title),state[0] ? cards : null));
+  }
+
   function MarineSpeciesProfile(props) {
     var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, fill = env.fill;
     var meta = speciesMeta(props.id), TX = props.TX || speciesText(__alloT), tx = TX[props.id];
@@ -10958,8 +11250,7 @@
     var related = (meta.lookalikes || []).filter(function (id) { return id !== meta.id && speciesMeta(id); }).slice(0,3);
     var lookalikes = !!related.length;
     if (!related.length) related = SPECIES_META.filter(function (m) { return m.group === meta.group && m.id !== meta.id; }).slice(0,2).map(function (m) { return m.id; });
-    var allSources = sourceList().concat(typeof marineProfileSources === 'function' ? marineProfileSources() : []);
-    var citations = (profile.sources || []).map(function (id) { return allSources.filter(function (s) { return s.id === id; })[0]; }).filter(Boolean);
+    var citations = marineEntrySources(profile);
     var notes = [
       [__alloT('stem.coralreef.dx_habitat', 'Where it lives'), profile.habitat, 'habitat'],
       [__alloT('stem.coralreef.dx_diet', 'What it eats'), profile.diet, 'diet'],
@@ -11015,6 +11306,9 @@
         h('section', {className:'crdx-section'},
           h('h4',null,__alloT('stem.coralreef.dx_life', 'Life on the reef')),
           h('dl',{className:'crdx-grid'},notes.filter(function(note){return !!note[1];}).map(function(note,i){return h('div',{key:i,className:'crdx-note'},h('dt',{'data-profile-reading':note[2],tabIndex:-1},note[0]),h('dd',null,note[1]));}))),
+        meta.id === 'soft_coral' ? h(MarineOctocoralFigure,{env:env}) : null,
+        (meta.id === 'staghorn_coral' || meta.id === 'table_coral') && !props.returnToPractice
+          ? h(AcroporaShelf,{env:env,plates:ACROPORA_PLATES,onStudy:props.onSelect,onObserve:props.onPlateObserve}) : null,
         animalGroupNote ? h('section', { className:'crdx-section', 'data-animal-group':meta.id, 'aria-labelledby':'cr-animal-group-'+meta.id },
           h('h4', { id:'cr-animal-group-'+meta.id, 'data-profile-reading':'animalGroup',tabIndex:-1 }, __alloT('stem.coralreef.ag_heading', 'What kind of animal is this?')),
           h('div', { style:{padding:16,border:'1px solid '+P.border,borderRadius:14,background:P.cardAlt} },
@@ -11037,12 +11331,27 @@
               props.onCompare ? h('button',{type:'button',ref:function(el){relatedCompareButtons.current[id]=el;},'data-compare-with':id,style:btnStyle(P,false),onClick:function(){props.onCompare(id);}},fill(__alloT('stem.coralreef.cx_with','Compare with {name}'),{name:guideShortName(other.name)})) : null));}))) : null,
         citations.length ? h('details',{className:'crdx-sources'},
           h('summary',null,__alloT('stem.coralreef.dx_sources','Sources and further reading')),
-          h('ul',null,citations.map(function(source){return h('li',{key:source.id},source.url?h('a',{href:source.url,target:'_blank',rel:'noopener noreferrer'},source.text):source.text);}))) : null),
+          h('ul',null,citations.map(function(source){return marineEntryCitation(h,source);}))) : null),
       h('nav', { className:'crdx-toolbar', 'data-profile-footer':'true', 'aria-label':__alloT('stem.coralreef.dx_profile_navigation', 'Continue exploring'), style:{marginTop:18,paddingTop:18,borderTop:'1px solid '+P.border} },
         h('button', {type:'button','data-profile-footer-back':'true',style:btnStyle(P,false),onClick:function(){props.onClose(true);}}, props.returnToPractice ? __alloT('stem.coralreef.dx_back_practice', 'Back to practice') : __alloT('stem.coralreef.dx_back_guide', 'Back to the field guide')),
         navigation.length > 1 ? h('div', {className:'crdx-actions'},
           h('button', {type:'button','data-profile-footer-previous':'true',style:btnStyle(P,false),'aria-label':fill(__alloT('stem.coralreef.dx_previous_label', 'Previous entry: {name}'),{name:TX[previous.id].name}),onClick:function(){props.onSelect(previous.id);}},__alloT('stem.coralreef.dx_previous', 'Previous')),
           h('button', {type:'button','data-profile-footer-next':'true',style:btnStyle(P,false),'aria-label':fill(__alloT('stem.coralreef.dx_next_label', 'Next entry: {name}'),{name:TX[next.id].name}),onClick:function(){props.onSelect(next.id);}},__alloT('stem.coralreef.dx_next', 'Next'))) : null));
+  }
+
+  function MarineOctocoralFigure(props) {
+    var env=props.env,h=env.h,P=env.P,__alloT=env.t;
+    return h('figure',{'data-octocoral-diagram':'true',style:{margin:'20px 0 0',padding:18,border:'1px solid '+P.border,borderRadius:16,background:P.cardAlt}},
+      h('style',null,'@media(forced-colors:active){[data-octocoral-diagram] svg path{stroke:CanvasText}[data-octocoral-diagram] svg text{fill:CanvasText}[data-octocoral-diagram] svg circle{fill:Canvas;stroke:CanvasText}[data-octocoral-diagram] svg circle:last-child{fill:CanvasText}}'),
+      h('figcaption',{style:{fontWeight:700,color:P.text}},__alloT('stem.coralreef.dx_soft_polyp_title','One soft-coral polyp')),
+      h('svg',{viewBox:'0 0 320 300',role:'img',focusable:'false','aria-label':__alloT('stem.coralreef.dx_soft_polyp_aria','Schematic of one octocoral polyp: eight numbered tentacles, each with small side branches, surround the central mouth.'),style:{display:'block',width:'100%',maxWidth:380,margin:'8px auto'}},
+        Array.from({length:8},function(_,i){return h('g',{key:i,transform:'translate(160 150) rotate('+(i*45)+')','data-polyp-tentacle':String(i+1)},
+          h('path',{d:'M0 -22 C-4 -48 4 -78 0 -104',fill:'none',stroke:P.accent,strokeWidth:3,strokeLinecap:'round'}),
+          [0,1,2,3].flatMap(function(j){var y=-40-j*17,width=15-j*2;return [-1,1].map(function(side){return h('path',{key:j+':'+side,'data-polyp-pinnule':'true',d:'M0 '+y+' Q'+(side*width*.7)+' '+(y-2)+' '+(side*width)+' '+(y-10),fill:'none',stroke:P.accent,strokeWidth:2,strokeLinecap:'round'});});}),
+          h('text',{x:0,y:-119,textAnchor:'middle',fontSize:16,fontWeight:700,fill:P.text,transform:'rotate('+(-i*45)+' 0 -124)'},String(i+1)));}),
+        h('circle',{cx:160,cy:150,r:23,fill:P.card,stroke:P.accent,strokeWidth:2}),
+        h('circle',{cx:160,cy:150,r:5,fill:P.text})),
+      h('p',{style:{margin:'4px 0 0',lineHeight:1.6,color:P.text}},__alloT('stem.coralreef.dx_soft_polyp_caption','Eight tentacles surround the mouth. Their small side branches are called pinnules. This enlarged schematic shows one polyp, not the entire colony, and is not to scale.')));
   }
 
   function marineComparisonPair(firstId, secondId) {
@@ -11176,8 +11485,9 @@
     var name = typeof tx.name === 'string' ? tx.name : '';
     var scientific = typeof meta.scientific === 'string' ? meta.scientific : '';
     var id = typeof meta.id === 'string' ? meta.id : '';
-    if (mode !== 'description') return guideMatch(q, { name: name }, { scientific: scientific, id: id });
-    var text = [name, scientific, id.replace(/_/g, ' '), typeof meta.group === 'string' ? meta.group : ''];
+    var aliases=Array.isArray(meta.scientificAliases)?meta.scientificAliases.filter(function(v){return typeof v==='string';}).join(' '):'';
+    if (mode !== 'description') return guideMatch(q, { name: name }, { scientific: scientific+' '+aliases, id: id });
+    var text = [name,scientific,aliases,id.replace(/_/g,' '),typeof meta.group==='string'?meta.group:''];
     if (Array.isArray(tx.marks)) tx.marks.forEach(function (mark) { if (typeof mark === 'string') text.push(mark); });
     if (typeof tx.role === 'string') text.push(tx.role);
     if (typeof tx.fact === 'string') text.push(tx.fact);
@@ -11204,6 +11514,7 @@
     var identity = guideKey([
       typeof tx.name === 'string' ? tx.name : '',
       typeof meta.scientific === 'string' ? meta.scientific : '',
+      Array.isArray(meta.scientificAliases)?meta.scientificAliases.filter(function(v){return typeof v==='string';}).join(' '):'',
       typeof meta.id === 'string' ? meta.id.replace(/_/g, ' ') : '',
       typeof meta.group === 'string' ? meta.group : ''
     ].join(' '));
@@ -11327,6 +11638,7 @@
     var connectionHeading = React.useRef(null), connectionButtons = React.useRef({}), connectionReturn = React.useRef(returnedVisit ? returnedVisit.connectionReturn : null);
     var profileButtons = React.useRef({}), enteredProfile = React.useRef(returnedVisit ? returnedVisit.enteredProfile : null), profileSelection = React.useRef(returnedVisit ? returnedVisit.profileSelection : null);
     var matchButtons = React.useRef({}), enteredMatch = React.useRef(returnedVisit ? returnedVisit.enteredMatch : null);
+    var enteredPlate = React.useRef(returnedVisit ? returnedVisit.enteredPlate : null);
     var reading = React.useState(returnedVisit ? returnedVisit.readingSection : null), readingSection = reading[0], setReadingSection = reading[1];
     var ideas = React.useState(!!(returnedVisit && returnedVisit.ideasOpen)), ideasOpen = ideas[0], setIdeasOpen = ideas[1];
     var preparationState = React.useState(false), preparationProfile = preparationState[0], setPreparationProfile = preparationState[1];
@@ -11334,6 +11646,7 @@
       if (!speciesMeta(id)) return;
       setReadingSection(matchField ? {id:id,field:matchField} : null);
       if (!profileId) {
+        enteredPlate.current = null;
         enteredMatch.current = matchField ? {id:id,field:matchField,key:matchKey || matchField} : null;
         if (!comparison) connectionReturn.current = connectionOrigin || null;
         // Only an explicit study-card visit unlocks 3D preparation during practice.
@@ -11365,7 +11678,8 @@
       var id = enteredProfile.current || profileId; setComparison(null); setComparisonFocus(null); env.set({ guideSpeciesId: null });
       if (!practice && connectionReturn.current) {
         setConnectionsOpen(true); setTarget({connection:connectionReturn.current}); connectionReturn.current=null;
-      } else if (!practice && enteredMatch.current) { setTarget({match:enteredMatch.current}); enteredMatch.current=null; }
+      } else if (!practice && enteredPlate.current) { setTarget({plate:enteredPlate.current}); enteredPlate.current=null; }
+      else if (!practice && enteredMatch.current) { setTarget({match:enteredMatch.current}); enteredMatch.current=null; }
       else if (!practice) setTarget({ id: id, button: true, fallback: true });
       else if (revealPractice === true && !preparationProfile) setTarget({ practice: true });
     }
@@ -11377,14 +11691,21 @@
       connectionReturn.current={id:link.id,action:'compare'};
       setComparisonFocus(null);setComparison({owner:null,pair:link.species.slice(),origin:'connections'});
     }
-    function observeProfile(id) {
+    function openPlate(id, action) {
+      if (practice || !ACROPORA_PLATES.some(function(p){return 'acropora_'+p.species===id;})) return;
+      openProfile(id);
+      if (!profileId) enteredPlate.current = {species:id.slice('acropora_'.length),action:action};
+      if (action === 'observe') observeProfile(id,true);
+    }
+    function observeProfile(id, fromPlate) {
       var meta = speciesMeta(id);
-      if (practice || !meta || meta.group === 'structure' || id !== profileId) return;
+      if (practice || !meta || meta.group === 'structure' || (!fromPlate && id !== profileId)) return;
       if (env.guideObservation) env.guideObservation.current = { speciesId:id, returning:false, visit:{
         query:query, role:role, connectionsOpen:connectionsOpen, ideasOpen:ideasOpen,
         enteredProfile:enteredProfile.current, profileSelection:profileSelection.current ? profileSelection.current.slice() : null,
+        enteredPlate:enteredPlate.current,
         enteredMatch:enteredMatch.current ? Object.assign({},enteredMatch.current) : null,
-        readingSection:readingSection ? Object.assign({},readingSection) : null,
+        readingSection:!fromPlate && readingSection ? Object.assign({},readingSection) : null,
         connectionReturn:connectionReturn.current ? Object.assign({},connectionReturn.current) : null
       } };
       env.set({diveStudySpeciesId:id}); env.go('explore', true);
@@ -11426,9 +11747,19 @@
     var shown = collection.filter(function(m){return group === 'all' || m.group === group;});
     var roleShown = activeRole ? shown.filter(function (m) { return activeRole.ids.indexOf(m.id) >= 0; }) : shown;
     var list = q ? roleShown.filter(function(m){return marineGuideSearch(q, TX[m.id], m, profiles[m.id], mode, learningContext[m.id]);}) : roleShown;
+    var plateForms = formNames(__alloT);
+    var plateMatches = filter === 'all' && (group === 'all' || group === 'coral') && !activeRole
+      ? ACROPORA_PLATES.filter(function(plate){
+        return marineGuideSearch(q, {marks:[plate.mark,plate.detailMark,plateForms[plate.form]]},
+          {id:plate.species,scientific:'Acropora '+plate.species,group:'coral'}, {habitat:plate.habitat}, mode);
+      }) : [];
     var foundCount = SPECIES_META.filter(function (m) { return m.group !== 'structure' && log[m.id]; }).length;
     var total = SPECIES_META.filter(function (m) { return m.group !== 'structure'; }).length;
     var countText = list.length || !q ? __alloFill(__alloT('stem.coralreef.g_search_count', 'Showing {n} of {total}.'), { n: list.length, total: collection.length }) : mode === 'description' ? __alloT('stem.coralreef.ds_search_none', 'No entries match those search words.') : __alloT('stem.coralreef.g_search_none', 'No species match that name.');
+    if (q && plateMatches.length) {
+      var plateCount = __alloFill(__alloT('stem.coralreef.g_search_count', 'Showing {n} of {total}.'), {n:plateMatches.length,total:ACROPORA_PLATES.length});
+      countText = (list.length ? countText+' ' : '') + 'Acropora · ' + plateCount;
+    }
     var evidenceLabels = {marks:__alloT('stem.coralreef.g_marks','Field marks'),role:__alloT('stem.coralreef.ds_role','Reef role'),habitat:__alloT('stem.coralreef.dx_habitat','Where it lives'),diet:__alloT('stem.coralreef.dx_diet','What it eats'),behavior:__alloT('stem.coralreef.dx_behavior','How it behaves'),observe:__alloT('stem.coralreef.dx_observe','Look closely'),fact:__alloT('stem.coralreef.dx_deeper','A little deeper'),animalGroup:__alloT('stem.coralreef.ag_heading','What kind of animal is this?'),connection:__alloT('stem.coralreef.rc_title','Reef connections')};
     // Keep results quiet on the initial default view. Later changes, including
     // clearing a filter or editing a saved collection, announce after typing
@@ -11448,6 +11779,12 @@
     // Scroll a jumped-to group or card into view once it has rendered, and move focus to its name.
     React.useEffect(function () {
       if (!target) return;
+      if (target.plate) {
+        if (profileId || comparison || practice || !searchEl.current) return;
+        var guide = searchEl.current && searchEl.current.closest('.cr-guide');
+        var button = guide && guide.querySelector('[data-plate-'+target.plate.action+'="'+target.plate.species+'"]');
+        guideReveal(button || searchEl.current,button || searchEl.current,reduce);setTarget(null);return;
+      }
       if (target.match) {
         if (profileId || comparison || practice) return;
         var matchButton=matchButtons.current[target.match.id+':'+target.match.key] || profileButtons.current[target.match.id] || searchEl.current;
@@ -11499,7 +11836,7 @@
     var practiceView = practice ? h('div', { ref: practiceContainer, hidden: !!profileId || !!comparison }, h(MarinePractice, { env: env, TX: TX, selectionIds: practiceSelection.current, pairIds: practicePair.current, active: !profileId && !comparison, onStudy: openProfile, onBrowse:function(){env.set({guideFilter:'all',guideGroupFilter:'all'});setQuery('');setRole('all');setPractice(false);setTarget({search:true,fallback:true});}, onClose: function () { setPractice(false); setTarget({ search: true, fallback: true }); } })) : null;
     if (profileId || practice || comparison) return h('div', { className: 'cr-guide' }, practiceView,
       comparison ? h(MarineSpeciesComparison, {env:env, TX:TX, pair:comparison.pair, fromConnections:comparison.owner===null, onClose:closeComparison, onStudy:openProfile, onPractice:practice ? null : startPairPractice, onChange:function(pair){setComparison(Object.assign({},comparison,{pair:pair}));}})
-        : profileId ? h(MarineSpeciesProfile, { env: env, id: profileId, TX: TX, onClose: closeProfile, onSelect: openProfile, onObserve:practice ? null : observeProfile, returnToPractice: practice, allowSpecimen3D: !practice || preparationProfile, navigationIds: practice ? null : profileSelection.current, onPractice: practice ? null : startPractice, onCompare:openComparison, focusComparison:comparisonFocus, focusSection:readingSection && readingSection.id===profileId ? readingSection.field : null }) : null);
+        : profileId ? h(MarineSpeciesProfile, { env: env, id: profileId, TX: TX, onClose: closeProfile, onSelect: openProfile, onObserve:practice ? null : observeProfile, onPlateObserve:function(id){openPlate(id,'observe');}, returnToPractice: practice, allowSpecimen3D: !practice || preparationProfile, navigationIds: practice ? null : profileSelection.current, onPractice: practice ? null : startPractice, onCompare:openComparison, focusComparison:comparisonFocus, focusSection:readingSection && readingSection.id===profileId ? readingSection.field : null }) : null);
     return h('div', {className:'cr-guide crds-guide','data-guide-compact':compact?'true':undefined},
       h('style',null,LANE_CSS_C + MARINE_DISCOVERY_CSS),
       h('section', { className:'crdx-hero' },
@@ -11566,6 +11903,8 @@
           h('div', null,
             q ? h('button',{type:'button',style:btnStyle(P,false),onClick:clearSearch},__alloT('stem.coralreef.g_search_clear','Clear search')) : null,
             q || filter !== 'all' || group !== 'all' || activeRole ? h('button',{type:'button','data-guide-reset':'true',style:btnStyle(P,false),onClick:resetGuide},__alloT('stem.coralreef.ds_reset','Reset guide filters')) : null))),
+      plateMatches.length ? h(AcroporaShelf,{env:env,plates:plateMatches,search:!!q,restorePlate:target && target.plate,
+        onStudy:function(id){openPlate(id,'study');},onObserve:function(id){openPlate(id,'observe');}}) : null,
       // Group links wrap in narrow hosts without covering the destination heading.
       h('nav', { className: 'cr-guide-jump', 'aria-label': __alloT('stem.coralreef.g_jump_label', 'Jump to a group'), style: { background: P.bg, borderBottom: '1px solid ' + P.border } },
         h('button', { type: 'button', style: btnStyle(P, false, { justifyContent: 'center' }), onClick: function () { guideReveal(searchEl.current, searchEl.current, reduce); } }, __alloT('stem.coralreef.g_jump_search', 'Back to search')),
@@ -11586,7 +11925,7 @@
         h('h3', { id: uid + '-role-empty-title', style: h3Style(P) }, __alloT('stem.coralreef.dr_empty_title', 'No featured examples in this selection.')),
         h('p', { style: mutedStyle(P) }, __alloT('stem.coralreef.dr_empty', 'Try another reef role, or show all roles while keeping your collection, group and search.')),
         h('button', { type: 'button', 'data-guide-clear-role': 'true', style: btnStyle(P, false), onClick: clearRole }, __alloT('stem.coralreef.dr_show_all', 'Show all reef roles'))) : null,
-      roleShown.length && !list.length ? h('section', { style: cardStyle(P) },
+      roleShown.length && !list.length && !plateMatches.length ? h('section', { style: cardStyle(P) },
         h('p', { style: { margin: '0 0 10px', fontWeight: 600 } }, __alloFill(mode === 'description' ? __alloT('stem.coralreef.ds_search_empty','Nothing here matches "{q}". Try one feature, food, or habitat, or choose another group.') : __alloT('stem.coralreef.g_search_empty', 'Nothing here matches "{q}". Try part of a name, like "parrot" or "Acropora".'), { q: query.trim() })),
         h('button', { type: 'button', style: btnStyle(P, false), onClick: clearSearch }, __alloT('stem.coralreef.g_search_clear', 'Clear search'))) : null,
       SPECIES_GROUPS.map(function (g) {
@@ -11642,7 +11981,8 @@
     return s.replace(GUIDE_STRIP, '').replace(/\s+/g, ' ').trim();
   }
   function guideMatch(q, tx, meta) {
-    var hay = guideKey((tx && tx.name) || '') + ' ' + guideKey(meta.scientific || '') + ' ' + meta.id.replace(/_/g, ' ');
+    var aliases=Array.isArray(meta.scientificAliases)?meta.scientificAliases.filter(function(v){return typeof v==='string';}).join(' '):'';
+    var hay=guideKey((tx&&tx.name)||'')+' '+guideKey(meta.scientific||'')+' '+guideKey(aliases)+' '+meta.id.replace(/_/g,' ');
     return q.split(' ').every(function (w) { return hay.indexOf(w) >= 0; });
   }
   // "Bumphead parrotfish (green humphead parrotfish)" -> "Bumphead parrotfish" for a chip.
@@ -11712,6 +12052,7 @@
   });
 
   if (window.__RR_TEST_EXPORTS__) window.__RR_TEST_EXPORTS__.coralReef = {
+    marineEntrySources: marineEntrySources,
     constants: { TRANSECT_M: TRANSECT_M, POINT_SPACING_M: POINT_SPACING_M, POINT_COUNT: POINT_COUNT, BELT_HALF_WIDTH_M: BELT_HALF_WIDTH_M, BELT_AREA_M2: BELT_AREA_M2, FISH_IN_MAX_M: FISH_IN_MAX_M, FISH_OUT_MIN_M: FISH_OUT_MIN_M },
     CATEGORY_IDS: CATEGORY_IDS, CATEGORY_CODE: CATEGORY_CODE, CORAL_FORMS: CORAL_FORMS, FISH_FAMILIES: FISH_FAMILIES, SITES: SITES, SCENARIOS: SCENARIOS, MODEL_PARAMS: MODEL_PARAMS,
     mulberry32: mulberry32, buildTransect: buildTransect, pointFeatures: pointFeatures, PATCHINESS: PATCHINESS,

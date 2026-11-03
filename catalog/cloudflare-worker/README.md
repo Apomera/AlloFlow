@@ -1,133 +1,81 @@
 # AlloFlow Catalog Submission Worker
 
-A small Cloudflare Worker that accepts lesson submissions from the in-canvas form, validates them, runs a server-side PII rescan, and commits each one to `catalog/pending/<timestamp>-<slug>.json` in this repo via the GitHub API.
+Community lessons, translation corrections and practice-item corrections are staged
+in **private `COMMUNITY_SUBMISSIONS` KV**, with a 30-day expiration. They are never
+committed to GitHub by this Worker. A maintainer reviews the private record and
+publishes a separately reviewed copy through the existing publication workflow.
+The PII scanner records only finding types/counts; it is not a de-identification guarantee.
 
-The Worker holds the GitHub token as a Cloudflare secret. Clients (the Canvas form) only see the public Worker URL; they never see the token.
+## Required configuration before release
 
-## One-time setup
+This source change is local. No namespace, secret, live binding, deployment or old
+record was changed by the security repair. An authorized operator must choose an
+institution-owned private KV namespace for `COMMUNITY_SUBMISSIONS` and a separate
+KV namespace for `SUBMIT_RATE`, then record their real IDs in the corresponding
+commented blocks in `wrangler.toml`. Do not use a public repository or a public
+object bucket as the pending queue. Do not reuse the other submission namespaces.
 
-### 1. Create a free Cloudflare account
-- Go to https://dash.cloudflare.com/sign-up
-- No credit card needed for the Workers free tier (100K requests/day).
+All six public intake routes require `SUBMIT_RATE`: `/submit`,
+`/submitTranslation`, `/submitItemCorrection`, `/submitBug`, `/submitPd`, and
+`/submitPlugin`. An absent binding or failed rate-store read/write returns 503
+before a submission write. The optional self-paced credential signer uses the same
+guard; the separately authenticated institutional signer retains its own controls.
+Lesson/correction intake additionally refuses missing `COMMUNITY_SUBMISSIONS`.
+Keep existing BUG_REPORTS, PD_SUBMISSIONS and PLUGIN_SUBMISSIONS bindings intact.
 
-### 2. Install the Wrangler CLI
+`GITHUB_PAT` and the GITHUB_* variables are no longer used by this Worker. Once the
+operator verifies the new release and confirms no other integration uses the old
+token, revoke/remove it through the authorized credential process. This change
+does not revoke credentials or remove old public Git history.
 
-```
-npm install -g wrangler
-```
+## Client/server release compatibility
 
-### 3. Authenticate
+Updated lesson/correction clients use `/v2/submit`, `/v2/submitTranslation` and
+`/v2/submitItemCorrection`. The new Worker accepts these and the legacy names,
+with the same private handling. An older Worker refuses the `/v2/` routes instead
+of silently using its historical public-Git intake. Release the verified Worker
+and clients together. A successful community response includes `id`,
+`storage: "private"`, `review_status: "pending_review"` and `expires_at`.
+Failure leaves the correction draft in its form; there is no automatic Google
+Forms fallback. A lost response can mean storage succeeded without confirmation.
 
-```
-wrangler login
-```
+## Protection and retention
 
-Opens a browser window. Authorize Wrangler with your Cloudflare account.
+The shared per-client default is 3 requests/minute and 20/day. Operators may set
+`SUBMIT_RATE_PER_MINUTE` and `SUBMIT_RATE_PER_DAY` for expected school/NAT traffic.
+KV read-modify-write counters and dedupe are approximate across concurrent edges;
+they are not an atomic global quota. Use an appropriate edge rule or serialized
+rate service for stronger distributed guarantees before opening high-volume intake.
+Failures are closed, and spoofable X-Forwarded-For is not used as the client key.
 
-### 4. Create a fine-grained GitHub Personal Access Token
+When `TURNSTILE_SECRET` is configured, every public intake route requires a verified
+challenge in `X-Turnstile-Token` or the top-level `turnstile_token` field. The field
+is removed before domain validation, hashing and storage. The current built-in
+forms do not render a challenge widget; do not enable this optional secret until
+the authorized widget/client flow is implemented and tested. A configured but
+unavailable verifier refuses the request. CORS includes the challenge header.
 
-- Go to https://github.com/settings/personal-access-tokens
-- Click **Generate new token** → **Fine-grained token**
-- **Resource owner**: your account (Apomera)
-- **Repository access**: Only select repositories → `Apomera/AlloFlow`
-- **Repository permissions**:
-  - Contents: **Read and write**
-  - Metadata: **Read-only** (auto)
-- **Expiration**: 90 days (set a calendar reminder to rotate)
-- Click **Generate token**, then copy it once. You will not see it again.
+Community records expire after 30 days and include `expires_at`; queue metadata
+contains kind, time and the presence of scanner findings, not submitted text.
+There is no public HTTP queue reader. Authorized operators can review the private
+namespace with their existing Cloudflare administrative tooling. Remove sensitive
+details before exporting a reviewed copy into the existing lesson, translation or
+item-correction publication workflow. Exports, approved public copies, backups and
+platform logs have separate retention; the TTL does not delete them or older Git
+history. Bug-report TTL remains 30 days. Existing PD/plugin retention is unchanged.
 
-### 5. Store the token as a Worker secret
+## Local validation
 
-From this directory (`catalog/cloudflare-worker/`):
+`node smoke_test.mjs` runs synthetic mocked-KV/fetch checks without network access.
+From the repository root, run the dedicated security suite and relevant existing
+bug-report, PD and plugin tests. Do not validate intake by posting to the public
+Worker or using real student information. Provisioning, live configuration and
+publication require the owner's separate authorization.
 
-```
-wrangler secret put GITHUB_PAT
-```
+## Other submission types
 
-Paste the token when prompted. The token is encrypted at rest in Cloudflare and is only injected into the Worker at runtime.
-
-### 6. Deploy
-
-```
-wrangler deploy
-```
-
-Wrangler will print the public URL of your Worker, e.g.:
-
-```
-https://alloflow-catalog-submit.<your-cf-subdomain>.workers.dev
-```
-
-Copy this URL. You will paste it into one constant in the AlloFlow main app code (the `WORKER_SUBMIT_URL` near the in-canvas Submit view).
-
-### 7. Smoke-test
-
-```
-curl https://alloflow-catalog-submit.<your-cf-subdomain>.workers.dev/healthz
-```
-
-Should return `{"ok":true}`.
-
-Then a fake-submission test:
-
-```
-curl -X POST https://alloflow-catalog-submit.<your-cf-subdomain>.workers.dev/submit \
-  -H "Content-Type: application/json" \
-  -d '{
-    "lesson_payload": {"title":"Test","content":"hello"},
-    "metadata": {"title":"Test","subject":"Other","grade_level":"K"},
-    "affirmations": {
-      "author_or_authorized": true,
-      "no_pii": true,
-      "license_agreed": true,
-      "age_eligible": true
-    }
-  }'
-```
-
-Should return `{"ok":true,"slug":"test","filename":"<ts>-test.json","pii_findings_count":0}` and you should see a new file appear in `catalog/pending/` on GitHub within a few seconds.
-
-## Local development
-
-```
-wrangler dev
-```
-
-Runs the Worker on http://localhost:8787. Note that you still need the secret set (Wrangler uses the same secret in dev). The Worker will commit to the real GitHub repo unless you change `wrangler.toml` to point at a fork.
-
-## Updating
-
-After editing `src/index.js`, redeploy:
-
-```
-wrangler deploy
-```
-
-## Rotating the GitHub token
-
-Every 90 days when the token expires:
-
-1. Generate a new fine-grained PAT (same scope as before)
-2. `wrangler secret put GITHUB_PAT` and paste the new token
-3. Worker picks up the new secret on the next request; no redeploy needed
-
-## Security notes
-
-- The Worker is rate-limited only by Cloudflare's default Worker limits. If abuse appears, add Cloudflare WAF rules or KV-based rate limiting in the handler.
-- The Worker writes to `catalog/pending/`. The PAT cannot push directly to a branch protection rule; consider adding branch protection on `main` for additional safety.
-- Lesson and translation submissions enter public Git history, including pending records. Keep PII out of those routes. Bug, PD-module, and plugin submissions use their private KV namespaces and must follow the corresponding retention and access controls below.
-- The Worker does not implement spam protection beyond size + schema validation. If submission volume warrants, add Cloudflare Turnstile to the form and verify the token in the Worker.
-
-## Additional submission types (same Worker)
-
-This Worker also serves two other intake routes that reuse the same `GITHUB_PAT` secret / PII
-scanner / CORS. Re-deploy after pulling (`wrangler deploy`).
-
-### `POST /submitTranslation` → GitHub (public)
-Community translation corrections. Validates `{language, suggested, key?, current?, english?, note?}`,
-PII-rescans, commits one record to `translations/pending/<ts>-<lang>-<keyslug>.json`. Low-PII (UI
-string suggestions), so public-repo storage is acceptable — same as lessons. Maintainer applies via
-`node dev-tools/i18n/ingest_translation_feedback.cjs --apply`. No extra setup beyond the existing PAT.
+The following route-specific setup is additional to the required shared
+`SUBMIT_RATE` binding above. These descriptions do not certify deployed state.
 
 ### `POST /submitBug` → Cloudflare KV (PRIVATE)
 Bug reports from the in-app error reporter. Validates `{what|steps, type?, browser?, url?}`, PII-rescans,

@@ -92,7 +92,8 @@
     "about 1.67 times"
   ],
   "stem_tool_heatlab.js": [
-    "about 25 times"
+    "about 25 times",
+    "about 400 times"
   ],
   "stem_tool_migration.js": [
     "10x more"
@@ -156,6 +157,9 @@
     "about 3.5 times",
     "about 7.8 times",
     "about 887 times"
+  ],
+  "stem_tool_skatelab.js": [
+    "about 6 times"
   ],
   "stem_tool_solarsystem.js": [
     "1.4x larger",

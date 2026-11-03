@@ -3,7 +3,7 @@ import fs from 'node:fs';import {createRequire} from 'node:module';
 const {validateEditionPair}=createRequire(import.meta.url)('../dev-tools/lib/allopack_edition_consistency.cjs');
 const read=f=>JSON.parse(fs.readFileSync(f,'utf8').replace(/^\uFEFF/,''));
 describe('Illustrated editions retain source activities and resolvable references',()=>{
- for(const file of fs.readdirSync('allopacks/illustrated').filter(f=>f.endsWith('.allopack.json')))it(file,()=>{expect(validateEditionPair(read('allopacks/'+file),read('allopacks/illustrated/'+file))).toEqual([]);});
+ for(const file of fs.readdirSync('allopacks/illustrated').filter(f=>f.endsWith('.allopack.json')))it(file,()=>{expect(validateEditionPair(read('allopacks/'+file),read('allopacks/current/'+file))).toEqual([]);});
  const source={history:[{id:'r',type:'simplified',data:'Read'},{id:'m',type:'memory-aid',data:{lessonRef:{resourceId:'r'}}}]};
  it('rejects a missing activity even when the remaining pack looks valid',()=>{expect(validateEditionPair(source,{history:[source.history[0]]})).toContain('Missing source resource: m');});
  it('rejects a changed activity type',()=>{const p=structuredClone(source);p.history[1].type='quiz';expect(validateEditionPair(source,p).join(' ')).toContain('Changed source resource type: m');});

@@ -15,5 +15,13 @@ describe('Dino Lab anatomy callouts',()=>{
  it('finds a reserved-space-safe callout for a selected anchor near the readouts',()=>{const out=layout([{id:'knee',x:180,y:74}],390,520,100,132,'knee');expect(out).toHaveLength(1);expect(out[0].anchorY).toBe(74);check(out,390,520,100,132);});
  it('does not invent positions for a selected landmark outside the canvas',()=>{expect(layout([{id:'knee',x:-25,y:200}],390,520,82,132,'knee')).toEqual([]);expect(layout(points,90,150,80,80,'head')).toEqual([]);});
  it('offers every body part through a labeled selector and explains its camera behavior',()=>{const data=baseData('field3d');data.field3dLabelMode='anatomy';const html=renderTab(data);expect(html).toContain('for="dinolab-part-picker"');expect(html).toContain('value="ankle"');expect(html).toContain('value="thigh"');expect(html).toContain('Tap a label on the model');expect(html).toContain('data-dino-part-ring="knee"');expect(html).toContain('aria-describedby="dinolab-part-explanation"');});
+ it('uses clear space below a crowded phone model for a tall selected scientific callout',()=>{
+  const crowded=[{id:'wing',x:143,y:166,width:144,height:68},{id:'head',x:80,y:110},{id:'neck',x:210,y:110},{id:'trunk',x:160,y:150},{id:'ankle',x:115,y:240},{id:'foot',x:175,y:240}];
+  const original=JSON.stringify(crowded),out=layout(crowded,286,340,74,18,'wing'),selected=out.find(item=>item.selected);
+  expect(selected).toBeDefined();expect(selected.anchorX).toBe(143);expect(selected.anchorY).toBe(166);
+  expect(selected.y).toBeGreaterThan(Math.max(...crowded.map(point=>point.y)));check(out,286,340,74,18);
+  for(const rect of out)for(const point of crowded)expect(point.x>rect.x&&point.x<rect.x+rect.width&&point.y>rect.y&&point.y<rect.y+rect.height).toBe(false);
+  expect(JSON.stringify(crowded)).toBe(original);
+ });
 
 });

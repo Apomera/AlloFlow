@@ -2,12 +2,31 @@
 (function (root) {
   'use strict';
   function createWordPracticeCore() {
-    const LIMITS = Object.freeze({ words: 200, wordLength: 120, instructionChars: 12000, totalInstructionChars: 512 * 1024, audioChars: 4 * 1024 * 1024, totalAudioChars: 24 * 1024 * 1024, pictureChars: 6 * 1024 * 1024, totalPictureChars: 20 * 1024 * 1024 });
+    const LIMITS = Object.freeze({ setFileBytes: 32 * 1024 * 1024, words: 200, wordLength: 120, translationLanguages: 256, instructionChars: 12000, totalInstructionChars: 512 * 1024, audioChars: 4 * 1024 * 1024, totalAudioChars: 24 * 1024 * 1024, pictureChars: 6 * 1024 * 1024, totalPictureChars: 20 * 1024 * 1024 });
     const own = (obj, key) => obj && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
     const text = (value, max = 2000) => typeof value === 'string' ? value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max) : '';
     const key = value => text(value).normalize('NFC').toLocaleLowerCase().replace(/\s+/g, ' ');
     const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
     const safeJson = value => JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    // Word origin for a glossary entry: its etymology (in the definition's language when
+    // saved per language) and its roots with their meanings. A saved set keeps origin as is.
+    function originFor(record, word, language) {
+      const byLanguage = record.etymologyByLang && typeof record.etymologyByLang === 'object' ? record.etymologyByLang : null;
+      const passages = byLanguage ? Object.entries(byLanguage).filter(([name, prose]) => name.trim() && typeof prose === 'string' && prose.trim()) : [];
+      const savedLanguage = text(record.originLanguage, 80);
+      if (typeof record.origin === 'string' && record.origin.trim()) {
+        const original = passages.find(([, prose]) => prose.trim() === record.origin.trim());
+        return { text: instructionText(record.origin, 'word origin', word), language: savedLanguage || text(original ? original[0] : language, 80) };
+      }
+      const preferred = passages.find(([name]) => name === language)
+        || passages.find(([name]) => translationLanguageKey(name) === translationLanguageKey(language));
+      let prose = preferred ? preferred[1] : (typeof record.etymology === 'string' ? record.etymology : '');
+      prose = prose.trim() === 'NONE' ? '' : prose.trim();
+      const original = preferred || passages.find(([, value]) => value.trim() === prose);
+      const roots = (Array.isArray(record.roots) ? record.roots : []).filter(root => root && typeof root.root === 'string' && root.root.trim())
+        .map(root => root.root.trim() + (typeof root.meaning === 'string' && root.meaning.trim() ? ' (' + root.meaning.trim() + ')' : ''));
+      return { text: instructionText([prose, roots.join(', ')].filter(Boolean).join(' · '), 'word origin', word), language: text(original ? original[0] : savedLanguage || language, 80) };
+    }
     function instructionText(value, field, word) {
       const clean = text(value, LIMITS.instructionChars + 1);
       if (clean.length > LIMITS.instructionChars) throw new Error('The ' + field + ' for “' + text(word, LIMITS.wordLength) + '” must be 12,000 characters or fewer. Shorten the field or split it into separate practice items.');
@@ -67,6 +86,34 @@
         return label ? { text: label, language: languageInfo(names.resolvedOptions().locale) } : fallback;
       } catch (_) { return fallback; }
     }
+    function translationLanguageKey(value) {
+      const label = text(value, 80);
+      return (languageInfo(label).tag || key(label)).toLowerCase();
+    }
+    function normalizeTranslationLanguages(value) {
+      if (!Array.isArray(value)) return null;
+      const selected = [], seen = new Set();
+      for (const language of value) {
+        if (typeof language !== 'string') continue;
+        const identity = translationLanguageKey(language);
+        if (!seen.has(identity)) { selected.push(identity); seen.add(identity); }
+        if (selected.length >= LIMITS.translationLanguages) break;
+      }
+      return value.length && !selected.length ? null : selected;
+    }
+    // Selection changes the teaching view, never the saved translation text.
+    function visibleTranslations(item, options) {
+      const translations = Array.isArray(item && item.translations) ? item.translations : [];
+      const selected = normalizeTranslationLanguages(options && options.translationLanguages);
+      if (selected === null) return translations.slice();
+      const groups = new Map();
+      translations.forEach(translation => {
+        const identity = translationLanguageKey(translation.language);
+        if (!groups.has(identity)) groups.set(identity, []);
+        groups.get(identity).push(translation);
+      });
+      return selected.flatMap(identity => groups.get(identity) || []);
+    }
     // Recording identity follows the originating Word Sounds defaults. This is
     // deliberately separate from the shorter HTML language-of-parts tag.
     const audioLanguageNames = {english:'en-US',spanish:'es-ES','spanish (latin america)':'es-419','spanish (castilian)':'es-ES',french:'fr-FR','french (canadian)':'fr-CA',german:'de-DE',portuguese:'pt-BR','portuguese (brazil)':'pt-BR','portuguese (angola)':'pt-AO','portuguese (portugal)':'pt-PT',mandarin:'zh-CN',chinese:'zh-CN','chinese (mandarin)':'zh-CN','chinese (simplified)':'zh-CN','chinese (traditional)':'zh-TW',arabic:'ar-SA',vietnamese:'vi-VN',russian:'ru-RU',japanese:'ja-JP',italian:'it-IT',korean:'ko-KR',hindi:'hi-IN',dutch:'nl-NL',polish:'pl-PL',indonesian:'id-ID',turkish:'tr-TR',hebrew:'he-IL',swedish:'sv-SE',danish:'da-DK',norwegian:'no-NO',finnish:'fi-FI',greek:'el-GR',thai:'th-TH',czech:'cs-CZ',hungarian:'hu-HU',romanian:'ro-RO',ukrainian:'uk-UA',cantonese:'zh-HK',tagalog:'fil-PH',filipino:'fil-PH',bengali:'bn-IN',urdu:'ur-PK',malay:'ms-MY',swahili:'sw-KE',bulgarian:'bg-BG',croatian:'hr-HR',serbian:'sr-RS',slovak:'sk-SK',persian:'fa-IR',farsi:'fa-IR',tamil:'ta-IN',amharic:'am-ET',afrikaans:'af-ZA',kurdish:'ku-TR',somali:'so-SO','haitian creole':'ht-HT',haitian:'ht-HT',khmer:'km-KH',cambodian:'km-KH',lao:'lo-LA',burmese:'my-MM',myanmar:'my-MM',nepali:'ne-NP',marathi:'mr-IN',gujarati:'gu-IN',punjabi:'pa-IN',telugu:'te-IN',kannada:'kn-IN',malayalam:'ml-IN',sinhala:'si-LK',yoruba:'yo-NG',igbo:'ig-NG',hausa:'ha-NG',kinyarwanda:'rw-RW',kirundi:'rn-BI',lingala:'ln-CD',tigrinya:'ti-ET',oromo:'om-ET',mongolian:'mn-MN',hmong:'hmn',esperanto:'eo',latin:'la',pashto:'ps-AF',pushto:'ps-AF',dari:'prs-AF',georgian:'ka-GE',armenian:'hy-AM',albanian:'sq-AL',macedonian:'mk-MK',acholi:'ach-UG',karen:'kar-MM','chin (hakha)':'cnh-MM','chin (falam)':'cfm-MM','maay maay':'ymm-SO',marshallese:'mh-MH'};
@@ -99,7 +146,8 @@
       const record = item && typeof item === 'object' ? item : {};
       const language = field === 'term' ? record.termLanguage || record.wordLanguage || record.language
         : field === 'definition' ? record.definitionLanguage
-        : field === 'example' ? record.exampleLanguage || record.definitionLanguage
+        : field === 'origin' ? record.originLanguage || record.definitionLanguage
+        : field === 'example' ? record.exampleLanguage || (!(record.example || record.exampleSentence || record.sentence) && record.contextSentence ? record.contextSentenceLanguage || record.termLanguage || record.language : '') || record.definitionLanguage
         : field === 'sentence' ? (record.sentenceActivity && record.sentenceActivity.language) || record.sentenceLanguage || record.termLanguage || record.wordLanguage || record.language : '';
       return text(language, 80) || text(fallback, 80) || 'en';
     }
@@ -263,14 +311,19 @@
         includeAudio: options.includeAudio !== false,
         includePictures: options.includePictures !== false,
         vocabularyFirst: options.vocabularyFirst === 'meaning' ? 'meaning' : 'word',
+        translationLanguages: normalizeTranslationLanguages(options.translationLanguages),
         cardFont: ['default', 'arial', 'verdana', 'georgia'].includes(options.cardFont) ? options.cardFont : 'default',
+        cardTextStyle: ['default', 'regular', 'bold', 'italic', 'bold-italic'].includes(options.cardTextStyle) ? options.cardTextStyle : 'default',
         cardTextScale: bounded(options.cardTextScale == null ? 1 : options.cardTextScale, 1, 0.85, 1.4),
+        wordTextScale: bounded(options.wordTextScale == null ? 1 : options.wordTextScale, 1, 0.85, 1.4),
+        meaningTextScale: bounded(options.meaningTextScale == null ? 1 : options.meaningTextScale, 1, 0.85, 1.4),
+        translationTextScale: bounded(options.translationTextScale == null ? 1 : options.translationTextScale, 1, 0.85, 1.4),
         cardTheme: ['paper', 'cream', 'mist'].includes(options.cardTheme) ? options.cardTheme : 'paper'
       };
     }
     // A shared allowlist keeps saved sets, offline cards and slides consistent.
     // System font fallbacks provide glyphs for scripts outside the chosen face.
-    function cardAppearance(value) {
+    function cardAppearance(value, reader) {
       const options = normalizeOptions(value);
       const fonts = { default: ['inherit', 'Arial'], arial: ['Arial, Helvetica, sans-serif', 'Arial'], verdana: ['Verdana, Geneva, sans-serif', 'Verdana'], georgia: ['Georgia, "Times New Roman", serif', 'Georgia'] };
       const palettes = {
@@ -278,7 +331,28 @@
         cream: { background: 'FFF8E8', heading: '44321F', text: '43382B', accent: '775120', muted: '6B5944', border: 'C6B58F' },
         mist: { background: 'EDF6F6', heading: '163F43', text: '1C4144', accent: '1E5960', muted: '466568', border: 'A0C2C5' }
       };
-      return { fontFamily: fonts[options.cardFont][0], fontFace: fonts[options.cardFont][1], textScale: options.cardTextScale, ...palettes[options.cardTheme] };
+      // Match the app's reading surfaces in the presenter and portable exports.
+      // An explicit card style continues to override the reading palette.
+      const readingPalettes = {
+        warm: ['FFF1E6', '432714', '1E4ED2', '6F4D3A', 'A85B2F'],
+        sepia: ['F3EADB', '2A1F13', '1A44B7', '604C3B', '7F5E3D'],
+        blue: ['EEF5FC', '16304B', '1F50D6', '3B5269', '3B78A5'],
+        green: ['EEF7EC', '123F21', '295AE0', '385742', '3B7F4C'],
+        rose: ['FDF0F4', '561530', '1E4ED2', '724557', 'A7476B'],
+        dyslexia: ['FCF8E4', '3F3B31', '2D5DE1', '5E5536', '8D7621'],
+        dim: ['ADB3BD', '000000', '173CA1', '2F3744', '46505D'],
+        dark: ['1A1A2E', 'E2E8F0', '93C5FD', 'BCC8D8', '7979AB'],
+        highContrast: ['000000', 'FFFF00', '00FFFF', 'FFFF00', 'FFFF00']
+      };
+      const colors = options.cardTheme === 'paper' && reader && readingPalettes[reader.readingTheme];
+      const palette = colors ? { background: colors[0], heading: colors[1], text: colors[1], accent: colors[2], muted: colors[3], border: colors[4] } : palettes[options.cardTheme];
+      const family = options.cardFont === 'default' && reader && typeof reader.fontFamily === 'string' && reader.fontFamily.trim();
+      const variant = family && reader.fontClass;
+      const explicitStyle = options.cardTextStyle === 'default' ? null : options.cardTextStyle;
+      const fontStyle = explicitStyle ? (explicitStyle.includes('italic') ? 'italic' : 'normal') : (['font-andika-italic', 'font-andika-bold-italic'].includes(variant) ? 'italic' : 'normal');
+      const fontWeight = explicitStyle ? (explicitStyle.includes('bold') ? 700 : 400) : (variant === 'font-andika-bold-italic' ? 700 : null);
+      return { fontFamily: family || fonts[options.cardFont][0], fontFace: family ? family.split(',')[0].trim().replace(/^['"]|['"]$/g, '') : fonts[options.cardFont][1], fontStyle, fontWeight, textScale: options.cardTextScale,
+        wordScale: options.cardTextScale * options.wordTextScale, meaningScale: options.cardTextScale * options.meaningTextScale, translationScale: options.cardTextScale * options.translationTextScale, ...palette };
     }
     function translationText(value, word) {
       const string = value => typeof value === 'string' ? value.trim() : '';
@@ -309,27 +383,93 @@
         language: text(language, 60), text: translationText(value[language], word)
       })).filter(item => item.text);
     }
+    // BEGIN SHARED PREPARED SENTENCE PARTS
+    // The setup board stores trimmed fragments. Locate their edges in the
+    // authored sentence and replace only the answer, never its separators.
+    function preparedSentenceParts(sentence, before, target, after) {
+      if (![sentence, before, target, after].every(value => typeof value === 'string') || !target.trim()) return null;
+      const source = sentence.trim(), left = before.trim(), right = after.trim();
+      const fold = value => value.normalize('NFD').toLowerCase().replace(/\s+/gu, ' ');
+      let leftEnd = left.length, rightStart = source.length - right.length;
+      if (!source.startsWith(left) || !source.endsWith(right)) {
+        // Legacy fragments can differ in case, whitespace or Unicode form.
+        // Map the two comparison offsets back to actual source boundaries.
+        const leftUnits = fold(left).length, rightUnits = fold(source).length - fold(right).length;
+        leftEnd = leftUnits === 0 ? 0 : -1;
+        rightStart = rightUnits === 0 ? 0 : -1;
+        let units = 0;
+        for (const part of source.matchAll(/\s+|\S/gu)) {
+          units += fold(part[0]).length;
+          const end = part.index + part[0].length;
+          if (units === leftUnits) leftEnd = end;
+          if (units === rightUnits) rightStart = end;
+        }
+        if (leftEnd < 0 || rightStart < 0 || fold(source.slice(0, leftEnd)) !== fold(left) || fold(source.slice(rightStart)) !== fold(right)) return null;
+      }
+      if (rightStart < leftEnd) return null;
+      const gap = source.slice(leftEnd, rightStart), answer = gap.trim();
+      if (fold(answer) !== fold(target.trim())) return null;
+      const start = sentence.indexOf(source) + leftEnd + gap.indexOf(answer);
+      return { before: sentence.slice(0, start), answer, after: sentence.slice(start + answer.length) };
+    }
+    // END SHARED PREPARED SENTENCE PARTS
     function sentenceActivityFor(record, word, language) {
       const saved = record.sentenceActivity;
       const board = record.activityItems && record.activityItems.read_sentence;
       const source = saved || board;
       if (!source || typeof source !== 'object') return null;
       if (saved && key(saved.answer) !== key(word)) return null;
-      const choices = [...new Set((Array.isArray(source.choices || source.options) ? source.choices || source.options : []).map(value => text(value, 120)).filter(Boolean))];
+      const suppliedChoices = source.choices || source.options;
+      const distinct = new Map();
+      for (const raw of Array.isArray(suppliedChoices) ? suppliedChoices : []) {
+        const choice = text(raw, LIMITS.wordLength), identity = key(choice);
+        if (choice && !distinct.has(identity)) distinct.set(identity, choice);
+      }
+      const choices = [...distinct.values()];
       const answer = choices.find(value => key(value) === key(saved ? saved.answer : word));
       if (choices.length < 2 || choices.length > 6 || !answer) return null;
       let prompt;
       if (saved) prompt = instructionText(saved.prompt, 'sentence prompt', word);
       else {
-        if (typeof board.before !== 'string' || typeof board.after !== 'string' || typeof board.sentence !== 'string') return null;
-        // Preserve the teacher's prepared blank and choices. Do not invent a
-        // sentence, or export a stale board whose target word has changed.
-        const before = board.before.trim(), after = board.after.trim();
-        const join = target => (before + ' ' + target + (/^[.,!?]/.test(after) ? '' : ' ') + after).trim();
-        if (key(join(word)) !== key(board.sentence)) return null;
-        prompt = instructionText(join('____'), 'sentence prompt', word);
+        const parts = preparedSentenceParts(board.sentence, board.before, word, board.after);
+        if (!parts) return null;
+        prompt = instructionText(parts.before + '____' + parts.after, 'sentence prompt', word);
       }
       return prompt ? { prompt, choices, answer, language: text(source.language || record.sentenceLanguage || language, 80) || 'en' } : null;
+    }
+    // Keep only the suite's portable data; never persist DOM nodes or imported markup.
+    function normalizeAnnotations(value) {
+      if (!Array.isArray(value)) return [];
+      if (value.length > 500) throw new Error('Use up to 500 annotations per card.');
+      const number = n => Math.max(-100000, Math.min(100000, Number(n) || 0));
+      const point = p => ({ x: number(p && p.x), y: number(p && p.y) });
+      return value.filter(a => a && !a.pending && (['note', 'highlight', 'voice', 'draw', 'sticker'].includes(a.kind) || ['star','check','idea','love','question','important','fire','target','thumbsup','party','rocket','flag'].includes(a.type))).map((a, index) => {
+        const out = { id: typeof a.id === 'number' ? a.id : text(a.id, 200) || 'annotation-' + index, kind: a.kind || 'sticker', type: text(a.type, 24), author: a.author === 'student' ? 'student' : 'teacher', authorName: text(a.authorName, 160), createdAt: text(a.createdAt, 80), ...point(a) };
+        if (a.recallClue === true) out.recallClue = true;
+        ['w', 'h', 'width', 'durationSec'].forEach(k => { if (a[k] != null) out[k] = Math.max(0, number(a[k])); });
+        out.color = /^(#[a-f0-9]{3,8}|red|blue|green|yellow|black|pink|purple)$/i.test(a.color || '') ? a.color : 'yellow';
+        out.content = text(a.content, 12000); out.text = text(a.text, 12000);
+        if (a.kind === 'draw') {
+          out.shape = ['free', 'line', 'arrow', 'rect', 'circle'].includes(a.shape) ? a.shape : 'free';
+          if (Array.isArray(a.points)) { if (a.points.length > 20000) throw new Error('A drawing has too many points to export.'); out.points = a.points.map(point); }
+          if (a.start) out.start = point(a.start); if (a.end) out.end = point(a.end);
+        }
+        if (a.kind === 'highlight') {
+          out.rects = (Array.isArray(a.rects) ? a.rects : []).slice(0, 1000).filter(r => r && typeof r === 'object').map(r => ({ ...point(r), w: Math.max(0, number(r.w)), h: Math.max(0, number(r.h)) }));
+          // Offsets are in the field's exact text, including whitespace. The
+          // rectangles remain usable in older files without a text anchor.
+          const anchor = a.anchor;
+          const validEnd = end => end && typeof end.field === 'string' && end.field.length > 0 && end.field.length <= 160 && Number.isInteger(end.offset) && end.offset >= 0 && end.offset <= 200000;
+          if (anchor?.version === 1 && validEnd(anchor.start) && validEnd(anchor.end) && typeof anchor.quote === 'string' && anchor.quote.length > 0 && anchor.quote.length <= 65536) {
+            out.anchor = { version: 1, start: { field: anchor.start.field, offset: anchor.start.offset }, end: { field: anchor.end.field, offset: anchor.end.offset }, quote: anchor.quote };
+          }
+        }
+        if (a.kind === 'voice') {
+          const mime = text(a.mimeType, 80), data = safeAudio('data:' + mime + ';base64,' + (a.audioBase64 || ''));
+          if (data) { out.mimeType = mime; out.audioBase64 = data.split(',')[1]; out.pending = false; }
+        }
+        return out;
+      });
     }
     function normalizeInput(input = {}) {
       if (Array.isArray(input)) input = { words: input };
@@ -348,8 +488,9 @@
       const reserved = new Set(words.map(raw => raw && typeof raw === 'object' ? authoredId(raw) ? 'entry:' + authoredId(raw) : portableId(raw) : '').filter(Boolean));
       let nextId = 1;
       const makeId = () => { while (reserved.has('w' + nextId)) nextId++; const id = 'w' + nextId++; reserved.add(id); return id; };
+      const audioWordKeys = new Set(words.map(record => key(typeof record === 'string' ? record : record && (record.targetWord || record.word || record.term))));
       const assets = new Map();
-      function addAssets(source, destination = assets) {
+      function addAssets(source, destination) {
         if (!source || typeof source !== 'object') return;
         Object.keys(source).forEach(name => { if (!['__proto__', 'constructor', 'prototype'].includes(name)) destination[key(name)] = source[name]; });
       }
@@ -357,16 +498,27 @@
         if (!source || typeof source !== 'object') return;
         Object.keys(source).forEach(name => {
           if (['__proto__', 'constructor', 'prototype'].includes(name)) return;
+          const wordKey = key(name);
+          if (!audioWordKeys.has(wordKey)) return;
           const value = source[name] && typeof source[name] === 'object' ? source[name] : {};
           const provenance = audioProvenance(value.provenance || value.synthesisProfile || value.metadata);
           const scope = audioLanguageKey(provenance.language || fallbackLanguage);
           if (!assets.has(scope)) assets.set(scope, Object.create(null));
-          assets.get(scope)[key(name)] = source[name];
+          assets.get(scope)[wordKey] = source[name];
         });
       }
       // Untagged shared recordings belong to their originating language. An
       // explicit recording language takes precedence over its container.
       addSharedAssets(input.ttsAssets, language);
+      // A selected word can use a recording cached on another source row.
+      // Grouping those caches keeps homographs in different languages apart.
+      if (Array.isArray(input.ttsAssetBanks)) {
+        for (const bank of input.ttsAssetBanks) {
+          if (bank && typeof bank.language === 'string' && bank.language.trim()) {
+            addSharedAssets(bank.assets, bank.language);
+          }
+        }
+      }
       words.forEach(item => { if (item && typeof item === 'object') addSharedAssets(item._ttsAssets, fieldLanguage(item, 'term', language)); });
       const banks = [{ bank: input.phonemeBank, language: input.bankLanguage || language }];
       if (input.phonemeBanks && typeof input.phonemeBanks === 'object' && !Array.isArray(input.phonemeBanks)) Object.keys(input.phonemeBanks).forEach(name => { banks.push({ bank: input.phonemeBanks[name], language: name }); });
@@ -409,10 +561,14 @@
           const state = normalizedAudio(source, termLanguage, source === direct ? object.provenance : undefined, object.audioOriginal);
           return { label, soundKey: bankKey, audio: state.audio, provenance: state.provenance, audioStatus: state.status, ...(state.original ? { audioOriginal: state.original } : {}) };
         }).filter(phoneme => phoneme.label);
+        const origin = originFor(record, original, definitionLanguage);
         const item = {
           id, ...(entryId ? { entryId } : {}), word: original, termLanguage, definitionLanguage, exampleLanguage,
           definition: instructionText(record.definition || record.def || record.meaning, 'definition', original),
-          example: instructionText(record.example || record.exampleSentence || record.sentence, 'example', original),
+          // A glossary keeps its source quote as contextSentence.
+          example: instructionText(record.example || record.exampleSentence || record.sentence || record.contextSentence, 'example', original),
+          origin: origin.text, ...(origin.text ? { originLanguage: origin.language } : {}),
+          ...(Array.isArray(record.annotations) ? { annotations: normalizeAnnotations(record.annotations), annotationViewport: { width: Math.max(1, Math.min(100000, Number(record.annotationViewport && record.annotationViewport.width) || 1000)), height: Math.max(1, Math.min(100000, Number(record.annotationViewport && record.annotationViewport.height) || 600)) } } : {}),
           translations: translationsFor(record.translations || record.translation, original),
           wordAudio: wordState.audio, wordAudioProvenance: wordState.provenance, wordAudioStatus: wordState.status, ...(wordState.original ? { wordAudioOriginal: wordState.original } : {}),
           phonemes,
@@ -421,6 +577,7 @@
         };
         if (existing) {
           ['definition', 'example'].forEach(field => { if (!existing[field] && item[field]) { existing[field] = item[field]; existing[field + 'Language'] = item[field + 'Language']; } });
+          if (!existing.origin && item.origin) { existing.origin = item.origin; existing.originLanguage = item.originLanguage; }
           if (!existing.wordAudio && item.wordAudio) { existing.wordAudio = item.wordAudio; existing.wordAudioProvenance = item.wordAudioProvenance; existing.wordAudioStatus = item.wordAudioStatus; }
           if (!existing.wordAudioOriginal && item.wordAudioOriginal) existing.wordAudioOriginal = item.wordAudioOriginal;
           if (!existing.phonemes.length) existing.phonemes = item.phonemes;
@@ -432,7 +589,7 @@
         seen.set(identity, item); usedIds.set(id, identity); items.push(item);
       });
       if (items.length > LIMITS.words) throw new Error('Use up to 200 different words in one practice set.');
-      const instructionChars = items.reduce((sum, item) => sum + item.definition.length + item.example.length + item.translations.reduce((n, translation) => n + translation.text.length, 0) + (item.sentenceActivity ? item.sentenceActivity.prompt.length : 0), 0);
+      const instructionChars = items.reduce((sum, item) => sum + item.definition.length + item.example.length + item.origin.length + item.translations.reduce((n, translation) => n + translation.text.length, 0) + (item.sentenceActivity ? item.sentenceActivity.prompt.length : 0), 0);
       if (instructionChars > LIMITS.totalInstructionChars) throw new Error('This practice set has too much instructional text. Use up to 524,288 characters across definitions, examples, translations and sentence prompts, or split it into smaller lists.');
       // Count references, not just unique strings: standalone JSON embeds each
       // referenced clip, even when many words share a phoneme recording.
@@ -446,12 +603,21 @@
         if (pictureChars + item.picture.src.length > LIMITS.totalPictureChars) { item.picture = null; picturesOmitted++; }
         else pictureChars += item.picture.src.length;
       });
-      return { version: 1, title: text(input.title, 160) || 'Word Fluency Pop-Up', language, items, options: normalizeOptions(input.options), ...(picturesOmitted ? { picturesOmitted } : {}) };
+      if (JSON.stringify(items.map(item => item.annotations || [])).length > 24 * 1024 * 1024) throw new Error('The annotations are too large. Export fewer cards or shorter voice notes.');
+      const reviewItemIds = new Set();
+      if (Array.isArray(input.reviewItemIds)) {
+        for (const id of input.reviewItemIds) if (usedIds.has(id)) reviewItemIds.add(id);
+      }
+      return { version: 1, title: text(input.title, 160) || 'Word Fluency Pop-Up', language, items, options: normalizeOptions(input.options),
+        ...(reviewItemIds.size ? { reviewItemIds: [...reviewItemIds] } : {}), ...(picturesOmitted ? { picturesOmitted } : {}) };
+    }
+    function playableItems(pack, options) {
+      const allItems = Array.isArray(pack && pack.items) ? pack.items : [];
+      return options.mode === 'sentence' ? allItems.filter(item => item.sentenceActivity) : allItems;
     }
     function createSequence(pack, value = {}, rng = Math.random) {
       const options = normalizeOptions(value);
-      const allItems = Array.isArray(pack && pack.items) ? pack.items : [];
-      const items = options.mode === 'sentence' ? allItems.filter(item => item.sentenceActivity) : allItems;
+      const items = playableItems(pack, options);
       if (options.mode === 'sentence' && !items.length) throw new Error('Prepare a Finish the Sentence activity in Word Sounds, then open Present & Export from that prepared set.');
       if (items.length > LIMITS.words) throw new Error('Use up to 200 words in one practice set.');
       const randomIndex = length => Math.min(length - 1, Math.max(0, Math.floor((Number(rng()) || 0) * length)));
@@ -484,21 +650,36 @@
     function maskWord(value, word) {
       const source = typeof value === 'string' ? value : '', target = text(word, LIMITS.wordLength);
       if (!source || !target) return source;
-      const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+      const escaped = target.normalize('NFC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
       try {
         // Scripts written without spaces have no word boundary to anchor on.
         const pattern = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u.test(target)
           ? new RegExp(escaped, 'giu')
           : new RegExp('(?<![\\p{L}\\p{N}])' + escaped + "(?:s|es|ed|d|ing|'s)?(?![\\p{L}\\p{N}])", 'giu');
-        return source.replace(pattern, '____');
+        const normalized = source.normalize('NFC'), masked = normalized.replace(pattern, '____');
+        return masked === normalized ? source : masked;
       } catch (_) { return source; }
+    }
+    // Build a display copy only. The reveal, saved set and later exports still
+    // have each exact original passage, language, credit and image description.
+    function recallClue(item, pictureLabel) {
+      const mask = value => maskWord(value, item.word);
+      let picture = null;
+      if (item.picture) {
+        let alt = mask(item.picture.alt);
+        const usesClueLabel = !!alt && !/[\p{L}\p{N}]/u.test(alt);
+        if (usesClueLabel) alt = mask(pictureLabel || 'Picture clue');
+        picture = { ...item.picture, alt, credit: mask(item.picture.credit), usesClueLabel };
+      }
+      return { ...item, word: '', origin: '', definition: mask(item.definition), example: mask(item.example), picture,
+        translations: item.translations.map(translation => ({ ...translation, text: mask(translation.text) })) };
     }
     // Something to recall the word from; without it a card falls back to word-first.
     function hasMeaning(item, options) {
-      return !!(item && (item.definition || item.example || (item.translations && item.translations.length) || (options && options.includePictures && item.picture)));
+      return !!(item && (item.definition || item.example || visibleTranslations(item, options).length || (options && options.includePictures && item.picture)));
     }
     function serializePack(pack) { return safeJson(normalizeInput(pack)); }
-    return { LIMITS, text, key, languageInfo, languageLabel, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, safePicture, maskWord, hasMeaning, escapeHtml, safeJson, parseWords, normalizeInput, normalizeOptions, cardAppearance, createSequence, audioCoverage, serializePack };
+    return { LIMITS, text, key, languageInfo, languageLabel, translationLanguageKey, visibleTranslations, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, safePicture, maskWord, recallClue, hasMeaning, escapeHtml, safeJson, parseWords, normalizeAnnotations, normalizeInput, normalizeOptions, cardAppearance, playableItems, createSequence, audioCoverage, serializePack };
   }
   root.AlloWordPracticeCore = createWordPracticeCore();
   // The standalone HTML player embeds this exact factory, keeping its validator

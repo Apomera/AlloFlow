@@ -24,8 +24,13 @@ afterEach(()=>{
   delete window.__geoWorldEngine;
   vi.clearAllTimers();vi.useRealTimers();vi.restoreAllMocks();
 });
-function mount(){
+function mount({selected=false}={}){
   const engine={_currentLesson:window.StemLab.geometryWorldBuilderPure.FREE_BUILD_LESSON,blocks:{},blocksPlaced:0,_builderSelection:null,_modalState:{},releaseInput:vi.fn(),camera:{position:{x:1,y:3,z:6}},getBlocksArr(){return Object.values(this.blocks);}};
+  if(selected){
+    const cell={x:0,y:1,z:0};engine.blocks['0,1,0']={userData:{gridPos:cell,blockType:'stone',shape:'cube',rotation:0,_measurementLayer:'student'}};
+    engine._builderSelection={blocks:[cell],exact:true};
+    engine.measureStructure=()=>({blocks:[cell],count:1,L:1,W:1,H:1,totalVolume:1,isComplete:true});
+  }
   window.__geoWorldEngine=engine;
   const host=document.createElement('div');document.body.appendChild(host);
   let current;
@@ -47,6 +52,25 @@ function modal(app){
 }
 
 describe('finder focus handoffs respect the current workspace',()=>{
+  it.each([
+    ['transform','.gwe-creation-editor'],
+    ['save','[aria-label="Keep your work"]']
+  ])('leaves print preparation before focusing %s from the finder',(toolId,selector)=>{
+    const app=mount({selected:true}),blocks=app.engine.blocks,selection=structuredClone(app.engine._builderSelection);
+    app.click(app.host.querySelector('[data-gwe-prepare="print"]'));React.act(()=>vi.advanceTimersByTime(1));
+    expect(app.host.querySelector('.gwe-builder-dock').dataset.printPreparing).toBe('true');
+    openFinder(app);app.click(app.host.querySelector('[data-tool="'+toolId+'"]'));drainFrames();
+    const dock=app.host.querySelector('.gwe-builder-dock'),target=app.host.querySelector(selector);
+    expect(dock.dataset.printPreparing).toBe('false');expect(dock.dataset.coordinateBuilding).toBe('false');expect(dock.dataset.coordinateSelecting).toBe('false');
+    expect(target.contains(document.activeElement)).toBe(true);expect(app.engine.blocks).toBe(blocks);expect(app.engine._builderSelection).toEqual(selection);
+  });
+  it.each(['print','scale'])('keeps the %s target visible within print preparation',(toolId)=>{
+    const app=mount({selected:true}),before=app.engine._builderSelection;
+    app.click(app.host.querySelector('[data-gwe-prepare="print"]'));React.act(()=>vi.advanceTimersByTime(1));
+    openFinder(app);app.click(app.host.querySelector('[data-tool="'+toolId+'"]'));drainFrames();
+    expect(app.host.querySelector('.gwe-builder-dock').dataset.printPreparing).toBe('true');
+    expect(document.activeElement.closest('.gwe-print-ready')).toBeTruthy();expect(app.engine._builderSelection).toEqual(before);
+  });
   it('normally opens selection controls and focuses their summary without changing geometry',()=>{
     const app=mount(),blocks=app.engine.blocks;selectTool(app);frame();frame();
     const controls=app.host.querySelector('.gwe-direct-controls');

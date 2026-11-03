@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "illustrated-existing-pack-authoring-record",
+  "profile": "native",
+  "title": "Before You Share: Follow the Source, Check the Claim — Illustrated Edition",
+  "gradeLevel": "7th–8th Grade",
+  "sourceExport": "reports/allopack-source-media-literacy-2026-11-01/source_media_literacy_grade7_8.allopack.json",
+  "illustratedExport": "reports/allopack-source-media-literacy-illustrated-2026-11-01/source_media_literacy_grade7_8.allopack.json",
+  "privacy": {
+    "confirmNoStudentPii": true,
+    "confirmSourcePermission": true
+  },
+  "artworkProvider": "built-in image_gen",
+  "assetManifest": "allopacks/media/source_media_literacy_grade7_8/assets.json",
+  "imagePlan": "allopacks/media/source_media_literacy_grade7_8/generation-plan.json",
+  "resourceCoverage": "reports/allopack-source-media-literacy-illustrated-2026-11-01/image-coverage.json",
+  "originalResourceCount": 11,
+  "resources": 19,
+  "uniqueArtworks": 18,
+  "imagePlacements": 37,
+  "style": "Sophisticated tactile linocut/risograph collage; hand-torn geometric paper forms, offset ink edges, restrained paper grain; ivory, cobalt, aubergine and vermilion; no realism/cartoon/characters/text/numericaldata.",
+  "altReview": "Actual original images and compressed-artwork contact sheet inspected. Native MCP image-specific alt metadata attached with altSource vision.",
+  "preservation": "Complete existing envelope retained; native validation, attachment and export used. Do not regenerate this existing pack from history alone.",
+  "educatorReview": "pending",
+  "publishing": false
+}

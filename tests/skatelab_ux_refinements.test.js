@@ -20,8 +20,9 @@ function state(overrides = {}) {
       bodyPositionId: 'neutral',
       airDrag: true,
       pumps: 3,
-      rotationTarget: 360,
-      spinRate: 260,
+      // 2026-11 drop-in model defaults: a 210 deg/s spin lands a safe 180.
+      rotationTarget: 180,
+      spinRate: 210,
       speedMph: 17,
       angleDeg: 35,
       gapFt: 15,
@@ -30,6 +31,7 @@ function state(overrides = {}) {
       showTrail: true,
       showEnergy: true,
       estimateChallenge: false,
+      _predictDefaultV: 2,
       estimateValue: '',
       experiments: [],
       stats: { runs: 0, successful: 0, withinTen: 0 },
@@ -65,8 +67,15 @@ describe('Skate Lab physics-first workbench', () => {
     expect(threeD).toContain('aria-pressed="true">3D orbit view');
     expect(threeD).toContain('Halfpipe physics simulation in 3D view');
     expect(threeD).toContain('Camera azimuth');
-    expect(twoD).toContain('8.0 ft');
-    expect(threeD).toContain('8.0 ft');
+    // Both views read the same model value (was a pinned '8.0 ft' from the
+    // retired fixed-launch-speed halfpipe).
+    const airFt = physics.simHalfpipe({
+      pumps: 3, vehicle: 'skate', gravity: 9.81, surfaceId: 'standard', rotationTarget: 180,
+      spinRate: 210, riderMassKg: 62, rampDepthM: 2.4, bodyPositionId: 'neutral',
+    }).hFt.toFixed(1) + ' ft';
+    expect(Number.parseFloat(airFt)).toBeGreaterThan(1);
+    expect(twoD).toContain(airFt);
+    expect(threeD).toContain(airFt);
   });
 
   it('uses an arrow-key-ready tab pattern for the two experiment modes', () => {
@@ -112,11 +121,14 @@ describe('Skate Lab physics-first workbench', () => {
     const valid = renderTool('skatelab', state({ estimateChallenge: true, estimateValue: '8.0' }));
 
     expect(blocked).toContain('id="sk-estimate"');
-    expect(blocked).toContain('aria-invalid="true"');
-    expect(blocked).toContain('aria-describedby="sk-estimate-error"');
-    expect(blocked).toContain('id="sk-estimate-error"');
-    expect(blocked).toContain('role="alert"');
-    expect(blocked).toMatch(/data-skatelab-launch="true"[^>]*disabled/);
+    // Stage C (a): on open the need is calm instruction text, not an alert;
+    // role="alert" appears only after Run is pressed without a prediction
+    // (pinned in skatelab_stage_c.test.js).
+    expect(blocked).not.toContain('aria-invalid="true"');
+    expect(blocked).toContain('aria-describedby="sk-predict-needed"');
+    expect(blocked).toContain('id="sk-predict-needed"');
+    expect(blocked).not.toContain('role="alert"');
+    expect(blocked).toMatch(/data-skatelab-launch="true"[^>]*aria-disabled="true"/);
     expect(valid).not.toContain('id="sk-estimate-error"');
     expect(valid).not.toMatch(/data-skatelab-launch="true"[^>]*disabled/);
   });
@@ -154,7 +166,11 @@ describe('Skate Lab physics-first workbench', () => {
     expect(html).toContain('J mechanical');
     expect(html).toContain('J thermal');
     expect(html).toContain('J input');
-    expect(html).toContain('h = E/(mg)');
+    // Drop-in model walkthrough (replaces the retired 'h = E/(mg)').
+    expect(html).toContain('PE = m·g·h');
+    expect(html).toContain('f = μN');
+    expect(html).toContain('W = N·Δh');
+    expect(html).toContain('h = v²/(2g)');
     expect(html).toContain('θ = ωt');
   });
 
@@ -185,7 +201,9 @@ describe('Skate Lab physics-first workbench', () => {
     expect(html).toContain('motion + height');
     expect(html).toContain('Aerodynamic flight balance:');
     expect(html).toContain('Net aerodynamic change W-moving-air − D-air-relative');
-    expect(html).toContain('numerical closure residual');
+    // Bug 11: the identity "closure residual" was replaced by a real half-step check.
+    expect(html).not.toContain('closure residual');
+    expect(html).toMatch(/Half-step check: halving the 1\/180 s time step moves the range by \d+\.\d\d mm/);
     expect(html).toContain('net aerodynamic change');
   });
 
@@ -195,8 +213,8 @@ describe('Skate Lab physics-first workbench', () => {
       vehicle: 'skate',
       gravity: 9.81,
       surfaceId: 'standard',
-      rotationTarget: 360,
-      spinRate: 260,
+      rotationTarget: 180,
+      spinRate: 210,
     });
     const html = renderTool('skatelab', state({ lastResult: result, lastSim: result }));
 
@@ -215,8 +233,8 @@ describe('Skate Lab physics-first workbench', () => {
       vehicle: 'skate',
       gravity: 9.81,
       surfaceId: 'standard',
-      rotationTarget: 360,
-      spinRate: 260,
+      rotationTarget: 180,
+      spinRate: 210,
       riderMassKg: 62,
       rampDepthM: 2.4,
       bodyPositionId: 'neutral',
@@ -244,8 +262,8 @@ describe('Skate Lab physics-first workbench', () => {
       vehicle: 'skate',
       gravity: 9.81,
       surfaceId: 'standard',
-      rotationTarget: 360,
-      spinRate: 260,
+      rotationTarget: 180,
+      spinRate: 210,
       riderMassKg: 62,
       rampDepthM: 2.4,
       bodyPositionId: 'neutral',
@@ -290,8 +308,8 @@ describe('Skate Lab physics-first workbench', () => {
       vehicle: 'skate',
       gravity: 9.81,
       surfaceId: 'standard',
-      rotationTarget: 360,
-      spinRate: 260,
+      rotationTarget: 180,
+      spinRate: 210,
       riderMassKg: 62,
       rampDepthM: 2.4,
       bodyPositionId: 'neutral',
@@ -301,8 +319,8 @@ describe('Skate Lab physics-first workbench', () => {
       vehicle: 'skate',
       gravity: 9.81,
       surfaceId: 'standard',
-      rotationTarget: 360,
-      spinRate: 260,
+      rotationTarget: 180,
+      spinRate: 210,
       riderMassKg: 62,
       rampDepthM: 2.4,
       bodyPositionId: 'neutral',
@@ -312,8 +330,8 @@ describe('Skate Lab physics-first workbench', () => {
       vehicle: 'skate',
       gravity: 9.81,
       surfaceId: 'rough',
-      rotationTarget: 360,
-      spinRate: 260,
+      rotationTarget: 180,
+      spinRate: 210,
       riderMassKg: 62,
       rampDepthM: 3.2,
       bodyPositionId: 'neutral',
@@ -398,7 +416,8 @@ describe('Skate Lab physics-first workbench', () => {
     expect(gap).toContain('moving-air work');
     expect(gap).toContain('air-relative loss');
     expect(gap).toContain('net aerodynamic change');
-    expect(gap).toContain('closure residual');
+    expect(gap).not.toContain('closure residual');
+    expect(gap).toContain('Half-step check');
     expect(gap).toContain('Support load (g)');
     expect(gap).toContain('Support load trace');
     expect(gap).toContain('Platform contact creates');
@@ -411,10 +430,12 @@ describe('Skate Lab physics-first workbench', () => {
     expect(gap).toContain('net vertical impulse');
     expect(gap).toContain('mean contact force');
     expect(gap).toContain('for a 0.45 m compression');
-    expect(halfpipe).toContain('Transition depth d =');
-    expect(halfpipe).toContain('φ-surface = −atan2');
-    expect(halfpipe).toContain('φ-flight = φ-lip + ωt');
-    expect(halfpipe).toContain('model terminates without assigning a return path or support impulse');
+    // Drop-in model walkthrough (replaces the retired lip-launch equations).
+    expect(halfpipe).toContain('Start at rest: PE = m·g·h');
+    expect(halfpipe).toContain('heat = Σ μ·N·Δs');
+    expect(halfpipe).toContain('Accuracy: energy residual');
+    expect(halfpipe).toContain('halving the 0.0083 s time step');
+    expect(halfpipe).toContain('The simulation stops at first contact instead of inventing a return');
   });
 
   it('connects geometry and impact controls to the investigation loop', () => {
@@ -455,13 +476,13 @@ describe('Skate Lab physics-first workbench', () => {
     expect(source).toContain("orientationPlane === 'side'");
     expect(source).toContain('var bodyUp = followsSidePlane');
     expect(source).toContain('trajectoryPointAt(sim.flightPath');
-    expect(source).toContain('transitionPointAt(sim.transitionPath');
+    expect(source).toContain('halfpipeNodeAt(sim.nodes, elapsed)');
+    expect(source).toContain('function integrateHalfpipeRun(config)');
     expect(source).toContain('sim.idealFlightPath');
     expect(source).toContain('sim.bottomNormalG');
     expect(source).toContain('sim.peakNormalG');
     expect(source).toContain('sim.reentryPeakTime');
-    expect(source).toContain('var reverseTransitionTime');
-    expect(source).toContain("phase = reentryTime < Math.min(0.18, reentryDuration * 0.25)");
+    expect(source).toContain("phase = sinceLanding < Math.min(0.18, reentryDuration * 0.25)");
     expect(source).toContain('var peakLoadMarker');
     expect(source).toContain('phaseEvents.map');
     expect(source).toContain('traceProgressValues');
@@ -531,7 +552,9 @@ describe('Skate Lab physics-first workbench', () => {
   it('retains the corrected landing-zone overshoot conversion', () => {
     const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
 
-    expect(source).toContain("((sim.clearance - sim.landingZoneM) * M2FT).toFixed(1) + ' ft.'");
+    // Stage C i18n: the value now fills the translated template 'past the landing zone by {over} ft.'
+    expect(source).toContain('over: ((sim.clearance - sim.landingZoneM) * M2FT).toFixed(1)');
+    expect(source).toContain('Deck contact past the landing zone by {over} ft.');
     expect(source).not.toContain('(sim.clearance * M2FT - 1.2).toFixed(1)');
   });
 

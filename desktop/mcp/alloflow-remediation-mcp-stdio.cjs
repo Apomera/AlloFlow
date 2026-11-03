@@ -260,7 +260,7 @@ async function withPdfUaSlot(signal, onProgress, operation) {
 
 function getDriver() {
   requireCurrentRuntimeBuild();
-  if (!driver) driver = Driver.createDriver({ log });
+  if (!driver) driver = Driver.createDriver({ log, readInputFile: authorizedReadFileSync, openInputFile: authorizedOpenInputFile });
   return driver;
 }
 
@@ -303,12 +303,12 @@ async function validatePdfUaLocally(filePath, onProgress, signal) {
 function invalidParams(message) { const e = new Error(message); e.rpcCode = -32602; return e; }
 
 // ── Filesystem boundary (opt-in) ────────────────────────────────────────────
-// Unset, the connector reads and writes anywhere the user can — defensible for a personal stdio
-// server behind a client that gates every call. Set, it is a boundary a district can point at:
-// "this connector may only touch S:\accessibility-queue", enforced rather than promised. That
-// matters for a tool aimed at schools, where the folders next door hold IEPs and evaluations.
+// Unset, caller documents can be read or written anywhere the user can. Configured roots
+// constrain document and artifact paths, including linked filesystem components. This is an
+// application guard, not an OS sandbox against another local process racing directory changes.
 const ALLOWED_ROOTS = (process.env.ALLOFLOW_MCP_ALLOWED_ROOTS || '')
   .split(path.delimiter).map((s) => s.trim()).filter(Boolean).map((s) => path.resolve(s));
+const allowedRootIdentities = new Map();
 
 // path.relative is the check, NOT string prefixing: `C:\queue-archive` starts with `C:\queue`
 // as a string but is a DIFFERENT directory, and a prefix test would wrongly admit it. Resolving
@@ -320,9 +320,77 @@ function isInsideRoot(target, root) {
 
 function enforceAllowedRoot(resolvedPath, label) {
   if (!ALLOWED_ROOTS.length) return resolvedPath;
-  if (ALLOWED_ROOTS.some((root) => isInsideRoot(resolvedPath, root))) return resolvedPath;
-  throw invalidParams(label + ' is outside the folders this connector is allowed to use. '
-    + 'Allowed: ' + ALLOWED_ROOTS.join(', ') + '. (Set by ALLOFLOW_MCP_ALLOWED_ROOTS.) Got: ' + resolvedPath);
+  const target = path.resolve(resolvedPath);
+  const root = ALLOWED_ROOTS.find((candidate) => isInsideRoot(target, candidate));
+  if (!root) throw invalidParams(label + ' is outside the folders this connector is allowed to use.');
+  const reject = () => { throw invalidParams(label + ' crosses a linked, changed, or unavailable filesystem boundary.'); };
+  const samePath = (a, b) => process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
+  const sameFile = (a, b) => a.dev === b.dev && a.ino === b.ino && a.mode === b.mode;
+  // Check every existing component, including the configured root's ancestors.
+  // New outputs may have missing suffixes, but their nearest ancestor must be real.
+  const inspect = (absolute, allowMissing) => {
+    const parsed = path.parse(absolute);
+    let current = parsed.root, missing = false;
+    const checked = [];
+    for (const part of [''].concat(absolute.slice(parsed.root.length).split(path.sep).filter(Boolean))) {
+      if (part) current = path.join(current, part);
+      if (missing) continue;
+      let before;
+      try { before = fs.lstatSync(current, { bigint: true }); }
+      catch (error) {
+        if (allowMissing && error.code === 'ENOENT') { missing = true; continue; }
+        reject();
+      }
+      if (before.isSymbolicLink() || (!before.isDirectory() && current !== absolute)) reject();
+      const canonical = fs.realpathSync(current);
+      if (!samePath(path.resolve(canonical), current)) reject();
+      checked.push([current, before]);
+    }
+    for (const [name, before] of checked) {
+      const after = fs.lstatSync(name, { bigint: true });
+      if (after.isSymbolicLink() || !sameFile(before, after)) reject();
+    }
+    return checked[checked.length - 1];
+  };
+  const [, rootStat] = inspect(root, false);
+  if (!rootStat.isDirectory()) reject();
+  const known = allowedRootIdentities.get(root);
+  if (known && !sameFile(known, rootStat)) reject();
+  allowedRootIdentities.set(root, rootStat);
+  inspect(target, true);
+  return target;
+}
+
+function authorizedOpenInputFile(filePath) {
+  if (!ALLOWED_ROOTS.length) return fs.openSync(filePath, 'r');
+  const checked = enforceAllowedRoot(filePath, 'input file');
+  const fd = fs.openSync(checked, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
+  try {
+    const opened = fs.fstatSync(fd, { bigint: true });
+    const current = fs.lstatSync(enforceAllowedRoot(checked, 'input file'), { bigint: true });
+    if (!opened.isFile() || current.isSymbolicLink() || opened.dev !== current.dev || opened.ino !== current.ino) throw invalidParams('Input file changed before reading.');
+    return fd;
+  } catch (error) { fs.closeSync(fd); throw error; }
+}
+
+function authorizedReadFileSync(filePath, encoding) {
+  const fd = authorizedOpenInputFile(filePath);
+  try { return fs.readFileSync(fd, encoding); }
+  finally { fs.closeSync(fd); }
+}
+
+function authorizedWriteFileSync(filePath, data, encoding) {
+  if (!ALLOWED_ROOTS.length) return fs.writeFileSync(filePath, data, encoding);
+  const checked = enforceAllowedRoot(filePath, 'output file');
+  // Do not truncate before checking the opened file against the authorized path.
+  const fd = fs.openSync(checked, fs.constants.O_WRONLY | fs.constants.O_CREAT | (fs.constants.O_NOFOLLOW || 0), 0o600);
+  try {
+    const opened = fs.fstatSync(fd, { bigint: true });
+    const current = fs.lstatSync(enforceAllowedRoot(checked, 'output file'), { bigint: true });
+    if (!opened.isFile() || current.isSymbolicLink() || opened.dev !== current.dev || opened.ino !== current.ino) throw invalidParams('Output file changed before writing.');
+    fs.ftruncateSync(fd, 0);
+    fs.writeFileSync(fd, data, encoding);
+  } finally { fs.closeSync(fd); }
 }
 
 function _requireFileOfType(args, extRe, extLabel) {
@@ -419,12 +487,12 @@ function optionalOcrLanguage(args) {
 
 // Collision-safe output path: never overwrite an existing file.
 function claimOutputPath(dir, base) {
-  let candidate = path.join(dir, base);
+  let candidate = enforceAllowedRoot(path.join(dir, base), 'output file');
   if (!fs.existsSync(candidate)) return candidate;
   const ext = path.extname(base);
   const stem = base.slice(0, base.length - ext.length);
   for (let i = 2; i < 1000; i++) {
-    candidate = path.join(dir, stem + '-' + i + ext);
+    candidate = enforceAllowedRoot(path.join(dir, stem + '-' + i + ext), 'output file');
     if (!fs.existsSync(candidate)) return candidate;
   }
   throw new Error('Could not find a free output name for ' + base);
@@ -505,7 +573,7 @@ function jsonSha256(value) {
 function documentDigestForFile(file) {
   return new Promise((resolve, reject) => {
     const hash = crypto.createHash('sha256');
-    const stream = fs.createReadStream(file, { highWaterMark: 3 * 1024 * 1024 });
+    const stream = fs.createReadStream(file, { fd: authorizedOpenInputFile(file), autoClose: true, highWaterMark: 3 * 1024 * 1024 });
     let carry = Buffer.alloc(0);
     stream.on('error', reject);
     stream.on('data', (chunk) => {
@@ -538,17 +606,29 @@ function integerInRange(value, min, max) {
   return Number.isSafeInteger(value) && value >= min && value <= max;
 }
 
-function atomicWriteBytes(finalPath, bytes, mode = 0o600) {
+function atomicWriteBytes(finalPath, bytes, mode = 0o600, documentPath = false) {
   const tempPath = finalPath + '.tmp';
   let fd = null;
+  if (documentPath) enforceAllowedRoot(finalPath, 'output file');
   fs.mkdirSync(path.dirname(finalPath), { recursive: true });
   try {
-    fd = fs.openSync(tempPath, 'w', mode);
+    if (documentPath) enforceAllowedRoot(tempPath, 'temporary output file');
+    fd = fs.openSync(tempPath, documentPath ? fs.constants.O_WRONLY | fs.constants.O_CREAT | (fs.constants.O_NOFOLLOW || 0) : 'w', mode);
+    if (documentPath) {
+      const opened = fs.fstatSync(fd, { bigint: true });
+      const current = fs.lstatSync(enforceAllowedRoot(tempPath, 'temporary output file'), { bigint: true });
+      if (!opened.isFile() || current.isSymbolicLink() || opened.dev !== current.dev || opened.ino !== current.ino) throw invalidParams('Output file changed before writing.');
+      fs.ftruncateSync(fd, 0);
+    }
     fs.writeFileSync(fd, bytes);
     fs.fsyncSync(fd);
     fs.closeSync(fd);
     fd = null;
     // Never remove the previous committed file first: delete-then-rename creates a crash window.
+    if (documentPath) {
+      enforceAllowedRoot(tempPath, 'temporary output file');
+      enforceAllowedRoot(finalPath, 'output file');
+    }
     fs.renameSync(tempPath, finalPath);
     if (process.platform !== 'win32') {
       let dirFd = null;
@@ -565,8 +645,8 @@ function atomicWriteBytes(finalPath, bytes, mode = 0o600) {
   }
 }
 
-function atomicWriteJson(finalPath, value, mode = 0o600) {
-  atomicWriteBytes(finalPath, Buffer.from(JSON.stringify(value, null, 2), 'utf8'), mode);
+function atomicWriteJson(finalPath, value, mode = 0o600, documentPath = false) {
+  atomicWriteBytes(finalPath, Buffer.from(JSON.stringify(value, null, 2), 'utf8'), mode, documentPath);
 }
 
 function checkpointEngineFiles() {
@@ -1847,7 +1927,7 @@ function storedExecution(kind, files, outDir, options, skipExisting, meta = null
 function sha256File(file) {
   return new Promise((resolve, reject) => {
     const hash = crypto.createHash('sha256');
-    const stream = fs.createReadStream(file);
+    const stream = fs.createReadStream(file, { fd: authorizedOpenInputFile(file), autoClose: true });
     stream.on('error', reject);
     stream.on('data', (chunk) => hash.update(chunk));
     stream.on('end', () => resolve(hash.digest('hex')));
@@ -1920,12 +2000,12 @@ async function prepareStoredExecution(job) {
 }
 
 function resolveOutputDir(args, filePath) {
-  if (args.output_dir === undefined) return path.dirname(filePath);
+  if (args.output_dir === undefined) return enforceAllowedRoot(path.dirname(filePath), 'output directory');
   if (typeof args.output_dir !== 'string' || !args.output_dir.trim()) throw invalidParams('arguments.output_dir must be a non-empty string');
   // Checked BEFORE mkdir: a rejected boundary must not leave a directory behind as a side effect.
   const outDir = enforceAllowedRoot(path.resolve(args.output_dir), 'arguments.output_dir');
   fs.mkdirSync(outDir, { recursive: true });
-  return outDir;
+  return enforceAllowedRoot(outDir, 'output directory');
 }
 
 // ── Folder batches ──────────────────────────────────────────────────────────
@@ -1963,7 +2043,7 @@ function readPriorScoreboards(outDir) {
   for (const n of names) {
     if (!n.startsWith(SCOREBOARD_STEM) || !n.endsWith('.json')) continue;
     try {
-      const prev = JSON.parse(fs.readFileSync(path.join(outDir, n), 'utf8'));
+      const prev = JSON.parse(authorizedReadFileSync(path.join(outDir, n), 'utf8'));
       for (const row of (prev && prev.files) || []) {
         if (row && row.file && row.ok) seen.set(row.file, row);
       }
@@ -2019,9 +2099,9 @@ function writeScoreboard(outDir, dir, rows) {
     files: rows,
   };
   const jsonPath = claimOutputPath(outDir, SCOREBOARD_STEM + '.json');
-  fs.writeFileSync(jsonPath, JSON.stringify(payload, null, 2), 'utf8');
+  authorizedWriteFileSync(jsonPath, JSON.stringify(payload, null, 2), 'utf8');
   const csvPath = claimOutputPath(outDir, path.basename(jsonPath).replace(/\.json$/, '.csv'));
-  fs.writeFileSync(csvPath, scoreboardCsv(rows), 'utf8');
+  authorizedWriteFileSync(csvPath, scoreboardCsv(rows), 'utf8');
   return { scoreboardJson: jsonPath, scoreboardCsv: csvPath, bands, medianScore: payload.medianScore };
 }
 
@@ -2062,7 +2142,7 @@ function loadScoreboard(args) {
   }
 
   let board;
-  try { board = JSON.parse(fs.readFileSync(scoreboardPath, 'utf8')); }
+  try { board = JSON.parse(authorizedReadFileSync(scoreboardPath, 'utf8')); }
   catch (e) { throw invalidParams('Could not read that scoreboard as JSON (' + ((e && e.message) || e) + '): ' + scoreboardPath); }
   if (!board || typeof board !== 'object' || !Array.isArray(board.files)) {
     throw invalidParams('That file is not an AlloFlow audit scoreboard (no `files` array): ' + scoreboardPath);
@@ -2130,7 +2210,7 @@ async function writeCompletionManifest(filePath, outDir, summary, compatibility,
     completedAt: new Date().toISOString(),
     artifacts,
   };
-  atomicWriteJson(summary.files.completionManifest, manifest);
+  atomicWriteJson(summary.files.completionManifest, manifest, 0o600, true);
   return manifest;
 }
 
@@ -2362,16 +2442,19 @@ function readArtifactResource(parsed) {
   }
   const mimeType = ARTIFACT_MIME_BY_EXT[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
   if (ARTIFACT_TEXT_MIMES.has(mimeType)) {
-    return { uri: artifactUri(parsed.runId, parsed.role), mimeType, text: fs.readFileSync(filePath, 'utf8') };
+    return { uri: artifactUri(parsed.runId, parsed.role), mimeType, text: authorizedReadFileSync(filePath, 'utf8') };
   }
-  return { uri: artifactUri(parsed.runId, parsed.role), mimeType, blob: fs.readFileSync(filePath).toString('base64') };
+  return { uri: artifactUri(parsed.runId, parsed.role), mimeType, blob: authorizedReadFileSync(filePath).toString('base64') };
 }
 
 async function validateCompletionManifest(manifestPath, filePath, outDir, compatibility) {
   try {
+    enforceAllowedRoot(manifestPath, 'completion manifest');
+    enforceAllowedRoot(filePath, 'source file');
+    enforceAllowedRoot(outDir, 'output directory');
     const manifestStat = fs.statSync(manifestPath);
     if (!manifestStat.isFile() || manifestStat.size <= 0 || manifestStat.size > 2 * 1024 * 1024) return null;
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const manifest = JSON.parse(authorizedReadFileSync(manifestPath, 'utf8'));
     if (
       !hasExactKeys(manifest, [
         'schema', 'kind', 'source', 'compatibility', 'attempt', 'completedAt', 'artifacts',
@@ -2411,12 +2494,13 @@ async function validateCompletionManifest(manifestPath, filePath, outDir, compat
       const resolved = path.resolve(outDir, ...artifact.relativePath.split('/'));
       const relative = path.relative(outDir, resolved);
       if (path.isAbsolute(relative) || relative === '..' || relative.startsWith('..' + path.sep)) return null;
+      enforceAllowedRoot(resolved, 'completion artifact');
       const stat = fs.statSync(resolved);
       if (!stat.isFile() || stat.size !== artifact.sizeBytes) return null;
       let digest;
       if (artifact.role === 'report') {
         if (stat.size > 8 * 1024 * 1024) return null;
-        verifiedReportBytes = fs.readFileSync(resolved);
+        verifiedReportBytes = authorizedReadFileSync(resolved);
         if (verifiedReportBytes.length !== artifact.sizeBytes) return null;
         digest = sha256Bytes(verifiedReportBytes);
       } else {
@@ -2813,11 +2897,11 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
   const files = {};
   if (out.accessibleHtml) {
     files.accessibleHtml = claimOutputPath(outDir, stem + '-accessible.html');
-    atomicWriteBytes(files.accessibleHtml, Buffer.from(out.accessibleHtml, 'utf8'));
+    atomicWriteBytes(files.accessibleHtml, Buffer.from(out.accessibleHtml, 'utf8'), 0o600, true);
   }
   if (out.taggedPdfB64) {
     files.taggedPdf = claimOutputPath(outDir, stem + '-tagged.pdf');
-    atomicWriteBytes(files.taggedPdf, Buffer.from(out.taggedPdfB64, 'base64'));
+    atomicWriteBytes(files.taggedPdf, Buffer.from(out.taggedPdfB64, 'base64'), 0o600, true);
   }
   // validate_ua: independent ISO 14289-1 check of the just-written tagged bytes (keyless,
   // ~1 min incl. JVM boot). Parity with the app's auto-veraPDF; verdict rides the report.
@@ -2883,6 +2967,13 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     sha256: files.taggedPdf ? await sha256File(files.taggedPdf) : null,
     bytes: files.taggedPdf ? fs.statSync(files.taggedPdf).size : null,
   });
+  // Where the document's own text uses colour to carry meaning: a quoted quick check, never a hold (2026-11-02).
+  try {
+    if (files.accessibleHtml) {
+      const cues = Verification.colourMeaningCues(authorizedReadFileSync(files.accessibleHtml, 'utf8'), 5);
+      if (cues.length) summary.colourMeaningCues = cues;
+    }
+  } catch (_) {}
   Verification.applyPdfDeliveryEvidence(summary, pdfEvidence);
   summary.deliveryExplanation = Verification.explainDelivery(summary);
   if (files.taggedPdf && pdfEvidence.status !== 'passed') {
@@ -2893,7 +2984,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
   }
   files.report = claimOutputPath(outDir, stem + '-remediation-report.json');
   files.completionManifest = completionManifestPath(outDir, files.report);
-  atomicWriteJson(files.report, summary);
+  atomicWriteJson(files.report, summary, 0o600, true);
   await writeCompletionManifest(filePath, outDir, summary, compatibility, job);
   const publishedResources = publishRunArtifacts((job && job.jobId) || out.runId, filePath, outDir, files);
   if (publishedResources && publishedResources.length) summary.resources = publishedResources;
@@ -3062,8 +3153,9 @@ const TOOLS = [
     inputSchema: {
       type: 'object', required: ['audit_json', 'output_path'],
       properties: {
-        audit_json: { type: 'string', description: 'Path to a JSON file holding an axe audit (as pdf_audit or the agent harness emits)' },
-        verapdf_json: { type: 'string', description: 'Optional path to a JSON file holding a pdf_validate_ua result; its failed rules are folded in' },
+        audit_json: { type: 'string', description: 'Path to a JSON file holding an axe audit (as pdf_audit or the agent harness emits), an audit_two_engines result, or a -remediation-report.json. Equal Access and AI review results are reported when the file carries them.' },
+        verapdf_json: { type: 'string', description: 'Optional path to a JSON file holding a pdf_validate_ua result; shown as the independent PDF/UA-1 verdict' },
+        tagged_pdf: { type: 'string', description: 'Optional path to the tagged PDF the veraPDF result describes. Re-parsed by AlloFlow\'s byte validator for a current self-check; refused if verapdf_json validated different bytes.' },
         accessible_html: { type: 'string', description: 'Optional path to the remediated HTML, so the report can reference the content it describes' },
         output_path: { type: 'string', description: 'Where to write the report HTML' },
         document_name: { type: 'string', description: 'Document name shown in the report heading' },
@@ -3663,7 +3755,9 @@ const S_REMEDIATE = obj({
   pdfUa: {}, verificationChecks: {}, verification: {}, reviewTriage: {}, deliveryReviewReasons: {type:'array',items:S_STR}, reviewRequired: S_BOOL, deliveryStatus: S_STR, htmlVerificationState: {},
   deliveryExplanation: obj({ headline: S_STR, items: { type: 'array', items: obj({ code: S_STR, meaning: S_STR, nextStep: S_STR, detail: S_STR }) },
     needsAPerson: { type: 'array', items: S_STR }, worthAGlance: { type: 'array', items: S_STR },
-    quickChecks: { type: 'array', items: S_STR, description: 'Checker items the AI review judged fine; a person confirms. Usually fine.' } }),
+    quickChecks: { type: 'array', items: S_STR, description: 'For a person to glance at: checker items the AI review judged fine, and places where the document itself uses colour to carry meaning. Usually fine.' },
+    checkedAutomatically: { type: 'array', items: S_STR, description: 'Checker reminders AlloFlow\'s own checks answered (for example the colour reminder on its own focus-outline styling); disclosed, not asked of a person.' } }),
+  colourMeaningCues: { type: 'array', items: obj({ match: S_STR, quote: S_STR }), description: 'Places where the document\'s own text uses colour to carry meaning (quoted); shown as a quick check.' },
   verdictReasons: obj({ review: { type: 'array', items: S_STR }, cautions: { type: 'array', items: S_STR } }),
   note: S_STR,
 }, ['input', 'files']);
@@ -3909,7 +4003,7 @@ const TOOL_HANDLERS = {
     if (!/\.html?$/i.test(requestedOutput)) throw invalidParams('arguments.output_path must end in .html or .htm');
 
     let payload;
-    try { payload = JSON.parse(fs.readFileSync(inputPath, 'utf8').replace(/^\uFEFF/, '')); }
+    try { payload = JSON.parse(authorizedReadFileSync(inputPath, 'utf8').replace(/^\uFEFF/, '')); }
     catch (e) { throw invalidParams('arguments.resource_pack_json is not readable JSON: ' + ((e && e.message) || e)); }
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw invalidParams('resource-pack JSON must be an object');
     assertAllowedKeys(payload, ['items', 'topic', 'isWorksheet', 'responses', 'config'], 'resource-pack JSON');
@@ -3949,7 +4043,7 @@ const TOOL_HANDLERS = {
       onLog: ctx && ctx.onProgress,
     }));
     if (!out || typeof out.html !== 'string') throw new Error('The production resource-pack generator returned no HTML');
-    fs.writeFileSync(dest, out.html, 'utf8');
+    authorizedWriteFileSync(dest, out.html, 'utf8');
     return {
       input: inputPath, output: dest, bytes: Buffer.byteLength(out.html),
       resourcesRequested: out.resourcesRequested, worksheet: out.worksheet, modelFree: true,
@@ -4168,10 +4262,10 @@ const TOOL_HANDLERS = {
     // what it needs. It still takes the single-flight lane because it drives the browser.
     return withSingleFlight('export_accessible_office', async () => {
       const out = await getDriver().exportAccessibleOffice({
-        html: fs.readFileSync(htmlPath, 'utf8'), title, format, onLog: ctx && ctx.onProgress,
+        html: authorizedReadFileSync(htmlPath, 'utf8'), title, format, onLog: ctx && ctx.onProgress,
       });
       const dest = claimOutputPath(outDir, out.fileName);
-      fs.writeFileSync(dest, Buffer.from(out.b64, 'base64'));
+      authorizedWriteFileSync(dest, Buffer.from(out.b64, 'base64'));
       return {
         input: htmlPath, output: dest, format,
         bytes: fs.statSync(dest).size,
@@ -4191,10 +4285,10 @@ const TOOL_HANDLERS = {
     const title = args.title || path.basename(htmlPath).replace(/\.html?$/i, '');
     return withSingleFlight('export_alt_format', async () => {
       const out = await getDriver().exportAltFormat({
-        html: fs.readFileSync(htmlPath, 'utf8'), title, format, onLog: ctx && ctx.onProgress,
+        html: authorizedReadFileSync(htmlPath, 'utf8'), title, format, onLog: ctx && ctx.onProgress,
       });
       const dest = claimOutputPath(outDir, out.fileName);
-      fs.writeFileSync(dest, Buffer.from(out.b64, 'base64'));
+      authorizedWriteFileSync(dest, Buffer.from(out.b64, 'base64'));
       const res = {
         input: htmlPath, output: dest, format: out.format,
         bytes: fs.statSync(dest).size, modelFree: true,
@@ -4231,8 +4325,8 @@ const TOOL_HANDLERS = {
     assertAllowedKeys(args, ['file_path', 'output_path'], 'arguments');
     const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
     const dest = _htmlOutputPath(args, htmlPath, '-contrast.html');
-    const out = await withSingleFlight('fix_contrast', () => getDriver().fixContrast({ html: fs.readFileSync(htmlPath, 'utf8'), onLog: ctx && ctx.onProgress }));
-    fs.writeFileSync(dest, out.html, 'utf8');
+    const out = await withSingleFlight('fix_contrast', () => getDriver().fixContrast({ html: authorizedReadFileSync(htmlPath, 'utf8'), onLog: ctx && ctx.onProgress }));
+    authorizedWriteFileSync(dest, out.html, 'utf8');
     return {
       input: htmlPath, output: dest, changed: out.changed, styleFixes: out.styleFixes,
       axeBefore: { violations: out.beforeViolations, ids: out.beforeViolationIds },
@@ -4243,59 +4337,100 @@ const TOOL_HANDLERS = {
   },
 
   async generate_conformance_report(args) {
-    assertAllowedKeys(args, ['audit_json', 'verapdf_json', 'accessible_html', 'output_path', 'document_name'], 'arguments');
+    assertAllowedKeys(args, ['audit_json', 'verapdf_json', 'tagged_pdf', 'accessible_html', 'output_path', 'document_name'], 'arguments');
     const auditPath = enforceAllowedRoot(path.resolve(String(args.audit_json || '')), 'arguments.audit_json');
     if (!fs.existsSync(auditPath)) throw invalidParams('arguments.audit_json does not exist: ' + auditPath);
     if (typeof args.output_path !== 'string' || !args.output_path.trim()) throw invalidParams('arguments.output_path is required');
     const outPath = enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path');
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
 
-    let axe;
-    try { axe = JSON.parse(fs.readFileSync(auditPath, 'utf8')); }
+    let audit;
+    try { audit = JSON.parse(authorizedReadFileSync(auditPath, 'utf8')); }
     catch (e) { throw invalidParams('arguments.audit_json is not readable JSON: ' + ((e && e.message) || e)); }
+    // audit_json may be an axe audit (pdf_audit / agent harness), an audit_two_engines result or a
+    // -remediation-report.json. Read each engine from wherever that shape keeps it; an engine the input
+    // does not carry stays absent, so the report says "unavailable" only when it really is (2026-11-02:
+    // Equal Access and the AI review were always reported unavailable).
+    const _num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+    const _ver = (audit && audit.verification) || {};
+    const _axeIn = _ver.axe || (audit && audit.axe && typeof audit.axe === 'object' ? audit.axe : audit) || {};
+    const axeAudit = {
+      score: _num(_axeIn.score) !== undefined ? _axeIn.score : _num(_axeIn.axeScore),
+      totalViolations: _num(_axeIn.totalViolations) !== undefined ? _axeIn.totalViolations
+        : (_num(_axeIn.violations) !== undefined ? _axeIn.violations : (Array.isArray(_axeIn.violations) ? _axeIn.violations.length : undefined)),
+      totalIncomplete: _num(_axeIn.totalIncomplete) !== undefined ? _axeIn.totalIncomplete : _num(_axeIn.incomplete),
+      violations: Array.isArray(_axeIn.violations) ? _axeIn.violations : [],
+    };
+    const _eaIn = _ver.equalAccess || (audit && audit.equalAccess) || null;
+    const equalAccessAudit = _eaIn && _num(_eaIn.score) !== undefined ? {
+      score: _eaIn.score, failViolations: _num(_eaIn.failViolations), potentialViolations: _num(_eaIn.potentialViolations),
+      manualViolations: _num(_eaIn.manualViolations), reviewFindingCount: _num(_eaIn.reviewFindingCount),
+    } : null;
+    const _aiIn = _ver.ai || null;
+    const aiAudit = _aiIn && _num(_aiIn.score) !== undefined ? { score: _aiIn.score, issues: Array.isArray(_aiIn.issues) ? _aiIn.issues : undefined } : null;
+    const _engineScores = [axeAudit.score, equalAccessAudit && equalAccessAudit.score].filter((s) => _num(s) !== undefined);
+    const afterScore = _num(audit && audit.afterScore) !== undefined ? audit.afterScore : (_engineScores.length ? Math.min(..._engineScores) : undefined);
 
     let vera = null;
     if (args.verapdf_json !== undefined) {
       const vp = enforceAllowedRoot(path.resolve(String(args.verapdf_json)), 'arguments.verapdf_json');
       if (!fs.existsSync(vp)) throw invalidParams('arguments.verapdf_json does not exist: ' + vp);
-      try { vera = JSON.parse(fs.readFileSync(vp, 'utf8')); }
+      try { vera = JSON.parse(authorizedReadFileSync(vp, 'utf8')); }
       catch (e) { throw invalidParams('arguments.verapdf_json is not readable JSON: ' + ((e && e.message) || e)); }
     }
     let accessibleHtml = '';
     if (args.accessible_html !== undefined) {
       const hp = _requireFileOfType({ file_path: args.accessible_html }, /\.html?$/i, '.html');
-      accessibleHtml = fs.readFileSync(hp, 'utf8');
+      accessibleHtml = authorizedReadFileSync(hp, 'utf8');
+    }
+    let taggedPdfBase64 = null;
+    if (args.tagged_pdf !== undefined) {
+      const tp = _requireFileOfType({ file_path: args.tagged_pdf }, /\.pdf$/i, '.pdf');
+      const pdfBytes = authorizedReadFileSync(tp);
+      // A veraPDF verdict describes the bytes it validated; refuse to print it beside different ones.
+      if (vera && typeof vera.inputSha256 === 'string' && vera.inputSha256 !== crypto.createHash('sha256').update(pdfBytes).digest('hex')) {
+        throw invalidParams('arguments.verapdf_json validated different bytes than arguments.tagged_pdf (inputSha256 mismatch)');
+      }
+      taggedPdfBase64 = Buffer.from(pdfBytes).toString('base64');
     }
 
     // Only clause 5 test 1 is the by-design withheld PDF/UA declaration; everything else is a
     // genuine failure. Preserving that distinction is what keeps the report honest in both
     // directions rather than flattening a deliberate abstention into a defect.
+    // Rows carry `rule` (what the report prints) and a category; they used to carry id/label and printed blank.
     const failed = (vera && vera.failedRules) || [];
     const checks = failed.map((r) => ({
-      id: 'ISO 14289-1 clause ' + r.clause + ' test ' + r.testNumber,
-      label: r.message,
+      category: 'veraPDF (ISO 14289-1)',
+      rule: 'ISO 14289-1 clause ' + r.clause + ' test ' + r.testNumber + (r.message ? ': ' + r.message : ''),
       status: (String(r.clause) === '5' && Number(r.testNumber) === 1) ? 'warn' : 'fail',
       detail: (r.count || 1) + ' occurrence(s)',
     }));
+    // A compliant run has no failed rules. Without a row the report read "Awaiting Tagged PDF · 0 rules
+    // checked" and treated the verdict as stale ("No independent veraPDF validation was run", 2026-11-02).
+    if (vera && vera.compliant === true && !checks.length) {
+      checks.push({ category: 'veraPDF (ISO 14289-1)', rule: 'Machine-checkable PDF/UA-1 rules (veraPDF)', status: 'pass',
+        detail: (_num(vera.passedChecks) !== undefined ? vera.passedChecks + ' checks passed, ' : '') + '0 failed rules' });
+    }
     const summary = {
-      pass: 0, fail: checks.filter((c) => c.status === 'fail').length,
+      pass: checks.filter((c) => c.status === 'pass').length, fail: checks.filter((c) => c.status === 'fail').length,
       warn: checks.filter((c) => c.status === 'warn').length, manual: 0, na: 0,
       conformancePct: vera ? (vera.compliant ? 100 : (checks.some((c) => c.status === 'fail') ? 0 : 95)) : 0,
     };
 
     const html = await withSingleFlight('generate_conformance_report', () => getDriver().buildConformanceReport({
-      fixResult: {
+      fixResult: Object.assign({
         accessibleHtml,
-        axeAudit: { totalViolations: axe.totalViolations, violations: axe.violations || [], score: axe.axeScore },
-        afterScore: axe.axeScore, beforeScore: null,
-        _aiVerificationIncomplete: true, // no AI verification pass runs in this flow; the report must say so
-        verificationCoverage: { pdfUaSelfCheck: !!vera },
-      },
+        axeAudit,
+        afterScore, beforeScore: _num(audit && audit.beforeScore) !== undefined ? audit.beforeScore : null,
+        _aiVerificationIncomplete: !aiAudit, // no AI verification in the input: the report must say so
+        verificationCoverage: { pdfUaSelfCheck: !!(vera || taggedPdfBase64) },
+      }, equalAccessAudit ? { secondEngineAudit: equalAccessAudit } : {}, aiAudit ? { verificationAudit: aiAudit } : {}),
       auditResult: { score: null, summary: 'Source audit not performed by a triangulated auditor panel in this flow.', issues: [] },
       pdfUa: vera ? { checks, summary } : null,
-      reportOpts: { fileName: args.document_name || path.basename(auditPath) },
+      reportOpts: Object.assign({ fileName: args.document_name || path.basename(auditPath) }, vera ? { veraPdf: vera } : {}),
+      taggedPdfBase64,
     }));
-    fs.writeFileSync(outPath, html, 'utf8');
+    authorizedWriteFileSync(outPath, html, 'utf8');
     return {
       output: outPath, bytes: Buffer.byteLength(html),
       generator: "AlloFlow's own generateAccessibilityReportHtml",
@@ -4311,10 +4446,10 @@ const TOOL_HANDLERS = {
     const dest = _htmlOutputPath(args, htmlPath, '-alt.html');
     requireGeminiKey(); // the only HTML operation here that truly needs one
     const out = await withSingleFlight('describe_images', () => getDriver().describeImages({
-      html: fs.readFileSync(htmlPath, 'utf8'), cap: cap || 10,
+      html: authorizedReadFileSync(htmlPath, 'utf8'), cap: cap || 10,
       fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress,
     }));
-    fs.writeFileSync(dest, out.html, 'utf8');
+    authorizedWriteFileSync(dest, out.html, 'utf8');
     return {
       input: htmlPath, output: dest,
       classified: out.classified, equations: out.equations, charts: out.charts,
@@ -4336,7 +4471,7 @@ const TOOL_HANDLERS = {
     requireGeminiKey();
     return withSingleFlight('transcribe_media', async () => {
       const out = await getDriver().transcribeMedia({ filePath, mode: args.mode || 'speech', onLog: ctx && ctx.onProgress });
-      fs.writeFileSync(dest, String(out.payload || ''), 'utf8');
+      authorizedWriteFileSync(dest, String(out.payload || ''), 'utf8');
       return {
         input: filePath, output: dest, mode: out.mode, words: out.words,
         note: 'A transcript is a starting point, not a finished accessible document. Long or noisy recordings degrade; a person should check names, numbers and speaker attribution before distribution.',
@@ -4354,11 +4489,11 @@ const TOOL_HANDLERS = {
     requireGeminiKey();
     return withSingleFlight('translate_accessible_html', async () => {
       const out = await getDriver().translateHtml({
-        html: fs.readFileSync(htmlPath, 'utf8'), targetLang: args.target_language,
+        html: authorizedReadFileSync(htmlPath, 'utf8'), targetLang: args.target_language,
         fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress,
       });
       if (!out || typeof out.html !== 'string' || !out.html.trim()) throw new Error('Translation returned no HTML');
-      fs.writeFileSync(dest, out.html, 'utf8');
+      authorizedWriteFileSync(dest, out.html, 'utf8');
       return {
         input: htmlPath, output: dest, targetLanguage: args.target_language,
         bytes: Buffer.byteLength(out.html),
@@ -4375,9 +4510,9 @@ const TOOL_HANDLERS = {
     if (!targets.length) throw invalidParams('arguments.targets contained no non-empty strings');
     const dest = _htmlOutputPath(args, htmlPath, '-redacted.html');
     const out = await withSingleFlight('redact_document', () => getDriver().redactDocumentHtml({
-      html: fs.readFileSync(htmlPath, 'utf8'), targets, options: {}, onLog: ctx && ctx.onProgress,
+      html: authorizedReadFileSync(htmlPath, 'utf8'), targets, options: {}, onLog: ctx && ctx.onProgress,
     }));
-    fs.writeFileSync(dest, out.html, 'utf8');
+    authorizedWriteFileSync(dest, out.html, 'utf8');
     return {
       input: htmlPath, output: dest,
       redactionCount: out.count, redacted: out.redacted,
@@ -4396,7 +4531,7 @@ const TOOL_HANDLERS = {
     if (args.output_path !== undefined) {
       dest = enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path');
       fs.mkdirSync(path.dirname(dest), { recursive: true });
-      fs.writeFileSync(dest, out.text, 'utf8');
+      authorizedWriteFileSync(dest, out.text, 'utf8');
     }
     // This tool reads text layers only. A scanned PDF (no layer, or a scan-like page average) and a
     // layer that decodes to unmapped glyph codes both used to come back as a bare character count
@@ -4429,7 +4564,7 @@ const TOOL_HANDLERS = {
   async detect_form_fields(args, ctx) {
     assertAllowedKeys(args, ['file_path'], 'arguments');
     const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
-    const out = await withSingleFlight('detect_form_fields', () => getDriver().inspectFormFields({ html: fs.readFileSync(htmlPath, 'utf8'), onLog: ctx && ctx.onProgress }));
+    const out = await withSingleFlight('detect_form_fields', () => getDriver().inspectFormFields({ html: authorizedReadFileSync(htmlPath, 'utf8'), onLog: ctx && ctx.onProgress }));
     const unlabelled = out.blanks.filter((b) => b.labelMissing).length;
     return {
       input: htmlPath, count: out.blanks.length, unlabelled, blanks: out.blanks,
@@ -4458,9 +4593,9 @@ const TOOL_HANDLERS = {
     }
     const dest = _htmlOutputPath(args, htmlPath, '-fillable.html');
     const out = await withSingleFlight('apply_form_fields', () => getDriver().applyFormFields({
-      html: fs.readFileSync(htmlPath, 'utf8'), accepted: args.accepted, onLog: ctx && ctx.onProgress,
+      html: authorizedReadFileSync(htmlPath, 'utf8'), accepted: args.accepted, onLog: ctx && ctx.onProgress,
     }));
-    fs.writeFileSync(dest, out.html, 'utf8');
+    authorizedWriteFileSync(dest, out.html, 'utf8');
     return { input: htmlPath, output: dest, applied: out.converted, bytes: Buffer.byteLength(out.html) };
   },
 
@@ -4471,10 +4606,10 @@ const TOOL_HANDLERS = {
     requireGeminiKey();
     return withSingleFlight('simplify_accessible_html', async () => {
       const out = await getDriver().simplifyHtml({
-        html: fs.readFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), options: {}, onLog: ctx && ctx.onProgress,
+        html: authorizedReadFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), options: {}, onLog: ctx && ctx.onProgress,
       });
       if (!out || typeof out.html !== 'string' || !out.html.trim()) throw new Error('Simplification returned no HTML');
-      fs.writeFileSync(dest, out.html, 'utf8');
+      authorizedWriteFileSync(dest, out.html, 'utf8');
       return {
         input: htmlPath, output: dest, bytes: Buffer.byteLength(out.html),
         note: 'Plain-language rewriting changes wording, so it can change MEANING. A person who knows the subject should compare it against the original before it replaces anything.',
@@ -4486,7 +4621,7 @@ const TOOL_HANDLERS = {
     assertAllowedKeys(args, ['file_path'], 'arguments');
     const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
     const out = await withSingleFlight('audit_two_engines', () => getDriver().auditWithBothEngines({
-      html: fs.readFileSync(htmlPath, 'utf8'), onLog: ctx && ctx.onProgress,
+      html: authorizedReadFileSync(htmlPath, 'utf8'), onLog: ctx && ctx.onProgress,
     }));
     const disagreements = out.onlyAxe.length + out.onlyEqualAccess.length;
     const engineErrors = out.engineErrors || (out.equalAccessError ? { equalAccess: out.equalAccessError } : {});
@@ -4512,13 +4647,13 @@ const TOOL_HANDLERS = {
     assertAllowedKeys(args, ['file_path', 'output_path'], 'arguments');
     const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
     const out = await withSingleFlight('check_document_structure', () => getDriver().htmlDerivatives({
-      html: fs.readFileSync(htmlPath, 'utf8'), onLog: ctx && ctx.onProgress,
+      html: authorizedReadFileSync(htmlPath, 'utf8'), onLog: ctx && ctx.onProgress,
     }));
     let dest;
     if (args.output_path !== undefined) {
       dest = enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path');
       fs.mkdirSync(path.dirname(dest), { recursive: true });
-      fs.writeFileSync(dest, out.text, 'utf8');
+      authorizedWriteFileSync(dest, out.text, 'utf8');
     }
     return {
       input: htmlPath, output: dest,
@@ -4563,7 +4698,7 @@ const TOOL_HANDLERS = {
     const includeAi = !!Driver.resolveGeminiApiKey().key;
     return withSingleFlight('audit_html', async () => {
       const out = await getDriver().auditHtml({
-        html: fs.readFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress, includeAi,
+        html: authorizedReadFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress, includeAi,
       });
       out.aiEngine = includeAi ? 'gemini' : 'not-run';
       if (!includeAi) out.note = 'No Gemini key on this host: only axe-core and IBM Equal Access ran. The AI content rubric is not-run, so content-level issues (descriptions, reading order, plain language) were not judged. ' + (out.note || '');
@@ -5323,9 +5458,16 @@ function startHttpTransport(port) {
   const sessionId = crypto.randomUUID();
   STDIO_KEEPALIVE = true;
   HTTP_STATE.enabled = true; HTTP_STATE.host = host;
-  const tokenOk = (given) => typeof given === 'string' && given.length === token.length && crypto.timingSafeEqual(Buffer.from(given), Buffer.from(token));
+  const tokenBytes = Buffer.from(token);
+  const tokenOk = (given) => {
+    if (typeof given !== 'string') return false;
+    const bytes = Buffer.from(given);
+    return bytes.length === tokenBytes.length && crypto.timingSafeEqual(bytes, tokenBytes);
+  };
   const server = http.createServer((req, res) => {
-    const url = new URL(req.url, 'http://' + host);
+    let url;
+    try { url = new URL(req.url, 'http://' + host); }
+    catch (_) { res.writeHead(400); res.end('invalid URL'); return; }
     const pathToken = /^\/mcp\/([^/]+)$/.exec(url.pathname);
     if (url.pathname !== '/mcp' && !pathToken) { res.writeHead(404); res.end('not found'); return; }
     const origin = req.headers.origin;
@@ -5334,7 +5476,10 @@ function startHttpTransport(port) {
     }
     const auth = String(req.headers.authorization || '');
     const bearer = auth.startsWith('Bearer ') ? auth.slice(7).trim() : null;
-    if (!tokenOk(bearer) && !(pathToken && tokenOk(decodeURIComponent(pathToken[1])))) {
+    let decodedToken = null;
+    try { if (pathToken) decodedToken = decodeURIComponent(pathToken[1]); }
+    catch (_) { res.writeHead(400); res.end('invalid token encoding'); return; }
+    if (!tokenOk(bearer) && !tokenOk(decodedToken)) {
       res.writeHead(401, { 'WWW-Authenticate': 'Bearer' }); res.end('unauthorized'); return;
     }
     if (req.method === 'GET') {

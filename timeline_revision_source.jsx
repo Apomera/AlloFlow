@@ -56,6 +56,7 @@ function updateTimelineResource(ctx, expectedData, transform, isCurrent, matches
   }
 }
 
+function _timelineReviewText(t,key,fallback,params) { var value=typeof t==='function'?t(key,params):''; var text=typeof value==='string'&&value.trim()&&value!==key?value:fallback; Object.keys(params||{}).forEach(function(k){text=text.split('{'+k+'}').join(String(params[k]));}); return text; }
 var createTimelineRevision = function(deps) {
   var callGemini = deps.callGemini;
   var gradeLevel = deps.gradeLevel || 'Grade 5';
@@ -483,16 +484,16 @@ var createTimelineRevision = function(deps) {
       var modeLbl = (!Array.isArray(data) && data.mode && TIMELINE_MODE_DEFINITIONS[data.mode]) ? TIMELINE_MODE_DEFINITIONS[data.mode].label : 'sequence';
       var progression = (!Array.isArray(data) && data.progressionLabel) || 'sequential order';
       var itemsJson = items.map(function(it, i) { return { index: i, date: it.date, event: it.event }; });
-      var prompt = '\nYou are verifying a ' + modeLbl + ' sequence ordered by "' + progression + '".\n' +
+      var prompt = '\nYou are giving an AI review of a ' + modeLbl + ' sequence ordered by "' + progression + '".\n' +
         'Target grade level: ' + gradeLevelLive + '.\n' +
         'For each item, assess:\n' +
         '  - "isFactuallyAccurate": boolean — are the factual claims (dates, names, values) correct?\n' +
         '  - "isPositionCorrect": boolean — does it belong at this position on the ' + modeLbl + ' axis?\n' +
         '  - "concern": string — if either is false, a short (≤100 chars) explanation; else empty string.\n' +
         '  - "rationale": string — ALWAYS populated. 1–2 sentences explaining what you checked and why this item is (or is not) correct at this position. Include any specific facts, dates, or reasoning you relied on. ≤300 chars.\n' +
-        'Items:\n' + JSON.stringify(itemsJson, null, 2) + '\n' +
+        'This review has no retrieved sources. Do not claim to have checked external records. State uncertainty where appropriate.\nItems:\n' + JSON.stringify(itemsJson, null, 2) + '\n' +
         'Return ONLY a JSON array like:\n' +
-        '[{"index": 0, "isFactuallyAccurate": true, "isPositionCorrect": true, "concern": "", "rationale": "Verified the date 1969 against historical Apollo 11 records; this is correctly placed as the first crewed Moon landing."}, ...]\n';
+        '[{"index": 0, "isFactuallyAccurate": true, "isPositionCorrect": true, "concern": "", "rationale": "Based on my general knowledge, 1969 fits the first crewed Moon landing; no external records were retrieved."}, ...]\n';
       var result = await callGemini(prompt, true);
       if (!isCurrent()) return;
       var parsed = JSON.parse(cleanJson(result));
@@ -529,13 +530,13 @@ var createTimelineRevision = function(deps) {
       var newData = Array.isArray(data) ? newItems : Object.assign({}, data, { items: newItems });
       updateTimelineResource(ctx, data, function () { return newData; }, isCurrent);
       var concerns = verdicts.filter(function(v) { return v && (v.factual === false || v.position === false); }).length;
+      var counts={checked:checked,total:items.length,count:concerns};
       if (checked < items.length) {
-        var partialMsg = t && t('timeline.validation.verified_incomplete', { checked: checked, total: items.length, count: concerns });
-        addToast(partialMsg || ('Checked ' + checked + ' of ' + items.length + ' items (' + concerns + ' flagged). The rest are marked not checked. Press Verify accuracy to try again.'), 'warning');
+        addToast(_timelineReviewText(t,'timeline.ai_review.partial','AI reviewed {checked} of {total} items; {count} flagged. The remaining items were not checked.',counts),'warning');
       } else if (concerns === 0) {
-        addToast((t && t('timeline.validation.verified_clean')) || 'Verified: all items look accurate.', 'success');
+        addToast(_timelineReviewText(t,'timeline.ai_review.clean','AI review found no issues in {checked} items. This is not a cited fact check.',counts),'success');
       } else {
-        addToast((t && t('timeline.validation.verified_concerns', { count: concerns })) || ('Verified: ' + concerns + ' item(s) flagged. Review badges for details.'), 'warning');
+        addToast(_timelineReviewText(t,'timeline.ai_review.concerns','AI reviewed {checked} items and flagged {count} for your review.',counts),'warning');
       }
     } catch (e) {
       warnLog('Timeline verification failed:', e);

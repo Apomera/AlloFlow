@@ -34,6 +34,7 @@ It provides:
 - A shipped AlloFlow Built-in Engine that downloads and manages a private llama.cpp server when the user opts in
 - A first School Box Server command center that prepares, starts, stops, and checks the optional Docker stack when Docker is installed
 - School Box Server next-action guidance and setup-guide steps, including a clear split between the optional Docker Server Host mode and the future District Server command-center mode
+- Source-level Local Images (SANA-Sprint) controls under AI: choose a model, accept its terms, Prepare, Install, then Start. With the updated app bridge, enable Use SANA in this app session to use existing image tools without copying a token. The switch resets on app reload; image-disable and student restrictions remain effective. Repair and Stop are separate actions. See [the setup guide](../docker/SANA_SETUP.md#desktop-service-controls) for hardware requirements and current activation limits. These controls require the protected native launch; source tests do not establish GPU compatibility or a new installer release.
 
 Run checks:
 
@@ -60,7 +61,7 @@ Production notes:
 - The runtime binds to `127.0.0.1` by default.
 - The app manager only stops the process Desktop started; it does not stop an already-running external `localhost:3000` server.
 - Desktop LAN classroom sessions use the Desktop runtime and LAN Share listener. They do not require the Docker School Box stack.
-- School Box Server management looks for `ALLOFLOW_SCHOOLBOX_ROOT`, then packaged `resources/schoolbox`, then the project checkout's `docker-compose.yml`. Packaged builds include the first Docker-ready School Box resource layout, but model/images still download through Docker on first start.
+- School Box Server management looks for `ALLOFLOW_SCHOOLBOX_ROOT`, then packaged `resources/schoolbox`, then the project checkout. Within a checkout it prefers the maintained `docker/docker-compose.yml`; root-only packaged layouts remain supported. GPU text mode adds the adjacent GPU override when available. Managed SANA installation is explicit; ordinary image Start verifies cached files and cannot download models or build the runtime.
 - School Box `Docker Server Host` mode is optional infrastructure. `District Server` is visible as the future command-center target, but it does not start local services yet.
 
 Native shell:

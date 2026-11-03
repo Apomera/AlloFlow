@@ -29,6 +29,7 @@
 .pack-resource-list li span { color:#475569; white-space:nowrap; }
 .pack-sources { margin:12px 0; padding:10px 12px; background:#f8fafc; border-left:3px solid #a5b4fc; border-radius:0 8px 8px 0; }
 .pack-sources p { font-weight:650; }
+.pack-sources .pack-source-context { font-weight:400; margin:3px 0 0; }
 .pack-sources ul { list-style:none; margin:0; padding:0; }
 .pack-sources li { font-size:13px; line-height:1.65; margin-top:5px; overflow-wrap:anywhere; }
 .pack-external-note { font-size:12px; }

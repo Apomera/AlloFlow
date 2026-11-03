@@ -250,6 +250,48 @@
             </label>
             <pre id="engine-result" class="result" aria-live="polite">Local text AI with nothing else to install: the runtime downloads llama-server plus a small model once (about 2 GB), then serves it privately on this device. Select the "AlloFlow Built-in Engine" provider to use it.</pre>
           </section>
+          <section class="panel local-images-panel" aria-labelledby="local-images-title">
+            <h2 id="local-images-title">Local Images (SANA-Sprint)</h2>
+            <p class="hint">For a computer with Docker and an NVIDIA GPU. Setup is optional and starts only when you choose it.</p>
+            <ol class="local-images-steps">
+              <li>Choose a model, review its terms, then select <strong>Prepare</strong>.</li>
+              <li>Select <strong>Install</strong> to download the runtime and model. This can take a while.</li>
+              <li>Select <strong>Start</strong> to load the installed model. Stop keeps the downloaded files.</li>
+              <li>When Ready, enable <strong>Use SANA in this app session</strong> below. An updated app build is required.</li>
+            </ol>
+            <dl class="kv tight">
+              <dt>Status</dt><dd id="local-images-phase">Not checked</dd>
+              <dt>Download</dt><dd id="local-images-download">Choose a model</dd>
+              <dt>Connection</dt><dd id="local-images-endpoint">Not prepared</dd>
+            </dl>
+            <label for="local-images-model">SANA model</label>
+            <select id="local-images-model" disabled aria-describedby="local-images-download"></select>
+            <p class="hint"><a id="local-images-model-terms" target="_blank" rel="noopener noreferrer">Model card and terms</a> · <a href="https://ai.google.dev/gemma/terms" target="_blank" rel="noopener noreferrer">Gemma text encoder terms</a></p>
+            <label class="check-row" for="local-images-terms">
+              <input id="local-images-terms" type="checkbox">
+              <span>I have reviewed and accept the selected model and text encoder terms.</span>
+            </label>
+            <p class="hint">Prepare saves a private connection on this computer. Install and Repair can download several GiB plus the runtime. Start uses installed files only.</p>
+            <div class="button-row">
+              <button id="local-images-prepare" type="button" disabled>Prepare</button>
+              <button id="local-images-install" type="button" disabled>Install</button>
+              <button id="local-images-repair" type="button" disabled>Repair</button>
+              <button id="local-images-start" type="button" disabled>Start</button>
+              <button id="local-images-stop" type="button" disabled>Stop</button>
+              <button id="local-images-refresh" type="button">Refresh</button>
+            </div>
+            <ul id="local-images-issues" class="local-images-issues" aria-label="Setup checks"></ul>
+            <pre id="local-images-result" class="result" role="status" aria-live="polite">Checking setup does not install or start anything.</pre>
+            <div class="local-images-app-connection">
+              <label class="check-row" for="local-images-app-access">
+                <input id="local-images-app-access" type="checkbox" disabled aria-describedby="local-images-app-result">
+                <span>Use SANA in this app session</span>
+              </label>
+              <p id="local-images-app-result" class="hint" role="status" aria-live="polite">Off. Open the app view and start SANA to connect.</p>
+              <p class="hint">This connection turns off when the app reloads. While enabled, image requests use SANA; image-off and student restrictions still apply. Text AI settings stay the same.</p>
+            </div>
+            <p class="hint">A healthy service is only a connection check. Generate a real test image before relying on GPU compatibility. If a cancelled request keeps the service busy, use Stop.</p>
+          </section>
         </div>
       </section>
 

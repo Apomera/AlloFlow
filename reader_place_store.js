@@ -20,6 +20,7 @@ function createReadingPlaceStore(options) {
   var keyOf = scope => [scope.learner || '', scope.itemId, scope.fingerprint].join('|');
   var memoryKey = scope => JSON.stringify([scope.learner || '', scope.itemId, scope.fingerprint, scope.text]);
   var hasWork = row => !!row && (!!row.bookmark || Object.values(row.responses || {}).some(answer => fields.some(field => !!answer[field])));
+  var isPositionField = key => key === 'position' || key === 'listeningSentence';
   var authoredToken = row => JSON.stringify(row ? { responses: row.responses || {}, bookmark: row.bookmark || null } : null);
   // The key holds the text's FNV-1a hash and length; this second, independent
   // hash tells versions apart without storing the text in every row.
@@ -31,7 +32,7 @@ function createReadingPlaceStore(options) {
   function normalize(value) {
     var bad = !object(value), row = { responses: {} };
     if (bad) return { row: null, bad: true };
-    for (var name of ['paragraph', 'snippet', 'resume', 'at', 'bookmark', 'responses', 'sourceText', 'sourceCheck', 'revision']) {
+    for (var name of ['paragraph', 'snippet', 'resume', 'listeningSentence', 'at', 'bookmark', 'responses', 'sourceText', 'sourceCheck', 'revision']) {
       if (!Object.prototype.hasOwnProperty.call(value, name)) continue;
       var v = value[name];
       if (name === 'responses') {
@@ -46,7 +47,7 @@ function createReadingPlaceStore(options) {
         if (v === null) row.bookmark = null;
         else if (object(v) && index(v.paragraph) && typeof v.snippet === 'string') row.bookmark = { paragraph: v.paragraph, snippet: v.snippet };
         else bad = true;
-      } else if ((name === 'paragraph' || name === 'revision') ? index(v)
+      } else if (name === 'listeningSentence' ? (v === null || index(v)) : (name === 'paragraph' || name === 'revision') ? index(v)
         : name === 'at' ? typeof v === 'number' && Number.isFinite(v) && v >= 0
         : name === 'resume' ? typeof v === 'boolean' : typeof v === 'string') row[name] = v;
       else bad = true;
@@ -74,6 +75,7 @@ function createReadingPlaceStore(options) {
     if (!row) return flat;
     // Position is one field so paragraph/snippet/resume cannot be mixed across tabs.
     if (row.paragraph !== undefined) flat.position = { paragraph: row.paragraph, snippet: row.snippet || '', resume: !!row.resume };
+    if (row.listeningSentence !== undefined) flat.listeningSentence = row.listeningSentence;
     if (row.bookmark !== undefined) flat.bookmark = row.bookmark;
     Object.keys(row.responses || {}).forEach(section => fields.forEach(field => {
       if (row.responses[section][field] !== undefined) flat[section + ':' + field] = row.responses[section][field];
@@ -84,7 +86,7 @@ function createReadingPlaceStore(options) {
     var row = { ...metadata, responses: {} };
     Object.keys(flat).forEach(key => {
       if (key === 'position') Object.assign(row, flat[key]);
-      else if (key === 'bookmark') row.bookmark = flat[key];
+      else if (key === 'bookmark' || key === 'listeningSentence') row[key] = flat[key];
       else { var parts = key.split(':'); row.responses[parts[0]] = { ...row.responses[parts[0]], [parts[1]]: flat[key] }; }
     });
     return row;
@@ -101,7 +103,7 @@ function createReadingPlaceStore(options) {
     if (!entry.scope.learner) return hasWork(entry.draft);
     if (entry.status === 'failed' && hasWork(entry.draft)) return true;
     var local = flatten(entry.draft), base = flatten(entry.base);
-    return [...entry.dirty].some(key => key !== 'position' && !equal(local[key] || null, base[key] || null));
+    return [...entry.dirty].some(key => !isPositionField(key) && !equal(local[key] || null, base[key] || null));
   }
   function hasUnsavedWork() { return [...entries.values()].some(needsRecovery); }
   // Unnamed learners share one page scope; a new learner on the page (or "Clear my
@@ -145,7 +147,7 @@ function createReadingPlaceStore(options) {
       if (!entry.base && !entry.removed && !entry.recoveryPending && !entry.problem &&
           (entry.status === 'ready' || entry.status === 'session-only') &&
           !entry.dirty.size && !entry.recoveryCopies.length && !hasWork(entry.draft) &&
-          entry.draft.paragraph === undefined) empty.push(key);
+          entry.draft.paragraph === undefined && entry.draft.listeningSentence == null) empty.push(key);
     });
     var remaining = empty.length;
     for (var key of empty) {
@@ -179,7 +181,7 @@ function createReadingPlaceStore(options) {
     }
     entry.dirty.forEach(key => {
       // Position is a last-interaction hint; authored answers/bookmarks conflict.
-      if (key !== 'position' && !equal(latest[key], base[key]) && !equal(latest[key], local[key])) conflict = true;
+      if (!isPositionField(key) && !equal(latest[key], base[key]) && !equal(latest[key], local[key])) conflict = true;
       if (local[key] === undefined) delete latest[key]; else latest[key] = local[key];
     });
     // Adopt the observed baseline for untouched fields, retaining the original
@@ -211,10 +213,11 @@ function createReadingPlaceStore(options) {
     var flat = flatten(entry.draft);
     if (patch.paragraph !== undefined || patch.resume !== undefined) {
       flat.position = { ...(flat.position || { paragraph: 0, snippet: '', resume: false }), ...patch };
-      delete flat.position.responses; delete flat.position.bookmark;
+      delete flat.position.responses; delete flat.position.bookmark; delete flat.position.listeningSentence;
       entry.dirty.add('position');
     }
     if (patch.bookmark !== undefined) { flat.bookmark = copy(patch.bookmark); entry.dirty.add('bookmark'); }
+    if (patch.listeningSentence !== undefined) { flat.listeningSentence = patch.listeningSentence; entry.dirty.add('listeningSentence'); }
     Object.keys(patch.responses || {}).forEach(section => fields.forEach(field => {
       if (typeof patch.responses[section][field] === 'string') { var key = section + ':' + field; flat[key] = patch.responses[section][field]; entry.dirty.add(key); }
     }));
@@ -235,7 +238,7 @@ function createReadingPlaceStore(options) {
     var next = { ...entry.draft, at: now(), revision: (remote && remote.revision || 0) + 1 };
     delete next.sourceText;
     // A place alone needs no version check: Continue compares the paragraph text.
-    if (!hasWork(next)) delete next.sourceCheck;
+    if (!hasWork(next) && next.listeningSentence == null) delete next.sourceCheck;
     var all = { ...loaded.all, [key]: next }, keys = Object.keys(all);
     // Make room oldest first: places, then answers and bookmarks no one has
     // touched for staleWorkMs. Recent work is never removed to make room.
@@ -365,7 +368,7 @@ function createReadingPlaceStore(options) {
     if (authoredToken(entry.draft) !== authoredToken(checked.row)) retainCopy(entry, entry.draft, 'local');
     entry.draft = { ...entry.draft, responses: copy(checked.row.responses), bookmark: copy(checked.row.bookmark) || null, at: now() };
     var after = flatten(entry.draft);
-    [...new Set([...Object.keys(before), ...Object.keys(after)])].forEach(key => { if (key !== 'position') entry.dirty.add(key); });
+    [...new Set([...Object.keys(before), ...Object.keys(after)])].forEach(key => { if (!isPositionField(key)) entry.dirty.add(key); });
     // Old queued saves may finish after the review. They cannot publish this
     // restored draft without its explicit save confirmation.
     entry.generation++; entry.revision++; entry.removed = false;
@@ -414,5 +417,5 @@ function createReadingPlaceStore(options) {
       })).catch(error => fail(entry, error?.name === 'QuotaExceededError' ? 'quota' : 'unavailable'));
     } catch (_) { return Promise.resolve(fail(entry, 'unavailable')); }
   }
-  return { key: storageKey, load, save, review, resolve, reviewRecovery, changeRecovery, inspectSaved, manageSaved, watchPage, hasUnsavedWork, hasSessionWork, exportSession, forgetAnonymous, peek: scope => result(entryFor(scope)) };
+  return { key: storageKey, textCheck, load, save, review, resolve, reviewRecovery, changeRecovery, inspectSaved, manageSaved, watchPage, hasUnsavedWork, hasSessionWork, exportSession, forgetAnonymous, peek: scope => result(entryFor(scope)) };
 }

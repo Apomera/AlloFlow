@@ -30,6 +30,7 @@ let React, ReactDOMClient, act, GuidedModeBanner;
 
 // A small, realistic slice of the real GUIDED_STEPS (3 steps so the analysis step at
 // index 1 is NOT the last — otherwise the end-of-flow recap renders and muddies text).
+const CHECKED_PASSAGE = 'Plants need sunlight and water.';
 const STEPS = [
   { id: 'source-input', label: 'Source Material', action: 'Paste or type the text you want to adapt.', success: 'Source captured.' },
   { id: 'analysis', label: 'Analyze Source Material', action: 'Run Analyze to scan the reading level.', success: 'Analysis done. That shows you where to scaffold.' },
@@ -93,6 +94,57 @@ function openAiPlanner(banner) {
 }
 
 describe('Guided banner — success note is gated on real completion, not the click', () => {
+  it('rechecks the passage after edits and resume before offering completion or review', () => {
+    const a = 'Beans grow from seeds in spring.';
+    const b = 'Whales communicate through sound.';
+    const old = { id: 'check-a', type: 'analysis', title: 'Bean analysis', data: { originalText: a } };
+    const fresh = { id: 'check-b', type: 'analysis', title: 'Whale analysis', data: { originalText: b } };
+    const openGuidedHistoryItem = vi.fn();
+    const progress = { guidedCompletedIds: ['analysis'], guidedCreatedHistoryIds: [old.id], history: [old], openGuidedHistoryItem };
+    let banner = mountBanner(baseProps({ ...progress, inputText: a }));
+    act(() => banner.button('Review result').click());
+    expect(openGuidedHistoryItem).toHaveBeenCalledWith(old);
+    const expectUnchecked = () => {
+      expect(banner.text()).not.toContain('Analysis done.');
+      expect(banner.host.querySelector('[aria-labelledby="guided-result-preview-title"]')).toBeNull();
+      expect(banner.button('Next step')).toBeFalsy();
+      expect(banner.button('Skip step')).toBeTruthy();
+      expect(banner.text()).not.toContain('Bean analysis');
+    };
+    banner.render(baseProps({ ...progress, inputText: b }));
+    expectUnchecked();
+    banner.cleanup();
+    banner = mountBanner(baseProps({ ...progress, inputText: b }));
+    expectUnchecked();
+    const completedCount = () => Array.from(banner.host.querySelectorAll('[role="listitem"]'))
+      .find(item => item.lastElementChild?.textContent === 'Completed')?.firstElementChild?.textContent;
+    banner.render(baseProps({ ...progress, inputText: b, guidedStep: 2 }));
+    expect(completedCount()).toBe('1'); // The source step alone is complete.
+    expect(banner.text()).not.toContain('Bean analysis');
+    banner.render(baseProps({ ...progress, inputText: b, history: [old, { ...fresh, status: 'running' }] }));
+    expectUnchecked();
+    banner.render(baseProps({ ...progress, inputText: b, history: [old, { ...fresh, data: { originalText: b, analysisNeedsRecheck: true } }] }));
+    expectUnchecked();
+    for (const data of [
+      { analysisIncomplete: true },
+      { concepts: ['Analysis format issue'], readingLevel: { range: 'N/A', explanation: 'Local model returned unstructured analysis text.' } },
+    ]) {
+      banner.render(baseProps({ ...progress, inputText: b, history: [old, { ...fresh, data: { originalText: b, ...data } }] }));
+      expectUnchecked();
+    }
+    banner.render(baseProps({ ...progress, inputText: b, guidedCreatedHistoryIds: [old.id, fresh.id], history: [old, fresh] }));
+    expect(banner.text()).toContain('Analysis done.');
+    expect(banner.text()).toContain('Whale analysis');
+    expect(banner.text()).not.toContain('Bean analysis');
+    act(() => banner.button('Review result').click());
+    expect(openGuidedHistoryItem).toHaveBeenLastCalledWith(fresh);
+    banner.render(baseProps({ ...progress, inputText: b, guidedStep: 2, guidedCreatedHistoryIds: [old.id, fresh.id], history: [old, fresh] }));
+    expect(completedCount()).toBe('2');
+    expect(banner.text()).toContain('Whale analysis');
+    expect(banner.text()).not.toContain('Bean analysis');
+    banner.cleanup();
+  });
+
   it('THE BUG: analysis step shows the ACTION (not "done") even when guidedEngaged is true, while history is empty', () => {
     const b = mountBanner(baseProps({ guidedStep: 1, guidedEngaged: true, history: [] }));
     const txt = b.text();
@@ -111,7 +163,7 @@ describe('Guided banner — success note is gated on real completion, not the cl
     const b = mountBanner(baseProps({ guidedStep: 1, guidedEngaged: true, history: [] }));
     expect(b.text()).not.toContain('Analysis done');
     // The async analysis result lands in history (same step, same component instance):
-    b.render(baseProps({ guidedStep: 1, guidedEngaged: true, history: [{ type: 'analysis', id: 'a1', title: 'Analysis', data: { readingLevel: 'Grade 2', originalText: 'Plants need sunlight and water.' } }] }));
+    b.render(baseProps({ guidedStep: 1, guidedEngaged: true, inputText: CHECKED_PASSAGE, history: [{ type: 'analysis', id: 'a1', title: 'Analysis', data: { readingLevel: 'Grade 2', originalText: 'Plants need sunlight and water.' } }] }));
     const txt = b.text();
     expect(txt).toContain('Analysis done');
     expect(txt).toContain('✅');
@@ -122,7 +174,7 @@ describe('Guided banner — success note is gated on real completion, not the cl
   it('does NOT flash "done" on a fresh step that a prior step\'s history would otherwise satisfy', () => {
     // Arrive at analysis with nothing produced yet, then its result lands → done:
     const b = mountBanner(baseProps({ guidedStep: 1, history: [] }));
-    b.render(baseProps({ guidedStep: 1, history: [{ type: 'analysis', id: 'a1', data: { readingLevel: 'Grade 2', originalText: 'Plants need sunlight and water.' } }] }));
+    b.render(baseProps({ guidedStep: 1, inputText: CHECKED_PASSAGE, history: [{ type: 'analysis', id: 'a1', data: { readingLevel: 'Grade 2', originalText: 'Plants need sunlight and water.' } }] }));
     expect(b.text()).toContain('Analysis done');
     // Advance to FAQ with the SAME history — re-baselined on step change, so FAQ is NOT yet "done"
     // even though an (unrelated) analysis item sits in history:
@@ -258,7 +310,7 @@ describe('Guided banner - progress, skips, and real interaction completion', () 
     expect(handleGuidedSkip).toHaveBeenCalledWith(true);
     pending.cleanup();
 
-    const done = mountBanner(baseProps({ guidedStep: 1, history: [], guidedCompletedIds: ['analysis'], handleGuidedSkip }));
+    const done = mountBanner(baseProps({ guidedStep: 1, inputText: CHECKED_PASSAGE, history: [{ id: 'check', type: 'analysis', data: { originalText: CHECKED_PASSAGE } }], guidedCompletedIds: ['analysis'], handleGuidedSkip }));
     act(() => { done.button('Next step').click(); });
     expect(handleGuidedSkip).toHaveBeenLastCalledWith(false);
     done.cleanup();
@@ -315,10 +367,27 @@ describe('Guided banner - navigation, summary, and declared localization', () =>
     b.cleanup();
   });
 
+  it('reopens a completed resource step after a passage change and keeps earlier work out of the recap', () => {
+    const steps = [...STEPS, { id: '_final', label: 'Finish' }];
+    const a = { id: 'seeds', type: 'faq', title: 'Seeds handout', sourceSnapshot: { text: 'Seeds passage' } };
+    const b = { id: 'moon', type: 'quiz', title: 'Moon quiz', sourceSnapshot: { text: 'Moon passage' } };
+    const shared = { GUIDED_STEPS: steps, allGuidedSteps: steps, guidedStep: 2, guidedCompletedIds: ['faq'] };
+    const page = mountBanner(baseProps({ ...shared, history: [a], inputText: 'Seeds passage', guidedCreatedHistoryIds: [a.id] }));
+    expect(page.text()).toContain('FAQ ready.');
+    const current = { ...shared, history: [a, b], inputText: 'Moon passage', guidedCreatedHistoryIds: [b.id],
+      guidedItemBelongs: item => item?.sourceSnapshot?.text === 'Moon passage' };
+    page.render(baseProps(current));
+    expect(page.text()).not.toContain('FAQ ready.');
+    expect(page.host.querySelector('[aria-labelledby="guided-result-preview-title"]')).toBeNull();
+    page.render(baseProps({ ...current, guidedStep: 3 }));
+    expect(page.text()).toContain('Moon quiz');
+    expect(page.text()).not.toContain('Seeds handout');
+    page.cleanup();
+  });
   it('summarizes completed, skipped, and Guided-created resources on the final step', () => {
-    const history = [{ id: 'guided-faq', type: 'faq', title: 'Guided FAQ' }];
+    const history = [{ id: 'guided-faq', type: 'faq', title: 'Guided FAQ' }, { id: 'checked', type: 'analysis', data: { originalText: 'Text' } }];
     const b = mountBanner(baseProps({
-      guidedStep: 2,
+      guidedStep: 2, inputText: 'Text',
       guidedCompletedIds: ['analysis'],
       guidedSkippedIds: ['source-input'],
       guidedCreatedHistoryIds: ['guided-faq'],
@@ -327,7 +396,7 @@ describe('Guided banner - navigation, summary, and declared localization', () =>
     const summary = b.host.querySelector('[role="list"][aria-label="Guided Mode completion summary"]');
     expect(summary).toBeTruthy();
     const items = Array.from(summary.querySelectorAll('[role="listitem"]')).map(item => item.textContent);
-    expect(items).toEqual(['1Completed', '1Skipped', '1Resources']);
+    expect(items).toEqual(['2Completed', '1Skipped', '1Resources']);
     b.cleanup();
   });
 
@@ -339,7 +408,7 @@ describe('Guided banner - navigation, summary, and declared localization', () =>
     const b = mountBanner(baseProps({
       guidedStep: 1,
       guidedCompletedIds: ['analysis'],
-      currentUiLanguage: 'Spanish',
+      inputText: CHECKED_PASSAGE, history: [{ id: 'check', type: 'analysis', data: { originalText: CHECKED_PASSAGE } }], currentUiLanguage: 'Spanish',
       t: (key) => translated[key] || '',
     }));
     expect(b.text()).toContain('Analizar el material');
@@ -436,7 +505,7 @@ describe('Guided banner - data lifecycle and accountable navigation', () => {
     const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
     const b = mountBanner(baseProps({ guidedStep: 1, isGuidedRetrying: true, guidedProviderProfile: 'cloud', history: [] }));
     now.mockReturnValue(4000);
-    b.render(baseProps({ guidedStep: 1, isGuidedRetrying: false, guidedProviderProfile: 'cloud', history: [{ id: 'a1', type: 'analysis' }] }));
+    b.render(baseProps({ guidedStep: 1, isGuidedRetrying: false, guidedProviderProfile: 'cloud', inputText: CHECKED_PASSAGE, history: [{ id: 'a1', type: 'analysis', data: { originalText: CHECKED_PASSAGE } }] }));
     const stats = JSON.parse(localStorage.getItem('allo_guided_duration_stats'))[key];
     expect(stats.samples).toBe(20);
     expect(stats.values).toHaveLength(20);
@@ -531,7 +600,7 @@ describe('Guided banner - AI-configured lesson path', () => {
     expect(JSON.parse(localStorage.getItem('allo_guided_delivery_preferences') || '{}')).toEqual({ setting: 'lms', priority: 'assessment' });
     b.cleanup();
   });
-  it('flags a missing QTI prerequisite and adds the Assess step without changing the active path', async () => {
+  it('checks source and QTI prerequisites and adds Assess without changing the active path', async () => {
     const planSteps = [
       { id: 'source-input', phase: 'plan', label: 'Source Material', action: 'Add source.', success: 'Ready.' },
       { id: 'analysis', phase: 'understand', label: 'Analyze Source Material', action: 'Analyze.', success: 'Ready.' },
@@ -542,10 +611,11 @@ describe('Guided banner - AI-configured lesson path', () => {
       estimatedMinutes: 20, deliverySetting: 'lms', deliveryPriority: 'assessment', assumptions: [],
     });
     const applyGuidedPreset = vi.fn();
-    const b = mountBanner(baseProps({
+    const props = baseProps({
       guidedStep: 0, guidedPresets: [], applyGuidedPreset, generateGuidedPlanFromGoal,
       openGuidedDocumentBuilder: vi.fn(), allGuidedSteps: planSteps, GUIDED_STEPS: planSteps,
-    }));
+    });
+    const b = mountBanner(props);
     openAiPlanner(b);
     const textarea = b.host.querySelector('#guided-ai-goal');
     act(() => {
@@ -555,6 +625,12 @@ describe('Guided banner - AI-configured lesson path', () => {
     });
     await act(async () => { b.button('Create my Guided plan').click(); await new Promise(resolve => setTimeout(resolve, 0)); });
     expect(b.text()).toContain('QTI packaging requires quiz content');
+    const short = 'The sun is hot.';
+    b.render({ ...props, inputText: short, acceptedSourceText: short });
+    expect(b.text()).toContain('Source material is already available.');
+    b.render({ ...props, inputText: 'New draft.', acceptedSourceText: short });
+    expect(b.text()).toContain('Source material is still needed; Guided Mode will request it first.');
+    b.render(props);
     expect(applyGuidedPreset).not.toHaveBeenCalled();
     act(() => { b.button('Add Assess step').click(); });
     expect(b.text()).toContain('Edited by you');
@@ -703,7 +779,7 @@ describe('Guided banner - adaptive planning context and phase checkpoints', () =
     const b = mountBanner(baseProps({
       GUIDED_STEPS: phaseSteps, allGuidedSteps: phaseSteps, guidedStep: 0,
       guidedCompletedIds: ['analysis'], guidedCreatedHistoryIds: ['a1'],
-      history: [{ id: 'a1', type: 'analysis', title: 'Barrier scan' }],
+      inputText: CHECKED_PASSAGE, history: [{ id: 'a1', type: 'analysis', title: 'Barrier scan', data: { originalText: CHECKED_PASSAGE } }],
       guidedPhases: [{ id: 'understand', label: 'Understand' }, { id: 'participate', label: 'Participate' }],
       handleGuidedSkip, openGuidedHistoryItem,
     }));
@@ -744,6 +820,7 @@ describe('Guided banner - outcome phases and delivery actions', () => {
     expect(b.text()).toContain('Help me choose');
     expect(b.text()).toContain('Recommended');
     expect(b.button('Test student link').disabled).toBe(true);
+    expect(b.button('Create learner link').disabled).toBe(false);
     act(() => { b.button('Document Builder').click(); });
     expect(markGuidedStepDone).not.toHaveBeenCalled();
     expect(openGuidedDocumentBuilder).toHaveBeenCalledTimes(1);
@@ -811,7 +888,7 @@ describe('Guided banner - persistent brief, resilient checkpoints, and launchpad
     const b = mountBanner(baseProps({
       GUIDED_STEPS: finalSteps, allGuidedSteps: finalSteps, guidedStep: 0,
       history: [lessonPlan, directions], guidedCreatedHistoryIds: ['lp-1', 'dir-1'],
-      guidedDeliveryEvidence: { directionsSaved: true, studentPreviewed: true, exportCreated: true },
+      guidedDeliveryEvidence: { directionsSaved: true, studentPreviewed: true, exportCreated: true, learnerLink: { id: 'owned-link' } },
       openGuidedHistoryItem, openGuidedDocumentBuilder,
       previewGuidedStudentAssignment, canPreviewGuidedStudentAssignment: true,
     }));
@@ -914,12 +991,12 @@ describe('Guided banner - truthful autosave and safe exit', () => {
 
 describe('Guided banner - continuous journey handoff and resource shelf', () => {
   it('explains automatic advancement and lets the teacher review or go back', () => {
-    const result = { id: 'analysis-1', type: 'analysis', title: 'Barrier analysis', summary: 'Key language and concept barriers.' };
+    const result = { id: 'analysis-1', type: 'analysis', title: 'Barrier analysis', data: { originalText: CHECKED_PASSAGE }, summary: 'Key language and concept barriers.' };
     const openGuidedHistoryItem = vi.fn();
     const undoGuidedAutoAdvance = vi.fn();
     const b = mountBanner(baseProps({
       guidedStep: 2,
-      history: [result], guidedCreatedHistoryIds: ['analysis-1'],
+      inputText: CHECKED_PASSAGE, history: [result], guidedCreatedHistoryIds: ['analysis-1'],
       guidedAdvanceNotice: { fromStep: 1, fromId: 'analysis', toId: 'faq', historyId: 'analysis-1', at: Date.now() },
       openGuidedHistoryItem, undoGuidedAutoAdvance, clearGuidedAdvanceNotice: vi.fn(),
     }));
@@ -933,12 +1010,12 @@ describe('Guided banner - continuous journey handoff and resource shelf', () => 
   });
 
   it('keeps created resources reachable throughout the run and previews why/output/next', () => {
-    const analysis = { id: 'analysis-1', type: 'analysis', title: 'Barrier analysis' };
+    const analysis = { id: 'analysis-1', type: 'analysis', title: 'Barrier analysis', data: { originalText: CHECKED_PASSAGE } };
     const faq = { id: 'faq-1', type: 'faq', title: 'Student FAQ' };
     const openGuidedHistoryItem = vi.fn();
     const b = mountBanner(baseProps({
       guidedStep: 1,
-      history: [analysis, faq], guidedCreatedHistoryIds: ['analysis-1', 'faq-1'],
+      inputText: CHECKED_PASSAGE, history: [analysis, faq], guidedCreatedHistoryIds: ['analysis-1', 'faq-1'],
       openGuidedHistoryItem,
     }));
     expect(b.text()).toContain('Lesson resources');
@@ -1069,9 +1146,9 @@ describe('Guided step recovery guidance', () => {
   it('opens settings or retries only when chosen, retaining the current result', () => {
     const openUniversalSettings = vi.fn();
     const retryGuidedStep = vi.fn();
-    const saved = { id: 'saved-analysis', type: 'analysis', data: 'Existing result.' };
+    const saved = { id: 'saved-analysis', type: 'analysis', data: { originalText: CHECKED_PASSAGE, summary: 'Existing result.' } };
     const shared = { guidedStepError: 'Missing API key', openUniversalSettings, retryGuidedStep,
-      history: [saved], guidedCreatedHistoryIds: [saved.id], guidedCompletedIds: ['analysis'] };
+      inputText: CHECKED_PASSAGE, history: [saved], guidedCreatedHistoryIds: [saved.id], guidedCompletedIds: ['analysis'] };
     const b = mountBanner(baseProps(shared));
     expect(retryGuidedStep).not.toHaveBeenCalled();
     act(() => b.button('Review settings').click());
@@ -1105,6 +1182,38 @@ describe('Readiness confirmations belong to the reviewed lesson', () => {
   const check = (b, label = 'Accessibility and reading order') => Array.from(b.host.querySelectorAll('label')).find(item => item.textContent.includes(label))?.querySelector('input[type="checkbox"]');
   const confirm = b => act(() => check(b).click());
 
+  it.each(['print', 'lms'])('uses the scoped student document for %s and requires review of those pages', route => {
+    localStorage.setItem('allo_guided_delivery_preferences', JSON.stringify({ setting: route }));
+    const openGuidedDocumentReview = vi.fn(), createGuidedHomeworkShare = vi.fn(), previewGuidedStudentAssignment = vi.fn();
+    const evidence = { exportCreated: true, studentPreviewed: true, shareCreated: true, learnerLink: { id: 'homework' } };
+    const state = { guidedDocumentKey: 'current', openGuidedDocumentReview, createGuidedHomeworkShare, previewGuidedStudentAssignment,
+      canPreviewGuidedStudentAssignment: true, history: [{ ...reading, type: 'quiz', data: { deliverySettings: { feedbackTiming: 'immediate' } } }],
+      guidedDeliveryEvidence: evidence };
+    const b = mountBanner(props(state));
+    const item = id => b.host.querySelector('[data-readiness-item="' + id + '"] input');
+    expect(item('learner-view').checked).toBe(false);
+    expect(item('learner-view').disabled).toBe(true);
+    expect(item('delivery').checked).toBe(false);
+    expect(b.text()).not.toContain('Answer keys travel to student devices');
+    const label = route === 'print' ? 'Preview student print pages' : 'Preview student package';
+    act(() => b.button(label).click());
+    expect(openGuidedDocumentReview).toHaveBeenCalledWith(route);
+    expect(createGuidedHomeworkShare).not.toHaveBeenCalled();
+    expect(previewGuidedStudentAssignment).not.toHaveBeenCalled();
+    const reviewed = { ...evidence, documentExports: { [route]: 'current' }, documentReviews: { [route]: { key: 'current', hasKey: route === 'print' } } };
+    b.render(props({ ...state, guidedDeliveryEvidence: reviewed }));
+    expect(item('learner-view').checked).toBe(true);
+    expect(item('delivery').checked).toBe(true);
+    expect(item('answer-keys').checked).toBe(false);
+    expect(b.text()).toContain(route === 'print' ? 'full print file includes a teacher answer-key section' : 'my LMS student view after import');
+    act(() => item('answer-keys').click());
+    expect(item('answer-keys').checked).toBe(true);
+    b.render(props({ ...state, guidedDocumentKey: 'changed', guidedDeliveryEvidence: reviewed }));
+    expect(item('learner-view').checked).toBe(false);
+    expect(item('delivery').checked).toBe(false);
+    expect(item('answer-keys').checked).toBe(false);
+    b.cleanup();
+  });
   it('does not inherit unscoped confirmations from an older version', () => {
     localStorage.setItem(key, JSON.stringify({ accessibility: true, backup: true, directions: true }));
     const b = mountBanner(props());
@@ -1229,7 +1338,7 @@ describe('Guided navigation labels', () => {
     b.cleanup();
   });
   it('names the destination on Next step after a completed result', () => {
-    const b = mountBanner(baseProps({ guidedCompletedIds: ['analysis'] }));
+    const b = mountBanner(baseProps({ inputText: CHECKED_PASSAGE, history: [{ id: 'checked', type: 'analysis', data: { originalText: CHECKED_PASSAGE } }], guidedCompletedIds: ['analysis'] }));
     expect(b.button('Next step').textContent).toContain('FAQ Generator');
     b.cleanup();
   });
@@ -1243,7 +1352,7 @@ describe('Guided resume clarity and busy state', () => {
   });
   it('disables resume, review, and planning actions while a resource is running', () => {
     const focus=vi.fn(),review=vi.fn();
-    const b=mountBanner(baseProps({guidedCompletedIds:['source-input'],guidedCreatedHistoryIds:['result'],history:[{id:'result',type:'analysis',data:'Saved analysis'}],isGuidedRetrying:true,focusGuidedTarget:focus,openGuidedHistoryItem:review,generateGuidedPlanFromGoal:vi.fn()}));
+    const b=mountBanner(baseProps({guidedCompletedIds:['source-input'],guidedCreatedHistoryIds:['result'],inputText:CHECKED_PASSAGE,history:[{id:'result',type:'analysis',data:{originalText:CHECKED_PASSAGE}}],isGuidedRetrying:true,focusGuidedTarget:focus,openGuidedHistoryItem:review,generateGuidedPlanFromGoal:vi.fn()}));
     const actions=Array.from(b.host.querySelectorAll('.allo-guided-resume-card button'));
     expect(actions).toHaveLength(3);expect(actions.every(button=>button.disabled)).toBe(true);
     act(()=>actions.forEach(button=>button.click()));expect(focus).not.toHaveBeenCalled();expect(review).not.toHaveBeenCalled();b.cleanup();

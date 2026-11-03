@@ -27,6 +27,16 @@ const spanish = JSON.parse(fs.readFileSync('lang/spanish_latin_america.js', 'utf
 const t = key => spanish[key.replace('word_practice.', '')] || key;
 
 describe.each(Object.keys(lanes))('PowerPoint language and guidance (%s)', lane => {
+  it('exports the authored quotation marks, line break and direction from a prepared Word Sounds board', async () => {
+    const input = { words: [{ word: 'ورقة', termLanguage: 'Arabic', activityItems: { read_sentence: {
+      sentence: 'انظر إلى\n«ورقة»!', before: 'انظر إلى\n«', after: '»!', options: ['ورقة', 'شجرة']
+    } } }] };
+    const deck = await load(lane).buildPptx(input, { mode: 'sentence', repetitions: 1, includeAudio: false, cardFont: 'georgia' }, undefined, { PptxGenJS: Presentation });
+    const prompt = deck.slides[0].texts.find(entry => entry.text === 'انظر إلى\n«____»!');
+    expect(prompt.options).toMatchObject({ lang: 'ar', rtlMode: true });
+    expect(deck.theme.bodyFontFace).toBe('Georgia');
+    expect(deck.slides.at(-1).texts.some(entry => entry.text === 'ورقة')).toBe(true);
+  });
   it.each(['popup', 'blend', 'vocabulary', 'spelling', 'sentence'])('tags actual %s text options and keeps source/UI languages separate', async mode => {
     const pptx = await load(lane).buildPptx({ language: 'es-MX', words }, { mode, repetitions: 1, includeAudio: false }, undefined, { PptxGenJS: Presentation, currentUiLanguage: 'French', t: key => key === 'word_practice.card_progress' ? 'Carte {n} sur {total}' : key });
     for (const entry of pptx.slides.flatMap(slide => slide.texts)) {

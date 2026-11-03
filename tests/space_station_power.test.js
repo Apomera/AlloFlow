@@ -237,6 +237,217 @@ describe('space station interactive power lab', () => {
     expect(view.host.querySelector('[data-iss-orbit-forecast] svg').getAttribute('aria-label')).toContain('battery is ' + expected.percent.toFixed(0));
   });
 
+  async function openReservePlanner(view, kind = 'reserve') {
+    const details = view.host.querySelector('[data-power-' + kind + '-plan]');
+    await act(async () => {
+      const toggled = new Promise(resolve => details.addEventListener('toggle', resolve, { once: true }));
+      details.querySelector('summary').click();
+      await toggled;
+    });
+    return details;
+  }
+
+  it('opens the research budget from a failed alignment forecast and applies only the selected workload', async () => {
+    const view = mountPower({ opsCrew: 7, opsResearch: 100, opsEclipse: 45, opsBattery: 35, opsArrayAngle: 90 });
+    view.click('[data-ops-lab-record]');
+    view.patch({ opsOrbitMinute: 41, opsPrediction: 'Keep the eclipse and array angle fixed.' });
+    view.click('[data-iss-playback-toggle="power"]');
+    const before = JSON.parse(JSON.stringify(view.data));
+    const alignment = await openReservePlanner(view, 'alignment');
+    const research = view.host.querySelector('[data-power-research-plan]');
+    expect(research.open).toBe(false);
+    expect(alignment.querySelector('[data-alignment-apply]')).toBeNull();
+    await act(async () => {
+      const opened = new Promise(resolve => research.addEventListener('toggle', resolve, { once: true }));
+      alignment.querySelector('button').click();
+      await opened;
+    });
+    expect(document.activeElement).toBe(research.querySelector('summary'));
+    expect(view.playing).toBe(true);
+    expect(view.data).toEqual(before);
+    expect(research.querySelector('[data-research-recommended]').dataset.research).toBe('55');
+    expect(research.querySelector('[data-research-higher]').dataset.research).toBe('60');
+    expect(research.querySelector('[data-research-recommended]').textContent).toContain('> 25.0%');
+    view.click('[data-research-apply]');
+    advance(.1);
+    expect(document.activeElement.id).toBe('iss-research-result-title');
+    expect(view.data.opsResearch).toBe(55);
+    expect(view.time).toBe(0);
+    expect(view.playing).toBe(false);
+    for (const field of ['opsCrew', 'opsArrayAngle', 'opsBattery', 'opsEclipse', 'opsTrials', 'opsPrediction']) {
+      expect(view.data[field]).toEqual(before[field]);
+    }
+    expect(research.querySelector('[role="status"]').textContent).toContain('55% research');
+    expect(research.querySelector('[data-research-apply]').disabled).toBe(true);
+    expect(alignment.querySelector('[data-alignment-recommended]')).toBeTruthy();
+    view.change('iss-power-battery', 26);
+    expect(research.querySelector('[role="status"]')).toBeNull();
+    expect(research.querySelector('[data-research-apply]')).toBeNull();
+    expect(research.textContent).toContain('79.2 kW');
+    view.change('iss-power-battery', 24);
+    expect(research.textContent).toContain('below 25% at minute zero');
+    expect(alignment.querySelector('button')).toBeNull();
+  });
+
+  it('preserves fractional working research and allows a recommendation of zero', async () => {
+    const view = mountPower({ opsCrew: 7, opsResearch: 55.001, opsArrayAngle: 90, opsEclipse: 45, opsBattery: 35 });
+    const details = await openReservePlanner(view, 'research');
+    expect(details.querySelector('[data-research-current]').textContent).toContain('> 55.00%');
+    expect(view.data.opsResearch).toBe(55.001);
+    view.patch({ opsCrew: 6, opsBattery: 25 });
+    expect(details.querySelector('[data-research-recommended]').dataset.research).toBe('0');
+    view.click('[data-research-apply]');
+    expect(view.data.opsResearch).toBe(0);
+    view.patch({ opsCrew: 7, opsBattery: 45 });
+    expect(details.querySelector('[data-research-recommended]').dataset.research).toBe('100');
+    expect(details.querySelector('[data-research-higher]')).toBeNull();
+  });
+
+  it('previews adjacent array angles and applies one without changing the charge or notebook', async () => {
+    const view = mountPower({ opsCrew: 11, opsResearch: 100, opsArrayAngle: 7.999, opsEclipse: 45, opsBattery: 100 });
+    view.click('[data-ops-lab-record]');
+    view.patch({ opsOrbitMinute: 18.5, opsPrediction: 'Does 7° protect the reserve?', opsLoadedTrial: view.data.opsTrials[0].id });
+    view.click('[data-iss-playback-toggle="power"]');
+    const before = JSON.parse(JSON.stringify(view.data));
+    const details = await openReservePlanner(view, 'alignment');
+    expect(view.host.querySelector('[data-power-reserve-plan]').open).toBe(false);
+    expect(view.data).toEqual(before);
+    expect(view.playing).toBe(true);
+    expect(details.querySelector('[data-alignment-current]').textContent).toMatch(/< 8\.00°/);
+    expect(details.querySelector('[data-alignment-lower]').textContent).toContain('< 25.0%');
+    expect(details.querySelector('[data-alignment-recommended]').dataset.angle).toBe('8');
+    const chargePanel = await openReservePlanner(view);
+    const chargeForecast = () => Number(chargePanel.querySelector('[data-reserve-current]').dataset.minPercent);
+    const beforeMinimum = chargeForecast();
+    view.click('[data-alignment-apply]');
+    expect(view.data.opsArrayAngle).toBe(8);
+    expect(view.data.opsBattery).toBe(100);
+    expect(view.data.opsOrbitMinute).toBe(0);
+    expect(view.playing).toBe(false);
+    expect(view.data.opsLoadedTrial).toBeNull();
+    expect(view.data.opsPrediction).toBe(before.opsPrediction);
+    expect(view.data.opsTrials).toEqual(before.opsTrials);
+    expect(chargePanel.open).toBe(true);
+    expect(chargeForecast()).toBeGreaterThan(beforeMinimum);
+    const expectedChanges = new Set(['opsArrayAngle', 'opsOrbitMinute', 'opsScenario', 'opsInspection', 'opsLoadedTrial']);
+    for (const token of ['opsPowerSeekToken', 'opsIntegratedSeekToken', 'opsAirSeekToken', 'opsThermalSeekToken', 'opsAttitudeSeekToken']) {
+      expect(view.data[token]).toBe(!before[token]);
+      expectedChanges.add(token);
+    }
+    for (const key of new Set([...Object.keys(before), ...Object.keys(view.data)])) {
+      if (!expectedChanges.has(key)) expect(view.data[key]).toEqual(before[key]);
+    }
+    advance(.1);
+    expect(document.activeElement.id).toBe('iss-alignment-result-title');
+    expect(details.open).toBe(true);
+    expect(details.querySelector('[data-alignment-apply-status]').textContent).toContain('8°');
+    expect(details.querySelector('[data-alignment-apply]').disabled).toBe(true);
+    const recommendedCharge = Number(chargePanel.querySelector('[data-reserve-recommended]').dataset.startPercent);
+    view.click('[data-reserve-apply]');
+    expect(view.data.opsBattery).toBe(recommendedCharge);
+    expect(details.querySelector('[data-alignment-apply-status]')).toBeNull();
+    view.change('iss-power-battery', 24);
+    expect(details.querySelector('[data-alignment-apply-status]')).toBeNull();
+    expect(details.querySelector('[data-alignment-apply]')).toBeNull();
+    expect(details.querySelector('[data-alignment-maximum]').dataset.angle).toBe('90');
+    expect(details.textContent).toContain('below 25% at minute zero');
+    view.change('iss-power-battery', 25);
+    expect(details.querySelector('[data-alignment-apply]')).toBeNull();
+    expect(Number(details.querySelector('[data-alignment-maximum]').dataset.minPercent)).toBeLessThan(25);
+    expect(details.textContent).toContain('higher starting charge or less research demand');
+    expect(details.textContent).not.toContain('below 25% at minute zero');
+    view.change('iss-power-battery', 100);
+    view.change('iss-power-load', 0);
+    expect(details.querySelector('[data-alignment-recommended]').dataset.angle).toBe('0');
+    expect(details.querySelector('[data-alignment-lower]')).toBeNull();
+    view.click('[data-alignment-apply]');
+    expect(view.data.opsArrayAngle).toBe(0);
+  });
+
+  it('applies the reserve planner’s lowest passing start and pauses the working orbit while preserving recorded evidence', async () => {
+    const view = mountPower({ opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 12,
+      opsWaterDay: 13, opsPressureMinute: 4.5, opsDebrisTime: 42, opsPrediction: 'Prediction for the recorded trial.' });
+    view.click('[data-ops-lab-record]');
+    const saved = JSON.parse(JSON.stringify(view.data.opsTrials));
+    saved[0].reflection = 'Earlier evidence about the low starting reserve.';
+    view.patch({ opsTrials: saved, opsPrediction: 'Keep my next-trial draft.', opsOrbitMinute: 63.75,
+      opsLoadedTrial: saved[0].id, opsInspection: { source: 'rule', id: 'power', minute: 0, setup: JSON.stringify(saved[0].setup) } });
+    const details = view.host.querySelector('[data-power-reserve-plan]');
+    expect(details.tagName).toBe('DETAILS');
+    expect(details.open).toBe(false);
+    await openReservePlanner(view);
+    expect(details.open).toBe(true);
+    expect(details.querySelector('[data-reserve-state="feasible"]')).toBeTruthy();
+    const current = details.querySelector('[data-reserve-current]');
+    const recommended = details.querySelector('[data-reserve-recommended]');
+    const lower = details.querySelector('[data-reserve-lower]');
+    expect(Number(current.dataset.startPercent)).toBe(12);
+    expect(Number(current.dataset.minPercent)).toBeLessThan(25);
+    const selectedStart = Number(recommended.dataset.startPercent);
+    expect(Number.isInteger(selectedStart)).toBe(true);
+    expect(Number(recommended.dataset.minPercent)).toBeGreaterThanOrEqual(25);
+    expect(Number(lower.dataset.startPercent)).toBe(selectedStart - 1);
+    expect(Number(lower.dataset.minPercent)).toBeLessThan(25);
+    expect(details.querySelector('[data-reserve-apply]').disabled).toBe(false);
+    view.click('[data-iss-playback-toggle="power"]');
+    expect(view.playing).toBe(true);
+    const before = JSON.parse(JSON.stringify(view.data));
+    view.click('[data-reserve-apply]');
+    expect(view.data.opsBattery).toBe(selectedStart);
+    expect(view.data.opsScenario).toBe('custom');
+    expect(view.time).toBe(0);
+    expect(view.playing).toBe(false);
+    expect(view.data.opsInspection).toBeNull();
+    expect(view.data.opsLoadedTrial).toBeNull();
+    for (const key of Object.keys(saved[0].setup).filter(key => key !== 'opsBattery')) expect(view.data[key]).toBe(before[key]);
+    for (const key of ['opsIntegratedSeekToken', 'opsPowerSeekToken', 'opsAirSeekToken', 'opsThermalSeekToken', 'opsAttitudeSeekToken']) {
+      expect(view.data[key]).toBe(!before[key]);
+    }
+    for (const key of ['opsTrials', 'opsPrediction', 'opsTrialSelected', 'opsTrialCompare', 'opsWaterDay', 'opsPressureMinute', 'opsDebrisTime']) {
+      expect(view.data[key]).toEqual(before[key]);
+    }
+    expect(details.querySelector('[data-reserve-apply]').disabled).toBe(true);
+    expect(details.querySelector('[data-reserve-apply-status]').getAttribute('role')).toBe('status');
+    expect(details.querySelector('[data-reserve-apply-status]').textContent).toContain(selectedStart + '%');
+    advance(.3);
+    expect(view.time).toBe(0);
+  });
+
+  it('recomputes the reserve planner after load, array and eclipse changes and guards the guided trial setup', async () => {
+    const view = mountPower({ opsCrew: 11, opsResearch: 100, opsArrayAngle: 0, opsEclipse: 45, opsBattery: 100 });
+    const details = await openReservePlanner(view);
+    expect(details.querySelector('[data-reserve-state="unreachable"]')).toBeTruthy();
+    expect(Number(details.querySelector('[data-reserve-full]').dataset.startPercent)).toBe(100);
+    expect(Number(details.querySelector('[data-reserve-full]').dataset.minPercent)).toBeLessThan(25);
+    expect(details.querySelector('[data-reserve-apply]')).toBeNull();
+    const recommendation = () => Number(details.querySelector('[data-reserve-recommended]').dataset.startPercent);
+    view.change('iss-power-load', 0);
+    expect(details.querySelector('[data-reserve-state="feasible"]')).toBeTruthy();
+    expect(details.querySelector('[data-reserve-full]')).toBeNull();
+    const darkStart = recommendation();
+    view.change('iss-power-angle', 90);
+    const collectingStart = recommendation();
+    expect(collectingStart).toBeLessThan(darkStart);
+    view.change('iss-power-eclipse', 20);
+    expect(recommendation()).toBeLessThan(collectingStart);
+    expect(view.data.opsBattery).toBe(100);
+    view.click('[data-eclipse-guide-start]');
+    expect(view.host.querySelector('[data-eclipse-guide]').dataset.step).toBe('baseline');
+    expect(details.querySelector('[data-reserve-apply]').disabled).toBe(true);
+    view.change('iss-eclipse-guide-prediction', 'Longer eclipse will drain more stored energy.');
+    view.click('[data-eclipse-guide-record-a]');
+    expect(view.host.querySelector('[data-eclipse-guide]').dataset.step).toBe('change');
+    expect(details.querySelector('[data-reserve-apply]').disabled).toBe(true);
+    view.click('[data-eclipse-guide-change]');
+    expect(view.host.querySelector('[data-eclipse-guide]').dataset.step).toBe('comparison');
+    expect(details.querySelector('[data-reserve-apply]').disabled).toBe(true);
+    const guideSetup = JSON.parse(JSON.stringify(view.data));
+    view.click('[data-reserve-apply]');
+    expect(view.data).toEqual(guideSetup);
+    view.click('[data-eclipse-guide-exit]');
+    expect(details.querySelector('[data-reserve-apply]').disabled).toBe(false);
+  });
+
   it('supports captured pointer inspection, cancellation, and precise keyboard-equivalent seeking', () => {
     const view = mountPower();
     const plot = view.host.querySelector('[data-power-plot]');

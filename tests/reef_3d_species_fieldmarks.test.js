@@ -84,7 +84,7 @@ describe('Lane D load cost', () => {
     });
     for (const id of S.ids) { const h = S.create(THREE, id, { seed: 3, quality: 'high' }); add(h, !POST_MERGE_IDS.includes(id)); h.dispose(); }
     for (const id of ['anthias', 'bumphead_parrotfish']) { const h = S.createSchool(THREE, id, 5, { seed: 3 }); add(h); h.dispose(); }
-    expect([...keys]).toEqual(['reef3d-species-v7|d']);
+    expect([...keys]).toEqual(['reef3d-species-v8|d']);
     // The cucumber's existing roughness map adds the eleventh family. The new
     // firefish and copperband reuse existing signatures. The pipefish's textured
     // fin batch adds the twelfth family (including instanced schools).

@@ -51,6 +51,43 @@ describe('Dino Lab camera fitting', () => {
   it('increases viewing distance when a long animal enters portrait layout', () => {
     expect(dinoFrameDistance(10,2,1,42,0.6)).toBeGreaterThan(dinoFrameDistance(10,2,1,42,2));
   });
+  for (const aspect of [0.4, 320 / 340, 1.8, 2.4]) {
+    it('retains the same edge margin for every rotated corner at aspect ' + aspect, () => {
+      for (const half of [[6, 2, 0.7], [0.06, 0.025, 0.012], [8, 7, 1]]) {
+        for (const yaw of [-Math.PI, -1.2, -0.35, 0, 0.35, Math.PI / 2, 2.6]) for (const pitch of [-0.2, 0, 0.18, 0.7, 1.25]) {
+          const distance = dinoFrameDistance(...half, 52, aspect, yaw, pitch);
+          expect(distance).toBeGreaterThan(0); expect(Number.isFinite(distance)).toBe(true);
+          const camera = new THREE.PerspectiveCamera(52, aspect, distance / 1000, distance * 10);
+          camera.position.set(0, Math.sin(pitch) * distance, Math.cos(pitch) * distance);
+          camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true);
+          let largest = 0;
+          for (const x of [-half[0], half[0]]) for (const y of [-half[1], half[1]]) for (const z of [-half[2], half[2]]) {
+            const point = new THREE.Vector3(x, y, z).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).project(camera);
+            largest = Math.max(largest, Math.abs(point.x), Math.abs(point.y));
+            expect(point.z).toBeGreaterThan(-1); expect(point.z).toBeLessThan(1);
+          }
+          expect(largest).toBeCloseTo(1 / 1.24, 9);
+        }
+      }
+    });
+  }
+  it('removes only excess distance from oblique views and retains the original unoriented API', () => {
+    const half = [6, 2, 0.7], aspect = 320 / 340, fov = 52;
+    for (const yaw of [0, 0.35, 0.8, 1.2, Math.PI / 2]) for (const pitch of [0, 0.18, 0.7, 1.25]) {
+      const across = Math.abs(Math.cos(yaw)) * half[0] + Math.abs(Math.sin(yaw)) * half[2];
+      const along = Math.abs(Math.sin(yaw)) * half[0] + Math.abs(Math.cos(yaw)) * half[2];
+      const up = half[1] * Math.cos(pitch) + along * Math.sin(pitch), depth = half[1] * Math.sin(pitch) + along * Math.cos(pitch);
+      const conservative = dinoFrameDistance(across, up, depth, fov, aspect);
+      expect(dinoFrameDistance(...half, fov, aspect, yaw, pitch)).toBeLessThanOrEqual(conservative + 1e-10);
+    }
+    expect(dinoFrameDistance(...half, fov, aspect, 0.35, 0.18)).toBeLessThan(dinoFrameDistance(
+      Math.cos(0.35) * half[0] + Math.sin(0.35) * half[2],
+      half[1] * Math.cos(0.18) + (Math.sin(0.35) * half[0] + Math.cos(0.35) * half[2]) * Math.sin(0.18),
+      half[1] * Math.sin(0.18) + (Math.sin(0.35) * half[0] + Math.cos(0.35) * half[2]) * Math.cos(0.18), fov, aspect) * 0.96);
+    for (const angles of [[undefined, undefined], [0, NaN], [Infinity, 0]]) {
+      expect(dinoFrameDistance(...half, fov, aspect, ...angles)).toBe(dinoFrameDistance(...half, fov, aspect));
+    }
+  });
 });
 
 describe('Dino Lab anatomical feature surfaces', () => {
@@ -81,7 +118,7 @@ describe('Dino Lab anatomical feature surfaces', () => {
       const top=[new THREE.Vector3(-scale,0.1*scale,0),new THREE.Vector3(0,scale,0),new THREE.Vector3(scale,0.1*scale,0)];
       const g=dinoMembraneGeometry(THREE,bottom,top);finiteGeometry(g);
       expect(g.boundingBox.min.y).toBeCloseTo(0);expect(g.boundingBox.max.y).toBeCloseTo(scale);
-      expect(g.index.count).toBe(40*8*6);g.dispose();
+      expect(g.index.count).toBe(40*16*6);g.dispose();
     });
   }
 });

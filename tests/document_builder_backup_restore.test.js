@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { parse } from '@babel/parser';
 const require = createRequire(import.meta.url);
-const factory = require('../dompurify/3.1.7/purify.min.js');
+const factory = require('../dompurify/3.4.17/purify.min.js');
 const purifier = factory.sanitize ? factory : factory(window);
 const source = readFileSync('view_export_preview_source.jsx', 'utf8');
 const tree = parse(source, { sourceType: 'script', plugins: ['jsx'] });

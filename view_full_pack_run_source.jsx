@@ -12,13 +12,14 @@ function FullPackRunView(props) {
   const packSizeLabel = isAutoConfigEnabled
     ? ({ Auto: t('fullpack.option_auto'), '5': t('fullpack.option_short'), '8': t('fullpack.option_standard'), '12': t('fullpack.option_deep'), All: t('fullpack.option_all') }[resourceCount] || resourceCount)
     : (t('fullpack.current_settings') || 'Current settings');
-  // Delivery routes: the Guided delivery step, or (outside Guided Mode) once a
-  // run has finished or any resource exists. Locked while a run is writing.
+  // Guided Mode has its own delivery chooser beside the pack generator.
+  // Outside Guided Mode, expose the same routes once there is work to deliver.
   const deliveryGroups = Array.isArray(GUIDED_DELIVERY_GROUPS) ? GUIDED_DELIVERY_GROUPS : [];
   const hasDeliverableResources = Array.isArray(history) && history.some(item => item && item.id && item.type && !(item.data && item.data.submissionCopy));
-  const showDeliveryRoutes = guidedMode
-    ? guidedActiveSteps[guidedStep]?.id === 'package-deliver'
-    : (['completed', 'landed', 'partial'].includes(fullPackRun?.status) || hasDeliverableResources);
+  const hasTeachingResources = Array.isArray(history) && history.some(item => item?.id && item.type && item.type !== 'analysis' && !item.data?.submissionCopy);
+  const foldGenerator = !!guidedMode && hasTeachingResources && (!fullPackRun || ['completed', 'landed'].includes(fullPackRun.status));
+  const PackContainer = foldGenerator ? 'details' : 'div';
+  const showDeliveryRoutes = !guidedMode && (['completed', 'landed', 'partial'].includes(fullPackRun?.status) || hasDeliverableResources);
   const latestStudentShare = (qrShareModal && qrShareModal.url) ? qrShareModal : ((Array.isArray(recentQrShares) && recentQrShares.find(item => item && item.url)) || null);
   const testLatestStudentLink = () => {
     // The host helper also records the Guided "learner view tested" evidence.
@@ -27,7 +28,8 @@ function FullPackRunView(props) {
     return false;
   };
   return (
-<div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'package-deliver' || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-sm">
+<PackContainer style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'package-deliver' || (guidedActiveSteps[guidedStep]?.id === '_final' && isRunActive)) ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-sm">
+                {foldGenerator && <summary className="min-h-11 cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white">{t('fullpack.additional_resources') || 'Create more resources'}</summary>}
                 {showDeliveryRoutes && (
                   <div role="region" aria-labelledby="guided-delivery-panel-title" data-testid="full-pack-delivery-routes" className="m-1 mb-2 rounded-2xl bg-white p-3 text-slate-800">
                     <div id="guided-delivery-panel-title" className="text-sm font-black text-indigo-900">{t('fullpack.delivery_title') || 'Preview, Package & Deliver'}</div>
@@ -663,6 +665,6 @@ function FullPackRunView(props) {
                         </div>
                     );
                 })()}
-            </div>
+            </PackContainer>
   );
 }

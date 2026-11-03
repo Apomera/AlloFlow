@@ -106,6 +106,9 @@ function run(command,args,{signal,timeoutMs=180000,env,cwd,ipc=false}={}) {
   });
 }
 async function validate(filePath,options={}) {
+  // The connector creates its state dir lazily (job runs only); a first export_alt_format on a fresh
+  // install reached mkdtemp with no parent and failed with ENOENT (2026-11-02).
+  if(options.stateDir)fs.mkdirSync(options.stateDir,{recursive:true});
   const o=options,scratch=fs.mkdtempSync(path.join(o.stateDir||os.tmpdir(),'epub-verify-'));
   // Each validator gets its own budget. The JVM and Ace's Chromium are slow on emulated or memory-starved hosts;
   // an exceeded budget is reported as `unavailable`, never as a pass.

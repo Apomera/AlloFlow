@@ -309,6 +309,7 @@ function ClassMailboxSetupView(props) {
     const value = typeof t === 'function' ? t(key) : '';
     return value && value !== key ? value : fallback;
   };
+  const ownerManifest = "{\n  \"timeZone\": \"America/New_York\",\n  \"dependencies\": {},\n  \"exceptionLogging\": \"STACKDRIVER\",\n  \"runtimeVersion\": \"V8\",\n  \"webapp\": {\n    \"access\": \"ANYONE_ANONYMOUS\",\n    \"executeAs\": \"USER_DEPLOYING\"\n  },\n  \"oauthScopes\": [\n    \"https://www.googleapis.com/auth/userinfo.email\",\n    \"https://www.googleapis.com/auth/drive.file\",\n    \"https://www.googleapis.com/auth/script.external_request\"\n  ]\n}";
   const closeSetup = typeof closeMailboxSetup === 'function' ? closeMailboxSetup : () => setMbPanelOpen(false);
   const connectionButtonRef = React.useRef(null);
   const closeButtonRef = React.useRef(null);
@@ -432,28 +433,35 @@ function ClassMailboxSetupView(props) {
     target: "_blank",
     rel: "noopener noreferrer",
     className: "font-mono font-bold text-indigo-700 underline underline-offset-2"
-  }, "script.new"), t('mailbox.paste_over_the_starter_code_name') || ' in the same account. Code.gs opens with a few starter lines: click inside it, press Ctrl+A (Cmd+A on a Mac) to select them all, paste the copied script over them, and save with Ctrl+S. Click “Untitled project” at the top to name it “AlloFlow Class Mailbox.”'), /*#__PURE__*/React.createElement("li", null, t('mailbox.choose_deploy_new_deployment_web_app') || 'Choose Deploy → New deployment → Web app → Execute as', " ", /*#__PURE__*/React.createElement("b", null, "Me"), " ", t('mailbox.access') || '→ access', " ", /*#__PURE__*/React.createElement("b", null, t('mailbox.anyone') || 'Anyone'), " ", t('mailbox.deploy_review_the_authorization_prompt_if') || '→ Deploy. Review the authorization prompt; if Google shows the unpublished-app warning, use the explanation above before deciding whether to continue.'), /*#__PURE__*/React.createElement("li", null, t('mailbox.copy_the_web_app_url_ending') || 'Copy the web app URL ending in', " ", /*#__PURE__*/React.createElement("b", null, "/exec"), t('mailbox.paste_it_below_then_run_the') || ', paste it below, then run the self-test.')), /*#__PURE__*/React.createElement("input", {
+  }, "script.new"), t('mailbox.paste_over_the_starter_code_name') || ' in the same account. Code.gs opens with a few starter lines: click inside it, press Ctrl+A (Cmd+A on a Mac) to select them all, paste the copied script over them, and save with Ctrl+S. Click “Untitled project” at the top to name it “AlloFlow Class Mailbox.”'), /*#__PURE__*/React.createElement("li", null, tx('mailbox.owner_manifest_setup', 'In Project Settings, enable Show appsscript.json manifest file. Replace that file with this manifest and save:'), " ", /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => copyToClipboard(ownerManifest),
+    className: "font-bold text-indigo-700 underline underline-offset-2"
+  }, tx('mailbox.copy_owner_manifest', 'copy manifest'))), /*#__PURE__*/React.createElement("li", null, tx('mailbox.owner_editor_setup', 'In the Apps Script editor, select setupMailboxOwner and click Run as the account deploying the script. Review the permission request, including email identity. Setup preserves an existing admin token.')), /*#__PURE__*/React.createElement("li", null, tx('mailbox.owner_token_setup', 'Copy admin from Project Settings > Script properties into the Admin token field below. Keep it private. Public web requests cannot create a token.')), /*#__PURE__*/React.createElement("li", null, t('mailbox.choose_deploy_new_deployment_web_app') || 'Choose Deploy → New deployment → Web app → Execute as', " ", /*#__PURE__*/React.createElement("b", null, "Me"), " ", t('mailbox.access') || '→ access', " ", /*#__PURE__*/React.createElement("b", null, t('mailbox.anyone') || 'Anyone'), " ", t('mailbox.deploy_review_the_authorization_prompt_if') || '→ Deploy. Review the authorization prompt; if Google shows the unpublished-app warning, use the explanation above before deciding whether to continue.'), /*#__PURE__*/React.createElement("li", null, t('mailbox.copy_the_web_app_url_ending') || 'Copy the web app URL ending in', " ", /*#__PURE__*/React.createElement("b", null, "/exec"), t('mailbox.paste_it_below_then_run_the') || ', paste it below, then run the self-test.')), /*#__PURE__*/React.createElement("input", {
     value: mbUrlInput,
     onChange: e => setMbUrlInput(e.target.value),
     placeholder: "https://script.google.com/macros/s/\u2026/exec",
     className: "w-full text-xs border border-slate-300 rounded-lg p-2 mb-2 font-mono",
     "aria-label": t('mailbox.webapp_url_aria') || 'Class Mailbox web app URL'
   }), /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    autoComplete: "off",
+    spellCheck: false,
     value: mbAdminInput,
     onChange: e => setMbAdminInput(e.target.value),
-    placeholder: t('mailbox.admin_token_placeholder') || 'Admin token (only when reconnecting from a new device)',
+    placeholder: tx('mailbox.owner_admin_token_placeholder', 'Admin token from Apps Script properties'),
     className: "w-full text-xs border border-slate-200 rounded-lg p-2 mb-2 font-mono",
-    "aria-label": t('mailbox.admin_token_aria') || 'Class Mailbox admin token (optional)'
+    "aria-label": tx('mailbox.owner_admin_token_aria', 'Class Mailbox admin token')
   }), /*#__PURE__*/React.createElement("button", {
     ref: connectionButtonRef,
     onClick: connectMailbox,
     disabled: mbBusy,
     className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60"
-  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 27 && /*#__PURE__*/React.createElement("div", {
+  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 28 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-amber-800 mb-2"
-  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". Update it to v27 so a busy class does not overload it (Google limits how many mailbox requests can run at once). It keeps the six-hour live-session access deadline and teacher assignments when students reconnect. Existing Drive delivery, lesson boards and live tools remain available at the same URL:"), /*#__PURE__*/React.createElement("ol", {
+  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". ", tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')), /*#__PURE__*/React.createElement("ol", {
     className: "list-decimal list-inside text-xs text-amber-900 space-y-1"
   }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -465,7 +473,11 @@ function ClassMailboxSetupView(props) {
     type: "button",
     onClick: retryMailboxScriptSource,
     className: "font-bold underline underline-offset-2"
-  }, t('mailbox.retry_loading') || 'retry loading'), ")"), " ", t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'), /*#__PURE__*/React.createElement("li", null, t('mailbox.deploy_manage_deployments_pencil_icon_version') || 'Deploy → Manage deployments → pencil icon → Version:', " ", /*#__PURE__*/React.createElement("b", null, t('mailbox.new_version') || 'New version'), " ", t('mailbox.deploy') || '→ Deploy.'), /*#__PURE__*/React.createElement("li", null, t('mailbox.reconnect_after_update') || 'Press "Connect & self-test" here again after updating.'))), mbConfig && !mbLive && mbResumable.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, t('mailbox.retry_loading') || 'retry loading'), ")"), " ", t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'), /*#__PURE__*/React.createElement("li", null, tx('mailbox.owner_update_setup', 'Update appsscript.json using the manifest below, then run setupMailboxOwner in the editor as the deploying owner. Reuse the existing admin token from Script properties.'), " ", /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => copyToClipboard(ownerManifest),
+    className: "font-bold underline underline-offset-2"
+  }, tx('mailbox.copy_owner_manifest', 'copy manifest'))), /*#__PURE__*/React.createElement("li", null, t('mailbox.deploy_manage_deployments_pencil_icon_version') || 'Deploy → Manage deployments → pencil icon → Version:', " ", /*#__PURE__*/React.createElement("b", null, t('mailbox.new_version') || 'New version'), " ", t('mailbox.deploy') || '→ Deploy.'), /*#__PURE__*/React.createElement("li", null, t('mailbox.reconnect_after_update') || 'Press "Connect & self-test" here again after updating.'))), mbConfig && !mbLive && mbResumable.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-emerald-800 mb-2"

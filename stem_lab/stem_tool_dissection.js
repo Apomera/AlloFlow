@@ -226,6 +226,20 @@
 .diss-observation-reader__note { white-space: pre-wrap; overflow-wrap: anywhere; }
 .diss-observation-reader__handoff { margin-top: .85rem; }
 .diss-observation-reader__hint { margin: .85rem 0 0; line-height: 1.6; }
+.diss-note-editor-open { width: 100%; min-height: 3rem; margin: .5rem 0; padding: .65rem; border: 1px solid #487b77; border-radius: .6rem; background: #fff; color: #145d64; font-weight: 750; font-size: 1rem; }
+.diss-note-editor textarea { box-sizing: border-box; display: block; width: 100%; min-height: clamp(10rem, 38dvh, 25rem); padding: .8rem; border: 2px solid #487b77; border-radius: .6rem; color: #183f43; background: #fff; font: inherit; font-size: 1rem; line-height: 1.7; resize: vertical; }
+[data-dissection-root] .diss-note-editor textarea[data-large-text="true"] { font-size: 1.3rem !important; }
+.diss-note-editor label { display: block; margin: .5rem 0; font-weight: 750; }
+.diss-note-editor button { min-height: 3rem; padding: .6rem .75rem; border: 1px solid #487b77; border-radius: .55rem; font-weight: 750; font-size: 1rem; }
+.diss-note-editor .diss-observation-reader__tools button { color: #145d64; background: #fff; }
+.diss-note-editor .diss-observation-reader__tools button[aria-pressed="true"] { color: #fff; background: #145d64; }
+.diss-note-editor__starters { margin: .6rem 0; border: 1px solid #487b77; border-radius: .6rem; padding: .5rem .7rem; }
+.diss-note-editor__starters summary { min-height: 3rem; display: flex; align-items: center; cursor: pointer; font-weight: 750; }
+.diss-note-editor__starters summary::before { content: '+ '; margin-right: .45rem; }
+.diss-note-editor__starters[open] summary::before { content: '− '; }
+[data-high-contrast="true"] :is(.diss-note-editor-open, .diss-note-editor textarea) { color: #000; background: #fff; border-color: #000; }
+.theme-contrast :is(.diss-note-editor-open, .diss-note-editor textarea) { color: #fff; background: #000; border-color: #fff; }
+@media (forced-colors: active) { .diss-note-editor-open, .diss-note-editor textarea { color: CanvasText; background: Canvas; border-color: CanvasText; } }
 .diss-observation-reader :focus-visible { outline: 3px solid #175b68; outline-offset: 3px; }
 @media (forced-colors: active) { .diss-observation-reader, .diss-observation-reader button, .diss-observation-reader__entry { border-color: CanvasText; } }
 .diss-note-handoff { margin-top: .8rem; padding: .75rem; background: #f1f5f9; border: 1px solid #cbd7e7; border-radius: .7rem; color: #243e60; font-size: .8rem; line-height: 1.5; }
@@ -1054,6 +1068,28 @@
 .diss-evidence__item img { display: block; width: 100%; max-height: 18rem; aspect-ratio: 5/6; border-radius: .6rem; background: #0f172a; object-fit: contain; }
 .diss-evidence__item > strong { display: block; color: #10233f; font-size: 1rem !important; line-height: 1.4; overflow-wrap: anywhere; }
 .diss-evidence__metadata { display: grid; min-width: 0; gap: .4rem; }
+.diss-frame-viewer__details { margin: .75rem 0; }
+.diss-frame-viewer__details > summary { min-height: 2.75rem; padding: .5rem .65rem; border: 1px solid currentColor; border-radius: .55rem; font-weight: 750; cursor: pointer; }
+.diss-frame-viewer__details .diss-evidence__metadata { margin: .75rem 0; }
+.diss-frame-viewer__details .diss-evidence__metadata :is(p,time) { color: inherit; font-size: 1rem !important; line-height: 1.6; }
+.diss-frame-viewer-open { width: 100%; min-height: 3rem; padding: .65rem; border: 1px solid #487b77; border-radius: .6rem; background: #fff; color: #145d64; font-size: 1rem; font-weight: 750; }
+.diss-frame-viewer { width: min(68rem, calc(100vw - 1rem)); }
+.diss-frame-viewer button { min-height: 3rem; padding: .6rem .75rem; border: 1px solid currentColor; border-radius: .55rem; font-size: 1rem; font-weight: 750; }
+.diss-frame-viewer button[aria-disabled="true"] { opacity: .65; cursor: default; }
+.diss-frame-viewer output { flex: 1 0 100%; line-height: 1.5; font-weight: 750; }
+.diss-frame-viewer .diss-frame-viewer__viewport { max-height: 52dvh; min-height: 8rem; overflow: auto; overscroll-behavior: contain; border: 2px solid #487b77; background: #0f172a; }
+.diss-frame-viewer .diss-frame-viewer__image { display: block; max-width: none; max-height: none; height: auto; aspect-ratio: auto; border-radius: 0; margin: 0; object-fit: contain; }
+.diss-frame-viewer :focus-visible { outline: 3px solid #1766d2; outline-offset: -4px; }
+[data-high-contrast="true"] :is(.diss-frame-viewer-open, .diss-frame-viewer) { color: #000; background: #fff; border-color: #000; }
+.theme-contrast :is(.diss-frame-viewer-open, .diss-frame-viewer) { color: #fff; background: #000; border-color: #fff; }
+.theme-contrast .diss-frame-viewer .diss-observation-reader__header { color: #fff; background: #000; border-color: #fff; }
+@media (forced-colors: active) { .diss-frame-viewer-open, .diss-frame-viewer { color: CanvasText; background: Canvas; border-color: CanvasText; } .diss-frame-viewer :focus-visible { outline-color: Highlight; } .diss-frame-viewer button[aria-disabled="true"] { opacity: 1; color: GrayText; } }
+.diss-capture-record { min-width: 0; border: 1px solid currentColor; border-radius: .55rem; padding: .4rem .6rem; }
+.diss-capture-record summary { min-height: 3rem; display: flex; align-items: center; cursor: pointer; font-size: 1rem; line-height: 1.5; font-weight: 750; }
+.diss-capture-record summary::before { content: '+ '; margin-right: .4rem; }
+.diss-capture-record[open] summary::before { content: '− '; }
+.diss-capture-record p { margin: .5rem 0; overflow-wrap: anywhere; }
+.diss-evidence__metadata .diss-capture-record__note { white-space: pre-wrap; }
 .diss-evidence__metadata p, .diss-evidence__metadata time { display: block; margin: 0; min-width: 0; color: #405770; font-size: .875rem !important; line-height: 1.5; overflow-wrap: anywhere; white-space: normal; }
 .diss-split-reference .diss-evidence__metadata :is(p,time) { color: #e2e8f0; }
 .diss-evidence__item .diss-evidence__confirm-copy { margin: 0; padding: .65rem; border: 1px solid #b7791f; border-radius: .55rem; background: #fffbeb; color: #78350f; font-size: .875rem !important; line-height: 1.5; overflow-wrap: anywhere; }
@@ -2715,6 +2751,7 @@
   var _disAttemptRestartReviews = Object.create(null);
   var _disGuidedSubmissions = Object.create(null);
   var _disAssessmentSubmissions = Object.create(null);
+  var _disEvidenceConfirmations = Object.create(null);
   var _disSaveOwnerCounter = 0;
   var _disSaveOwnerBySetter = typeof WeakMap === 'function' ? new WeakMap() : null;
   var _disSaveStatus = {
@@ -2759,6 +2796,28 @@
       _disAssessmentSubmissions[owner] = submission;
     }
     return submission;
+  }
+  function dissectionEvidenceConfirmationScope(state) {
+    return JSON.stringify([state.specimen || 'frog', state.activeLayer || 'skin', !!state.quizMode,
+      !!state.practicalMode, !!state.evidenceClearPending, state.evidenceRemovePendingId == null ? null : state.evidenceRemovePendingId,
+      state.referenceEvidenceId == null ? null : state.referenceEvidenceId, !!state.splitComparison]);
+  }
+  function dissectionEvidenceConfirmationMatches(review, state, frames) {
+    return !!review && review.scope === dissectionEvidenceConfirmationScope(state) && review.frames.length === frames.length &&
+      review.frames.every(function (frame, index) { return frame.id === frames[index].id && frame.image === frames[index].image; });
+  }
+  function dissectionEvidenceConfirmationFor(owner, state, frames) {
+    if (state.quizMode || state.practicalMode || (!state.evidenceClearPending && state.evidenceRemovePendingId == null)) {
+      delete _disEvidenceConfirmations[owner]; return null;
+    }
+    var review = _disEvidenceConfirmations[owner];
+    if (!dissectionEvidenceConfirmationMatches(review, state, frames)) {
+      review = { scope: dissectionEvidenceConfirmationScope(state), accepted: false,
+        kind: state.evidenceClearPending ? 'clear' : 'remove', id: state.evidenceRemovePendingId,
+        frames: frames.map(function (frame) { return { id: frame.id, image: frame.image }; }) };
+      _disEvidenceConfirmations[owner] = review;
+    }
+    return review;
   }
   function dissectionCompletedSupportCount(data) {
     if (!data || !Number(data.assessmentCompletedAt)) return null;
@@ -2901,6 +2960,12 @@
   function dissectionEvidenceNote(notes, key) {
     var value = notes && notes[key];
     return typeof value === 'string' ? value : '';
+  }
+  function dissectionCapturedObservation(frame, currentSpecimen) {
+    if (currentSpecimen && frame && frame.specimen && frame.specimen !== currentSpecimen) return null;
+    var record = frame && frame.capturedObservation;
+    return isPlainDissectionRecord(record) && typeof record.note === 'string' && typeof record.inspected === 'boolean' &&
+      [0, 1, 2, 3].indexOf(record.confidence) >= 0 ? record : null;
   }
   function normalizeDissectionDisplayPreferences(data) {
     data = data || {};
@@ -3176,6 +3241,9 @@
     }
     if (Array.isArray(data.visualEvidence) && data.visualEvidence.some(function (entry) { return !isPlainDissectionRecord(entry) || (entry.image && !dissectionEvidenceImageFormat(entry.image)); })) {
       return { ok: false, kind: 'unsafe-shape', field: 'visualEvidence', raw: raw };
+    }
+    if (Array.isArray(data.visualEvidence) && data.visualEvidence.some(function (entry) { return entry.capturedObservation != null && !dissectionCapturedObservation(entry); })) {
+      return { ok: false, kind: 'unsafe-shape', field: 'visualEvidence.capturedObservation', raw: raw };
     }
     var procedureLayers = data.procedureByLayer || {};
     var procedureArrayFields = ['history', 'actionLog', 'cautionLog', 'pins', 'incisionPath', 'extensionPath', 'incisionSamples', 'extensionSamples'];
@@ -3457,6 +3525,7 @@
       delete _disAttemptRestartReviews[saveOwner];
       delete _disGuidedSubmissions[saveOwner];
       delete _disAssessmentSubmissions[saveOwner];
+      delete _disEvidenceConfirmations[saveOwner];
       cancelDissectionLoad(saveOwner);
       Object.keys(_disSaveQueue).forEach(function (slot) {
         var pending = _disSaveQueue[slot];
@@ -3846,6 +3915,221 @@
             h('p', null, props.caption),
             h('p', { className: 'diss-diagram-reader__scope' }, t('stem.dissection.diagram_scope', 'Reference study only. Zoom changes the drawing size, not specimen measurements or observation credit.'))
           )
+        )
+      )
+    );
+  }
+
+  function DissectionEvidenceViewer(props) {
+    var React = props.React, h = React.createElement, t = props.t;
+    var dialogRef = React.useRef(null), triggerRef = React.useRef(null), closeRef = React.useRef(null), viewportRef = React.useRef(null);
+    var currentRef = React.useRef(null), openedFramesRef = React.useRef(null), returnFocusRef = React.useRef(false);
+    var openPair = React.useState(false), open = openPair[0], setOpen = openPair[1];
+    var selectedPair = React.useState(props.frameId), selectedId = selectedPair[0], setSelectedId = selectedPair[1];
+    var zoomPair = React.useState(0), zoom = zoomPair[0], setZoom = zoomPair[1], sizes = [100, 150, 200, 300];
+    var failedPair = React.useState(false), failed = failedPair[0], setFailed = failedPair[1];
+    var imagePair = React.useState(false), imageFailed = imagePair[0], setImageFailed = imagePair[1];
+    var downloadPair = React.useState(''), downloadStatus = downloadPair[0], setDownloadStatus = downloadPair[1];
+    var frames = props.frames || [], initialFrame = frames.find(function (frame) { return frame.id === props.frameId; });
+    var selectedIndex = frames.findIndex(function (frame) { return frame.id === selectedId; }), selectedFrame = frames[selectedIndex] || initialFrame;
+    function sameFrames(list) {
+      var opened = openedFramesRef.current;
+      return !!opened && opened.length === list.length && opened.every(function (frame, index) { return frame.id === list[index].id && frame.image === list[index].image; });
+    }
+    var available = !props.disabled && !!initialFrame && initialFrame.image === props.image && !!dissectionEvidenceImageFormat(props.image);
+    var stable = !open || sameFrames(frames);
+    currentRef.current = { open: open, available: available && stable, frames: frames, selectedId: selectedId, imageFailed: imageFailed };
+    function finish() {
+      if (!currentRef.current || !currentRef.current.open) return;
+      currentRef.current.open = false; openedFramesRef.current = null; returnFocusRef.current = true; setOpen(false);
+    }
+    function changeZoom(next) {
+      var current = currentRef.current;
+      if (!current || !current.open || !current.available || current.imageFailed) return;
+      setZoom(function (value) { return Math.max(0, Math.min(sizes.length - 1, typeof next === 'number' ? next : value + next.step)); });
+    }
+    function changeFrame(step) {
+      var current = currentRef.current;
+      if (!current || !current.open || !current.available || !sameFrames(current.frames)) return;
+      var index = current.frames.findIndex(function (frame) { return frame.id === current.selectedId; });
+      var next = current.frames[index + step];
+      if (index < 0 || !next || !dissectionEvidenceImageFormat(next.image)) return;
+      current.selectedId = next.id; current.imageFailed = false;
+      setSelectedId(next.id); setZoom(0); setImageFailed(false); setDownloadStatus('');
+    }
+    function requestDownload() {
+      var current = currentRef.current;
+      if (!current || !current.open || !current.available || !sameFrames(current.frames)) return;
+      var frame = current.frames.find(function (entry) { return entry.id === current.selectedId; });
+      if (!frame || typeof props.onDownload !== 'function' || !dissectionEvidenceImageFormat(frame.image)) return;
+      var message = t('stem.dissection.frame_viewer_download_failed', 'Download could not be requested. Try again or use the notebook Download action.');
+      try {
+        var filename = props.onDownload(frame.id);
+        if (typeof filename === 'string' && filename) message = t('stem.dissection.frame_viewer_download_requested', 'Download requested') + ': ' + filename + '.';
+      } catch (error) {}
+      var latest = currentRef.current;
+      if (latest && latest.open && latest.available && latest.selectedId === frame.id && sameFrames(latest.frames)) setDownloadStatus(message);
+    }
+    React.useEffect(function () { return function () { currentRef.current = null; openedFramesRef.current = null; }; }, []);
+    React.useEffect(function () { if (open && (!available || !stable)) finish(); }, [open, available, stable]);
+    React.useEffect(function () {
+      if (!open) {
+        if (returnFocusRef.current && triggerRef.current && triggerRef.current.isConnected && !triggerRef.current.disabled) triggerRef.current.focus({ preventScroll: true });
+        returnFocusRef.current = false; return;
+      }
+      var dialog = dialogRef.current;
+      try { dialog.showModal(); if (closeRef.current) closeRef.current.focus({ preventScroll: true }); }
+      catch (error) { setFailed(true); finish(); }
+      return function () { if (dialog && dialog.open && typeof dialog.close === 'function') dialog.close(); };
+    }, [open]);
+    React.useEffect(function () {
+      if (open && zoom === 0 && viewportRef.current) { viewportRef.current.scrollLeft = 0; viewportRef.current.scrollTop = 0; }
+    }, [open, zoom, selectedId]);
+    return h(React.Fragment, null,
+      h('button', { type: 'button', className: 'diss-frame-viewer-open', ref: triggerRef, 'data-frame-viewer-open': true,
+        disabled: !available, 'aria-haspopup': 'dialog', 'aria-label': 'View larger ' + props.title,
+        onClick: function () {
+          var current = currentRef.current;
+          if (!current || !current.available) return;
+          openedFramesRef.current = current.frames.map(function (frame) { return { id: frame.id, image: frame.image }; });
+          current.selectedId = props.frameId; current.imageFailed = false;
+          setSelectedId(props.frameId); setZoom(0); setFailed(false); setImageFailed(false); setDownloadStatus(''); setOpen(true);
+        } }, t('stem.dissection.frame_viewer_open', 'View larger frame')),
+      failed && h('p', { role: 'status' }, t('stem.dissection.frame_viewer_unavailable', 'The saved-frame view could not open. Download the frame from the notebook to view it separately.')),
+      open && available && stable && selectedFrame && h('dialog', { ref: dialogRef, className: 'diss-observation-reader diss-frame-viewer', 'data-frame-viewer': true,
+        'aria-label': t('stem.dissection.frame_viewer_title', 'Saved frame reading view') + ': ' + selectedFrame.title,
+        onCancel: function (event) { event.preventDefault(); finish(); }, onClose: finish,
+        onKeyDown: function (event) {
+          if (isDissectionPlainEscape(event)) { event.preventDefault(); event.stopPropagation(); finish(); }
+          if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+            var targets = Array.from(event.currentTarget.querySelectorAll('button:not(:disabled), summary, [tabindex="0"]')).filter(function (node) { return node.getClientRects().length; });
+            var first = targets[0], last = targets[targets.length - 1];
+            if (event.shiftKey && event.target === first) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && event.target === last) { event.preventDefault(); first.focus(); }
+          }
+        } },
+        h('div', { className: 'diss-observation-reader__header' },
+          h('div', null, h('h3', null, t('stem.dissection.frame_viewer_title', 'Saved frame reading view')),
+            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-frame-viewer-position': true }, frames.length > 1 ? 'Frame ' + (selectedIndex + 1) + ' of ' + frames.length + ': ' + selectedFrame.caption : selectedFrame.title)),
+          h('button', { type: 'button', ref: closeRef, onClick: finish }, t('stem.dissection.frame_viewer_close', 'Close frame view'))),
+        h('div', { className: 'diss-observation-reader__body' },
+          h('p', { className: 'diss-observation-reader__scope' }, frames.length > 1 ? t('stem.dissection.frame_browser_scope', 'Browse saved frames. Zoom changes display size only.') : t('stem.dissection.frame_viewer_scope', 'Inspect this captured image. Zoom changes the display size; it does not add new image detail.')),
+          h('div', { className: 'diss-observation-reader__tools', role: 'group', 'aria-label': 'Saved frame controls' },
+            frames.length > 1 && h('button', { type: 'button', 'data-frame-viewer-previous': true, 'aria-disabled': selectedIndex <= 0, onClick: function () { changeFrame(-1); } }, t('stem.dissection.frame_viewer_previous', 'Previous frame')),
+            frames.length > 1 && h('button', { type: 'button', 'data-frame-viewer-next': true, 'aria-disabled': selectedIndex >= frames.length - 1, onClick: function () { changeFrame(1); } }, t('stem.dissection.frame_viewer_next', 'Next frame')),
+            h('button', { type: 'button', 'aria-disabled': imageFailed || zoom === 0, onClick: function () { changeZoom({ step: -1 }); } }, 'Zoom out'),
+            h('button', { type: 'button', 'aria-disabled': imageFailed || zoom === sizes.length - 1, onClick: function () { changeZoom({ step: 1 }); } }, 'Zoom in'),
+            h('button', { type: 'button', 'aria-disabled': imageFailed, onClick: function () { changeZoom(0); } }, 'Fit width'),
+            h('button', { type: 'button', 'data-frame-viewer-download': true, disabled: typeof props.onDownload !== 'function', onClick: requestDownload }, t('stem.dissection.frame_viewer_download', 'Download original image')),
+            h('output', { 'aria-live': 'polite', 'aria-atomic': 'true', 'data-frame-viewer-size': true }, sizes[zoom] + '% of view width')),
+          h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'diss-observation-reader__hint', style: { margin: downloadStatus ? '0 0 .75rem' : 0 }, 'data-frame-viewer-download-status': true }, downloadStatus),
+          h('details', { className: 'diss-frame-viewer__details', 'data-frame-viewer-details': true },
+            h('summary', null, t('stem.dissection.frame_viewer_details', 'Frame details and record at capture')),
+            h('div', { 'data-frame-viewer-metadata': true }, selectedFrame.metadata)),
+          imageFailed ? h('p', { role: 'status', 'data-frame-viewer-error': true }, 'The saved image could not be displayed. Use Download original image to try opening the original file separately.') :
+            h('div', { className: 'diss-frame-viewer__viewport', ref: viewportRef, tabIndex: 0, role: 'region', 'aria-label': 'Saved frame image. Use arrow keys to scroll.', 'data-frame-viewer-viewport': true },
+              h('img', { key: String(selectedFrame.id), className: 'diss-frame-viewer__image', src: selectedFrame.image, alt: selectedFrame.alt, style: { width: sizes[zoom] + '%' },
+                onError: function () { var current = currentRef.current; if (current && current.open && current.selectedId === selectedFrame.id && sameFrames(current.frames)) { current.imageFailed = true; setImageFailed(true); } } })),
+          h('p', { className: 'diss-observation-reader__hint' }, t('stem.dissection.frame_viewer_hint', 'Scroll within the image when enlarged. For keyboard scrolling, focus the image area and use the arrow keys. Escape returns to the notebook.'))
+        )
+      )
+    );
+  }
+
+  function DissectionNoteEditor(props) {
+    var React = props.React, h = React.createElement, t = props.t;
+    var dialogRef = React.useRef(null), fieldRef = React.useRef(null), triggerRef = React.useRef(null), returnFocusRef = React.useRef(false);
+    var openPair = React.useState(false), open = openPair[0], setOpen = openPair[1];
+    var largePair = React.useState(false), large = largePair[0], setLarge = largePair[1];
+    var failedPair = React.useState(false), failed = failedPair[0], setFailed = failedPair[1];
+    var undoPair = React.useState(null), starterUndo = undoPair[0], setStarterUndo = undoPair[1];
+    var statusPair = React.useState(''), starterStatus = statusPair[0], setStarterStatus = statusPair[1];
+    var undoRef = React.useRef(null), pendingCaretRef = React.useRef(null), currentRef = React.useRef(null);
+    currentRef.current = { value: props.value, disabled: props.disabled, open: open };
+    var starterUndoAvailable = starterUndo && starterUndo.after === props.value;
+    var helpId = props.noteId + '-writing-help', fieldId = props.noteId + '-writing-field';
+    function clearStarterRecovery() { undoRef.current = null; pendingCaretRef.current = null; setStarterUndo(null); setStarterStatus(''); }
+    function finish() { clearStarterRecovery(); returnFocusRef.current = true; setOpen(false); }
+    function insertStarter(starter) {
+      var current = currentRef.current, field = fieldRef.current;
+      if (!current || !current.open || current.disabled || current.value !== props.value || !field || field.value !== current.value || !starter || typeof starter.text !== 'string') return;
+      var before = current.value, position = Math.max(0, Math.min(before.length, field.selectionEnd == null ? before.length : field.selectionEnd));
+      var prefix = before.slice(0, position), insertion = (prefix && !/\s$/.test(prefix) ? ' ' : '') + starter.text;
+      var after = prefix + insertion + before.slice(position);
+      var undo = { before: before, after: after, position: position };
+      undoRef.current = undo; setStarterUndo(undo);
+      pendingCaretRef.current = { value: after, position: position + insertion.length,
+        message: t('stem.dissection.note_starter_inserted', 'Starter inserted. Your earlier text was kept. Undo inserted starter is available until you edit the note or close this view.') };
+      currentRef.current = Object.assign({}, current, { value: after });
+      props.onChange(after);
+    }
+    function undoInsertedStarter() {
+      var current = currentRef.current;
+      if (!starterUndo || undoRef.current !== starterUndo || !current || !current.open || current.disabled || current.value !== starterUndo.after) return;
+      undoRef.current = null; setStarterUndo(null);
+      pendingCaretRef.current = { value: starterUndo.before, position: starterUndo.position,
+        message: t('stem.dissection.note_starter_undone', 'Inserted starter undone. Your earlier note is back.') };
+      currentRef.current = Object.assign({}, current, { value: starterUndo.before });
+      props.onChange(starterUndo.before);
+    }
+    React.useEffect(function () {
+      var pending = pendingCaretRef.current; pendingCaretRef.current = null;
+      if (pending && open && props.value === pending.value && fieldRef.current) {
+        fieldRef.current.focus(); fieldRef.current.setSelectionRange(pending.position, pending.position); setStarterStatus(pending.message);
+      }
+      if (starterUndo && props.value !== starterUndo.after) { undoRef.current = null; setStarterUndo(null); setStarterStatus(''); }
+    }, [props.value, starterUndo, open]);
+    React.useEffect(function () { return function () { currentRef.current = null; undoRef.current = null; pendingCaretRef.current = null; }; }, []);
+    React.useEffect(function () { if (open && props.disabled) finish(); }, [open, props.disabled]);
+    React.useEffect(function () {
+      if (!open) {
+        if (returnFocusRef.current && triggerRef.current && triggerRef.current.isConnected) triggerRef.current.focus({ preventScroll: true });
+        returnFocusRef.current = false;
+        return;
+      }
+      var dialog = dialogRef.current;
+      try { dialog.showModal(); if (fieldRef.current) fieldRef.current.focus(); }
+      catch (error) { setFailed(true); finish(); }
+      return function () { if (dialog && dialog.open && typeof dialog.close === 'function') dialog.close(); };
+    }, [open]);
+    return h(React.Fragment, null,
+      h('button', { type: 'button', className: 'diss-note-editor-open', ref: triggerRef, 'data-note-editor-open': true,
+        disabled: !!props.disabled, 'aria-haspopup': 'dialog', onClick: function () { if (!props.disabled) { setFailed(false); setOpen(true); } } }, t('stem.dissection.note_editor_open', 'Write in a larger view')),
+      failed && h('p', { role: 'status' }, t('stem.dissection.note_editor_unavailable', 'The writing view could not open. Your note is unchanged; continue in the evidence note field above.')),
+      open && h('dialog', { ref: dialogRef, className: 'diss-observation-reader diss-note-editor', 'data-note-editor': true,
+        'aria-label': t('stem.dissection.note_editor_title', 'Evidence note writing view') + ': ' + props.organName,
+        onCancel: function (event) { event.preventDefault(); finish(); }, onClose: function () { if (open) finish(); },
+        onKeyDown: function (event) {
+          if (isDissectionPlainEscape(event)) { event.preventDefault(); event.stopPropagation(); finish(); }
+          if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+            var targets = Array.from(event.currentTarget.querySelectorAll('button:not(:disabled), textarea:not(:disabled), summary')).filter(function (node) { return node.getClientRects().length; });
+            var first = targets[0], last = targets[targets.length - 1];
+            if (event.shiftKey && event.target === first) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && event.target === last) { event.preventDefault(); first.focus(); }
+          }
+        } },
+        h('div', { className: 'diss-observation-reader__header' },
+          h('div', null, h('h3', null, t('stem.dissection.note_editor_title', 'Evidence note writing view')), h('p', null, props.organName)),
+          h('button', { type: 'button', onClick: finish }, t('stem.dissection.note_editor_close', 'Close writing view'))),
+        h('div', { className: 'diss-observation-reader__body' },
+          h('p', { id: helpId, className: 'diss-observation-reader__scope' }, t('stem.dissection.note_editor_help', 'Edits update your evidence note immediately and use the lab’s usual save status. Closing keeps your edits. A note alone does not check identification accuracy.')),
+          h('p', { className: 'diss-save-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+            'data-note-editor-save-state': true, 'data-dissection-save-status': true, 'data-state': props.saveState },
+            h('span', { 'data-dissection-save-message': true }, props.saveMessage)),
+          h('div', { className: 'diss-observation-reader__tools' },
+            h('button', { type: 'button', 'aria-pressed': large, onClick: function () { setLarge(!large); } }, t('stem.dissection.observation_reader_large', 'Larger text'))),
+          (props.starters || []).length > 0 && h('details', { className: 'diss-note-editor__starters', 'data-note-editor-starters': true },
+            h('summary', null, t('stem.dissection.evidence_sentence_starters', 'Evidence sentence starters')),
+            h('p', { id: fieldId + '-starter-help' }, t('stem.dissection.note_starter_help', 'Insert at the cursor. Selected text is kept; the starter goes after the selection. Finish the sentence with your own observation.')),
+            h('div', { className: 'diss-observation-reader__tools', role: 'group', 'aria-label': t('stem.dissection.evidence_sentence_starters', 'Evidence sentence starters') },
+              (props.starters || []).map(function (starter) { return h('button', { key: starter.id, type: 'button', 'data-note-starter': starter.id,
+                'aria-controls': fieldId, 'aria-describedby': fieldId + '-starter-help', disabled: !!props.disabled, onClick: function () { insertStarter(starter); } }, starter.label); })),
+            starterUndoAvailable && h('button', { type: 'button', 'data-note-starter-undo': true, onClick: undoInsertedStarter }, t('stem.dissection.note_starter_undo', 'Undo inserted starter'))),
+          starterStatus && h('p', { role: 'status', 'aria-live': 'polite', 'data-note-starter-status': true }, starterStatus),
+          h('label', { htmlFor: fieldId }, t('stem.dissection.evidence_note', 'Evidence note')),
+          h('textarea', { id: fieldId, ref: fieldRef, rows: 12, dir: 'auto', value: props.value, readOnly: !!props.disabled, 'data-large-text': large,
+            'aria-describedby': helpId, onChange: function (event) { clearStarterRecovery(); props.onChange(event.target.value); } }),
+          h('p', { className: 'diss-observation-reader__hint' }, t('stem.dissection.note_editor_hint', 'Describe what you observed, where it is located, and how it supports the identification. Escape returns to the original note.'))
         )
       )
     );
@@ -5289,8 +5573,10 @@ var d = labToolData.dissection || {};
             }
             return patch;
           }
-          function structureRecordTask(org) {
+          function structureRecordTask(org, preferredField) {
             var evidence = structureEvidenceData(org);
+            if (preferredField === 'confidence' && !evidence.confidence) return { missing: 'Confidence needed', title: 'Rate your confidence for ' + org.name, label: 'Choose confidence', detail: evidence.hasNote ? 'Your note is present. Choose a confidence rating based on that evidence.' : 'Choose a confidence rating for this identification. An observation note is still needed to complete the record.', target: 'diss-confidence-' + org.id + '-1' };
+            if (preferredField === 'note' && !evidence.hasNote) return { missing: 'Note needed', title: 'Write an evidence note for ' + org.name, label: 'Write evidence note', detail: evidence.confidence ? 'Your confidence rating is present. Describe what you observed and how it supports the identification.' : 'Describe what you observed and how it supports the identification. A confidence rating is still needed to complete the record.', target: 'diss-note-' + org.id };
             if (evidence.hasNote && !evidence.confidence) return { missing: 'Confidence needed', title: 'Rate your confidence for ' + org.name, label: 'Choose confidence', detail: 'Your note is present. Choose a confidence rating based on that evidence.', target: 'diss-confidence-' + org.id + '-1' };
             if (!evidence.hasNote && evidence.confidence) return { missing: 'Note needed', title: 'Write an evidence note for ' + org.name, label: 'Write evidence note', detail: 'Your confidence rating is present. Describe what you observed and how it supports the identification.', target: 'diss-note-' + org.id };
             return { missing: 'Note and confidence needed', title: 'Complete the observation record for ' + org.name, label: 'Open observation record', detail: 'Write an observation note, then choose a confidence rating based on your evidence.', target: 'diss-note-' + org.id };
@@ -23763,6 +24049,7 @@ var d = labToolData.dissection || {};
                 annotateMode: false,
                 rulerStart: null,
                 rulerEnd: null,
+                _rulerEndpointEdit: null,
                 dissInquiry: normalizeDissectionInquiry(data.dissInquiry),
                 activeLayer: savedLayer,
                 _flashcardReturn: null,
@@ -23951,6 +24238,69 @@ var d = labToolData.dissection || {};
             var scale = spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3;
             return (Math.sqrt(dx * dx + dy * dy) * scale).toFixed(1) + ' cm';
           }
+          var annotationLineScope = specimen + '|' + activeLayer + '|' + anatomicalView;
+          var annotationBreakPending = !!d.annotateMode && d._annotationBreakScope === annotationLineScope;
+          var renderedMeasurement = { start: d.rulerStart, end: d.rulerEnd, edit: d._rulerEndpointEdit || null };
+          function canAdjustMeasurementEnd(edit, state) {
+            return !!edit && !state.quizMode && !state.practicalMode && state.rulerMode && !state.annotateMode &&
+              edit.scope === [(state.specimen || 'frog'), (state.activeLayer || 'skin'), (state.anatomicalView || 'dorsal')].join('|') &&
+              state.rulerStart === edit.start && state.rulerEnd === edit.end;
+          }
+          var rulerEndpointEditActive = canAdjustMeasurementEnd(d._rulerEndpointEdit, d);
+          function toggleMeasurementEndpointEdit() {
+            if (d.quizMode || d.practicalMode || !renderedMeasurement.start || !renderedMeasurement.end) return false;
+            cancelActiveCanvasGesture('Instrument gesture canceled before adjusting the ruler; no action was recorded.');
+            updMany(function (current) {
+              if (current.quizMode || current.practicalMode || current.rulerStart !== renderedMeasurement.start || current.rulerEnd !== renderedMeasurement.end ||
+                (current._rulerEndpointEdit || null) !== renderedMeasurement.edit ||
+                [(current.specimen || 'frog'), (current.activeLayer || 'skin'), (current.anatomicalView || 'dorsal')].join('|') !== annotationLineScope) return {};
+              return { rulerMode: true, annotateMode: false, _annotationBreakScope: null,
+                _rulerEndpointEdit: rulerEndpointEditActive ? null : { scope: annotationLineScope, start: current.rulerStart, end: current.rulerEnd },
+                procedureFeedback: { message: rulerEndpointEditActive
+                  ? 'End point change canceled. The original measurement was kept.'
+                  : 'Choose a replacement end point. The start point and current measurement stay until you place it. ' + pointModeInstruction(), tone: 'working', at: Date.now() } };
+            });
+            if (!rulerEndpointEditActive) focusDissectionTarget('diss-canvas');
+            return true;
+          }
+          function canRestoreClearedMarks(undo, state) {
+            return !!undo && !state.quizMode && !state.practicalMode &&
+              undo.scope === [(state.specimen || 'frog'), (state.activeLayer || 'skin'), (state.anatomicalView || 'dorsal')].join('|') &&
+              state.annotations === undo.cleared && !state.annotations.length;
+          }
+          var annotationClearUndoAvailable = canRestoreClearedMarks(d._annotationClearUndo, d);
+          function clearObservationMarks() {
+            if (d.quizMode || d.practicalMode || !(d.annotations || []).length) return false;
+            var cleared = [], undo = { scope: annotationLineScope, cleared: cleared,
+              points: d.annotations.map(function (point) { return point && typeof point === 'object' ? Object.assign({}, point) : point; }) };
+            updMany(function (current) {
+              if (current.quizMode || current.practicalMode || current.annotations !== d.annotations ||
+                [(current.specimen || 'frog'), (current.activeLayer || 'skin'), (current.anatomicalView || 'dorsal')].join('|') !== undo.scope) return {};
+              return { annotations: cleared, _annotationClearUndo: undo, _annotationBreakScope: null,
+                procedureFeedback: { message: 'Cleared ' + undo.points.length + ' annotation point' + (undo.points.length === 1 ? '' : 's') + '. Undo clear marks is available until new marks or a view or layer change.', tone: 'working', at: Date.now() } };
+            });
+            focusDissectionTarget('diss-annotation-clear-undo');
+            return true;
+          }
+          function restoreClearedObservationMarks() {
+            var undo = d._annotationClearUndo;
+            if (!canRestoreClearedMarks(undo, d)) return false;
+            updMany(function (current) {
+              if (current._annotationClearUndo !== undo || !canRestoreClearedMarks(undo, current)) return {};
+              return { annotations: undo.points.slice(), _annotationClearUndo: null, _annotationBreakScope: null,
+                procedureFeedback: { message: 'Restored ' + undo.points.length + ' annotation point' + (undo.points.length === 1 ? '' : 's') + '. Your earlier lines are back on the specimen.', tone: 'success', at: Date.now() } };
+            });
+            focusDissectionTarget('diss-canvas');
+            return true;
+          }
+          function toggleAnnotationLineBreak() {
+            if (d.quizMode || d.practicalMode || !d.annotateMode || !(d.annotations || []).length) return false;
+            upd('_annotationBreakScope', annotationBreakPending ? null : annotationLineScope);
+            setProcedureFeedback(annotationBreakPending
+              ? 'New line canceled. The next annotation point will continue the current line.'
+              : 'New line ready. The next annotation point starts a separate line; existing marks are kept.', 'working');
+            return true;
+          }
           function pointModeInstruction() {
             var hasPointAnchor = organs.some(function (organ) { return structureExposureState(organ, currentProcedure) === 'visible'; });
             return 'Select a point with the pointer. For keyboard points, ' + (hasPointAnchor
@@ -23961,7 +24311,7 @@ var d = labToolData.dissection || {};
             cancelActiveCanvasGesture('Instrument gesture canceled before changing observation mode; no action was recorded.');
             var pointCanvas = queryDissectionNode('[data-diss-canvas]');
             if (pointCanvas) { pointCanvas._keyboardPreviewOrganId = null; pointCanvas._keyboardFocusAnnounced = false; }
-            updMany({ rulerMode: mode === 'measure', annotateMode: mode === 'annotate' });
+            updMany({ rulerMode: mode === 'measure', annotateMode: mode === 'annotate', _annotationBreakScope: null, _rulerEndpointEdit: null });
             setProcedureFeedback(mode === 'measure'
               ? 'Ruler active. Select two points for an approximate model distance. ' + pointModeInstruction()
               : mode === 'annotate'
@@ -23970,7 +24320,7 @@ var d = labToolData.dissection || {};
             if (returnFocus) setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0);
           }
           function placeObservationPoint(point, inputType) {
-            if (d.quizMode || (!d.annotateMode && !d.rulerMode)) return false;
+            if (d.quizMode || d.practicalMode || (!d.annotateMode && !d.rulerMode)) return false;
             // Both inputs use specimen coordinates before zoom, pan, and body scaling.
             // Observation points must never select a structure or record a technique.
             if (!point || !isFinite(point.x) || !isFinite(point.y) || point.x < 0 || point.x > 1 || point.y < 0 || point.y > 1) {
@@ -23979,17 +24329,26 @@ var d = labToolData.dissection || {};
             }
             var pointAt = Date.now();
             function pointPatch(current) {
-              if ((current.specimen || 'frog') !== specimen || current.quizMode || (!current.annotateMode && !current.rulerMode)) return {};
+              if (current.quizMode || current.practicalMode || (!current.annotateMode && !current.rulerMode) ||
+                [(current.specimen || 'frog'), (current.activeLayer || 'skin'), (current.anatomicalView || 'dorsal')].join('|') !== annotationLineScope) return {};
               function withPointFeedback(patch, message) { return Object.assign(patch, { procedureFeedback: { message: message, tone: 'working', at: pointAt } }); }
               if (current.annotateMode) {
                 var previous = Array.isArray(current.annotations) ? current.annotations : [];
                 var annotation = { x: point.x, y: point.y, type: 'dot' };
-                if (previous.length) { annotation.prevX = previous[previous.length - 1].x; annotation.prevY = previous[previous.length - 1].y; }
+                var startsNewLine = current._annotationBreakScope === annotationLineScope;
+                if (previous.length && !startsNewLine) { annotation.prevX = previous[previous.length - 1].x; annotation.prevY = previous[previous.length - 1].y; }
                 var annotations = previous.concat([annotation]);
-                return withPointFeedback({ annotations: annotations }, 'Annotation point ' + annotations.length + ' added' + (inputType === 'keyboard' ? ' at the keyboard anchor' : '') + '. Select another point to continue the line, or undo the last point.');
+                return withPointFeedback({ annotations: annotations, _annotationBreakScope: null, _annotationClearUndo: null }, (startsNewLine && previous.length
+                  ? 'New annotation line started at point ' + annotations.length
+                  : 'Annotation point ' + annotations.length + ' added') + (inputType === 'keyboard' ? ' at the keyboard anchor' : '') + '. Select another point to continue the line, or undo the last point.');
+              }
+              if ((current._rulerEndpointEdit || null) !== renderedMeasurement.edit) return {};
+              if (rulerEndpointEditActive) {
+                if (!canAdjustMeasurementEnd(renderedMeasurement.edit, current)) return {};
+                return withPointFeedback({ rulerEnd: { x: point.x, y: point.y }, _rulerEndpointEdit: null }, 'End point changed. Approximate model distance: ' + modelMeasurementText(current.rulerStart, point) + '. The start point was kept.');
               }
               if (!current.rulerStart || current.rulerEnd) {
-                return withPointFeedback({ rulerStart: { x: point.x, y: point.y }, rulerEnd: null }, 'Ruler start point set. Select a second point to complete the approximate model measurement.');
+                return withPointFeedback({ rulerStart: { x: point.x, y: point.y }, rulerEnd: null, _rulerEndpointEdit: null }, 'Ruler start point set. Select a second point to complete the approximate model measurement.');
               }
               return withPointFeedback({ rulerEnd: { x: point.x, y: point.y } }, 'Measurement complete. Approximate model distance: ' + modelMeasurementText(current.rulerStart, point) + '. Select another point to start a new measurement.');
             }
@@ -23999,13 +24358,19 @@ var d = labToolData.dissection || {};
             return true;
           }
           function undoObservationPoint() {
-            updMany(function (current) { return { annotations: (current.annotations || []).slice(0, -1) }; });
+            updMany(function (current) { return { annotations: (current.annotations || []).slice(0, -1), _annotationClearUndo: null }; });
             setProcedureFeedback('Last annotation point removed. The remaining observation line was kept.', 'working');
             if ((d.annotations || []).length === 1) setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0);
           }
           function clearModelMeasurement() {
-            updMany({ rulerStart: null, rulerEnd: null });
-            setProcedureFeedback(d.rulerMode ? 'Measurement cleared. Select the first endpoint for a new measurement.' : 'Measurement cleared.', 'working');
+            if (d.quizMode || d.practicalMode || !renderedMeasurement.start) return;
+            updMany(function (current) {
+              if (current.quizMode || current.practicalMode || current.rulerStart !== renderedMeasurement.start || current.rulerEnd !== renderedMeasurement.end ||
+                (current._rulerEndpointEdit || null) !== renderedMeasurement.edit ||
+                [(current.specimen || 'frog'), (current.activeLayer || 'skin'), (current.anatomicalView || 'dorsal')].join('|') !== annotationLineScope) return {};
+              return { rulerStart: null, rulerEnd: null, _rulerEndpointEdit: null,
+                procedureFeedback: { message: current.rulerMode ? 'Measurement cleared. Select the first endpoint for a new measurement.' : 'Measurement cleared.', tone: 'working', at: Date.now() } };
+            });
             if (!d.rulerMode) setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0);
           }
 
@@ -24198,7 +24563,7 @@ var d = labToolData.dissection || {};
               return { mode: 'identify', cursor: 'crosshair', tone: 'assessment', icon: '?', label: 'Identify a structure', instruction: effectiveQuizAnswerMode === 'hotspot' ? 'Select an unlabeled visible candidate; Arrow keys preview and Enter submits.' : 'Choose an answer in the assessment panel.' };
             }
             if (d.annotateMode) return { mode: 'annotate', cursor: 'crosshair', tone: 'ready', icon: '+', label: 'Add observation mark', instruction: 'Select the specimen to place a visible observation mark.' };
-            if (d.rulerMode) return { mode: 'measure', cursor: 'crosshair', tone: 'ready', icon: '↔', label: 'Measure', instruction: d.rulerEnd ? 'Measurement complete. Select another point to start a new measurement.' : (d.rulerStart ? 'Select the second endpoint to complete the measurement.' : 'Select the first measurement endpoint.') };
+            if (d.rulerMode) return { mode: 'measure', cursor: 'crosshair', tone: 'ready', icon: '↔', label: 'Measure', instruction: rulerEndpointEditActive ? 'Choose a replacement end point. The current measurement stays until you place it.' : d.rulerEnd ? 'Measurement complete. Select another point to start a new measurement.' : (d.rulerStart ? 'Select the second endpoint to complete the measurement.' : 'Select the first measurement endpoint.') };
             if (guidedMode) return { mode: 'locate', cursor: hit ? 'pointer' : 'crosshair', tone: 'ready', icon: '?', label: 'Locate the guided target', instruction: 'Select a visible structure; procedure tools are paused during Guided investigation.' };
             if (canvas._isPanning) return { mode: 'panning', cursor: 'grabbing', tone: 'ready', icon: '?', label: 'Panning specimen', instruction: 'Release to keep this view position.' };
             if ((d.canvasZoom || 1) > 1.01 && activeInstrument === 'probe') return { mode: 'pan-or-probe', cursor: 'grab', tone: 'ready', icon: '?', label: 'Pan or trace', instruction: 'Drag the background to pan; drag a visible structure to trace it.' };
@@ -24700,6 +25065,12 @@ var d = labToolData.dissection || {};
           var normalizedReferenceEvidenceId = normalizeDissectionEvidenceReferenceId(d.visualEvidence, d.referenceEvidenceId);
           var referenceEvidence = visualEvidence.find(function (entry) { return entry.id === normalizedReferenceEvidenceId; }) || visualEvidence[visualEvidence.length - 1] || null;
           var evidenceNotebookOpen = !!d.evidenceNotebookOpen;
+          var evidenceViewerFrames = visualEvidence.map(function (frame, index) {
+            var caption = evidenceLayerLabel(frame) + ', ' + evidenceViewLabel(frame) + ' view';
+            return { id: frame.id, image: frame.image, caption: caption, title: 'Frame ' + (index + 1) + ': ' + caption, metadata: renderEvidenceMetadata(frame, null, true),
+              alt: spec.name + ' saved evidence, frame ' + (index + 1) + ', ' + caption };
+          });
+          var evidenceConfirmation = dissectionEvidenceConfirmationFor(dissectionSaveOwner, d, visualEvidence);
           var selectedRelationships = anatomicalRelationships();
           var visibleOrgansInView = organs.filter(function (org) { return structureExposureState(org, currentProcedure) === 'visible'; });
           var revealedLayerCount = spec.layers.filter(function (layer) { return !!revealedLayers[layer.id]; }).length;
@@ -24707,6 +25078,7 @@ var d = labToolData.dissection || {};
           spec.layers.forEach(function (layer, layerIdx) {
             if (layerIdx === 0 || revealedLayers[spec.layers[layerIdx - 1].id]) unlockedLayerIdx = Math.max(unlockedLayerIdx, layerIdx);
           });
+          var observationReviewFilter = ['all', 'unfinished', 'missing-note', 'missing-confidence', 'uncertain', 'unverified', 'verified'].indexOf(d._observationReviewFilter) >= 0 ? d._observationReviewFilter : 'all';
           var observationReviewEntries = [];
           spec.layers.forEach(function (layer, layerIndex) {
             (spec.organs[layer.id] || []).forEach(function (org) {
@@ -24726,10 +25098,9 @@ var d = labToolData.dissection || {};
               observationReviewEntries.push({ organ: org, layer: layer, available: layerIndex <= unlockedLayerIdx,
                 note: note, confidence: confidence, needsRecord: !note.trim() || !confidence,
                 verified: guidedVerified || assessmentVerified, verificationLabel: verificationLabel,
-                recordStatus: structureRecordStatus(org), recordTask: !note.trim() || !confidence ? structureRecordTask(org) : null });
+                recordStatus: structureRecordStatus(org), recordTask: !note.trim() || !confidence ? structureRecordTask(org, observationReviewFilter === 'missing-confidence' ? 'confidence' : observationReviewFilter === 'missing-note' ? 'note' : null) : null });
             });
           });
-          var observationReviewFilter = ['all', 'unfinished', 'uncertain', 'unverified', 'verified'].indexOf(d._observationReviewFilter) >= 0 ? d._observationReviewFilter : 'all';
           var observationSearchValue = typeof d._observationReviewSearch === 'string' ? d._observationReviewSearch : '';
           var observationSearchTokens = normalizeDissectionSearch(observationSearchValue).split(/\s+/).filter(Boolean);
           var matchingObservationEntries = observationReviewEntries.filter(function (entry) {
@@ -24739,12 +25110,16 @@ var d = labToolData.dissection || {};
           var observationReviewChoices = [
             { id: 'all', label: 'All inspected', count: matchingObservationEntries.length },
             { id: 'unfinished', label: 'Finish records', count: matchingObservationEntries.filter(function (entry) { return entry.needsRecord; }).length },
+            { id: 'missing-note', label: __alloT('stem.dissection.observation_missing_notes', 'Missing notes'), count: matchingObservationEntries.filter(function (entry) { return !entry.note.trim(); }).length },
+            { id: 'missing-confidence', label: __alloT('stem.dissection.observation_missing_confidence', 'Missing confidence'), count: matchingObservationEntries.filter(function (entry) { return !entry.confidence; }).length },
             { id: 'uncertain', label: 'Low confidence', count: matchingObservationEntries.filter(function (entry) { return entry.confidence === 1; }).length },
             { id: 'unverified', label: __alloT('stem.dissection.observation_needs_check', 'Needs a check'), count: matchingObservationEntries.filter(function (entry) { return !entry.verified; }).length },
             { id: 'verified', label: __alloT('stem.dissection.observation_checked', 'Checked identifications'), count: matchingObservationEntries.filter(function (entry) { return entry.verified; }).length }
           ];
           var filteredObservationReview = matchingObservationEntries.filter(function (entry) {
             return observationReviewFilter === 'all' || (observationReviewFilter === 'unfinished' ? entry.needsRecord
+              : observationReviewFilter === 'missing-note' ? !entry.note.trim()
+              : observationReviewFilter === 'missing-confidence' ? !entry.confidence
               : observationReviewFilter === 'uncertain' ? entry.confidence === 1
               : observationReviewFilter === 'unverified' ? !entry.verified : entry.verified);
           });
@@ -25752,8 +26127,9 @@ var d = labToolData.dissection || {};
             var score = Number(value);
             return isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : null;
           }
-          function renderEvidenceMetadata(evidence, metadataId) {
+          function renderEvidenceMetadata(evidence, metadataId, readingView) {
             var technique = evidenceScore(evidence.techniqueScore);
+            var capturedObservation = dissectionCapturedObservation(evidence, specimen);
             var optics = evidenceScore(evidence.opticalQuality);
             var captured = typeof evidence.capturedAt === 'string' ? evidence.capturedAt.trim() : '';
             var capturedParts = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/i.exec(captured);
@@ -25772,7 +26148,14 @@ var d = labToolData.dissection || {};
                 + (typeof evidence.annotationCount === 'number' && isFinite(evidence.annotationCount) && evidence.annotationCount >= 0 ? ' · ' + Math.floor(evidence.annotationCount) + ' observation mark' + (evidence.annotationCount === 1 ? '' : 's') : '')
                 + (typeof evidence.measurementText === 'string' && evidence.measurementText ? ' · Approximate model distance: ' + evidence.measurementText : '')
               ),
-              capturedIso ? React.createElement("time", { dateTime: capturedIso }, 'Captured ' + capturedIso.slice(0, 19).replace('T', ' ') + ' UTC') : React.createElement("p", null, 'Capture time unavailable')
+              capturedIso ? React.createElement("time", { dateTime: capturedIso }, 'Captured ' + capturedIso.slice(0, 19).replace('T', ' ') + ' UTC') : React.createElement("p", null, 'Capture time unavailable'),
+              !d.quizMode && !d.practicalMode && (capturedObservation ? React.createElement(readingView ? 'section' : 'details', { className: 'diss-capture-record', 'data-evidence-observation-record': true },
+                React.createElement(readingView ? 'h4' : 'summary', null, __alloT('stem.dissection.capture_record_summary', 'Observation at capture')),
+                React.createElement('p', null, __alloT('stem.dissection.capture_record_scope', 'This is your record when the frame was captured. Later note edits do not change it. Included in the lab report.')),
+                React.createElement('p', { 'data-captured-inspection': true }, capturedObservation.inspected ? 'Inspection recorded at capture' : 'Not yet inspected at capture · saved draft only'),
+                React.createElement('p', { 'data-captured-confidence': true }, 'Self-rated confidence at capture: ' + (capturedObservation.confidence ? capturedObservation.confidence + ' of 3' : 'Not recorded')),
+                React.createElement('p', { className: 'diss-capture-record__note', dir: 'auto', 'data-captured-note': true }, capturedObservation.note.trim() ? capturedObservation.note : 'No evidence note at capture')
+              ) : React.createElement('p', { 'data-evidence-observation-missing': true }, 'Observation record at capture: Not recorded'))
             );
           }
           function evidenceFileToken(value, fallback) {
@@ -25803,6 +26186,7 @@ var d = labToolData.dissection || {};
             focusEvidenceControl(d.evidenceReturnFocusId || (referenceEvidence ? 'diss-evidence-compare-' + evidenceDomToken(referenceEvidence.id) : null));
           }
           function captureVisualEvidence() {
+            if (d.quizMode || d.practicalMode) return false;
             if (visualEvidence.length >= evidenceFrameLimit) {
               setProcedureFeedback(visualEvidence.length > evidenceFrameLimit
                 ? 'All ' + visualEvidence.length + ' existing evidence frames were kept. Download important frames, then remove at least ' + (visualEvidence.length - evidenceFrameLimit + 1) + ' frames before capturing another; no saved frame was replaced.'
@@ -25843,6 +26227,11 @@ var d = labToolData.dissection || {};
                 tissueRelief: tissueReliefEnabled,
                 selectedOrganId: selectedEvidenceOrgan ? selectedEvidenceOrgan.id : null,
                 selectedOrganName: selectedEvidenceOrgan ? selectedEvidenceOrgan.name : '',
+                capturedObservation: selectedEvidenceOrgan ? {
+                  note: dissectionEvidenceNote(d.organNotes, specimen + '|' + selectedEvidenceOrgan.id),
+                  confidence: structureEvidenceData(selectedEvidenceOrgan).confidence,
+                  inspected: !!(d.exploredOrgans || {})[specimen + '|' + selectedEvidenceOrgan.id]
+                } : null,
                 techniqueScore: techniqueScore,
                 calibrationScore: recordedCalibrationScore,
                 toolCalibration: Object.assign({}, toolCalibration),
@@ -25908,17 +26297,21 @@ var d = labToolData.dissection || {};
               var imageExtension = imageFormat === 'jpeg' ? 'jpg' : imageFormat;
               link.download = evidenceFileToken(specimen, 'specimen') + '_' + evidenceFileToken(evidence.layer, 'evidence') + '_' + evidenceFileToken(evidence.id, 'frame') + '.' + imageExtension;
               link.href = image; link.click();
-              setProcedureFeedback('Evidence frame downloaded as ' + link.download + '.');
-              if (addToast) addToast('Evidence frame downloaded.', 'success');
+              setProcedureFeedback('Download requested: ' + link.download + '.');
+              if (addToast) addToast('Evidence frame download requested.', 'success');
+              return link.download;
             } catch (error) {
               setProcedureFeedback('Evidence download failed in this view.', 'caution');
               if (addToast) addToast('Evidence download failed.', 'error');
+              return false;
             }
           }
 
           function requestEvidenceRemoval(evidenceId) {
+            if (d.quizMode || d.practicalMode) return;
             var evidence = visualEvidence.find(function (entry) { return entry.id === evidenceId; });
             if (!evidence) return;
+            delete _disEvidenceConfirmations[dissectionSaveOwner];
             updMany({ evidenceRemovePendingId: evidenceId, evidenceClearPending: false });
             setProcedureFeedback('Removal confirmation opened for ' + evidenceLayerLabel(evidence) + '. Download the frame first if you need a separate copy.', 'caution');
             focusEvidenceControl('diss-evidence-confirm-remove-' + evidenceDomToken(evidenceId));
@@ -25931,50 +26324,75 @@ var d = labToolData.dissection || {};
             else cancelEvidenceRemoval(evidenceId);
           }
           function cancelEvidenceRemoval(evidenceId) {
+            if (!currentEvidenceConfirmation('remove', evidenceId)) return false;
+            delete _disEvidenceConfirmations[dissectionSaveOwner];
             upd('evidenceRemovePendingId', null);
             setProcedureFeedback('Evidence-frame removal canceled.', 'working');
             focusEvidenceControl('diss-evidence-remove-' + evidenceDomToken(evidenceId));
           }
           function confirmEvidenceRemoval(evidenceId) {
+            if (!claimEvidenceConfirmation('remove', evidenceId)) return false;
             var evidenceIndex = visualEvidence.findIndex(function (entry) { return entry.id === evidenceId; });
             if (evidenceIndex < 0) { upd('evidenceRemovePendingId', null); return; }
             var evidence = visualEvidence[evidenceIndex];
             var remainingEvidence = visualEvidence.slice(0, evidenceIndex).concat(visualEvidence.slice(evidenceIndex + 1));
             var preferredReferenceId = referenceEvidence ? referenceEvidence.id : null;
             var nextReference = remainingEvidence.find(function (entry) { return entry.id === preferredReferenceId; }) || remainingEvidence[remainingEvidence.length - 1] || null;
-            cancelDissectionSave('dissection_progress_' + specimen, dissectionSaveOwner);
-            updMany({
-              visualEvidence: remainingEvidence,
-              referenceEvidenceId: nextReference ? nextReference.id : null,
-              splitComparison: !!(d.splitComparison && nextReference),
-              evidenceReturnFocusId: nextReference ? 'diss-evidence-compare-' + evidenceDomToken(nextReference.id) : null,
-              evidenceRemovePendingId: null,
-              evidenceClearPending: false
-            });
             var remainingCount = remainingEvidence.length;
-            setProcedureFeedback('Removed the ' + evidenceLayerLabel(evidence) + ' evidence frame. ' + remainingCount + ' frame' + (remainingCount === 1 ? ' remains.' : 's remain.') + ' Saving the smaller notebook now.', 'success');
-            if (typeof announceToSR === 'function') announceToSR('Evidence frame removed. ' + remainingCount + ' frame' + (remainingCount === 1 ? ' remains.' : 's remain.'));
+            var removalMessage = 'Removed the ' + evidenceLayerLabel(evidence) + ' evidence frame. ' + remainingCount + ' frame' + (remainingCount === 1 ? ' remains.' : 's remain.') + ' Saving the smaller notebook now.';
+            cancelDissectionSave('dissection_progress_' + specimen, dissectionSaveOwner);
+            updMany(function (current) {
+              if (!dissectionEvidenceConfirmationMatches(evidenceConfirmation, current, normalizeDissectionEvidenceIdentities(current.visualEvidence))) return {};
+              return {
+                visualEvidence: remainingEvidence,
+                referenceEvidenceId: nextReference ? nextReference.id : null,
+                splitComparison: !!(d.splitComparison && nextReference),
+                evidenceReturnFocusId: nextReference ? 'diss-evidence-compare-' + evidenceDomToken(nextReference.id) : null,
+                evidenceRemovePendingId: null,
+                evidenceClearPending: false,
+                procedureFeedback: { message: removalMessage, tone: 'success', at: Date.now() }
+              };
+            });
             focusEvidenceControl();
           }
           function requestClearVisualEvidence() {
+            if (d.quizMode || d.practicalMode) return;
             if (!visualEvidence.length) return;
+            delete _disEvidenceConfirmations[dissectionSaveOwner];
             updMany({ evidenceClearPending: true, evidenceRemovePendingId: null });
             setProcedureFeedback('Clear-all confirmation opened. Download any evidence frames you need before continuing.', 'caution');
             focusEvidenceControl('diss-evidence-confirm-clear');
           }
           function cancelClearVisualEvidence() {
+            if (!currentEvidenceConfirmation('clear')) return false;
+            delete _disEvidenceConfirmations[dissectionSaveOwner];
             upd('evidenceClearPending', false);
             setProcedureFeedback('Clear-all evidence action canceled.', 'working');
             focusEvidenceControl('diss-evidence-clear-all');
           }
           function confirmClearVisualEvidence() {
+            if (!claimEvidenceConfirmation('clear')) return false;
             var removedCount = visualEvidence.length;
             if (!removedCount) { upd('evidenceClearPending', false); return; }
+            var clearMessage = 'Cleared ' + removedCount + ' evidence frame' + (removedCount === 1 ? '' : 's') + '. Notes and other specimen progress were preserved; saving the smaller record now.';
             cancelDissectionSave('dissection_progress_' + specimen, dissectionSaveOwner);
-            updMany({ visualEvidence: [], referenceEvidenceId: null, splitComparison: false, evidenceReturnFocusId: null, evidenceRemovePendingId: null, evidenceClearPending: false });
-            setProcedureFeedback('Cleared ' + removedCount + ' evidence frame' + (removedCount === 1 ? '' : 's') + '. Notes and other specimen progress were preserved; saving the smaller record now.', 'success');
-            if (typeof announceToSR === 'function') announceToSR('All ' + removedCount + ' evidence frames cleared. Notes and other progress were preserved.');
+            updMany(function (current) {
+              if (!dissectionEvidenceConfirmationMatches(evidenceConfirmation, current, normalizeDissectionEvidenceIdentities(current.visualEvidence))) return {};
+              return { visualEvidence: [], referenceEvidenceId: null, splitComparison: false, evidenceReturnFocusId: null, evidenceRemovePendingId: null, evidenceClearPending: false,
+                procedureFeedback: { message: clearMessage, tone: 'success', at: Date.now() } };
+            });
             focusEvidenceControl();
+          }
+
+          function currentEvidenceConfirmation(kind, evidenceId) {
+            return !!evidenceConfirmation && _disEvidenceConfirmations[dissectionSaveOwner] === evidenceConfirmation &&
+              !evidenceConfirmation.accepted && evidenceConfirmation.kind === kind &&
+              (kind === 'clear' || evidenceConfirmation.id === evidenceId);
+          }
+          function claimEvidenceConfirmation(kind, evidenceId) {
+            if (!currentEvidenceConfirmation(kind, evidenceId)) return false;
+            evidenceConfirmation.accepted = true;
+            return true;
           }
 
           function selectSpecimen(sk) {
@@ -26008,7 +26426,7 @@ var d = labToolData.dissection || {};
               setProcedureFeedback('Could not save the latest ' + spec.name + ' work, so the specimen was not changed. Restore browser storage or copy your report, then try again.', 'caution');
               return false;
             }
-            updMany({ _flashcardReturn: null, assessmentRecordedSupportedCount: null });
+            updMany({ _flashcardReturn: null, assessmentRecordedSupportedCount: null, _annotationBreakScope: null, _annotationClearUndo: null, _rulerEndpointEdit: null });
             clearAllDissectionCanvasTimers(canvasRefNode);
             cancelActiveCanvasGesture('Specimen gesture canceled before changing specimens; no action was recorded.');
             cancelDissectionLoad(dissectionSaveOwner);
@@ -26083,7 +26501,7 @@ var d = labToolData.dissection || {};
             cancelDissectionSave(resetSaveKey, dissectionSaveOwner);
             cancelDissectionLoad(dissectionSaveOwner);
             allowDissectionSave(resetSaveKey, null, spec.name, dissectionSaveOwner);
-            updMany({ _dissLoadedSpec: specimen, _dissSaveRetrying: false, _flashcardReturn: null, assessmentRecordedSupportedCount: null });
+            updMany({ _dissLoadedSpec: specimen, _dissSaveRetrying: false, _flashcardReturn: null, assessmentRecordedSupportedCount: null, _annotationBreakScope: null, _annotationClearUndo: null, _rulerEndpointEdit: null });
             closeTimedPractical();
             updMany({ _practicalCompletion: null, _comparisonFocus: null, _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, _flashcardPractice: null, flashcardMode: false, activeLayer: (spec.layers[0] || {}).id || 'skin', organSearch: '', directoryFilter: 'all', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, evidenceNotebookOpen: false, evidenceReturnFocusId: null, evidenceRemovePendingId: null, evidenceClearPending: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, labelMode: 'show', resetConfirmPending: false, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalEndsAt: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], evidenceRemovePendingId: null, evidenceClearPending: false, labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
@@ -26611,7 +27029,7 @@ var d = labToolData.dissection || {};
             var viewTransitionStartedAt = Date.now();
             var viewTransitionCanvas = canvasRefNode;
             clearDissectionCanvasTimer(viewTransitionCanvas, 'layerBrowseTransition');
-            updMany({ anatomicalView: nextView, selectedOrgan: null, hoveredOrgan: null,
+            updMany({ anatomicalView: nextView, selectedOrgan: null, hoveredOrgan: null, _annotationBreakScope: null, _annotationClearUndo: null, _rulerEndpointEdit: null,
               _layerBrowseTransition: null,
               _viewTransition: { active: true, fromView: fromView, toView: nextView, source: source || 'view control', startedAt: viewTransitionStartedAt, duration: viewTransitionDuration, reducedMotion: viewMotionReduced, specimenShape: spec.bodyShape }
             });
@@ -26641,6 +27059,9 @@ var d = labToolData.dissection || {};
               return;
             }
             upd('_flashcardReturn', null);
+            upd('_annotationBreakScope', null);
+            upd('_annotationClearUndo', null);
+            upd('_rulerEndpointEdit', null);
             cancelActiveCanvasGesture('Specimen gesture canceled before changing layers; no action was recorded.');
             stopProcedureReplay(false, true);
             var layerMotionReduced = reducedMotionEnabled;
@@ -26762,7 +27183,7 @@ var d = labToolData.dissection || {};
               traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false,
               traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false,
               selectedOrgan: null, hoveredOrgan: null, toolbarViewOpen: false, toolbarToolsOpen: false,
-              rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null,
+              rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, _rulerEndpointEdit: null,
               compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false,
               inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null,
               macroInset: false, _procedureDemo: null, _procedureReplay: null });
@@ -26888,6 +27309,18 @@ var d = labToolData.dissection || {};
                   report += 'Instructor thresholds: score ' + instructorTarget + ', max cautions ' + instructorMaxCautions + ', required structures ' + instructorRequiredStructures + '\n';
                   report += 'Curated relationship overlay: ' + (relationshipMode ? 'on' : 'off') + '; directly visible structures: ' + visibleOrgansInView.length + '/' + organs.length + '; rendering quality: ' + renderQuality + '\n';
                   if (d.selectedOrgan && selectedRelationships.length) report += 'Selected structure relationships: ' + selectedRelationships.map(function (item) { return item.type + ': ' + item.relation + ' ' + item.organ.name; }).join('; ') + '\n';
+                  if (visualEvidence.length) {
+                    report += '\nEvidence frames: observation records at capture\nImages are separate. Later edits to live notes do not change these captured records.\n';
+                    visualEvidence.forEach(function (frame, index) {
+                      report += 'Frame ' + (index + 1) + ': ' + evidenceLayerLabel(frame) + ' · ' + evidenceViewLabel(frame) + '\n';
+                      var capturedRecord = dissectionCapturedObservation(frame, specimen);
+                      if (!capturedRecord) { report += '  Observation record at capture: Not recorded\n'; return; }
+                      report += '  Focused structure at capture: ' + (frame.selectedOrganName || '[Not recorded]') + '\n';
+                      report += '  Inspection at capture: ' + (capturedRecord.inspected ? 'Inspected in the virtual specimen' : 'Not yet inspected; saved draft only') + '\n';
+                      report += '  Confidence self-rating at capture: ' + (capturedRecord.confidence ? capturedRecord.confidence + ' of 3' : 'Not recorded') + '\n';
+                      report += '  Evidence note at capture: ' + (capturedRecord.note.trim() ? capturedRecord.note : '[Not recorded]') + '\n';
+                    });
+                  }
                   spec.layers.forEach(function (layer) {
                     var examined = (spec.organs[layer.id] || []).filter(function (o) { var key = specimen + '|' + o.id; return !!(d.exploredOrgans || {})[key] || !!dissectionEvidenceNote(d.organNotes, key).trim() || !!(d.organConfidence || {})[key]; });
                     if (!examined.length) return;
@@ -27464,7 +27897,7 @@ var d = labToolData.dissection || {};
                 title: 'Annotate' + ' — Draw annotations on the canvas',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
               }, '\u270F ' + 'Annotate'), React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_clear_annotations', 'Clear annotations'), disabled: !(d.annotations || []).length,
-                onClick: function () { var count = (d.annotations || []).length; upd('annotations', []); setProcedureFeedback('Cleared ' + count + ' annotation point' + (count === 1 ? '' : 's') + '.'); },
+                onClick: clearObservationMarks,
                 title: 'Clear annotations \u2014 Remove annotation marks from the current specimen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
               }, '\u232B Clear annotations'))
@@ -27770,9 +28203,11 @@ var d = labToolData.dissection || {};
                       React.createElement("strong", { "data-pointer-guide-label": true }, 'Mode: ' + pointerGuideData.label),
                       React.createElement("span", { "data-pointer-guide-instruction": true }, pointerGuideData.instruction)
                     ),
-                    !d.quizMode && (d.annotateMode || d.rulerMode || (d.annotations || []).length || d.rulerStart) ? React.createElement("div", { className: "diss-point-mode" },
+                    !d.quizMode && (d.annotateMode || d.rulerMode || (d.annotations || []).length || d.rulerStart || annotationClearUndoAvailable) ? React.createElement("div", { className: "diss-point-mode" },
                       React.createElement("p", { className: "diss-point-mode__status", "data-diss-point-status": true },
-                        d.annotateMode ? (d.annotations || []).length + ' annotation point' + ((d.annotations || []).length === 1 ? '' : 's') + '. Add another point to extend the line.'
+                        annotationClearUndoAvailable && !d.annotateMode && !d.rulerMode && !d.rulerStart ? 'Observation marks cleared. Undo clear marks can restore your earlier drawing.'
+                          : rulerEndpointEditActive ? 'Choose a replacement end point. Current approximate model distance: ' + modelMeasurementText(d.rulerStart, d.rulerEnd) + '. The start point and current measurement stay until you place it.'
+                          : d.annotateMode ? (d.annotations || []).length + ' annotation point' + ((d.annotations || []).length === 1 ? '' : 's') + (annotationBreakPending ? '. Next point starts a separate line; existing marks are kept.' : '. Add another point to extend the line.')
                           : d.rulerStart && d.rulerEnd ? 'Approximate model distance: ' + modelMeasurementText(d.rulerStart, d.rulerEnd) + '. '
                           + ((d.annotations || []).length ? (d.annotations || []).length + ' annotation points on this specimen.' : 'Measurement kept for this specimen in this session.')
                           : d.rulerMode ? (d.rulerStart ? 'Step 2 of 2: place the second endpoint.' : 'Step 1 of 2: place the first endpoint.')
@@ -27782,9 +28217,12 @@ var d = labToolData.dissection || {};
                       (d.annotateMode || d.rulerMode) && React.createElement("p", { id: "diss-point-mode-help" }, pointModeInstruction()),
                       React.createElement("div", { className: "diss-point-mode__actions" },
                         (d.annotateMode || d.rulerMode) && React.createElement("button", { type: "button", "data-diss-point-canvas": true, onClick: function () { focusDissectionTarget('diss-canvas', pointModeInstruction()); } }, 'Place points on specimen'),
+                        d.annotateMode && React.createElement("button", { type: "button", "data-diss-point-new-line": true, "aria-pressed": annotationBreakPending, "aria-describedby": "diss-point-mode-help", disabled: !(d.annotations || []).length, onClick: toggleAnnotationLineBreak }, 'Start new line'),
                         d.annotateMode && React.createElement("button", { type: "button", "data-diss-point-undo": true, disabled: !(d.annotations || []).length, onClick: undoObservationPoint }, 'Undo last point'),
+                        !d.practicalMode && d.rulerStart && d.rulerEnd && React.createElement("button", { type: "button", "data-diss-measurement-end-edit": true, "aria-pressed": rulerEndpointEditActive, onClick: toggleMeasurementEndpointEdit }, rulerEndpointEditActive ? 'Cancel end point change' : 'Adjust end point'),
                         (d.rulerMode || d.rulerStart) && React.createElement("button", { type: "button", "data-diss-measurement-clear": true, disabled: !d.rulerStart, onClick: clearModelMeasurement }, d.rulerMode && d.rulerEnd ? 'New measurement' : 'Clear measurement'),
-                        !d.annotateMode && !d.rulerMode && (d.annotations || []).length > 0 && React.createElement("button", { type: "button", onClick: function () { upd('annotations', []); setProcedureFeedback('Observation marks cleared.', 'working'); setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0); } }, 'Clear observation marks'),
+                        !d.annotateMode && !d.rulerMode && (d.annotations || []).length > 0 && React.createElement("button", { type: "button", onClick: clearObservationMarks }, 'Clear observation marks'),
+                        annotationClearUndoAvailable && React.createElement("button", { id: "diss-annotation-clear-undo", type: "button", onClick: restoreClearedObservationMarks }, 'Undo clear marks'),
                         (d.annotateMode || d.rulerMode) && React.createElement("button", { type: "button", "data-diss-point-exit": true, onClick: function () { setObservationPointMode(null, true); } }, 'Return to instruments')
                       )
                     ) : null
@@ -28217,6 +28655,8 @@ var d = labToolData.dissection || {};
                         React.createElement("img", { src: evidence.image, alt: spec.name + ' evidence thumbnail, ' + evidenceFrameLabel.toLowerCase() + ', ' + evidenceLayerName + ', ' + evidenceView + ' view' }),
                         React.createElement("strong", null, evidenceLayerName),
                         renderEvidenceMetadata(evidence),
+                        React.createElement(DissectionEvidenceViewer, { key: specimen + '|' + activeLayer + '|' + anatomicalView + '|' + workspaceMode, React: React, t: __alloT, frameId: evidence.id, frames: evidenceViewerFrames, onDownload: function (frameId) { var source = visualEvidence.find(function (entry) { return entry.id === frameId; }); return source ? downloadEvidence(source) : ''; }, image: evidence.image,
+                          title: evidenceFrameLabel + ': ' + evidenceLayerName + ', ' + evidenceView + ' view', alt: spec.name + ' saved evidence, ' + evidenceFrameLabel.toLowerCase() + ', ' + evidenceLayerName + ', ' + evidenceView + ' view', disabled: !!d.quizMode || !!d.practicalMode || !evidenceNotebookOpen || !!d.evidenceClearPending || d.evidenceRemovePendingId != null }),
                         removalPending && React.createElement("p", { className: "diss-evidence__confirm-copy", role: "status" }, 'Remove ' + evidenceFrameLabel.toLowerCase() + '? Download it first if you need a separate copy.'),
                         React.createElement("div", { className: "diss-evidence__actions", onKeyDown: removalPending ? function (event) { handleEvidenceConfirmationKey(event, evidence.id); } : undefined },
                           removalPending
@@ -29088,6 +29528,7 @@ var d = labToolData.dissection || {};
                   React.createElement('div', { className: 'diss-observation-review__body' },
                     React.createElement('p', null, 'Your inspected structures across all layers of ' + spec.name + '. Review what you observed, then decide what evidence would strengthen your identification.'),
                     React.createElement('p', null, __alloT('stem.dissection.observation_review_explanation', 'Finish records shows missing notes or confidence. Low confidence means 1 of 3. Checked identifications come from a successful Guided check or a first-attempt assessment answer; confidence alone does not count as a check.')),
+                    React.createElement('p', null, __alloT('stem.dissection.observation_field_filter_explanation', 'Choose Missing notes or Missing confidence to finish one field at a time. A complete record still needs both.')),
                     layerRevealPending && React.createElement('p', { role: 'status', 'data-observation-review-busy': true }, __alloT('stem.dissection.observation_reveal_wait', 'Layer reveal in progress. You can keep reading saved notes; wait for the reveal to finish before opening a record.')),
                     React.createElement('div', { className: 'diss-observation-search' },
                       React.createElement('label', { htmlFor: 'diss-observation-search' }, 'Search your observations'),
@@ -29312,6 +29753,18 @@ var d = labToolData.dissection || {};
                   (function () {
                     var evidenceKey = specimen + '|' + sel.id;
                     var noteValue = dissectionEvidenceNote(d.organNotes, evidenceKey);
+                    var noteOrganId = sel.id, noteLayer = activeLayer, noteView = anatomicalView;
+                    function updateEvidenceNote(value) {
+                      if (typeof value !== 'string') return;
+                      updMany(function (current) {
+                        if ((current.specimen || 'frog') !== specimen || (current.activeLayer || 'skin') !== noteLayer ||
+                          (current.anatomicalView || 'dorsal') !== noteView || current.selectedOrgan !== noteOrganId ||
+                          current.quizMode || current.practicalMode || (current._incisionAnim && current._incisionAnim.active) ||
+                          dissectionEvidenceNote(current.organNotes, evidenceKey) !== noteValue) return {};
+                        var notes = Object.assign({}, current.organNotes || {}); notes[evidenceKey] = value;
+                        return { organNotes: notes };
+                      });
+                    }
                     var confidenceValue = structureEvidenceData(sel).confidence;
                     var confidenceChoices = [
                       { level: 1, label: dissectionConfidenceLabel(1), cue: __alloT('stem.dissection.confidence_not_sure_yet_cue', 'Inspect one more visible feature and its location.') },
@@ -29347,9 +29800,7 @@ var d = labToolData.dissection || {};
                     function appendEvidenceStarter(starter) {
                       if (noteLower.indexOf(String(starter.text).trim().toLowerCase()) >= 0) return;
                       var separator = noteText ? (/\n$/.test(noteValue) ? '' : '\n') : '';
-                      var notes = Object.assign({}, d.organNotes || {});
-                      notes[evidenceKey] = String(noteValue) + separator + starter.text;
-                      upd('organNotes', notes);
+                      updateEvidenceNote(String(noteValue) + separator + starter.text);
                       if (starter.id === 'countercheck' && typeof announceToSR === 'function') {
                         announceToSR(__alloT('stem.dissection.countercheck_starter_added_announcement', 'Countercheck starter added. Finish the sentence in your evidence note.'));
                       }
@@ -29369,7 +29820,11 @@ var d = labToolData.dissection || {};
                           return React.createElement("button", { type: "button", key: starter.id, "data-evidence-starter": starter.id, "aria-controls": 'diss-note-' + sel.id, onClick: function () { appendEvidenceStarter(starter); } }, starter.label);
                         })
                       ),
-                      React.createElement("textarea", { id: 'diss-note-' + sel.id, className: "diss-evidence-note", rows: 3, value: noteValue, "aria-describedby": observePromptId + ' ' + evidenceHelpId + ' ' + noteStatusId, placeholder: __alloT('stem.dissection.evidence_note_placeholder', 'I identified this structure because…'), onChange: function (e) { var notes = Object.assign({}, d.organNotes || {}); notes[evidenceKey] = e.target.value; upd('organNotes', notes); } }),
+                      React.createElement("textarea", { id: 'diss-note-' + sel.id, className: "diss-evidence-note", rows: 3, dir: 'auto', value: noteValue, "aria-describedby": observePromptId + ' ' + evidenceHelpId + ' ' + noteStatusId, placeholder: __alloT('stem.dissection.evidence_note_placeholder', 'I identified this structure because…'), onChange: function (e) { updateEvidenceNote(e.target.value); } }),
+                      React.createElement(DissectionNoteEditor, { key: evidenceKey + '|' + noteLayer + '|' + noteView, React: React, t: __alloT,
+                        organName: sel.name, noteId: 'diss-note-' + sel.id, value: noteValue, onChange: updateEvidenceNote, starters: evidenceStarters,
+                        disabled: !!d.quizMode || !!d.practicalMode || layerRevealPending, saveState: dissectionSaveStatus.state,
+                        saveMessage: activeDissectionSaveIssue ? dissectionSaveIssueMessage(activeDissectionSaveIssue, spec.name) + ' Changes in this temporary session will not replace the protected record.' : dissectionSaveStatus.message }),
                       React.createElement("fieldset", { className: "diss-confidence-scale", "aria-describedby": confidenceHelpId + ' ' + confidenceStatusId },
                         React.createElement("legend", { className: "diss-confidence-scale__label" }, __alloT('stem.dissection.confidence_question', 'How sure are you, based on your evidence?')),
                         React.createElement('p', { id: confidenceStatusId, className: 'diss-evidence-field-status', 'data-field-present': !!selectedConfidence }, selectedConfidence ? __alloT('stem.dissection.draft_confidence', 'Confidence:') + ' ' + selectedConfidence.label + ' · ' + confidenceValue + ' of 3' : __alloT('stem.dissection.draft_confidence_missing', 'Confidence not rated')),

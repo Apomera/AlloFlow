@@ -24,6 +24,107 @@
 };
 var Filter = _lazyIcon('Filter');
 var Gamepad2 = _lazyIcon('Gamepad2');
+function _conceptSortText(t, key, fallback) {
+  const value = typeof t === 'function' ? t(key) : '';
+  return typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+}
+// Review thumbnail sits beside the card text: announce only the reviewed description
+// of THIS picture (hash matches AltText.hashImage); decorative/stale/missing -> silent.
+function _conceptSortImageAlt(item) {
+  if (!item || item.imageDecorative === true || typeof item.imageAlt !== 'string') return '';
+  const image = typeof item.image === 'string' ? item.image : '',
+    alt = item.imageAlt.trim();
+  if (item.imageAltHash) {
+    let h = 0x811c9dc5;
+    const mix = c => {
+      h ^= c;
+      h = Math.imul(h, 0x01000193) >>> 0;
+    };
+    String(image.length).split('').forEach(ch => mix(ch.charCodeAt(0)));
+    const step = Math.max(1, Math.floor(image.length / 4096));
+    for (let i = 0; i < image.length; i += step) mix(image.charCodeAt(i));
+    if (item.imageAltHash !== 'img-' + image.length.toString(36) + '-' + h.toString(16).padStart(8, '0')) return '';
+  }
+  return alt && alt !== String(item.content || '').trim() ? alt : '';
+}
+function ConceptSortTextEditor({
+  value,
+  label,
+  onChange,
+  onSave,
+  onCancel,
+  t
+}) {
+  const finished = React.useRef(false),
+    composing = React.useRef(false);
+  const save = restoreFocus => {
+    if (finished.current || composing.current) return;
+    finished.current = true;
+    onSave(value, restoreFocus);
+  };
+  const cancel = () => {
+    if (finished.current) return;
+    finished.current = true;
+    onCancel();
+  };
+  const saveText = _conceptSortText(t, 'common.save', 'Save');
+  const cancelText = _conceptSortText(t, 'common.cancel', 'Cancel');
+  return /*#__PURE__*/React.createElement("div", {
+    "data-concept-sort-editor": true,
+    style: {
+      flex: '1 1 100%',
+      minWidth: 0
+    },
+    onBlur: event => {
+      if (event.currentTarget.isConnected && !event.currentTarget.contains(event.relatedTarget)) save(false);
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    autoFocus: true,
+    value: value,
+    "aria-label": label,
+    "aria-keyshortcuts": "Enter Escape",
+    onChange: event => onChange(event.target.value),
+    onCompositionStart: () => {
+      composing.current = true;
+    },
+    onCompositionEnd: () => {
+      composing.current = false;
+    },
+    onKeyDown: event => {
+      if (composing.current || event.nativeEvent.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        save(true);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        cancel();
+      }
+    },
+    className: "w-full min-w-0 rounded border border-amber-400 bg-white px-3 py-2 text-sm text-slate-900",
+    style: {
+      minHeight: 44
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => save(true),
+    "aria-label": saveText + ': ' + label,
+    className: "rounded bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800",
+    style: {
+      minHeight: 44
+    }
+  }, saveText), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: cancel,
+    "aria-label": cancelText + ': ' + label,
+    className: "rounded border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-50",
+    style: {
+      minHeight: 44
+    }
+  }, cancelText)));
+}
 function ConceptSortView(props) {
   var t = props.t;
   var isTeacherMode = props.isTeacherMode;
@@ -42,6 +143,35 @@ function ConceptSortView(props) {
   var handleSetIsConceptSortGameToTrue = props.handleSetIsConceptSortGameToTrue;
   var csUpdateCategoryLabel = props.csUpdateCategoryLabel;
   var csUpdateItemText = props.csUpdateItemText;
+  const editButtons = React.useRef(new Map()),
+    editFocusTicket = React.useRef(0);
+  const editKey = (kind, id) => JSON.stringify([generatedContent?.id, kind, id]);
+  const editButtonRef = (kind, id) => element => {
+    const key = editKey(kind, id);
+    if (element) editButtons.current.set(key, element);else editButtons.current.delete(key);
+  };
+  const beginEdit = (kind, id, text) => {
+    editFocusTicket.current++;
+    setCsEdit({
+      kind,
+      id,
+      text
+    });
+  };
+  const returnEditFocus = (kind, id) => {
+    const key = editKey(kind, id),
+      ticket = ++editFocusTicket.current;
+    requestAnimationFrame(() => {
+      const button = editButtons.current.get(key),
+        active = document.activeElement;
+      if (ticket === editFocusTicket.current && button?.isConnected && (!active || active === document.body || !active.isConnected)) button.focus();
+    });
+  };
+  const finishEdit = (kind, id, text, save, restore) => {
+    if (save) (kind === 'category' ? csUpdateCategoryLabel : csUpdateItemText)(id, text);
+    setCsEdit(null);
+    if (restore) returnEditFocus(kind, id);
+  };
   var csMoveItem = props.csMoveItem;
   var csRegenerateItem = props.csRegenerateItem;
   var csRegenerateItemImage = props.csRegenerateItemImage;
@@ -101,7 +231,7 @@ function ConceptSortView(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6 h-full flex flex-col",
     "data-help-key": "concept_sort_panel"
-  }, isTeacherMode && !isIndependentMode && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("style", null, '[data-concept-sort-editor] :focus-visible,[data-concept-sort-action]:focus-visible,[data-concept-sort-edit]:focus-visible{outline:3px solid #4338ca;outline-offset:2px}@media(forced-colors:active){[data-concept-sort-editor] :focus-visible,[data-concept-sort-action]:focus-visible,[data-concept-sort-edit]:focus-visible{outline-color:Highlight}}'), isTeacherMode && !isIndependentMode && /*#__PURE__*/React.createElement("div", {
     "data-concept-sort-teacher-bar": true,
     className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -192,39 +322,32 @@ function ConceptSortView(props) {
       "data-concept-sort-uncategorized": cat.__orphans ? 'true' : undefined,
       className: `bg-white rounded-xl border-2 ${cat.__orphans ? 'border-rose-300' : 'border-slate-200'} shadow-sm overflow-hidden`
     }, /*#__PURE__*/React.createElement("div", {
-      className: `flex items-center gap-2 px-3 py-2 border-b border-slate-100 ${colorClass}`
+      className: `flex flex-wrap items-center gap-2 px-3 py-2 border-b border-slate-100 ${colorClass}`
     }, cat.__orphans ? /*#__PURE__*/React.createElement("h4", {
       className: "flex-1 font-bold text-sm"
-    }, "⚠ ", cat.label) : isEditingLabel ? /*#__PURE__*/React.createElement("input", {
-      type: "text",
-      autoFocus: true,
+    }, "⚠ ", cat.label) : isEditingLabel ? /*#__PURE__*/React.createElement(ConceptSortTextEditor, {
+      key: editKey('category', cat.id),
       value: csEdit.text,
-      onChange: e => setCsEdit({
+      label: _conceptSortText(t, 'a11y.edit_category_name', 'Edit category name') + ': ' + cat.label,
+      t: t,
+      onChange: text => setCsEdit({
         kind: 'category',
         id: cat.id,
-        text: e.target.value
+        text
       }),
-      onBlur: () => {
-        csUpdateCategoryLabel(cat.id, csEdit.text);
-        setCsEdit(null);
-      },
-      onKeyDown: e => {
-        if (e.key === 'Enter') {
-          csUpdateCategoryLabel(cat.id, csEdit.text);
-          setCsEdit(null);
-        } else if (e.key === 'Escape') {
-          setCsEdit(null);
-        }
-      },
-      className: "flex-1 font-bold text-sm bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400",
-      "aria-label": t("a11y.edit_category_name")
+      onSave: (text, restore) => finishEdit('category', cat.id, text, true, restore),
+      onCancel: () => finishEdit('category', cat.id, csEdit.text, false, true)
     }) : /*#__PURE__*/React.createElement("button", {
-      onClick: () => setCsEdit({
-        kind: 'category',
-        id: cat.id,
-        text: cat.label
-      }),
+      type: "button",
+      "data-concept-sort-edit": "category",
+      "data-concept-sort-edit-id": cat.id,
+      ref: editButtonRef('category', cat.id),
+      onClick: () => beginEdit('category', cat.id, cat.label),
       className: "flex-1 text-left font-bold text-sm hover:underline truncate",
+      style: {
+        minHeight: 44,
+        minWidth: 0
+      },
       title: t('concept_sort.rename_category') || 'Rename category',
       "aria-label": `${t('concept_sort.rename_category') || 'Rename category'} ${cat.label}`
     }, cat.label), /*#__PURE__*/React.createElement("span", {
@@ -265,7 +388,7 @@ function ConceptSortView(props) {
         className: "flex flex-wrap items-center gap-2"
       }, item.image ? /*#__PURE__*/React.createElement("img", {
         src: item.image,
-        alt: "",
+        alt: _conceptSortImageAlt(item),
         className: "object-contain rounded shrink-0 bg-white border border-slate-100",
         loading: "lazy",
         style: {
@@ -279,35 +402,24 @@ function ConceptSortView(props) {
           width: Math.round(48 * conceptSortImageScale) + 'px',
           height: Math.round(48 * conceptSortImageScale) + 'px'
         }
-      }, "—"), isEditingItem ? /*#__PURE__*/React.createElement("input", {
-        type: "text",
-        autoFocus: true,
+      }, "—"), isEditingItem ? /*#__PURE__*/React.createElement(ConceptSortTextEditor, {
+        key: editKey('item', item.id),
         value: csEdit.text,
-        onChange: e => setCsEdit({
+        label: _conceptSortText(t, 'a11y.edit_item_text', 'Edit item text') + ': ' + item.content,
+        t: t,
+        onChange: text => setCsEdit({
           kind: 'item',
           id: item.id,
-          text: e.target.value
+          text
         }),
-        onBlur: () => {
-          csUpdateItemText(item.id, csEdit.text);
-          setCsEdit(null);
-        },
-        onKeyDown: e => {
-          if (e.key === 'Enter') {
-            csUpdateItemText(item.id, csEdit.text);
-            setCsEdit(null);
-          } else if (e.key === 'Escape') {
-            setCsEdit(null);
-          }
-        },
-        className: "flex-1 text-xs bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400",
-        "aria-label": t("a11y.edit_item_text")
+        onSave: (text, restore) => finishEdit('item', item.id, text, true, restore),
+        onCancel: () => finishEdit('item', item.id, csEdit.text, false, true)
       }) : /*#__PURE__*/React.createElement("button", {
-        onClick: () => setCsEdit({
-          kind: 'item',
-          id: item.id,
-          text: item.content
-        }),
+        type: "button",
+        "data-concept-sort-edit": "item",
+        "data-concept-sort-edit-id": item.id,
+        ref: editButtonRef('item', item.id),
+        onClick: () => beginEdit('item', item.id, item.content),
         className: "flex-1 min-w-[120px] min-h-11 break-words text-left text-sm text-slate-700 hover:text-slate-900",
         title: t('concept_sort.edit_item') || 'Edit item',
         "aria-label": `${t('concept_sort.edit_item') || 'Edit item'} ${item.content}`
@@ -316,9 +428,13 @@ function ConceptSortView(props) {
         onChange: e => {
           if (e.target.value) csMoveItem(item.id, e.target.value);
         },
-        className: `text-[11px] bg-white border rounded px-1.5 py-1 text-slate-600 hover:border-slate-300 max-w-[120px] ${cat.__orphans ? 'border-rose-400' : 'border-slate-400'}`,
+        "data-concept-sort-action": true,
+        style: {
+          minHeight: 44
+        },
+        className: `text-sm bg-white border rounded px-2 py-1 text-slate-700 hover:border-slate-300 max-w-[140px] ${cat.__orphans ? 'border-rose-400' : 'border-slate-400'}`,
         title: t("a11y.move_item_category"),
-        "aria-label": t("a11y.move_item_category"),
+        "aria-label": _conceptSortText(t, "a11y.move_item_category", "Move item to a different category") + ": " + item.content,
         disabled: isBusy
       }, cat.__orphans && /*#__PURE__*/React.createElement("option", {
         value: "",
@@ -329,15 +445,27 @@ function ConceptSortView(props) {
       }, c.label))), /*#__PURE__*/React.createElement("button", {
         onClick: () => csRegenerateItem(item, generatedContent?.data.categories || []),
         disabled: isBusy || csBusyId === '__adding__',
-        className: "w-7 h-7 rounded text-sm hover:bg-indigo-50 text-indigo-600 disabled:opacity-30 flex items-center justify-center",
+        "data-concept-sort-action": true,
+        style: {
+          width: 44,
+          height: 44,
+          flexShrink: 0
+        },
+        className: "rounded text-sm hover:bg-indigo-50 text-indigo-600 disabled:opacity-30 flex items-center justify-center",
         title: t("a11y.regenerate_item"),
-        "aria-label": t("a11y.regenerate_item")
+        "aria-label": _conceptSortText(t, "a11y.regenerate_item", "Regenerate this item — text and image") + ": " + item.content
       }, isBusy ? '⏳' : '🔄'), /*#__PURE__*/React.createElement("button", {
         onClick: () => csRegenerateItemImage(item),
         disabled: isBusy || csBusyId === '__adding__',
-        className: "w-7 h-7 rounded text-sm hover:bg-purple-50 text-purple-600 disabled:opacity-30 flex items-center justify-center",
+        "data-concept-sort-action": true,
+        style: {
+          width: 44,
+          height: 44,
+          flexShrink: 0
+        },
+        className: "rounded text-sm hover:bg-purple-50 text-purple-600 disabled:opacity-30 flex items-center justify-center",
         title: t("a11y.regenerate_image"),
-        "aria-label": t("a11y.regenerate_image")
+        "aria-label": _conceptSortText(t, "a11y.regenerate_image", "Regenerate image only") + ": " + item.content
       }, isBusy ? '⏳' : '🖼️'), /*#__PURE__*/React.createElement("button", {
         type: "button",
         "data-concept-sort-upload": item.id,
@@ -346,7 +474,13 @@ function ConceptSortView(props) {
           if (input && typeof input.click === 'function') input.click();
         },
         disabled: isBusy || csBusyId === '__adding__',
-        className: "w-7 h-7 rounded text-sm hover:bg-emerald-50 text-emerald-600 disabled:opacity-30 flex items-center justify-center",
+        "data-concept-sort-action": true,
+        style: {
+          width: 44,
+          height: 44,
+          flexShrink: 0
+        },
+        className: "rounded text-sm hover:bg-emerald-50 text-emerald-600 disabled:opacity-30 flex items-center justify-center",
         title: t('concept_sort.upload_image_hint') || 'Upload your own image (max 5 MB)',
         "aria-label": `${t("a11y.upload_custom_image") || 'Upload custom image'}: ${item.content}`
       }, /*#__PURE__*/React.createElement("span", {
@@ -365,21 +499,39 @@ function ConceptSortView(props) {
       }), item.image && /*#__PURE__*/React.createElement("button", {
         onClick: () => csClearItemImage(item.id),
         disabled: isBusy,
-        className: "w-7 h-7 rounded text-sm hover:bg-amber-50 text-amber-600 disabled:opacity-30 flex items-center justify-center",
+        "data-concept-sort-action": true,
+        style: {
+          width: 44,
+          height: 44,
+          flexShrink: 0
+        },
+        className: "rounded text-sm hover:bg-amber-50 text-amber-600 disabled:opacity-30 flex items-center justify-center",
         title: t("a11y.clear_image"),
-        "aria-label": t("a11y.clear_image")
+        "aria-label": _conceptSortText(t, "a11y.clear_image", "Clear image") + ": " + item.content
       }, "🚫"), item.image && csRefineItemImage && /*#__PURE__*/React.createElement("button", {
         onClick: () => csRefineItemImage(item.id, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
         disabled: isBusy,
-        className: "w-7 h-7 rounded text-sm hover:bg-red-50 text-red-600 disabled:opacity-30 flex items-center justify-center",
+        "data-concept-sort-action": true,
+        style: {
+          width: 44,
+          height: 44,
+          flexShrink: 0
+        },
+        className: "rounded text-sm hover:bg-red-50 text-red-600 disabled:opacity-30 flex items-center justify-center",
         title: t("a11y.auto_remove_text"),
-        "aria-label": t("a11y.auto_remove_text")
+        "aria-label": _conceptSortText(t, "a11y.auto_remove_text", "Auto-remove text from image") + ": " + item.content
       }, "🔤⃠"), /*#__PURE__*/React.createElement("button", {
         onClick: () => csDeleteItem(item.id),
         disabled: isBusy,
-        className: "w-7 h-7 rounded text-sm hover:bg-rose-50 text-rose-500 disabled:opacity-30 flex items-center justify-center",
+        "data-concept-sort-action": true,
+        style: {
+          width: 44,
+          height: 44,
+          flexShrink: 0
+        },
+        className: "rounded text-sm hover:bg-rose-50 text-rose-500 disabled:opacity-30 flex items-center justify-center",
         title: t("a11y.delete_item"),
-        "aria-label": t("a11y.delete_item")
+        "aria-label": _conceptSortText(t, "a11y.delete_item", "Delete this item") + ": " + item.content
       }, "🗑")), item.image && csRefineItemImage && /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-1 pl-1 pr-1"
       }, /*#__PURE__*/React.createElement("input", {
@@ -401,6 +553,11 @@ function ConceptSortView(props) {
         onClick: () => csRefineItemImage(item.id),
         disabled: isBusy || !refineInput.trim(),
         className: "px-2 py-1 rounded text-[11px] font-bold bg-amber-700 hover:bg-amber-800 text-white disabled:opacity-30",
+        "aria-label": _conceptSortText(t, "a11y.apply_edit_prompt", "Apply edit prompt") + ": " + item.content,
+        "data-concept-sort-action": true,
+        style: {
+          minHeight: 44
+        },
         title: t("a11y.apply_edit_prompt")
       }, "✏️ ", t('common.send') || 'Send')));
     }), isAddingHere && /*#__PURE__*/React.createElement("div", {

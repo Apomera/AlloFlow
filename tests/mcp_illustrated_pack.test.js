@@ -7,7 +7,7 @@ import { join, resolve } from 'node:path';
 const root = process.cwd();
 const server = resolve(root, 'desktop/mcp/alloflow-mcp-stdio.cjs');
 const dataDir = mkdtempSync(join(tmpdir(), 'alloflow-illustrated-mcp-'));
-const readPack = (slug) => JSON.parse(readFileSync(resolve(root, 'allopacks/illustrated', `${slug}.allopack.json`), 'utf8'));
+const readPack = (slug) => JSON.parse(readFileSync(resolve(root, 'allopacks/current', `${slug}.allopack.json`), 'utf8'));
 const pack = readPack('water_cycle_grade6');
 let child;
 let nextId = 0;
@@ -80,6 +80,7 @@ describe('MCP illustrated AlloPack authoring', () => {
   });
 
   it('validates, previews, and exports a complete published illustrated pack without data loss', async () => {
+    // The published pack includes memory-card and challenge pictures; the illustrated profile accepts them.
     const validated = await call('resource_pack_validate', { pack, profile: 'illustrated' });
     expect(validated.isError).toBe(false);
     expect(validated.structuredContent.ok, JSON.stringify(validated.structuredContent.errors)).toBe(true);

@@ -70,8 +70,8 @@ describe('SEL Hub · every Crew-linked tool has a specific Next step in the tool
   const start = hub.indexOf('_standardShellTools: {');
   const block = hub.slice(start, hub.indexOf('\n        registerTool: function', start));
   // Every tool the Crew packs link, read from the packs so a new week cannot ship a generic line.
-  const crew = [...new Set(readdirSync(resolve(ROOT, 'allopacks')).filter((f) => f.startsWith('crew_') && f.endsWith('.allopack.json'))
-    .flatMap((f) => [...readFileSync(resolve(ROOT, 'allopacks', f), 'utf8').matchAll(/\]\(#sel-hub\/([A-Za-z]+)(?:\?[^)]*)?\)/g)].map((m) => m[1])))].sort();
+  const crew = [...new Set(readdirSync(resolve(ROOT, 'allopacks', 'current')).filter((f) => f.startsWith('crew_') && f.endsWith('.allopack.json'))
+    .flatMap((f) => [...readFileSync(resolve(ROOT, 'allopacks', 'current', f), 'utf8').matchAll(/\]\(#sel-hub\/([A-Za-z]+)(?:\?[^)]*)?\)/g)].map((m) => m[1])))].sort();
   it('the packs link at least thirteen tools', () => { expect(crew.length).toBeGreaterThanOrEqual(13); });
   it.each(crew)('%s', (id) => {
     const m = new RegExp('\\n\\s*' + id + ': \\{[^}]*next: \'([^\']+)\'').exec(block);

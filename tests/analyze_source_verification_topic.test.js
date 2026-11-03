@@ -11,6 +11,7 @@ const require = createRequire(import.meta.url);
 let verify;
 beforeAll(() => {
   globalThis.React = window.React = require(resolve('desktop/web-app/node_modules/react'));
+  loadAlloModule('text_pipeline_helpers_module.js');
   loadAlloModule('phase_k_helpers_module.js');
   verify = window.AlloModules.PhaseKHelpers.performDeepVerification;
 });
@@ -26,6 +27,49 @@ function deps(overrides) {
 const searchCalls = (d) => d.callGemini.mock.calls.filter((call) => call[2] === true);
 
 describe('Analyze Source verification query', () => {
+  it('resolves each segment’s local references to its own sources and drops missing or fabricated markers', async () => {
+    const mars = { web: { uri: 'https://mars.example/source', title: 'Mars' } };
+    const seeds = { web: { uri: 'https://seeds.example/source', title: 'Seeds' } };
+    const answer = (text, groundingChunks) => ({ text, groundingMetadata: { groundingChunks } });
+    const callGemini = vi.fn().mockResolvedValueOnce(answer('Mars is red [1].', [mars]))
+      .mockResolvedValueOnce(answer('Seeds sprout [1]. More [Source 1]. Both [1, 3]. Missing [2]. Fabricated [1oops]. Wrong [1](https://mars.example/source).', [seeds, {}, mars]));
+    const result = await verify(DOCUMENT, deps({ sourceTopic: 'Science', chunkText: () => ['first', 'second'], callGemini }));
+    expect(result.sources.map(source => source.title)).toEqual(['Mars', 'Seeds']);
+    expect(result.text).toContain('Mars is red [1].');
+    expect(result.text).toContain('Seeds sprout [2]. More [2]. Both [2] [1].');
+    const end = result.text.slice(result.text.indexOf('Missing'));
+    expect(end).not.toMatch(/\[|mars\.example/);
+  });
+
+  it('inserts only native supports into the untouched multi-part UTF-8 text and never borrows the preceding segment’s source', async () => {
+    const mars = { web: { uri: 'https://mars.example/source', title: 'Mars' } };
+    const seeds = { web: { uri: 'https://seeds.example/source', title: 'Seeds' } };
+    const lead = 'Other claim [1]. 🌙 ';
+    const claim = 'Café seeds sprout.', part = claim + ' Unsupported [1].';
+    const callGemini = vi.fn().mockResolvedValueOnce({ text: 'Mars [1].', groundingMetadata: { groundingChunks: [mars] } })
+      .mockResolvedValueOnce({ text: lead + part, textParts: [{ text: lead }, { text: part }], groundingMetadata: {
+        groundingChunks: [seeds],
+        groundingSupports: [
+          { segment: { partIndex: 1, startIndex: 0, endIndex: Buffer.byteLength(claim), text: claim }, groundingChunkIndices: [0, 9] },
+          { segment: { partIndex: 1, startIndex: 0, endIndex: Buffer.byteLength(claim), text: 'Wrong text' }, groundingChunkIndices: [0] },
+        ],
+      } });
+    const result = await verify(DOCUMENT, deps({ sourceTopic: 'Science', chunkText: () => ['first', 'second'], callGemini }));
+    const second = result.text.split('Segment 2 Findings')[1];
+    expect(second.match(/\[[\d, ]+\]/g)).toEqual(['[2]']);
+    expect(second).toContain(claim + ' [2] Unsupported');
+    expect(result.sources.map(source => source.title)).toEqual(['Mars', 'Seeds']);
+  });
+
+  it('drops raw numbers when the response has no sources and drops unvalidated native support offsets', async () => {
+    const callGemini = vi.fn().mockResolvedValueOnce({ text: 'Unverified [1].' })
+      .mockResolvedValueOnce({ text: 'Unverified again [1].', groundingMetadata: {
+        groundingChunks: [{ web: { uri: 'https://seeds.example/source', title: 'Seeds' } }],
+        groundingSupports: [{ segment: { endIndex: 3, text: 'Wrong text' }, groundingChunkIndices: [0] }],
+      } });
+    const result = await verify(DOCUMENT, deps({ sourceTopic: 'Science', chunkText: () => ['first', 'second'], callGemini }));
+    expect(result.text).not.toMatch(/\[\d+\]/);
+  });
   it("searches with the lesson's topic when there is one", async () => {
     const d = deps({ sourceTopic: '  The American Revolution ' });
     await verify(DOCUMENT, d);

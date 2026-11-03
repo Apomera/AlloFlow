@@ -5,7 +5,7 @@ import { GlHarness } from './helpers/stem_gl_harness';
 
 test.describe.configure({ timeout: 240_000, retries: 0 });
 test.use({ video: 'off', trace: 'off' });
-const report = path.resolve('reports/dinolab-connected-anatomy');
+const report = path.resolve(process.env.DINO_CONNECTED_ANATOMY_REPORT_DIR || 'reports/dinolab-connected-anatomy');
 const probes = 'var DepthRenderer=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){var r=new DepthRenderer(o),f=r.render.bind(r);r.render=function(s,c){window.__depthScene=s;window.__depthCamera=c;window.__depthRenderer=r;return f(s,c)};return r};';
 const options = { toolFile: 'stem_lab/stem_tool_dinolab.js', toolId: 'dinoLab', width: 1280, height: 960, layout: 'document' as const, appStyles: true, probes };
 const harness = new GlHarness(options);

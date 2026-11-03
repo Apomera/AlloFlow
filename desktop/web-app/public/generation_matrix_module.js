@@ -188,14 +188,14 @@
     return JSON.stringify(stableValue(value));
   }
 
-  function hashText(value) {
+  function hashText(value, radix = 36) {
     var text = String(value == null ? '' : value);
     var hash = 2166136261;
     for (var i = 0; i < text.length; i++) {
       hash ^= text.charCodeAt(i);
       hash = Math.imul(hash, 16777619);
     }
-    return (hash >>> 0).toString(36);
+    return (hash >>> 0).toString(radix);
   }
 
   function fingerprintSourceText(value) {
@@ -989,6 +989,88 @@
     return [];
   }
 
+  // Source checks predate generation identities. Their saved source text is
+  // authoritative; even whitespace edits need a new check, as in SourceView.
+  function analysisSourceText(artifact) {
+    var value = artifact && (artifact.data && artifact.data.originalText !== undefined
+      ? artifact.data.originalText : artifact.originalText);
+    return typeof value === 'string' ? value : null;
+  }
+
+  // Display defaults alone do not establish that the model checked a section.
+  function hasAnalysisFindings(report) {
+    if (!report || typeof report !== 'object' || isLegacyAnalysisFormatError(report)) return false;
+    const meaningful = value => {
+      if (typeof value !== 'string' && typeof value !== 'number') return false;
+      const text = String(value).trim();
+      return /[\p{L}\p{N}]/u.test(text) && !/^(?:n\/?a|unknown|none|undetermined|not (?:available|applicable|verified|assessed|provided)|(?:unable to|could not) determine(?: (?:the )?level)?|could not verify accuracy|AI did not provide detailed explanation)[.!]?$/i.test(text);
+    };
+    const lists = [report.concepts, report.grammar, report.accuracy?.verifiedFacts, report.accuracy?.unsourcedFacts, report.accuracy?.discrepancies,
+      ...Object.values(report.learnerBarriers || {})];
+    const dok = report.depthOfKnowledge?.level;
+    return [report.readingLevel?.range, report.readingLevel?.explanation, report.accuracy?.rating, report.accuracy?.reason].some(meaningful)
+      || lists.some(list => Array.isArray(list) && list.some(meaningful)) || (Number.isInteger(dok) && dok >= 1 && dok <= 4);
+  }
+
+  function isLegacyAnalysisFormatError(data) {
+    return data.readingLevel?.range === 'N/A' && data.concepts?.length === 1
+      && data.concepts[0] === 'Analysis format issue'
+      && ['AI returned unstructured text or invalid JSON. See verification section.',
+          'Local model returned unstructured analysis text.'].includes(data.readingLevel.explanation);
+  }
+
+  function getSourceAnalysisCoverage(artifact) {
+    const data = artifact && artifact.data;
+    if (!data || data.analysisNeedsRecheck || typeof data.originalText !== 'string') return null;
+    const total = data.originalText.length;
+    if (data.analysisCoverage) {
+      let through = 0;
+      const sections = [];
+      const canonical = data.originalText.replace(/\r\n?/g, '\n');
+      const fingerprint = 'txt-' + hashText(canonical, 16).padStart(8, '0') + '-' + canonical.length;
+      if (data.analysisCoverage.sourceFingerprint !== fingerprint) {
+        return { total, through, sections, complete: false };
+      }
+      for (const entry of Array.isArray(data.analysisCoverage.sections) ? data.analysisCoverage.sections : []) {
+        if (entry?.start !== through || !Number.isSafeInteger(entry.end) || entry.end <= through || entry.end > total
+            || data.originalText.slice(through, entry.end).trim().length > 7000
+            || !Array.isArray(entry.report?.concepts) || !hasAnalysisFindings(entry.report)) break;
+        sections.push(entry);
+        through = entry.end;
+      }
+      return { total, through, sections, complete: through === total && total > 0 };
+    }
+    // Older local reports fed only the first 7,000 normalized characters to the model.
+    // Their exact section boundaries were never saved. Verify them afresh.
+    if (!data.analysisIncomplete && !isLegacyAnalysisFormatError(data) && typeof artifact.meta === 'string' && artifact.meta.endsWith(' - Local')
+        && total > 7000 && data.originalText.replace(/\s+\n/g, '\n').trim().length > 7000) {
+      return { total, through: 0, sections: [], complete: false, legacy: true };
+    }
+    return null;
+  }
+
+  function isIncompleteSourceAnalysis(artifact) {
+    var data = artifact && artifact.data;
+    if (!data) return false;
+    if (data.analysisIncomplete === true || getSourceAnalysisCoverage(artifact)?.complete === false) return true;
+    return isLegacyAnalysisFormatError(data);
+  }
+
+  function isCompletedAnalysis(artifact) {
+    return !!(artifact && getResourceType(artifact) === 'analysis' && artifactId(artifact)
+      && !artifact.error && artifact.data?.analysisNeedsRecheck !== true && !isIncompleteSourceAnalysis(artifact)
+      && !/^(pending|running|incomplete|failed|interrupted|cancelled|canceled)$/i.test(artifact.status || ''));
+  }
+
+  function findExistingSourceAnalysis(artifacts, sourceText) {
+    if (typeof sourceText !== 'string' || !sourceText.trim()) return null;
+    var candidates = Array.isArray(artifacts) ? artifacts : [];
+    for (var i = candidates.length - 1; i >= 0; i--) {
+      if (isCompletedAnalysis(candidates[i]) && analysisSourceText(candidates[i]) === sourceText) return candidates[i];
+    }
+    return null;
+  }
+
   function legacySourceMatches(artifact, sourceFingerprint, sourceArtifactId, options) {
     var candidateFingerprint = sourceFingerprintFrom(artifact);
     var candidateArtifactId = sourceArtifactIdFrom(artifact);
@@ -1032,6 +1114,16 @@
   }
 
   function findExactArtifact(artifacts, cell, resource, settings, options) {
+    if (cell.type === 'analysis') artifacts = artifacts.filter(isCompletedAnalysis);
+    if (cell.type === 'analysis' && typeof options.sourceText === 'string' && options.sourceText.trim()) {
+      var checked = findExistingSourceAnalysis(artifacts, options.sourceText);
+      if (checked) return checked;
+      // Do not let a whitespace-normalized hash or stale generation identity
+      // override the actual saved text, or reuse an unfinished source check.
+      artifacts = artifacts.filter(function (artifact) {
+        return analysisSourceText(artifact) === null;
+      });
+    }
     // A stable identity cannot safely prove source equality when neither a
     // content fingerprint nor a source artifact id is available. The plan can
     // still suppress duplicate rows via its local seen-identity set, but it
@@ -1168,7 +1260,7 @@
         } else if (exact) {
           cell.action = ACTIONS.REUSE;
           cell.existingArtifactId = artifactId(exact) || null;
-          cell.reason = 'An artifact with the same source-aware generation identity already exists.';
+          cell.reason = type === 'analysis' ? 'Already checked, reused.' : 'An artifact with the same source-aware generation identity already exists.';
         } else if (sameBase) {
           var baseVariant = artifactVariantKey(baseArtifact, policy);
           var configDrift = artifactGenerationConfigFingerprint(baseArtifact)
@@ -1387,6 +1479,11 @@
     isSingletonType: isSingletonType,
     isRepeatableType: isRepeatableType,
     fingerprintSourceText: fingerprintSourceText,
+    hasAnalysisFindings: hasAnalysisFindings,
+    getSourceAnalysisCoverage: getSourceAnalysisCoverage,
+    isIncompleteSourceAnalysis: isIncompleteSourceAnalysis,
+    isCompletedAnalysis: isCompletedAnalysis,
+    findExistingSourceAnalysis: findExistingSourceAnalysis,
     normalizeSourceFingerprint: normalizeSourceFingerprint,
     normalizeLanguageValue: normalizeLanguageValue,
     normalizeLanguageValues: normalizeLanguageValues,

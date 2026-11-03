@@ -171,12 +171,18 @@ describe('E2: Package & Deliver routes outside Guided Mode', () => {
     act(() => routeButton(view.host, 'TEST-X').click());
     expect(props.openStudentQrPreview).toHaveBeenCalledWith('https://example.test/s/1', 'homework link as a student');
   });
-  it('Guided Mode still shows the routes only on its delivery step', () => {
-    const steps = [{ id: 'analysis' }, { id: 'package-deliver' }];
+  it('Guided Mode uses a single delivery chooser and folds additional generation when resources already exist', () => {
+    const steps = [{ id: 'analysis' }, { id: 'package-deliver' }, { id: '_final' }];
     const view = mount(window.AlloModules.FullPackRunView, fprProps({ guidedMode: true, guidedActiveSteps: steps, guidedStep: 0, history: [reading] }));
     expect(routes(view.host)).toBeNull();
-    view.render(fprProps({ guidedMode: true, guidedActiveSteps: steps, guidedStep: 1, history: [] }));
-    expect(routes(view.host)).not.toBeNull();
+    view.render(fprProps({ guidedMode: true, guidedActiveSteps: steps, guidedStep: 1, history: [reading] }));
+    expect(routes(view.host)).toBeNull();
+    const pack = view.host.querySelector('#tour-tool-fullpack');
+    expect(pack.tagName).toBe('DETAILS');
+    expect(pack.open).toBe(false);
+    expect(pack.querySelector('summary').textContent).toContain('Create more resources');
+    view.render(fprProps({ guidedMode: true, guidedActiveSteps: steps, guidedStep: 2, history: [reading] }));
+    expect(view.host.querySelector('#tour-tool-fullpack').style.display).toBe('none');
   });
 });
 

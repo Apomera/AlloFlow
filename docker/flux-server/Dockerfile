@@ -1,8 +1,8 @@
-# ── AlloFlow Flux Image Server ──
-# GPU-accelerated image generation with Flux.1-schnell
+# ── AlloFlow Local Image Server ──
+# GPU-accelerated SANA-Sprint (default) or Flux image generation
 # OpenAI-compatible API for plug-and-play with AIProvider
 
-FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04@sha256:402700b179eb764da6d60d99fe106aa16c36874f7d7fb3e122251ff6aea8b2f7
+FROM nvidia/cuda:12.6.3-runtime-ubuntu24.04@sha256:92906d87596d638d35015c6353053121bd299d25943b875763321653884ba924
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -10,28 +10,30 @@ ENV PIP_NO_CACHE_DIR=1
 
 # System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip python3-dev git \
+    python3 python3-venv ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install PyTorch with CUDA support first (large layer, cached separately)
-RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# The lock targets CPython 3.12 / Linux x86_64, including the CUDA 12.6 Torch wheel.
+# A venv avoids modifying Ubuntu's externally managed Python installation.
+RUN python3 -m venv /opt/image-env
+ENV PATH="/opt/image-env/bin:${PATH}"
 
 # Install remaining deps
 COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN python3 -m pip install --require-hashes --only-binary=:all: -r requirements.txt \
+    && python3 -m pip check \
+    && python3 -c "from diffusers import SanaSprintPipeline, SanaSprintImg2ImgPipeline, FluxPipeline, FluxImg2ImgPipeline; import fastapi"
 
 # Copy server code
-COPY flux_server.py .
+COPY flux_server.py security.py image_backends.py model_manifest.py model-manifest.json studio.py studio.html ./
 
-# Pre-download model at build time (optional — makes first start faster)
-# Uncomment the next line to bake the model into the image (~12GB larger)
-# RUN python3 -c "from diffusers import FluxPipeline; FluxPipeline.from_pretrained('black-forest-labs/FLUX.1-schnell', torch_dtype='float16')"
+# Model weights are provisioned at runtime into /models; none are baked in.
 
 EXPOSE 7860
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD curl -f http://localhost:7860/health || exit 1
+    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:7860/health', timeout=5).close()"
 
 CMD ["python3", "flux_server.py"]

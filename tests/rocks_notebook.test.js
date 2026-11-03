@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
+import { Blob as NodeBlob } from 'node:buffer';
 import { resolve } from 'node:path';
 import { React, ReactDOMServer, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
@@ -62,6 +63,78 @@ beforeEach(() => { resetStemLab(); loadTool(FILE, 'rocks'); vi.useFakeTimers(); 
 afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe('geology notebook review and transfer UI', () => {
+  it('reports real weathering trials and resumes the same investigation', () => {
+    const app = session({mode:'weathHunt'});
+    app.click('data-wx-place','rainforest');
+    app.click('data-wx-log-action');
+    const weather = app.store.rocks.weathHunt;
+    expect(weather.log).toHaveLength(1);
+    weather.hypothesis = 'More water should favor chemical weathering.';
+    weather.explanation = 'My current evidence is the rainforest trial.';
+    app.store.rocks.mode = 'notebook';
+    expect(app.find('data-rk-nb-weathering')).toBeTruthy();
+    app.click('data-rk-nb-show-text');
+    const report = app.find('id','rk-nb-text').props.value;
+    expect(report).toContain('2800 mm/yr');
+    expect(report).toContain('5.6');
+    expect(report).toContain('Chemical wins');
+    expect(report).toContain(weather.hypothesis);
+    expect(report).toContain(weather.explanation);
+    app.click('data-rk-nb-open','weathHunt');
+    expect(app.store.rocks.mode).toBe('weathHunt');
+    expect(app.store.rocks.weathHunt).toEqual(weather);
+  });
+
+  it('previews the weathering replacement, rejects corrupt readings, then restores or clears only on confirmation',async()=>{
+    const current={hypothesis:'Keep my writing until I confirm.'};
+    const app=session({weathHunt:current});
+    const incoming=JSON.parse(session({weathHunt:{tempSwing:8,rainMm:2800,hypothesis:'Incoming idea',explanation:'An unfinished explanation.'}}).backup());
+    const damaged={...incoming,data:{...incoming.data,weathHunt:{...incoming.data.weathHunt,log:[{bad:true}]}}};
+    await app.file(JSON.stringify(damaged));
+    expect(app.store.rocks.notebookUi.importError).toBe(true);
+    expect(app.store.rocks.weathHunt).toEqual(current);
+    await app.file(JSON.stringify(incoming));
+    expect(app.find('data-rk-nb-import-weathering').props.children).toContain('replaces the current weathering settings');
+    expect(app.store.rocks.weathHunt).toEqual(current);
+    app.click('data-rk-nb-cancel-import');
+    expect(app.store.rocks.weathHunt).toEqual(current);
+    await app.file(JSON.stringify(incoming));
+    app.click('data-rk-nb-confirm-import');
+    expect(app.store.rocks.weathHunt).toEqual(incoming.data.weathHunt);
+    await app.file(session().backup());
+    app.click('data-rk-nb-confirm-import');
+    expect(app.store.rocks.weathHunt).toMatchObject({rainMm:1200,hypothesis:'',explanation:'',log:[]});
+  });
+
+  it.each([1,2])('keeps current weathering when opening a version %s notebook',async version=>{
+    const app=session({weathHunt:{hypothesis:'Preserve my local investigation.',tempSwing:32}});
+    const file=JSON.parse(session(seed()).backup());
+    file.version=version;
+    delete file.data.weathHunt;
+    if(version===1)delete file.data.specimenNotes;
+    await app.file(JSON.stringify(file));
+    expect(app.find('data-rk-nb-import-weathering').props.children).toContain('weathering work will be kept');
+    app.click('data-rk-nb-confirm-import');
+    expect(app.store.rocks.weathHunt).toEqual({hypothesis:'Preserve my local investigation.',tempSwing:32});
+    expect(app.store.rocks.compare.notes[pairKey]).toContain('Visible crystals');
+  });
+
+  it('distinguishes a fragment estimate draft from its compared field note in the text report',()=>{
+    const fragment={estimate:'18',shape:'rounded',compared:false};
+    const app=session({fieldCases:{records:{'rounded-river':{fragmentObservation:fragment}}}});
+    app.click('data-rk-nb-show-text');
+    let text=app.find('id','rk-nb-text').props.value;
+    expect(text).toContain('Estimated width in millimeters: 18');
+    expect(text).toContain('Fragment outline: Rounded');
+    expect(text).toContain('Observation draft');
+    expect(text).not.toContain('Reference measurement: 20 mm');
+    fragment.compared=true;
+    app.click('data-rk-nb-show-text');
+    text=app.find('id','rk-nb-text').props.value;
+    expect(text).toContain('Field note compared');
+    expect(text).toContain('Reference measurement: 20 mm');
+  });
+
   it('gives an empty notebook meaningful starts for every activity', () => {
     const app = session();
     expect(app.find('data-rk-notebook')).toBeTruthy();
@@ -86,6 +159,48 @@ describe('geology notebook review and transfer UI', () => {
     expect(app.store.rocks.quizScore).toBe(7);
   });
 
+  it.each([false, true])('resumes at the promised case control across the notebook transition (keyed mode remount: %s)', remount => {
+    const host = document.createElement('div'); document.body.appendChild(host);
+    host.setAttribute('data-stem-lab', '');
+    const root = ReactDOMClient.createRoot(host);
+    const fragment = { estimate: '17', shape: '', compared: false };
+    let store = { rocks: { mode: 'notebook', fieldCases: { records: { 'rounded-river': { fragmentObservation: fragment } } } } };
+    function App() {
+      const [, force] = React.useState(0);
+      const view = window.StemLab._registry.rocks.render(makeCtx({ toolData: store, setToolData: change => {
+        store = typeof change === 'function' ? change(store) : change;
+        force(n => n + 1);
+      } }));
+      return React.createElement(React.Fragment, { key: remount ? store.rocks.mode : 'stable' }, view);
+    }
+    try {
+      flushSync(() => root.render(React.createElement(App)));
+      const resume = host.querySelector('[data-rk-nb-resume-case="rounded-river"]');
+      const origin = resume.closest('[data-rk-explorer]');
+      expect(resume.getAttribute('aria-label')).toContain('Pebbles inside a cliff');
+      const action = resume.textContent;
+      expect(action).toBe('Choose the fragment outline');
+      resume.focus(); flushSync(() => resume.click()); flushSync(() => vi.runOnlyPendingTimers());
+      expect(host.querySelector('[data-rk-explorer]') === origin).toBe(!remount);
+      expect(host.querySelector('[data-rk-field-next="rounded-river"]').textContent).toBe(action);
+      expect(document.activeElement).toBe(host.querySelector('#rk-fragment-shape'));
+      expect(store.rocks.fieldCases.records['rounded-river'].fragmentObservation).toEqual(fragment);
+    } finally { flushSync(() => root.unmount()); host.remove(); }
+  });
+
+  it.each([1, 2, 3])('resumes a version %i notebook using saved evidence and reasoning without writing progress to the records', async version => {
+    const backup = JSON.parse(session(seed()).backup()); backup.version = version;
+    if (version < 3) delete backup.data.weathHunt;
+    if (version < 2) delete backup.data.specimenNotes;
+    const app = session({});
+    await app.file(JSON.stringify(backup)); app.click('data-rk-nb-confirm-import');
+    const prior = structuredClone(app.store.rocks.fieldCases.records);
+    expect(app.find('data-rk-nb-resume-case', 'deep-cooling').props.children).toBe('Select evidence for your claim');
+    app.click('data-rk-nb-resume-case', 'deep-cooling');
+    expect(app.store.rocks.fieldCases.records).toEqual(prior);
+    expect(app.find('data-rk-field-next', 'deep-cooling').props.children).toBe('Select evidence for your claim');
+  });
+
   it('includes current work and archived reflection in readable text without revealing unfinished case answers', () => {
     const app = session(seed());
     app.click('data-rk-nb-show-text');
@@ -100,7 +215,7 @@ describe('geology notebook review and transfer UI', () => {
   it('saves only portable learning records and offers fallback text if download is unavailable', () => {
     const app = session(seed());
     const backup = JSON.parse(app.backup());
-    expect(backup).toMatchObject({ format: 'alloflow-rocks-notebook', version: 2 });
+    expect(backup).toMatchObject({ format: 'alloflow-rocks-notebook', version: 3 });
     expect(backup.data.compare.notes[pairKey]).toContain('Visible crystals');
     expect(backup.data.archive).toHaveLength(1);
     expect(backup.data).not.toHaveProperty('quizScore');
@@ -227,7 +342,10 @@ describe('geology notebook review and transfer UI', () => {
   it('previews version 2 journal replacement and restores only after confirmation', async () => {
     const incoming = { 'minerals:quartz': { note: 'A new observation.', question: '', bookmarked: true } };
     const current = { 'rocks:granite': { note: 'My original note.', question: '', bookmarked: false } };
-    const backup = session({ specimenNotes: incoming }).backup();
+    const file = JSON.parse(session({ specimenNotes: incoming }).backup());
+    file.version = 2;
+    delete file.data.weathHunt;
+    const backup = JSON.stringify(file);
     const app = session({ specimenNotes: current });
     await app.file(backup);
     expect(app.store.rocks.specimenNotes).toEqual(current);
@@ -239,7 +357,10 @@ describe('geology notebook review and transfer UI', () => {
 
   it('an explicitly empty version 2 journal replaces existing notes, while a version 1 file keeps them', async () => {
     const specimenNotes = { 'rocks:granite': { note: 'Keep when opening an older file.', question: '', bookmarked: true } };
-    const blankV2 = session().backup();
+    const file = JSON.parse(session().backup());
+    file.version = 2;
+    delete file.data.weathHunt;
+    const blankV2 = JSON.stringify(file);
     const current = session({ specimenNotes });
     await current.file(blankV2);
     expect(current.html()).toContain('0 Specimens in my journal');
@@ -248,6 +369,7 @@ describe('geology notebook review and transfer UI', () => {
     const legacy = JSON.parse(session(seed()).backup());
     legacy.version = 1;
     delete legacy.data.specimenNotes;
+    delete legacy.data.weathHunt;
     const app = session({ specimenNotes });
     await app.file(JSON.stringify(legacy));
     expect(app.html()).toContain('Your current specimen notes and bookmarks will be kept.');
@@ -265,6 +387,7 @@ describe('geology notebook review and transfer UI', () => {
     expect(app.store.rocks.notebookUi.importError).toBe(true);
     expect(app.store.rocks.specimenNotes).toEqual(specimenNotes);
     backup.version = 2;
+    delete backup.data.weathHunt;
     backup.data.specimenNotes = { 'rocks:mystery': { note: 'Unsupported' } };
     await app.file(JSON.stringify(backup));
     expect(app.store.rocks.notebookUi.importError).toBe(true);
@@ -415,5 +538,174 @@ describe('specimen journal browsing', () => {
     expect(app.store.rocks).toMatchObject({ mode: 'minerals', selectedMineral: 'quartz', notebookUi: { journalFilter: 'questions', journalQuery: 'purple' } });
     app.store.rocks.mode = 'notebook';
     expect(visibleKeys(app)).toEqual(['minerals:quartz']);
+  });
+});
+
+describe('sharing selected notebook records', () => {
+  const recordedTrial = explanation => ({
+    mineralId: 'quartz', volume: 10, initialWater: 30, finalWater: 40, mass: 26.5, density: 2.65,
+    estimate: '2.65', units: 'g/cm3', prediction: '', explanation,
+  });
+  function work() {
+    return {
+      ...seed(),
+      specimenNotes: {
+        'rocks:granite': { note: 'Pink crystal observation.', question: 'Private granite question?', bookmarked: true },
+        'minerals:quartz': { note: 'Private quartz note.', question: 'Private quartz question?', bookmarked: false },
+      },
+      compare: { notes: { [pairKey]: 'Shared grain comparison.', 'minerals:calcite:quartz': 'Private luster comparison.' } },
+      fieldCases: { activeId: 'rounded-river', records: {
+        'deep-cooling': fieldRecord(),
+        'rounded-river': { fragmentObservation: { estimate: '17,', shape: '', compared: false } },
+      } },
+      densityLab: {
+        mineralId: 'quartz', prediction: 'Unsubmitted density prediction.', estimate: '2,',
+        explanation: 'Unsubmitted density explanation.',
+        trials: [recordedTrial('Stored small-sample result.'), recordedTrial('Other recorded result.')],
+      },
+      weathHunt: {
+        hypothesis: 'Unsubmitted climate hypothesis.', explanation: 'Unsubmitted climate explanation.',
+        log: [{ t: 8, rm: 2800, p: 5.6, rk: 'limestone', st: 'chemDom' }],
+      },
+      wb: { spId: 'halite', archive: [
+        { ...seededArchive(), report: 'Archived pyrite report included.', reflection: 'My archived reflection.' },
+        { ...seededArchive('investigation-5'), report: 'Private second archived report.', reflection: '' },
+      ] },
+    };
+  }
+  const item = (app, id) => app.find('data-rk-nb-share-item', id);
+  const choose = (app, id, checked = true) => item(app, id).props.onChange({ target: { checked } });
+  const preview = app => { app.click('data-rk-nb-share-preview'); return app.find('id', 'rk-nb-share-text').props.value; };
+
+  it('starts empty and shares only the chosen records, with personal questions selected separately', () => {
+    const app = session(work());
+    expect(app.all('data-rk-nb-share-item').every(node => !node.props.checked)).toBe(true);
+    expect(app.find('data-rk-nb-share-download').props.disabled).toBe(true);
+    choose(app, 'journal:rocks:granite');
+    choose(app, 'compare:' + pairKey);
+    choose(app, 'archive:investigation-4');
+    let text = preview(app);
+    for (const value of ['Pink crystal observation.', 'Shared grain comparison.', 'Archived pyrite report included.', 'My archived reflection.']) expect(text).toContain(value);
+    for (const value of ['Private granite question?', 'Private quartz note.', 'Private quartz question?', 'Private luster comparison.', 'Private second archived report.', 'Large crystals suggest slower cooling.', 'Unsubmitted density explanation.', 'Unsubmitted climate hypothesis.', 'halite']) expect(text.toLowerCase()).not.toContain(value.toLowerCase());
+    choose(app, 'journal:rocks:granite', false);
+    choose(app, 'question:rocks:granite');
+    expect(app.all('id', 'rk-nb-share-text')).toHaveLength(0);
+    expect(app.find('data-rk-nb-share-download').props.disabled).toBe(true);
+    text = preview(app);
+    expect(text).toContain('Private granite question?');
+    expect(text).not.toContain('Pink crystal observation.');
+    expect(text).not.toContain('Private quartz question?');
+  });
+
+  it('distinguishes unfinished observations and current drafts from recorded trials and hidden interpretations', () => {
+    const app = session(work());
+    choose(app, 'field:rounded-river');
+    choose(app, 'density:0');
+    let text = preview(app);
+    expect(text).toContain('17,');
+    expect(text).toContain('Stored small-sample result.');
+    for (const value of ['Reference measurement: 20 mm', 'Conglomerate contains gravel-sized', 'Other recorded result.', 'Unsubmitted density prediction.', 'Unsubmitted climate explanation.']) expect(text).not.toContain(value);
+    choose(app, 'density:draft');
+    choose(app, 'field:deep-cooling');
+    choose(app, 'weathering:investigation');
+    text = preview(app);
+    for (const value of ['Unsubmitted density prediction.', '2,', 'Unsubmitted density explanation.', 'Large crystals suggest slower cooling.', 'Unsubmitted climate hypothesis.', 'Unsubmitted climate explanation.', '2800 mm/yr']) expect(text).toContain(value);
+    expect(text).not.toContain('Granite fits both the coarse');
+    expect(text).not.toContain('Other recorded result.');
+  });
+
+  it('downloads exactly the preview text and keeps it selectable if downloading is unavailable', async () => {
+    const app = session(work());
+    choose(app, 'journal:rocks:granite');
+    const shown = preview(app);
+    const originalBlob = globalThis.Blob;
+    const originalCreate = URL.createObjectURL;
+    let downloaded;
+    try {
+      globalThis.Blob = NodeBlob;
+      URL.createObjectURL = blob => { downloaded = blob; return 'blob:test-geology-report'; };
+      const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+      app.click('data-rk-nb-share-download');
+      expect(anchorClick).toHaveBeenCalledOnce();
+      expect(downloaded.type).toMatch(/^text\/plain/);
+      expect(await downloaded.text()).toBe(shown);
+      URL.createObjectURL = () => { throw new Error('Download unavailable'); };
+      app.click('data-rk-nb-share-download');
+      expect(app.find('id', 'rk-nb-share-text').props).toMatchObject({ readOnly: true, value: shown });
+    } finally { globalThis.Blob = originalBlob; URL.createObjectURL = originalCreate; }
+  });
+
+  it('includes the density settings and readings actually collected in a draft, withholding unread results', () => {
+    const app = session({ densityLab: {
+      mineralId: 'quartz', volume: 15, initialWater: 45, measured: { mass: true, before: true, after: false },
+    } });
+    choose(app, 'density:draft');
+    const text = preview(app);
+    expect(text).toContain('Sample volume setting: 15 cm³');
+    expect(text).toContain('Starting water setting: 45 mL');
+    expect(text).toMatch(/Mass: 39[.,]8 g/);
+    expect(text).toMatch(/Water before: 45(?:[.,]0)? mL/);
+    expect(text).not.toContain('Water after:');
+    expect(text).not.toMatch(/60(?:[.,]0)? mL/);
+    expect(text).not.toContain('2.65');
+  });
+
+  it('preserves the complete backup and full report independently of sharing choices and journal filters', () => {
+    const app = session({ ...work(), notebookUi: { journalFilter: 'questions', journalQuery: 'no matches' } });
+    const before = JSON.parse(app.backup()).data;
+    choose(app, 'journal:rocks:granite');
+    expect(preview(app)).toContain('Pink crystal observation.');
+    app.click('data-rk-nb-show-text');
+    const full = app.find('id', 'rk-nb-text').props.value;
+    for (const value of ['Private quartz question?', 'Private luster comparison.', 'Other recorded result.', 'Unsubmitted climate explanation.', 'Private second archived report.']) expect(full).toContain(value);
+    expect(JSON.parse(app.backup()).data).toEqual(before);
+    expect(item(app, 'journal:rocks:granite').props.checked).toBe(true);
+    app.click('data-rk-nb-share-clear');
+    expect(app.all('data-rk-nb-share-item').every(node => !node.props.checked)).toBe(true);
+    expect(JSON.parse(app.backup()).data).toEqual(before);
+  });
+
+  it('keeps choices when revisiting the notebook or cancelling an import, then resets on confirmed replacement', async () => {
+    const app = session(work());
+    choose(app, 'question:rocks:granite');
+    const original = preview(app);
+    app.click('data-rk-nb-open', 'compare');
+    app.store.rocks.mode = 'notebook';
+    expect(item(app, 'question:rocks:granite').props.checked).toBe(true);
+    await app.file('invalid JSON');
+    expect(item(app, 'question:rocks:granite').props.checked).toBe(true);
+    const incoming = session({ specimenNotes: { 'rocks:granite': { note: 'Incoming study.', question: 'Incoming private question?', bookmarked: false } } }).backup();
+    await app.file(incoming);
+    app.click('data-rk-nb-cancel-import');
+    expect(item(app, 'question:rocks:granite').props.checked).toBe(true);
+    expect(app.find('id', 'rk-nb-share-text').props.value).toBe(original);
+    await app.file(incoming);
+    app.click('data-rk-nb-confirm-import');
+    expect(item(app, 'question:rocks:granite').props.checked).toBe(false);
+    expect(app.all('id', 'rk-nb-share-text')).toHaveLength(0);
+    expect(app.find('data-rk-nb-share-download').props.disabled).toBe(true);
+    expect(app.store.rocks.specimenNotes['rocks:granite'].question).toBe('Incoming private question?');
+  });
+
+  it('never shares a different recorded trial that takes the selected trial’s old position', () => {
+    const app = session(work());
+    choose(app, 'density:0');
+    expect(preview(app)).toContain('Stored small-sample result.');
+    app.store.rocks.densityLab.trials = [recordedTrial('Replacement trial that I did not choose.')];
+    expect(item(app, 'density:0').props.checked).toBe(false);
+    const remaining = app.all('id', 'rk-nb-share-text')[0]?.props.value || '';
+    expect(remaining).not.toContain('Replacement trial that I did not choose.');
+  });
+
+  it('requires a fresh preview if a chosen note changes after the learner reviews it', () => {
+    const app = session(work());
+    choose(app, 'journal:rocks:granite');
+    expect(preview(app)).toContain('Pink crystal observation.');
+    app.store.rocks.specimenNotes['rocks:granite'].note = 'Revised note with a different observation.';
+    expect(app.find('data-rk-nb-share-download').props.disabled).toBe(true);
+    const revised = preview(app);
+    expect(revised).toContain('Revised note with a different observation.');
+    expect(revised).not.toContain('Pink crystal observation.');
+    expect(revised).not.toContain('Private granite question?');
   });
 });

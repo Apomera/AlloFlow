@@ -727,11 +727,11 @@ const AnchorChartView = React.memo((props) => {
     const trimmed = (rubricDraft || '').trim();
     handleNoteUpdate('interactive', { armed: true, rubric: trimmed });
     setShowInteractiveDialog(false);
-    addToastProp('🎯 Interactive mode armed — students will see blanks');
+    addToastProp(tx('anchor_chart.responses_enabled', 'Student responses are on. Students will see blanks.'));
   };
   const handleDisarmInteractive = () => {
     handleNoteUpdate('interactive', { armed: false, rubric: interactive.rubric || '' });
-    addToastProp('Interactive mode off');
+    addToastProp(tx('anchor_chart.reference_enabled', 'Reference chart is on. Saved student responses are kept.'));
   };
   const handleInteractiveDialogKeyDown = (e) => {
     if (e.key === 'Escape') {
@@ -939,30 +939,30 @@ const AnchorChartView = React.memo((props) => {
           {isTeacherMode ? (
             interactive.armed ? (
               <span className="inline-flex items-center gap-1">
-                <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-fuchsia-600 text-white">🎯 {tx('anchor_chart.interactive_armed', 'Interactive armed')}</span>
+                <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-fuchsia-600 text-white">🎯 {tx('anchor_chart.responses_on', 'Student responses on')}</span>
                 <button type="button"
                   onClick={openInteractiveDialog}
                   aria-haspopup="dialog"
                   className="px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50"
                   aria-label={tx('a11y.edit_interactive_rubric', 'Edit interactive rubric')}
-                  title={tx('anchor_chart.edit_rubric_title', 'Edit rubric / disarm')}
+                  title={tx('anchor_chart.edit_response_rubric', 'Edit student response criteria')}
                 >{tx('common.edit', 'Edit')}</button>
                 <button type="button"
                   onClick={handleDisarmInteractive}
                   className="px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-                  aria-label={tx('a11y.disarm_interactive_mode', 'Disarm interactive mode')}
-                  title={tx('anchor_chart.stop_interactive_title', 'Stop interactive mode')}
-                >⏹</button>
+                  aria-label={tx('anchor_chart.reference_mode', 'Return to reference chart')}
+                  title={tx('anchor_chart.reference_mode', 'Return to reference chart')}
+                >{tx('anchor_chart.reference_mode', 'Return to reference chart')}</button>
               </span>
             ) : (
               <button type="button"
                 onClick={openInteractiveDialog}
                   aria-haspopup="dialog"
                 className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50"
-                aria-label={tx('a11y.arm_interactive_mode', 'Arm interactive mode')}
+                aria-label={tx('anchor_chart.enable_responses', 'Turn on student responses')}
                 title={tx('anchor_chart.arm_interactive_title', 'Make this chart interactive — students fill in blanks + get AI feedback')}
                 data-help-key="anchor_chart_interactive_mode_toggle"
-              >🎯 {tx('anchor_chart.interactive_mode', 'Interactive mode')}</button>
+              >🎯 {tx('anchor_chart.response_mode', 'Student response mode')}</button>
             )
           ) : null}
           {isTeacherMode && activeSessionCode && onPlayPictionary && sections.length > 0 ? (
@@ -1217,41 +1217,42 @@ const AnchorChartView = React.memo((props) => {
           onKeyDown={handleInteractiveDialogKeyDown}
           onClick={(e) => { if (e.target === e.currentTarget) setShowInteractiveDialog(false); }}
         >
-          <div ref={interactiveDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5">
-            <h2 id="ac-interactive-dialog-title" className="text-lg font-black text-fuchsia-900 mb-2">🎯 Arm Interactive Mode</h2>
+          <div ref={interactiveDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5" style={{maxHeight:'calc(100dvh - 2rem)',overflowY:'auto'}}>
+            <h2 id="ac-interactive-dialog-title" className="text-lg font-black text-fuchsia-900 mb-2">{tx('anchor_chart.response_mode', 'Student response mode')}</h2>
             <p id="ac-interactive-dialog-desc" className="text-sm text-slate-700 mb-3 leading-relaxed">
-              Students will see your section labels but <strong>no bullet text</strong> — they fill in their own answers and submit for AI feedback. The AI grades against your rubric (not your specific phrasing).
+              {tx('anchor_chart.response_mode_description', 'Students see section labels and blank answer fields. Your reference bullet text is hidden. They can request AI feedback using your criteria; this does not submit work to the teacher.')}
             </p>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">Rubric / Key concepts</label>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">{tx('anchor_chart.response_rubric', 'Response criteria / key concepts')}</label>
             <textarea
               ref={rubricTextareaRef}
               value={rubricDraft}
               onChange={(e) => setRubricDraft(e.target.value)}
-              placeholder="What should the student demonstrate? List key concepts, important facts, or rubric criteria. Example: 'Should mention photosynthesis converts light to chemical energy, name chloroplasts as the site, and explain why oxygen is a byproduct.'"
+              placeholder={tx('anchor_chart.response_rubric_placeholder', 'What should students demonstrate? List the key concepts, facts, or explanations you will look for.')}
               rows={6}
               className="w-full border-2 border-slate-300 focus:border-fuchsia-500 rounded-lg p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-fuchsia-600 focus:ring-offset-1"
-              aria-label="Rubric or key concepts"
+              aria-label={tx('anchor_chart.response_rubric', 'Response criteria / key concepts')}
             />
             <div className="text-[11px] text-slate-500 italic mt-1">
-              Tip: the more specific your rubric, the more accurate the AI's grading.
+              {tx('anchor_chart.response_rubric_tip', 'List the ideas students should explain. AI feedback is a suggestion for review.')}
             </div>
-            <div className="flex items-center justify-between mt-4">
+            <details data-anchor-student-preview className="mt-3 rounded-lg border border-slate-300 bg-slate-50 p-3"><summary className="cursor-pointer text-sm font-bold text-slate-900">{tx('anchor_chart.student_preview', 'Student preview')}</summary><p className="mt-2 text-xs text-slate-700">{tx('anchor_chart.preview_note', 'Preview only. Your reference answers stay hidden and no student work is changed.')}</p>{sections.map((section,index)=><div key={section.id||index} className="mt-2 rounded border border-slate-300 bg-white p-2"><p className="font-semibold text-slate-900">{section.label}</p><p className="mt-1 rounded border border-dashed border-slate-400 p-2 text-sm text-slate-600">{tx('anchor_chart.preview_answer', 'Blank answer field for the student')}</p></div>)}</details>
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
               <button type="button"
                 onClick={handleSuggestRubric}
                 disabled={isGeneratingRubric}
                 className="px-3 py-1.5 text-xs font-bold rounded-full border border-fuchsia-300 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 disabled:opacity-50"
               >
-                {isGeneratingRubric ? '⏳ Suggesting…' : '🪄 Suggest Rubric with AI'}
+                {isGeneratingRubric ? tx('anchor_chart.suggesting_criteria', 'Suggesting…') : tx('anchor_chart.suggest_criteria', 'Suggest criteria with AI')}
               </button>
               <div className="flex items-center gap-2">
                 <button type="button"
                   onClick={() => setShowInteractiveDialog(false)}
                   className="px-3 py-1.5 text-sm font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-                >Cancel</button>
+                >{tx('common.cancel', 'Cancel')}</button>
                 <button type="button"
                   onClick={handleArmInteractive}
                   className="px-4 py-1.5 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700"
-                >🎯 Arm for students</button>
+                >{tx('anchor_chart.enable_responses', 'Turn on student responses')}</button>
               </div>
             </div>
           </div>

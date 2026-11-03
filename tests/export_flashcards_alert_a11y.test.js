@@ -16,7 +16,7 @@ describe('flashcard translation export notifications', () => {
   });
 
   it('provides a meaningful fallback announcement string', () => {
-    expect(source).toContain("t('flashcards.no_translations') || 'No translated flashcards are available to export.'");
+    expect(source).toContain("uiText('flashcards.no_translations', 'No translated flashcards are available to export.')");
   });
 
   it('keeps generated and deployed modules synchronized without the native alert', () => {

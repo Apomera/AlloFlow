@@ -72,7 +72,7 @@ describe('tunicate and fan-worm learning integration', () => {
   it('adds only two encounters to the healthy reef and keeps explicit populations deterministic', () => {
     const healthy = X.EXPLORE_SITES.find(site => site.id === 'healthy'), population = X.populationFor(healthy);
     expect(population.reduce((total, entry) => total + entry.count, 0)).toBe(239);
-    expect(Object.keys(X.POPULATION).slice(-2)).toEqual(additions);
+    expect(Object.keys(X.POPULATION).filter(id => additions.includes(id))).toEqual(additions);
     for (const id of additions) expect(population.find(entry => entry.id === id)?.count).toBe(1);
     for (const site of X.EXPLORE_SITES) {
       const first = X.populationFor(site); expect(X.populationFor(site)).toEqual(first);

@@ -264,21 +264,21 @@ describe('J1 species batches: one shader patch, the same programs', () => {
   // one shader program; a new one stalls the first frame that shows it on a school laptop.
   // The cucumber roughness maps and pipefish flag-tail texture add two explicit families.
   const FAMILIES = [
-    'MeshStandardMaterial,true,true,false,false,false,false,0,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,false,true,false,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,true,false,false,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,false,true,false,true,false,true,0,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,true,true,false,true,false,true,2,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,false,false,false,false,false,true,0,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,false,false,false,false,false,true,0,0,false,true,true,reef3d-species-v7|d',
-    'MeshStandardMaterial,false,false,false,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,false,false,false,false,false,true,2,0,false,true,true,reef3d-species-v7|d',
-    'MeshStandardMaterial,true,false,false,false,false,false,2,0.42,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,true,false,true,false,false,true,0,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,true,false,true,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,true,true,false,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,true,true,false,true,false,false,0,0,false,false,false,reef3d-species-v7|d',
-    'MeshStandardMaterial,true,true,false,true,false,false,0,0,false,true,true,reef3d-species-v7|d'
+    'MeshStandardMaterial,true,true,false,false,false,false,0,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,false,true,false,false,false,true,2,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,true,false,false,false,false,true,2,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,false,true,false,true,false,true,0,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,true,true,false,true,false,true,2,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,false,false,false,false,false,true,0,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,false,false,false,false,false,true,0,0,false,true,true,reef3d-species-v8|d',
+    'MeshStandardMaterial,false,false,false,false,false,true,2,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,false,false,false,false,false,true,2,0,false,true,true,reef3d-species-v8|d',
+    'MeshStandardMaterial,true,false,false,false,false,false,2,0.42,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,true,false,true,false,false,true,0,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,true,false,true,false,false,true,2,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,true,true,false,false,false,true,2,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,true,true,false,true,false,false,0,0,false,false,false,reef3d-species-v8|d',
+    'MeshStandardMaterial,true,true,false,true,false,false,0,0,false,true,true,reef3d-species-v8|d'
   ];
   const sig = (m) => { const t = m.material; return [t.type, !!t.map, !!t.bumpMap, !!t.normalMap, !!t.roughnessMap, !!t.alphaMap, !!t.vertexColors, t.side, t.alphaTest, !!t.transparent, !!m.isInstancedMesh, !!m.instanceColor, t.customProgramCacheKey()].join(); };
   it('draws every model and school with the fixed material families', () => {

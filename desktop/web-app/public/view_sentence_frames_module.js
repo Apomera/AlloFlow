@@ -173,11 +173,11 @@ function SentenceFramesView(props) {
     onClick: launchGradingSession,
     "data-help-key": "scaffolds_grading",
     className: `min-h-11 flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : ''}`,
-    title: t('mastery.start_tooltip'),
-    "aria-label": t('mastery.start_tooltip')
+    title: label('scaffolds.feedback_purpose', 'Get AI feedback on your draft. This does not submit your work to your teacher.'),
+    "aria-label": label('scaffolds.get_draft_feedback', 'Get feedback on my draft')
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 12
-  }), " ", t('mastery.start_check'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+  }), " ", label('scaffolds.get_draft_feedback', 'Get feedback on my draft'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     onClick: handleToggleIsEditingScaffolds,
     "data-help-key": "scaffolds_edit_toggle",
     className: `min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'}`
@@ -185,7 +185,10 @@ function SentenceFramesView(props) {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')))), wordBank.length > 0 && /*#__PURE__*/React.createElement("section", {
+  }), isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')))), !isTeacherMode && /*#__PURE__*/React.createElement("p", {
+    "data-scaffold-feedback-purpose": true,
+    className: "text-sm text-slate-700"
+  }, label('scaffolds.feedback_purpose', 'Get AI feedback on your draft. This does not submit your work to your teacher.')), wordBank.length > 0 && /*#__PURE__*/React.createElement("section", {
     "data-scaffold-word-bank": true,
     "aria-labelledby": wordBankHeadingId,
     className: "bg-amber-50 border border-amber-200 rounded-xl p-4"

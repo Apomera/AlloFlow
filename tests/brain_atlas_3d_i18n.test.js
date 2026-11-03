@@ -5,6 +5,7 @@
 // wording as before, and that the extraction did not quietly reword anything.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { loadTool, makeCtx, newStore, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_brainatlas.js';
 const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_brainatlas.js';
@@ -60,17 +61,27 @@ describe('brainAtlas 3D surface goes through the translator', () => {
       ['d3_what_it_contributes', 'What it contributes'],
       ['d3_anatomical_cutaway', 'Anatomical cutaway'],
       ['d3_guided_pathway', 'Guided pathway'],
-      ['d3_first_half', 'First half'],
-      ['d3_opposite_half', 'Opposite half'],
     ].forEach(([key, english]) => {
       expect(src).toContain("t('stem.brainatlas." + key + "', \"" + english + "\")");
     });
   });
 
-  it('wraps both halves of a paired label, not just one', () => {
-    // First half sat beside an already-wrapped Opposite half, which is the
-    // shape a partial pass leaves behind
-    expect(src).toMatch(/d3_opposite_half[\s\S]{0,80}d3_first_half/);
+  it.each([
+    ['sagittal', false, 'stem.anatomy.angle_right'], ['sagittal', true, 'stem.anatomy.angle_left'],
+    ['coronal', false, 'stem.anatomy.route_anterior'], ['coronal', true, 'stem.anatomy.route_posterior'],
+    ['axial', false, 'stem.brainatlas.direction_superior'], ['axial', true, 'stem.brainatlas.direction_inferior']
+  ])('uses the translated retained direction for %s with flip=%s', (axis, flip, directionKey) => {
+    resetStemLab();
+    const tool = loadTool(FILE, 'brainAtlas');
+    const store = newStore({ brainAtlas: { view: 'lateral', atlasDisplayMode: '3d', brain3DSliceAxis: axis, brain3DSliceFlip: flip } });
+    const translated = 'Localized retained direction';
+    const ctx = makeCtx({ t: (key, fallback) => key === directionKey ? translated : fallback }, store);
+    const flatten = node => !node || typeof node !== 'object' ? [] : Array.isArray(node) ? node.flatMap(flatten) : [node, ...flatten(node.props?.children)];
+    const nodes = flatten(tool.render(ctx));
+    const side = nodes.find(node => node.props?.['data-brainatlas-retained-side'] !== undefined);
+    expect(side.props.children).toContain(translated);
+    const navigator = nodes.find(node => node.props?.className === 'brainatlas-3d-slice-map');
+    expect(navigator.props['aria-label']).toContain(translated);
   });
 
   it('leaves no wrapped label with an empty fallback', () => {

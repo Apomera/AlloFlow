@@ -2735,7 +2735,7 @@ const resolveBlueprintSourceChoice = (options = {}) => {
     || options.latestAnalysisText || '');
   const normalizedCurrent = _normalizeBlueprintSourceText(currentText);
   const normalizedAnalysis = _normalizeBlueprintSourceText(analysisText);
-  const divergentFromLatestAnalysis = !!(normalizedCurrent && normalizedAnalysis && normalizedCurrent !== normalizedAnalysis);
+  const divergentFromLatestAnalysis = !!(normalizedCurrent && normalizedAnalysis && currentText !== analysisText);
   const reviewedSelection = options.sourcePolicy && options.sourcePolicy.selectedSource
     ? String(options.sourcePolicy.selectedSource) : '';
   let selectedSource = 'none';
@@ -2903,7 +2903,7 @@ const _modifyBlueprintWithAI = async (currentConfig, userInstruction, deps = {})
   // minimal inline list if the catalog has not loaded yet.
   const toolList = (typeof window !== 'undefined' && typeof window.formatToolCatalogInline === 'function')
     ? window.formatToolCatalogInline()
-    : `        - analysis — Always recommended first.
+    : `        - analysis — Include first only if the exact current source has not been checked; otherwise reuse its existing check.
         - simplified — Adapt text to a reading level.
         - glossary — Key vocabulary.
         - outline — Visual organizer.
@@ -3230,8 +3230,11 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
       // Planner and executor must fingerprint the same deliberate source
       // choice. A changed current request wins over an older analysis; equal
       // text can use the analysis as its stable workspace anchor.
+      const matrixModule = window.AlloModules && window.AlloModules.GenerationMatrix;
+      const hasCompletedAnalysis = artifact => matrixModule?.isCompletedAnalysis ? matrixModule.isCompletedAnalysis(artifact)
+        : !artifact?.error && !artifact?.data?.analysisNeedsRecheck && !artifact?.data?.analysisIncomplete;
       const latestAnalysis = (Array.isArray(history) ? history : []).slice().reverse()
-          .find((artifact) => artifact && artifact.type === 'analysis' && artifact.data && artifact.data.originalText);
+          .find(artifact => artifact?.type === 'analysis' && artifact.data?.originalText && hasCompletedAnalysis(artifact));
       const sourceChoice = resolveBlueprintSourceChoice({
           requestedSourceText: request && request.sourceText,
           sourceOrigin: request && request.sourceOrigin,
@@ -3244,11 +3247,16 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
       });
       const normalizedRequest = Object.assign({}, rawRequest, _agentCoreContext(rawRequest));
       if (!Array.isArray(normalizedRequest.existingArtifacts)) {
-          const matrixModule = window.AlloModules && window.AlloModules.GenerationMatrix;
-          normalizedRequest.existingArtifacts = (Array.isArray(history) ? history : []).map((artifact) => ({
+          normalizedRequest.existingArtifacts = (Array.isArray(history) ? history : []).filter(artifact =>
+            artifact?.type !== 'analysis' || hasCompletedAnalysis(artifact)).map((artifact) => ({
               id: artifact && artifact.id,
               type: artifact && artifact.type,
               title: artifact && artifact.title,
+              // Keep the actual checked source, so reuse is exact rather than
+              // inferred from a whitespace-normalized fingerprint.
+              originalText: artifact && artifact.type === 'analysis' && artifact.data ? artifact.data.originalText : undefined,
+              status: artifact && artifact.status,
+              error: !!(artifact && artifact.error),
               directive: artifact && (artifact.directive || artifact.customInstructions || (artifact.config && artifact.config.customInstructions)),
               variantKey: artifact && (artifact.variantKey || (artifact.config && artifact.config.variantKey)),
               explicitVariantKey: artifact && (artifact.explicitVariantKey || (artifact.config && artifact.config.explicitVariantKey)),
@@ -3457,6 +3465,24 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  setUdlMessages(prev => [...prev, { role: 'model', text }]);
              };
              const advanceStage = (stage) => setGuidedFlowState(prev => ({ ...prev, currentStage: stage }));
+             const reuseCheckedSource = () => {
+                 const matrix = window.AlloModules && window.AlloModules.GenerationMatrix;
+                 // Source generation and URL fetch settle asynchronously. Read
+                 // the host's current source instead of this turn's old closure.
+                 const current = typeof deps.getCurrentSourceSnapshot === 'function'
+                     ? deps.getCurrentSourceSnapshot() : { history, inputText };
+                 const checked = matrix && typeof matrix.findExistingSourceAnalysis === 'function'
+                     ? matrix.findExistingSourceAnalysis(current && current.history, current && current.inputText) : null;
+                 if (!checked) return false;
+                 const key = 'chat_guide.flow.analysis_reused';
+                 const translated = t(key);
+                 const message = translated && translated !== key ? translated
+                     : 'This exact source is already checked. I’ll reuse that check. How would you like to continue?';
+                 setUdlMessages(prev => [...prev, buildStepPackChoices(message, 'post_analysis_route')]);
+                 setGuidedFlowState(prev => ({ ...prev, currentStage: 'post_analysis_route',
+                     generatedIds: [...new Set([...(prev.generatedIds || []), checked.id])] }));
+                 return true;
+             };
              // Posts a question whose answers are pills. `stage` is the stage
              // that will consume the reply (usually the one we're advancing
              // to); omit `choices` for the plain Yes/Skip pair. Typing still
@@ -3563,22 +3589,30 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          context.Topic = pendingSourceTopic;
                          context.LastResult = "Source text generated via Chat.";
                          const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
-                         askStage(bridgeMsg, 'analysis');
-                         flyToElement(getStageElementId('analysis'));
-                         advanceStage('analysis');
+                         if (!reuseCheckedSource()) {
+                             askStage(bridgeMsg, 'analysis');
+                             flyToElement(getStageElementId('analysis'));
+                             advanceStage('analysis');
+                         }
                          setIsChatProcessing(false);
                          return;
                      }
                      const isUrl = /^(http|https|www)/i.test(textToSend);
                      if (isUrl) {
                          sendBotMsg("I see a link! Fetching content...");
-                         await handleUrlFetch(textToSend);
-                         const context = getWorkflowContext();
-                         context.LastResult = "URL Content Fetched.";
-                         const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
-                         askStage(bridgeMsg, 'analysis');
-                         flyToElement(getStageElementId('analysis'));
-                         advanceStage('analysis');
+                         // An older host resolves undefined; only an explicit false means the fetch failed.
+                         if (await handleUrlFetch(textToSend) === false) {
+                             sendBotMsg(t('quick_start.error_extract'));
+                         } else {
+                             const context = getWorkflowContext();
+                             context.LastResult = "URL Content Fetched.";
+                             const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
+                             if (!reuseCheckedSource()) {
+                                 askStage(bridgeMsg, 'analysis');
+                                 flyToElement(getStageElementId('analysis'));
+                                 advanceStage('analysis');
+                             }
+                         }
                      }
                      else {
                          try {
@@ -3806,14 +3840,20 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          context.LastResult = `Generated source text on topic: ${textToSend}`;
                          context.Topic = textToSend;
                          const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
-                         askStage(bridgeMsg, 'analysis');
-                         flyToElement(getStageElementId('analysis'));
-                         advanceStage('analysis');
+                         if (!reuseCheckedSource()) {
+                             askStage(bridgeMsg, 'analysis');
+                             flyToElement(getStageElementId('analysis'));
+                             advanceStage('analysis');
+                         }
                      } else {
                          sendBotMsg(t('chat_guide.flow.source_prompt'));
                      }
                      break;
                  case 'analysis':
+                     if (reuseCheckedSource()) {
+                         setIsChatProcessing(false);
+                         return;
+                     }
                      if (isAffirmative) {
                          sendBotMsg(t('chat_guide.flow.running_analysis'));
                          const resultItem = await _genTracked('analysis');

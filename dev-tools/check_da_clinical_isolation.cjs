@@ -67,7 +67,8 @@ const GUARDS = [
   ['isolation flag is derived from configOverride',
     /_isolatedContext\s*=\s*!!\(\s*configOverride\s*&&\s*configOverride\.isolatedContext\s*\)/],
   ['lesson DNA (golden thread)', /_isolatedContext \? '' : formatLessonDNA/],
-  ['lesson DNA value', /_isolatedContext \? null :/],
+  // Extra OR-ed conditions (the 11-01 `|| _seed`) still yield null when isolated; && would not.
+  ['lesson DNA value', /_isolatedContext(?: \|\| [\w$.]+)* \? null :/],
   ['target standards', /_isolatedContext \? '' : _ambientStandardsPromptString/],
   ['selected concepts', /_isolatedContext \? \[\] : _ambientSelectedConcepts/],
   ['student interests', /_isolatedContext \? \[\] : _ambientStudentInterests/],

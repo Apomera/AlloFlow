@@ -28,7 +28,7 @@ function harness({ approved = [], missing = false, alwaysDeny = false, readyKind
       scripts.push({ src: script.src, integrity: script.integrity, crossOrigin: script.crossOrigin });
       if (approved.includes(script.src)) {
         ready.value = true;
-        if (readyKind === 'purifier') window.DOMPurify = { sanitize() {} };
+        if (readyKind === 'purifier') window.DOMPurify = { version: '3.4.17', sanitize() {} };
         if (readyKind === 'ace') window.ace = { Checker: function () {} };
         if (script.onload) queueMicrotask(() => script.onload());
       } else if (script.onerror) queueMicrotask(() => script.onerror());
@@ -313,7 +313,7 @@ describe('actual host and combined document dispatcher', () => {
 
   it('localizes only reviewed Desktop aliases/mirrors to exact owned local bytes', async () => {
     const f = actualHost('http://127.0.0.1:3333/app/index.html');
-    for (const id of ['pdf-lib', 'pdfjs.main', 'pako', 'tesseract.main', 'fontkit', 'sheetjs.0.20.1', 'sheetjs.0.18.5', 'axe-core', 'dompurify', 'temml', 'ibm-ace', 'jszip', 'mammoth']) {
+    for (const id of ['pdf-lib', 'pdfjs.main', 'pako', 'tesseract.main', 'fontkit', 'sheetjs.0.20.3', 'axe-core', 'dompurify', 'temml', 'ibm-ace', 'jszip', 'mammoth']) {
       const record = graph.assets[id], url = record.aliases?.[0] || record.mirrors[0].url, script = {};
       expect(f.context.policy.isApprovedUrl(url)).toBe(false);
       f.context.configure(script, url, id);

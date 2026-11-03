@@ -643,6 +643,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     var rules = [];
     if (s.fontFamily) rules.push(scope + ',' + scope + ' *' + skip + '{font-family:' + s.fontFamily + ' !important}');
     if (s.fontClass === 'font-andika-italic' || s.fontClass === 'font-andika-bold-italic') rules.push(scope + ' *' + skip + '{font-style:italic}');
+    if (s.fontClass === 'font-andika-bold-italic') rules.push(scope + ' *' + skip + '{font-weight:700 !important}');
     if (Number.isFinite(s.baseFontSize) && options.size !== false) rules.push('html{font-size:' + Math.max(10, Math.min(48, s.baseFontSize)) + 'px}');
     rules.push(scope + ' :is(p,li,dd,dt,td,th,h1,h2,h3,h4,h5,h6,span,div,label,figcaption,button,a)' + skip + '{line-height:' + (Number(s.lineHeight) || 1.6) + ' !important;letter-spacing:' + (Number(s.letterSpacing) || 0) + 'em !important}');
     return rules.join('\n');

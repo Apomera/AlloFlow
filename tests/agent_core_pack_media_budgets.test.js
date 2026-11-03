@@ -134,15 +134,15 @@ describe('AlloPack aggregate decoded-media budgets', () => {
     // Katie's 24 images were split on 2026-10-25 between the core pack (15 placements) and
     // Thinking Together: More Practice (23, including a copy of the cue chart). Together they
     // must still hold every one of the 24 distinct images.
-    const katie = { academic_discourse_reading_space_grade6: [15, 11, 6000000, 7500000], academic_discourse_more_practice_grade6: [23, 19, 10000000, 12000000] };
+    const katie = { academic_discourse_reading_space_grade6: [18, 14, 6000000, 7500000], academic_discourse_more_practice_grade6: [25, 20, 10000000, 12000000] };
     const katieImages = new Set();
-    for (const directory of ['allopacks', 'allopacks/illustrated']) {
+    for (const directory of ['allopacks/current']) {
       for (const filename of readdirSync(directory).filter(name => name.endsWith('.allopack.json'))) {
         const value = JSON.parse(readFileSync(`${directory}/${filename}`, 'utf8').replace(/^\uFEFF/, ''));
         const before = JSON.stringify(value), report = media.validatePackMedia(value, native);
         expect(report.ok, `${directory}/${filename}: ${JSON.stringify(report.errors)}`).toBe(true);
         expect(JSON.stringify(value)).toBe(before);
-        const expected = directory === 'allopacks' && katie[filename.replace(/\.allopack\.json$/, '')];
+        const expected = katie[filename.replace(/\.allopack\.json$/, '')];
         if (expected) {
           const [placements, unique, minPixels, maxPixels] = expected;
           expect(report.stats.placements, filename).toBe(placements);
@@ -153,6 +153,7 @@ describe('AlloPack aggregate decoded-media budgets', () => {
         }
       }
     }
-    expect(katieImages.size).toBe(24);
+    // 24 original images + 4 added by the 2026-11-02 collection pass (all 24 originals kept).
+    expect(katieImages.size).toBe(28);
   }, 30000);
 });

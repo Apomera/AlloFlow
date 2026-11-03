@@ -18,7 +18,7 @@ const panel = extra => ({ id: 'p1', imageUrl: PNG, alt: 'A blue rectangle fills 
 const pack = data => ({ history: [{ id: 'visual', type: 'image', data: { visualPlan: { panels: [panel()] }, ...data } }] });
 const animation = () => pack({ visualPlan: { panels: [panel({ type: 'process_animation', imageUrl: GIF, frames: [PNG, PNG], motionPrompt: 'The rectangle appears and pauses.', motionSteps: ['The rectangle remains in place.'], fps: 3, frameWidth: 1, frameHeight: 1 })] } });
 const servicePack = resources => {
-  const p = JSON.parse(readFileSync('allopacks/illustrated/water_cycle_grade6.allopack.json', 'utf8'));
+  const p = JSON.parse(readFileSync('allopacks/current/water_cycle_grade6.allopack.json', 'utf8'));
   p.history = resources.map(resource => ({ title: 'Native media example', ...resource }));
   return p;
 };

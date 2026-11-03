@@ -1,0 +1,187 @@
+{
+  "provider": "built-in image_gen",
+  "style": "Sophisticated tactile linocut/risograph collage; hand-torn geometric paper forms, offset ink edges, restrained paper grain; ivory, cobalt, aubergine and vermilion; no realism/cartoon/characters/text/numericaldata.",
+  "userConstraint": "Interesting; no realistic art style or cartoons",
+  "assets": [
+    {
+      "id": "01-case-cover",
+      "title": "Case cover",
+      "prompt": "Create ONE finished square editorial artwork for a grades 7–8 media-literacy learning pack. Subject: an abstract refill-station silhouette and reusable bottle shape, surrounded by four equally sized blank paper cards, a balanced investigative composition with no arrows and no outcome. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain, warm ivory ground with deep cobalt, aubergine and vermilion accents. Flat abstract editorial art suitable for a museum learning guide. Interesting asymmetric arrangement and strong negative space, no characters, no faces, no cartoons, no comic style, no photorealism, no realistic lighting, no 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All forms fully in frame; clear when reduced to 400px. One single composition, not a contact sheet, grid, sprite atlas or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-9ab695d0-6369-4f6a-a358-d0d3c51bf7aa.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\01-case-cover.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\01-case-cover.webp",
+      "alt": "Four blank paper cards surround geometric bottle and refill-station shapes.",
+      "altSource": "vision"
+    },
+    {
+      "id": "02-claim",
+      "title": "Claim",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: A broad EMPTY speech ribbon, shaped like a sweeping cut-paper banner, rises from one textured paper tile. A single strong form with open negative space; no approval marks, no writing. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-b4413a46-eb75-4517-821f-88323a9ba9db.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\02-claim.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\02-claim.webp",
+      "alt": "A wide blank ribbon curves across layered blue, red and plum paper shapes.",
+      "altSource": "vision"
+    },
+    {
+      "id": "03-evidence",
+      "title": "Evidence",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: A blank textured record sheet beside an open square viewing frame and a small angular observed stone-like geometric object. Unusual editorial still life, no graph, magnifying glass or result. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-6f8d9c3f-b909-4503-84c8-7f374ae41761.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\03-evidence.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\03-evidence.webp",
+      "alt": "A blank record sheet and viewing frame sit beside a geometric object.",
+      "altSource": "vision"
+    },
+    {
+      "id": "04-publisher",
+      "title": "Publisher",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: An abstract geometric printing press releases one blank paper sheet. Several layered paper shapes form the base and bold print rollers make a rhythmic composition. No lettering or logos. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-c6e07c90-0d1b-49c4-bcdc-0669a14d6796.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\04-publisher.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\04-publisher.webp",
+      "alt": "A geometric printing press releases a blank page.",
+      "altSource": "vision"
+    },
+    {
+      "id": "05-lateral-reading",
+      "title": "Lateral reading",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: Three adjacent differently shaped paper windows with one continuous dark ink line moving across their borders. Windows open onto different geometric fields. No arrows, no destination marked as correct. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-b78bbff5-b58b-4c14-a73d-33e79a3259b7.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\05-lateral-reading.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\05-lateral-reading.webp",
+      "alt": "A continuous line passes across three adjacent paper windows.",
+      "altSource": "vision"
+    },
+    {
+      "id": "06-original-source",
+      "title": "Original source",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: One opaque solid record sheet with several translucent textured paper sheets partially overlapping above it, diagonally arranged. Make the layers visually legible and neutral, without a seal or star or correctness cue. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-44513dfe-5e38-4583-a214-c38501f24574.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\06-original-source.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\06-original-source.webp",
+      "alt": "Translucent paper sheets overlap a solid record sheet underneath.",
+      "altSource": "vision"
+    },
+    {
+      "id": "07-corroboration",
+      "title": "Corroboration",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: Three separate viewing frames show three different views of the SAME irregular folded geometric object. Distinct viewing angles in a carefully balanced editorial composition; no checkmarks or comparison score. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-9b151f4a-6510-413a-bddb-8c8504320e99.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\07-corroboration.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\07-corroboration.webp",
+      "alt": "Three angular folded forms appear in separate areas of a textured page.",
+      "altSource": "vision"
+    },
+    {
+      "id": "08-scope",
+      "title": "Scope",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: A strong rectangular cropping frame encloses only part of a larger rhythmic patterned field. The pattern continues visibly outside the frame, with sharply different paper textures and interesting overlapping edges. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-d6f16d2c-9c17-4305-95c6-f967e384575a.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\08-scope.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\08-scope.webp",
+      "alt": "A rectangular frame encloses part of a larger patterned field.",
+      "altSource": "vision"
+    },
+    {
+      "id": "09-causal-claim",
+      "title": "Causal claim",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: Two separated irregular geometric paper forms with several branching ink paths running between and around them. Some branches continue outside the composition. Suggest multiple possible connections, never a single solved causal arrow. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-dff99f85-645a-4499-b621-3a33dfbc9d9b.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\09-causal-claim.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\09-causal-claim.webp",
+      "alt": "Branching paths run between two separated geometric forms and continue beyond them.",
+      "altSource": "vision"
+    },
+    {
+      "id": "10-conflict-of-interest",
+      "title": "Conflict of interest",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: One completely blank paper sheet held by two differently colored paper ribbons that pull in different directions. Tension comes only from geometry and layering, with no hands, sinister symbols, villain, money signs or correctness cue. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-23d0a7fa-19d6-4ffd-9fe5-d0cd793934c9.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\10-conflict-of-interest.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\10-conflict-of-interest.webp",
+      "alt": "Two colored ribbons pull a blank page in different directions.",
+      "altSource": "vision"
+    },
+    {
+      "id": "11-uncertainty",
+      "title": "Uncertainty",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: An unfinished geometric folded-paper construction with one visibly open edge and several detached geometric pieces nearby. Interesting open spatial arrangement, without puzzle-piece clichés, question marks or text. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-8e5e1e88-edac-4009-a3c0-d9cb8e55edca.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\11-uncertainty.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\11-uncertainty.webp",
+      "alt": "A partly assembled angular form sits beside detached triangular and rectangular paper pieces.",
+      "altSource": "vision"
+    },
+    {
+      "id": "12-card-a",
+      "title": "Fictional supplier post",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: Geometric refill-station and bottle silhouettes within a textured print frame, broad decorative rays and completely blank banner shapes. An abstract promotional-print motif with no claim, measurement, endorsement or words. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-afe42369-1e5f-4629-9629-1cd604280b44.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\12-card-a.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\12-card-a.webp",
+      "alt": "Stylized refill-station and bottle shapes sit between decorative rays and blank banners.",
+      "altSource": "vision"
+    },
+    {
+      "id": "13-card-b",
+      "title": "Fictional facilities log",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: An abstract open bound counting ledger with completely unmarked ruled pages beside neutral counting-tool shapes. Dynamic flat still life, no tally marks, bars, numerals, result, graph or exact quantity. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-1239d5c3-9059-4b10-b0c4-162dbbdee9dd.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\13-card-b.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\13-card-b.webp",
+      "alt": "An open ruled notebook lies beside loose discs and angular blocks.",
+      "altSource": "vision"
+    },
+    {
+      "id": "14-card-c",
+      "title": "Fictional community roundup",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: A folded abstract community publication with empty headline bands and one blank paper clipping layered onto the surface. Strong diagonal fold and contrasting paper textures. No text, logos, source-trail arrows or claim. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-bee73f22-b6a1-481e-88cb-1cd4afad0b1e.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\14-card-c.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\14-card-c.webp",
+      "alt": "A folded, unlettered publication shows geometric city and tree silhouettes beneath a blank clipping.",
+      "altSource": "vision"
+    },
+    {
+      "id": "15-card-d",
+      "title": "Fictional operations record",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: Overlapping blank purchase-document and blank calendar forms held by neutral paper fasteners. Unmarked empty calendar cells; no dates, numbers, offsite people, attendance icons, record details or implied cause. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-39d98c6a-6d96-411f-80d3-18d247d6b848.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\15-card-d.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\15-card-d.webp",
+      "alt": "A blank calendar grid overlaps a purchase-document shape held by paper fasteners.",
+      "altSource": "vision"
+    },
+    {
+      "id": "16-park-practice",
+      "title": "Park practice case",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: An abstract park gate, geometric tree shapes and an unmarked notebook in a quiet editorial still life. No people, crowd, counts, event poster, copying symbol, observer or category markers. Neutral setting for several different text-based reasoning cards. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-c07c456d-7128-4099-8cbf-fc269b861964.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\16-park-practice.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\16-park-practice.webp",
+      "alt": "A geometric park gate and tree shapes stand beside a blank notebook.",
+      "altSource": "vision"
+    },
+    {
+      "id": "17-evidence-workbench",
+      "title": "Evidence workbench",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: Two parallel EMPTY paper writing areas, separate blank paper cards and an open viewing frame arranged as an inviting abstract workbench. Open, orderly but lively asymmetric arrangement. No completed responses, rules, numbers, source trail, graph or solved reasoning. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-defb6a34-a8ba-462b-9db5-157cf6a407ea.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\17-evidence-workbench.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\17-evidence-workbench.webp",
+      "alt": "Two blank writing areas sit beside paper cards and a viewing frame.",
+      "altSource": "vision"
+    },
+    {
+      "id": "18-dialogue",
+      "title": "Dialogue",
+      "prompt": "Create ONE finished square editorial artwork for a media-literacy learning pack. Subject: Two differently shaped EMPTY speech ribbons overlap above one shared blank paper workspace. Neither ribbon dominates; equal visual weight, no figures or faces, no disagreement or correctness symbols. Interesting balanced overlap. Style: sophisticated tactile printmaking, linocut and risograph ink layers, hand-torn geometric paper forms, offset ink edges, restrained paper grain; warm ivory ground, deep cobalt, aubergine and vermilion accents. Flat abstract editorial art for a museum learning guide, age-appropriate for grades 7–8, mature and visually engaging. Interesting asymmetric composition and strong negative space. No characters, faces, cartoons, comic style, photorealism, realistic lighting, 3D render. No words, letters, digits, logos, watermarks, charts, checkmarks or statistics. All major forms fully in frame; clear when reduced to400px. ONE finished square image: one single composition, not contact sheet, sprite atlas, grid or multiple variants.",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a19702-baf3-7f71-a970-33408cd7b716\\exec-c008436c-2590-4639-b81a-ed27897f5ced.png",
+      "originalFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\18-dialogue.png",
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allopacks\\media\\source_media_literacy_grade7_8\\18-dialogue.webp",
+      "alt": "Two overlapping empty speech shapes sit above blank layered paper.",
+      "altSource": "vision"
+    }
+  ]
+}

@@ -111,6 +111,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       '.pp-letter-pair span { display: block; font: 700 72px/1.3 Georgia,serif; }',
       '.pp-proof-review:focus { outline: 3px solid #f5d77e; outline-offset: 3px; }',
       '@media (max-width: 640px) { .pp-review-layout { grid-template-columns: minmax(0,1fr); gap: 14px; } .pp-proof-review { padding: 14px; } }',
+      '.pp-bar-pull { margin: 0 0 12px; padding: 10px 12px; text-align: left; background: #241b12; border: 1px dashed #c69b51; border-radius: 10px; }',
+      '.pp-bar-pull label { display: block; font-size: 14px; font-weight: 700; color: #f5ecd9; }',
+      '.pp-bar-pull input[type=range] { display: block; width: 100%; height: 44px; margin: 4px 0; accent-color: #e8bd70; }',
+      '.pp-bar-pull p { margin: 0; font-size: 13px; line-height: 1.5; color: #d4c4a0; }',
+      '.pp-bar-pull strong { color: #f5d77e; }',
       '.pp-proof-gallery { max-height: 430px; overflow-y: auto; scrollbar-gutter: stable; padding: 3px !important; }',
       '@media (max-width: 780px) { .pp-workbench { grid-template-columns: minmax(0, 1fr); } .pp-guide { padding: 14px; } .pp-workshop { padding: 14px !important; } .pp-workshop h2 { font-size: 24px !important; } }',
       '@media print { .pp-workbench { display: block; } .pp-proof-gallery { max-height: none; overflow: visible; } }',
@@ -456,6 +461,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         return Object.assign(btn({ background: T.accent, color: T.ink, border: '1px solid ' + T.accent }), extra || {});
       }
 
+      // Gemini Canvas ignores window.print(), so the page is copied into a
+      // light-themed print window (as the broadside does); the in-page print
+      // is only the pop-up-blocked fallback.
+      function printModulePage() {
+        var root = _appRef.current;
+        var title = __alloT('stem.printingpress.print_window_title', 'PrintingPress handout');
+        try {
+          if (!root) throw new Error('no root');
+          var copy = root.cloneNode(true);
+          Array.prototype.forEach.call(copy.querySelectorAll('.printingpress-no-print, [role="alertdialog"]'), function(el) { el.remove(); });
+          Array.prototype.forEach.call(copy.querySelectorAll('details'), function(el) { el.setAttribute('open', ''); });
+          copy.removeAttribute('tabindex');
+          var heading = root.querySelector('h2');
+          if (heading && heading.textContent.trim()) title = heading.textContent.trim();
+          var popup = window.open('', '_blank');
+          if (!popup) throw new Error('popup');
+          popup.opener = null;
+          var titleEl = document.createElement('title');
+          titleEl.textContent = title;
+          popup.document.write('<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^a-z0-9-]/gi, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8">' + titleEl.outerHTML +
+            '<style>html{color-scheme:light}body{margin:16px;font:14px/1.5 Georgia,serif}' +
+            'body *:not(svg):not(svg *){background:transparent!important;color:#1a1410!important;box-shadow:none!important;text-shadow:none!important;border-color:#8a7a5a!important}' +
+            'a{color:#7c2d12!important}button,input,textarea,select{display:none!important}*{animation:none!important;transition:none!important}' +
+            '@page{margin:12mm}@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>' + copy.outerHTML + '</body></html>');
+          popup.document.close();
+          popup.focus();
+          popup.print();
+          announce(__alloT('stem.printingpress.sr_print_window_opened', 'Print view opened in a new window.'));
+        } catch (e) {
+          try { window.print(); } catch (_) {}
+        }
+      }
+
       function backBar(title) {
         // Period-flourish row: back button | fleuron | title | fleuron | print
         // button. Below it, a thin double gold rule (the same border treatment
@@ -476,7 +514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('button', {
               className: 'printingpress-no-print',
               'aria-label': __alloT('stem.printingpress.print_this_module_as_a_classroom_hando', 'Print this module as a classroom handout'),
-              onClick: function() { try { window.print(); } catch (_) {} },
+              onClick: printModulePage,
               style: btn({ padding: '6px 12px', fontSize: 12 })
             }, __alloT('stem.printingpress.print', '🖨️ Print'))
           ),
@@ -598,26 +636,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var localStateRaw = useState(null);
         var localState = localStateRaw[0], setLocalState = localStateRaw[1];
         var revealed = !!localState;
-        return h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 14, marginBottom: 10 } },
-          h('div', { style: { fontSize: 12, color: T.dim, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎭 Scenario ' + (idx + 1)),
-          h('p', { style: { margin: '0 0 12px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, scenario.prompt),
+        // The choice buttons unmount on reveal, so focus is carried to the
+        // result (and back to the prompt on retry) instead of dropping to <body>.
+        var resultRef = useRef(null), promptRef = useRef(null), focusRef = useRef(null);
+        useEffect(function() {
+          var target = focusRef.current === 'result' ? resultRef.current : focusRef.current === 'prompt' ? promptRef.current : null;
+          focusRef.current = null;
+          if (target && typeof target.focus === 'function') target.focus();
+        }, [localState]);
+        var gotIt = revealed && localState.choice === scenario.correct;
+        return h('div', { role: 'group', 'aria-label': __alloFill(__alloT('stem.printingpress.scenario_n', 'Scenario {n}'), { n: idx + 1 }), style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 14, marginBottom: 10 } },
+          h('div', { 'aria-hidden': 'true', style: { fontSize: 12, color: T.dim, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎭 ' + __alloFill(__alloT('stem.printingpress.scenario_n', 'Scenario {n}'), { n: idx + 1 })),
+          h('p', { ref: promptRef, tabIndex: -1, style: { margin: '0 0 12px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, scenario.prompt),
           !revealed && h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
             scenario.choices.map(function(c, ci) {
               return h('button', { key: ci,
-                onClick: function() { setLocalState({ choice: ci }); announce('Choice selected. ' + (ci === scenario.correct ? 'Correct.' : 'See explanation.')); },
+                onClick: function() { focusRef.current = 'result'; setLocalState({ choice: ci }); announce(ci === scenario.correct ? __alloT('stem.printingpress.sr_correct', 'Correct.') : __alloT('stem.printingpress.sr_see_explanation', 'Not quite. See the explanation.')); },
                 style: btn({ padding: '8px 12px', fontSize: 12 }) }, c);
             })
           ),
           revealed && h('div', null,
-            h('div', { style: { fontSize: 12, color: localState.choice === scenario.correct ? T.ok : T.warn, marginBottom: 8 } },
-              localState.choice === scenario.correct ? '✓ Correct.' : '✗ Reconsider — see why below.'),
+            h('div', { ref: resultRef, tabIndex: -1, style: { fontSize: 13, fontWeight: 700, color: gotIt ? T.okText : '#fed7aa', marginBottom: 8 } },
+              gotIt ? __alloT('stem.printingpress.scenario_correct', '✓ Correct.') : __alloT('stem.printingpress.scenario_reconsider', '✗ Reconsider — see why below.')),
+            !gotIt && h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', null, __alloT('stem.printingpress.your_answer', 'Your answer: ')),
+              scenario.choices[localState.choice]),
             h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
               h('strong', null, __alloT('stem.printingpress.right_answer', 'Right answer: ')),
               scenario.choices[scenario.correct]),
-            h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } }, scenario.explain),
+            h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 13, lineHeight: 1.55 } }, scenario.explain),
             h('button', {
-              onClick: function() { setLocalState(null); },
-              style: btn({ padding: '6px 10px', fontSize: 11, marginTop: 6 }) }, __alloT('stem.printingpress.try_again', 'Try again'))
+              onClick: function() { focusRef.current = 'prompt'; setLocalState(null); },
+              style: btn({ padding: '6px 10px', fontSize: 12, marginTop: 6 }) }, __alloT('stem.printingpress.try_again', 'Try again'))
           )
         );
       }
@@ -633,10 +683,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // condition lives inside the effect body.
         var qIdxRaw = useState(0);
         var qIdx = qIdxRaw[0], setQIdx = qIdxRaw[1];
+        // results[i] = FIRST-attempt correctness (the score); results[i + '_pick']
+        // = the choice on screen. A retry clears only the pick, so guessing
+        // until right cannot turn a miss into mastery.
         var resultsRaw = useState({});
         var results = resultsRaw[0], setResults = resultsRaw[1];
         var done = qIdx >= questions.length;
-        var correctCount = done ? Object.keys(results).filter(function(k) { return results[k] === true; }).length : 0;
+        var correctCount = done ? questions.filter(function(_, i) { return results[i] === true; }).length : 0;
+        // Answered options disable (dropping focus) and Next swaps the
+        // question, so focus is moved deliberately after each step.
+        var quizFocusRef = useRef(null), quizFeedbackRef = useRef(null), quizStemRef = useRef(null), quizScoreRef = useRef(null);
+        useEffect(function() {
+          var where = quizFocusRef.current;
+          quizFocusRef.current = null;
+          var target = where === 'feedback' ? quizFeedbackRef.current : where === 'stem' ? quizStemRef.current : where === 'score' ? quizScoreRef.current : null;
+          if (target && typeof target.focus === 'function') target.focus();
+        }, [qIdx, results]);
         var donePct = done ? Math.round((correctCount / questions.length) * 100) : 0;
         useEffect(function() {
           if (done && donePct >= 80) {
@@ -648,52 +710,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           var correct = correctCount;
           var pct = donePct;
           return h('div', { style: { background: T.card, border: '1px solid ' + (pct >= 80 ? T.ok : T.warn), borderRadius: 12, padding: 14, marginTop: 12 } },
-            h('div', { style: { fontSize: 14, fontWeight: 700, color: pct >= 80 ? T.ok : T.warn, marginBottom: 6 } },
-              pct >= 80 ? '🏅 Mastery' : '📖 Review recommended'),
+            h('div', { ref: quizScoreRef, tabIndex: -1, style: { fontSize: 14, fontWeight: 700, color: pct >= 80 ? T.okText : T.warn, marginBottom: 6 } },
+              pct >= 80 ? __alloT('stem.printingpress.quiz_mastery', '🏅 Mastery') : __alloT('stem.printingpress.quiz_review_recommended', '📖 Review recommended')),
             h('p', { style: { margin: 0, color: T.text, fontSize: 13 } },
-              'Score: ', h('strong', null, correct + ' / ' + questions.length + ' (' + pct + '%)')),
-            h('button', { onClick: function() { setQIdx(0); setResults({}); }, style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.printingpress.retry', 'Retry'))
+              __alloT('stem.printingpress.quiz_score_label', 'Score: '), h('strong', null, correct + ' / ' + questions.length + ' (' + pct + '%)')),
+            h('p', { style: { margin: '6px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.printingpress.quiz_first_try_note', 'Your score counts first tries. Retries are for practice.')),
+            h('button', { onClick: function() { quizFocusRef.current = 'stem'; setQIdx(0); setResults({}); }, style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.printingpress.retry', 'Retry'))
           );
         }
         var q = questions[qIdx];
-        var answered = results[qIdx] !== undefined;
-        return h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 14, marginTop: 12 } },
-          h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 6 } }, 'Mini-quiz · ' + (qIdx + 1) + ' / ' + questions.length),
-          h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 14, fontWeight: 600 } }, q.q),
+        var pick = results[qIdx + '_pick'];
+        var answered = pick !== undefined;
+        var firstTryWrong = results[qIdx] === false;
+        return h('div', { role: 'group', 'aria-label': __alloT('stem.printingpress.mini_quiz', 'Mini-quiz'), style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 14, marginTop: 12 } },
+          h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6 } }, __alloFill(__alloT('stem.printingpress.mini_quiz_progress', 'Mini-quiz · {n} / {total}'), { n: qIdx + 1, total: questions.length })),
+          h('p', { ref: quizStemRef, tabIndex: -1, style: { margin: '0 0 10px', color: T.text, fontSize: 14, fontWeight: 600 } }, q.q),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             q.opts.map(function(opt, oi) {
               var isCorrect = oi === q.ans;
-              var picked = answered && results[qIdx + '_pick'] === oi;
+              var picked = answered && pick === oi;
               var style = btn({ padding: '8px 12px', fontSize: 13 });
+              // Colour is backed by a text marker (WCAG 1.4.1): ✓ the key, ✗ a wrong pick.
+              var marker = null;
               if (answered) {
-                if (isCorrect) style = Object.assign({}, style, { background: '#1f3d28', borderColor: T.ok, color: '#bbf7d0' });
-                else if (picked) style = Object.assign({}, style, { background: '#3d1f1f', borderColor: T.danger, color: '#fecaca' });
+                if (isCorrect) { style = Object.assign({}, style, { background: '#1f3d28', borderColor: T.ok, color: '#bbf7d0' }); marker = __alloT('stem.printingpress.option_marker_correct', '✓ Correct answer: '); }
+                else if (picked) { style = Object.assign({}, style, { background: '#3d1f1f', borderColor: T.danger, color: '#fecaca' }); marker = __alloT('stem.printingpress.option_marker_your_pick', '✗ Your answer: '); }
               }
               return h('button', { key: oi, disabled: answered,
                 onClick: function() {
                   var newResults = Object.assign({}, results);
-                  newResults[qIdx] = (oi === q.ans);
+                  if (newResults[qIdx] === undefined) newResults[qIdx] = (oi === q.ans);
                   newResults[qIdx + '_pick'] = oi;
+                  quizFocusRef.current = 'feedback';
                   setResults(newResults);
-                  announce(oi === q.ans ? 'Correct.' : 'Incorrect.');
-                }, style: style }, opt);
+                  announce(oi === q.ans ? __alloT('stem.printingpress.sr_correct', 'Correct.') : __alloT('stem.printingpress.sr_incorrect', 'Incorrect.'));
+                }, style: style }, marker && h('strong', null, marker), opt);
             })
           ),
-          answered && h('div', { style: { marginTop: 10, padding: 10, background: T.cardAlt, borderRadius: 8, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.text } }, 'Why: '), q.explain),
+          answered && h('div', { ref: quizFeedbackRef, tabIndex: -1, style: { marginTop: 10, padding: 10, background: T.cardAlt, borderRadius: 8, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+            h('strong', { style: { color: pick === q.ans ? T.okText : '#fecaca', display: 'block', marginBottom: 4 } },
+              pick === q.ans ? (firstTryWrong ? __alloT('stem.printingpress.quiz_correct_on_retry', '✓ Correct on retry. Your first try still counts toward the score.') : __alloT('stem.printingpress.scenario_correct', '✓ Correct.')) : __alloT('stem.printingpress.quiz_not_quite', '✗ Not quite.')),
+            h('strong', { style: { color: T.text } }, __alloT('stem.printingpress.quiz_why', 'Why: ')), q.explain),
           answered && h('div', { style: { marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' } },
-            results[qIdx] === false && h('button', {
+            pick !== q.ans && h('button', {
               onClick: function() {
                 var nr = Object.assign({}, results);
-                delete nr[qIdx]; delete nr[qIdx + '_pick'];
+                delete nr[qIdx + '_pick'];
+                quizFocusRef.current = 'stem';
                 setResults(nr);
                 announce(__alloT('stem.printingpress.sr_question_reset_try_again', 'Question reset. Try again.'));
               },
               style: btn({ padding: '8px 14px', fontSize: 13 }) }, __alloT('stem.printingpress.try_again_2', '↺ Try again')),
             h('button', {
-              onClick: function() { setQIdx(qIdx + 1); },
+              onClick: function() { quizFocusRef.current = qIdx + 1 < questions.length ? 'stem' : 'score'; setQIdx(qIdx + 1); },
               style: btnPrimary({ padding: '8px 14px', fontSize: 13 }) },
-              qIdx + 1 < questions.length ? 'Next →' : 'See score')
+              qIdx + 1 < questions.length ? __alloT('stem.printingpress.quiz_next', 'Next →') : __alloT('stem.printingpress.quiz_see_score', 'See score'))
           )
         );
       }
@@ -1011,21 +1082,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       function TeacherNotes(props) {
         return h('details', { className: 'printingpress-teacher-notes',
           style: { background: '#3b2a08', border: '2px solid ' + T.warn, borderRadius: 12, padding: 14, marginTop: 14 } },
+          // A control inside <summary> is a nested interactive (WCAG 4.1.2), so Print lives in the body.
           h('summary', {
-            style: { cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fed7aa', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-            'aria-label': __alloT('stem.printingpress.teacher_notes_for_this_module', 'Teacher Notes for this module')
+            style: { cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fed7aa', minHeight: 32, display: 'flex', alignItems: 'center', gap: 10 }
           },
-            h('span', null, __alloT('stem.printingpress.teacher_notes_click_to_expand', '🍎 Teacher Notes — click to expand')),
-            h('span', {
-              className: 'printingpress-no-print',
-              role: 'button', tabIndex: 0,
-              'aria-label': __alloT('stem.printingpress.print_this_module_page', 'Print this module page'),
-              onClick: function(e) { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} },
-              onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} } },
-              style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: '#fef3c7', color: '#7c2d12', border: '1px solid ' + T.warn }
-            }, __alloT('stem.printingpress.print_2', '🖨️ Print'))
+            h('span', null, __alloT('stem.printingpress.teacher_notes_click_to_expand', '🍎 Teacher Notes — click to expand'))
           ),
           h('div', { style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 } },
+            h('button', {
+              className: 'printingpress-no-print',
+              'aria-label': __alloT('stem.printingpress.print_this_module_page', 'Print this module page'),
+              onClick: printModulePage,
+              style: { alignSelf: 'flex-start', minHeight: 32, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 6, background: '#fef3c7', color: '#7c2d12', border: '1px solid ' + T.warn, cursor: 'pointer' }
+            }, __alloT('stem.printingpress.print_2', '🖨️ Print')),
             props.standards && h('div', null,
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, __alloT('stem.printingpress.aligned_standards', 'Aligned standards')),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -1849,6 +1918,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         }
         var stateRaw = useState('clean');
         var pressState = stateRaw[0], setPressState = stateRaw[1];
+        // Hand pull of the bar (0-100% of a quarter turn) while paper is laid;
+        // reaching 100% completes the impression, same as the action button.
+        var pullRaw = useState(0);
+        var pull = pullRaw[0], setPull = pullRaw[1];
         var run = ppNormalizePressRun(d.pressRun === undefined ? savedState.pressRun : d.pressRun);
         var count = run.count;
         var runRef = useRef(run);
@@ -1948,6 +2021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             setPressState('inking');
             announce(__alloT('stem.printingpress.sr_step_2_inking_the_type_with_the_leather_ink_balls', 'Step 1: Inking the type with the leather ink balls.'));
           } else if (pressState === 'inked') {
+            setPull(0);
             setPressState('papered');
             announce(__alloT('stem.printingpress.sr_step_4_paper_laid_on_the_tympan_now_pull_the_bar', 'Step 2 complete: Paper laid on the tympan. Now pull the bar.'));
           } else if (pressState === 'papered') {
@@ -2014,22 +2088,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         }
 
         var actionLabel = {
-          clean:    '① Ink the type',
-          inking:   'Inking…',
-          inked:    '② Lay paper',
-          papered:  '③ Pull the bar',
-          pressed:  '④ Lift and reveal',
-          revealed: '⑤ Print another'
+          clean:    __alloT('stem.printingpress.action_ink', '① Ink the type'),
+          inking:   __alloT('stem.printingpress.action_inking', 'Inking…'),
+          inked:    __alloT('stem.printingpress.action_lay_paper', '② Lay paper'),
+          papered:  __alloT('stem.printingpress.action_pull_bar', '③ Pull the bar'),
+          pressed:  __alloT('stem.printingpress.action_reveal', '④ Lift and reveal'),
+          revealed: __alloT('stem.printingpress.action_print_another', '⑤ Print another')
+        }[pressState];
+        var stageLabel = {
+          clean: __alloT('stem.printingpress.stage_clean', '1 · Type ready'),
+          inking: __alloT('stem.printingpress.stage_inking', '1 · Inking'),
+          inked: __alloT('stem.printingpress.stage_inked', '2 · Lay paper'),
+          papered: __alloT('stem.printingpress.stage_papered', '3 · Pull the bar'),
+          pressed: __alloT('stem.printingpress.stage_pressed', '4 · Reveal the proof'),
+          revealed: __alloT('stem.printingpress.stage_revealed', 'Impression complete')
         }[pressState];
 
         var actionDisabled = pressState === 'inking';
 
         // The SVG press, side view.
         var W = 480, H = 360;
-        // Derived geometry based on state
-        var screwY = (pressState === 'pressed' || pressState === 'revealed') ? 145 : 60;
-        var screwRot = (pressState === 'pressed' || pressState === 'revealed') ? -75 : 0;  // bar swung down
-        var platenY = (pressState === 'pressed' || pressState === 'revealed') ? 195 : 110;
+        // Derived geometry: 0 = bar at rest, 1 = bar swung down and platen on the forme.
+        var barTravel = pressState === 'papered' ? pull / 100 : (pressState === 'pressed' || pressState === 'revealed') ? 1 : 0;
+        var platenContact = barTravel >= 0.9;
+        var pullDegrees = Math.round(barTravel * 90);
+        var pullPlatenMm = (pitchMm * pullDegrees / 360).toFixed(1);
+        var screwY = 60 + 85 * barTravel;
+        var screwRot = -75 * barTravel;  // bar swung down
+        var platenY = 110 + 85 * barTravel;
         var platenH = 30;
         var typeFilled = (pressState === 'inked' || pressState === 'papered' || pressState === 'pressed' || pressState === 'revealed');
         var paperShown = (pressState === 'papered' || pressState === 'pressed' || pressState === 'revealed');
@@ -2109,6 +2195,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   className: 'pp-primary-action',
                   style: btnPrimary({ marginBottom: 12, padding: '14px 16px', fontSize: 16, opacity: actionDisabled ? 0.65 : 1, width: '100%', minWidth: 0 })
                 }, actionLabel),
+              // Hands-on alternative to the button: drag or arrow-key the bar
+              // through its quarter turn and watch screw, platen and contact.
+              pressState === 'papered' && !tourActive && h('div', { className: 'pp-bar-pull printingpress-no-print' },
+                h('label', { htmlFor: 'pp-bar-pull' }, __alloT('stem.printingpress.pull_by_hand', 'Or pull the bar by hand')),
+                h('input', { id: 'pp-bar-pull', type: 'range', min: 0, max: 100, step: 5, value: pull,
+                  'aria-describedby': 'pp-bar-pull-readout',
+                  'aria-valuetext': __alloFill(__alloT('stem.printingpress.pull_valuetext', '{deg} degrees of a quarter turn'), { deg: pullDegrees }),
+                  onChange: function(e) {
+                    var v = Number(e.target.value);
+                    if (v >= 100) { setPull(0); nextAction(); return; }
+                    if (v >= 90 && pull < 90) announce(__alloT('stem.printingpress.sr_platen_contact', 'The platen touches the paper. Keep pulling to make the impression.'));
+                    setPull(v);
+                  } }),
+                h('p', { id: 'pp-bar-pull-readout' },
+                  __alloFill(__alloT('stem.printingpress.pull_readout', 'Bar turned {deg}°. The platen has moved down {mm} mm (pitch {pitch} mm per full turn).'), { deg: pullDegrees, mm: pullPlatenMm, pitch: pitchMm }),
+                  ' ',
+                  h('strong', null, platenContact
+                    ? __alloFill(__alloT('stem.printingpress.pull_contact', 'Contact: up to {force} N on the type (ideal, from a 10 N push).'), { force: Math.round(screwModel.forceN).toLocaleString() })
+                    : __alloT('stem.printingpress.pull_no_contact', 'No contact yet.')))
+              ),
               // Transient onomatopoeia overlay. Re-mounted via key whenever
               // pressState changes so the CSS keyframe replays. Pure
               // atmosphere; aria-hidden so screen readers don't get spam.
@@ -2147,7 +2253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('svg', {
                 width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 680, maxHeight: 390, display: 'block', margin: '0 auto', background: '#1f1610', borderRadius: 8 },
                 role: 'img',
-                'aria-label': __alloFill(__alloT('stem.printingpress.a11y_side_view_of_a_gutenberg_style_screw_press_in_s', 'Side view of a Gutenberg-style screw press in state: {value1}'), { value1: pressState })},
+                'aria-label': __alloFill(__alloT('stem.printingpress.a11y_side_view_of_a_gutenberg_style_screw_press_in_s', 'Side view of a Gutenberg-style screw press in state: {value1}'), { value1: guide.title })},
                 // ── SVG defs: wood grain pattern + paper aging filter ──
                 // The wood pattern is a vertical-grain texture using
                 // semi-transparent darker streaks. Reused on all wooden
@@ -2342,8 +2448,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 // Ball caps use a polished-wood radial gradient so they
                 // read as turned wooden knobs (lit from upper-left) rather
                 // than flat black circles.
-                h('g', { transform: 'translate(240, ' + screwY + ') rotate(' + screwRot + ')',
-                  style: { transition: 'transform 0.7s cubic-bezier(0.65, 0, 0.35, 1)', transformOrigin: '240px ' + screwY + 'px' } },
+                // Origin 0 0: the translate already puts the pivot on the nut. The
+                // old '240px Ypx' origin stacked on it and threw the rotated bar
+                // below the bed (or off the scene once fully pulled).
+                h('g', { className: 'pp-press-bar', transform: 'translate(240, ' + screwY + ') rotate(' + screwRot + ')',
+                  style: { transition: 'transform 0.7s cubic-bezier(0.65, 0, 0.35, 1)', transformOrigin: '0px 0px' } },
                   h('rect', { x: -80, y: -6, width: 160, height: 12, rx: 6, fill: T.wood, stroke: '#3d2914', strokeWidth: 1.5 }),
                   h('circle', { cx: -75, cy: 0, r: 9, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 0.8 }),
                   h('circle', { cx: 75, cy: 0, r: 9, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 0.8 })
@@ -2542,9 +2651,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     { name: __alloT('stem.printingpress.frame', 'Frame'), tx: 28, ty: 100, lx: 28, ly: 80, lx2: 28, ly2: 100 },
                     { name: __alloT('stem.printingpress.screw', 'Screw'), tx: 160, ty: 80, lx: 220, ly: 80, lx2: 162, ly2: 80 },
                     { name: __alloT('stem.printingpress.bar_lever', 'Bar (lever)'), tx: 320, ty: screwY, lx: 320, ly: screwY, lx2: 320, ly2: screwY },
-                    { name: 'Nut', tx: 295, ty: screwY + 28, lx: 265, ly: screwY + 18, lx2: 295, ly2: screwY + 26 },
+                    { name: __alloT('stem.printingpress.part_nut', 'Nut'), tx: 295, ty: screwY + 28, lx: 265, ly: screwY + 18, lx2: 295, ly2: screwY + 26 },
                     { name: __alloT('stem.printingpress.platen', 'Platen'), tx: 88, ty: platenY + 20, lx: 130, ly: platenY + 10, lx2: 88, ly2: platenY + 18 },
-                    { name: 'Bed', tx: 88, ty: 262, lx: 110, ly: 262, lx2: 88, ly2: 262 },
+                    { name: __alloT('stem.printingpress.part_bed', 'Bed'), tx: 88, ty: 262, lx: 110, ly: 262, lx2: 88, ly2: 262 },
                     { name: __alloT('stem.printingpress.type_forme', 'Type forme'), tx: 240, ty: 233, lx: 240, ly: 252, lx2: 240, ly2: 235 },
                     { name: __alloT('stem.printingpress.ink_balls', 'Ink balls'), tx: 35, ty: 235, lx: 78, ly: 240, lx2: 50, ly2: 235 }
                   ].map(function(L, li) {
@@ -2586,7 +2695,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 ),
                 // ── State label ──
                 h('text', { x: W / 2, y: 22, fill: T.accentHi, fontSize: 13, fontWeight: 700, textAnchor: 'middle', fontFamily: 'Georgia, serif' },
-                  ({clean: '1 · Type ready', inking: '1 · Inking', inked: '2 · Lay paper', papered: '3 · Pull the bar', pressed: '4 · Reveal the proof', revealed: 'Impression complete'})[pressState])
+                  stageLabel),
+                // Pressure chevrons once the platen bears on the forme.
+                platenContact && pressState !== 'revealed' && h('g', { 'aria-hidden': 'true', className: 'pp-pressure-marks' },
+                  [170, 240, 310].map(function(x) {
+                    return h('path', { key: x, d: 'M ' + (x - 7) + ' ' + (platenY + platenH + 2) + ' L ' + x + ' ' + (platenY + platenH + 9) + ' L ' + (x + 7) + ' ' + (platenY + platenH + 2), fill: 'none', stroke: T.accentHi, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.9 });
+                  })
+                )
               ),
               h('div', { className: 'pp-comparison', role: 'group', 'aria-label': __alloT('stem.printingpress.type_paper_comparison', 'Compare type and paper') },
                 h('div', { style: { background: '#383b3b', border: '1px solid #888a80' } },
@@ -2633,14 +2748,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 }, __alloT('stem.printingpress.stop_tour', '⏸ Stop tour')),
                 // Parts-labels toggle: on/off, persists across state changes
                 h('button', {
-                  onClick: function() { setShowLabels(!showLabels); announce(showLabels ? 'Part labels hidden.' : 'Part labels shown.'); },
+                  onClick: function() { setShowLabels(!showLabels); announce(showLabels ? __alloT('stem.printingpress.sr_part_labels_hidden', 'Part labels hidden.') : __alloT('stem.printingpress.sr_part_labels_shown', 'Part labels shown.')); },
                   'aria-pressed': showLabels,
                   style: btn({ padding: '12px 16px', fontSize: 13,
                     background: showLabels ? T.accent : T.card,
                     color: showLabels ? T.ink : T.text,
                     border: '1px solid ' + T.accent,
                     fontWeight: showLabels ? 700 : 600 })
-                }, showLabels ? '🔖 Labels: On' : '🔖 Show parts'),
+                }, __alloT('stem.printingpress.show_parts', '🔖 Show parts')),
                 count > 0 && !tourActive && h('button', {
                   'aria-haspopup': 'dialog',
                   onClick: function() { requestConfirmation({
@@ -2667,7 +2782,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 h('p', { style: { margin: '6px 0 10px', color: T.text } }, __alloT('stem.printingpress.reversal_explanation', 'The proof reads normally. Face-to-face contact reverses the mirrored type as ink transfers to paper. Turning the screw lowers the platen to press the surfaces together.')),
                 h('button', { onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } }, style: btn({ width: '100%', background: T.cardAlt }) }, __alloT('stem.printingpress.explain_in_notebook', 'Explain in my notebook'))
               ),
-              h('div', { id: 'pp-impression-count', style: { borderTop: '1px solid ' + T.border, marginTop: 16, paddingTop: 12, fontSize: 13, color: T.muted } }, 'Impressions: ', h('strong', { style: { color: T.text } }, count))
+              h('div', { id: 'pp-impression-count', style: { borderTop: '1px solid ' + T.border, marginTop: 16, paddingTop: 12, fontSize: 13, color: T.muted } }, __alloT('stem.printingpress.impressions_label', 'Impressions: '), h('strong', { style: { color: T.text } }, count))
             )
           ),
 
@@ -3024,6 +3139,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             setChallengesDone(next);
           }
         }, [solved, CHALLENGE && CHALLENGE.id]);
+        // A space sort displayed as ' ' gave its button and slot a blank name.
+        function spokenChar(c) { return c === ' ' ? __alloT('stem.printingpress.sort_space', 'space') : displayChar(c); }
         // Display helper: render the ligature placeholder as "fi"
         function displayChar(c) { return c === '' ? 'fi' : c; }
         // Decode-mirror-text exercise state. Students see a mirror-reversed
@@ -3213,8 +3330,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 __alloT('stem.printingpress.try_it_read_the_type', '🪞 Try it: read the type')),
               h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 __alloT('stem.printingpress.below_is_a_word_of_type_mirror_reverse', 'Below is a word of type, mirror-reversed (as it would sit in the composing stick). What would it print as on the paper? Type the readable version.')),
-              h('div', { style: { background: T.ink, padding: '14px 18px', border: '2px solid ' + T.wood, borderRadius: 6, textAlign: 'center', marginBottom: 12 } },
-                h('div', { style: {
+              // The mirrored glyphs are visual only: exposing the DOM text would
+              // read the answer aloud. A screen reader gets the equivalent puzzle,
+              // the letters in the order the mirrored word shows them.
+              h('div', { role: 'img', 'aria-label': __alloFill(__alloT('stem.printingpress.mirror_word_alt', 'Mirror-reversed type. Read left to right, its letters appear in this order: {letters}.'), { letters: Array.from(word).reverse().join(', ') }),
+                style: { background: T.ink, padding: '14px 18px', border: '2px solid ' + T.wood, borderRadius: 6, textAlign: 'center', marginBottom: 12 } },
+                h('div', { 'aria-hidden': 'true', style: {
                   display: 'inline-block',
                   fontSize: 32, fontWeight: 700, fontFamily: 'Georgia, serif',
                   color: T.parchment, letterSpacing: '0.12em',
@@ -3233,7 +3354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   onClick: function() {
                     var correct = decodeAnswer.trim().toUpperCase() === word;
                     setDecodeFeedback({ correct: correct, attempted: decodeAnswer.trim().toUpperCase() });
-                    announce(correct ? 'Correct! That is what the type would print.' : 'Not quite. The correct word is ' + word + '.');
+                    announce(correct ? __alloT('stem.printingpress.sr_decode_correct', 'Correct! That is what the type would print.') : __alloFill(__alloT('stem.printingpress.sr_decode_wrong', 'Not quite. The correct word is {word}.'), { word: word }));
                   },
                   disabled: !decodeAnswer.trim(),
                   style: btnPrimary({ padding: '10px 16px', fontSize: 13, opacity: decodeAnswer.trim() ? 1 : 0.5 })
@@ -3275,8 +3396,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   background: decodeFeedback.correct ? '#1f3d28' : '#3d2810',
                   border: '1px solid ' + (decodeFeedback.correct ? T.ok : T.warn),
                   color: decodeFeedback.correct ? '#bbf7d0' : '#fed7aa' } },
-                decodeFeedback.correct ? '✓ Correct. That is what the type would print as. You just did, briefly, what a 1450 compositor did all day.' :
-                  '✗ Not quite. You typed "' + decodeFeedback.attempted + '"; the type would print as "' + word + '." Tip: cover the type with a hand, squint, and the brain re-orients fast with practice.')
+                decodeFeedback.correct ? __alloT('stem.printingpress.decode_feedback_correct', '✓ Correct. That is what the type would print as. You just did, briefly, what a 1450 compositor did all day.') :
+                  __alloFill(__alloT('stem.printingpress.decode_feedback_wrong', '✗ Not quite. You typed "{attempt}"; the type would print as "{word}." Tip: cover the type with a hand, squint, and the brain re-orients fast with practice.'), { attempt: decodeFeedback.attempted, word: word }))
             );
           })(),
 
@@ -3609,7 +3730,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               var isLigature = letter === '';
               return h('button', { key: i,
                 onClick: function() { letter ? clearSlot(i) : placeInSlot(i); },
-                'aria-label': 'Slot ' + (i + 1) + (letter ? ': contains ' + displayChar(letter) + ' (click to remove)' : ': empty' + (st.picked !== null ? ' (click to place ' + displayChar(SORTS[st.picked]) + ')' : '')),
+                'aria-label': letter
+                  ? __alloFill(__alloT('stem.printingpress.slot_filled', 'Slot {n}: {letter}. Activate to remove it.'), { n: i + 1, letter: spokenChar(letter) })
+                  : st.picked !== null
+                    ? __alloFill(__alloT('stem.printingpress.slot_empty_place', 'Slot {n}: empty. Activate to place {letter}.'), { n: i + 1, letter: spokenChar(SORTS[st.picked]) })
+                    : __alloFill(__alloT('stem.printingpress.slot_empty', 'Slot {n}: empty'), { n: i + 1 }),
                 style: {
                   width: isLigature ? 56 : 42, height: 56, borderRadius: 4,
                   background: letter ? T.ink : T.bg,
@@ -3619,7 +3744,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }
-              }, displayChar(letter) || (st.picked !== null ? '⇣' : ''));
+              }, letter === ' ' ? '·' : displayChar(letter) || (st.picked !== null ? '⇣' : ''));
             })
           ),
           h('div', { style: { fontSize: 11, color: T.dim, textAlign: 'center', marginBottom: 14, fontStyle: 'italic' } },
@@ -3711,8 +3836,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               // Ligature sorts get a wider block AND a red accent border so
               // students can distinguish them from individual sorts in the case.
               return h('button', { key: i,
-                onClick: function() { setSt({ slots: st.slots, picked: picked ? null : i }); announce(picked ? 'Sort released' : 'Picked up ' + displayChar(letter)); },
-                'aria-label': (picked ? 'Drop ' : 'Pick up ') + displayChar(letter) + (isLigature ? ' (fi ligature — single sort with both letters)' : ' (mirror-reversed type)'),
+                onClick: function() { setSt({ slots: st.slots, picked: picked ? null : i }); announce(picked ? __alloT('stem.printingpress.sr_sort_released', 'Sort released.') : __alloFill(__alloT('stem.printingpress.sr_picked_up_sort', 'Picked up {letter}. Choose a slot in the composing stick.'), { letter: spokenChar(letter) })); },
+                'aria-pressed': picked,
+                'aria-label': isLigature ? __alloT('stem.printingpress.sort_label_ligature', 'fi ligature (one sort with both letters)') : __alloFill(__alloT('stem.printingpress.sort_label', '{letter} (mirror-reversed sort)'), { letter: spokenChar(letter) }),
                 style: {
                   width: isLigature ? 56 : 42, height: 52, borderRadius: 3,
                   background: picked ? T.accentHi : '#5a4630',
@@ -8380,9 +8506,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 // Left: live preview
                 h('div', { style: { background: T.parchment, color: T.ink, border: '3px double ' + T.wood, borderRadius: 8, padding: 14, textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' } },
                   h('div', { style: { fontSize: 10, color: '#7c2d12', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } }, __alloT('stem.printingpress.your_mark', 'Your mark')),
-                  h('svg', { viewBox: '0 0 100 100', width: 130, height: 130, style: { display: 'block', margin: '0 auto' }, 'aria-hidden': 'true' },
+                  h('svg', { viewBox: '0 0 100 100', width: 130, height: 130, style: { display: 'block', margin: '0 auto' }, role: 'img',
+                    'aria-label': __alloFill(__alloT('stem.printingpress.mark_preview_alt', 'Your printer’s mark: {symbol} in {finish}'), { symbol: sym.label, finish: fin.label }) },
                     h('circle', { cx: 50, cy: 50, r: 46, fill: 'none', stroke: fin.color, strokeWidth: 1.5, strokeDasharray: '2 2', opacity: 0.6 }),
-                    sym.svg(fin.color)
+                    // Spread as children: a bare array of unkeyed parts trips React's key check.
+                    h.apply(null, ['g', null].concat(sym.svg(fin.color)))
                   ),
                   h('div', { style: { marginTop: 8, fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#5c4630', fontSize: 12, lineHeight: 1.3 } }, mot.latin),
                   h('div', { style: { fontFamily: 'Georgia, serif', color: '#7c2d12', fontSize: 10, marginTop: 2 } }, '"' + mot.en + '"')
@@ -9376,6 +9504,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             awardBadge('cumulative_pass', 'Master Printer');
           }
         }, [earned]);
+        // Options disable once answered (dropping focus), so focus moves to the
+        // feedback, then to the next question or the result heading.
+        var cqFocusRef = useRef(null), cqFeedbackRef = useRef(null), cqStemRef = useRef(null), cqResultRef = useRef(null);
+        useEffect(function() {
+          var where = cqFocusRef.current;
+          cqFocusRef.current = null;
+          var target = where === 'feedback' ? cqFeedbackRef.current : where === 'stem' ? cqStemRef.current : where === 'result' ? cqResultRef.current : null;
+          if (target && typeof target.focus === 'function') target.focus();
+        }, [st.idx, st.answered, st.lastChoice]);
         if (done) {
           var missedByModule = {};
           CUMULATIVE_QUESTIONS.forEach(function(qi, i) {
@@ -9432,7 +9569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     marginBottom: 6,
                     filter: earned ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none'
                   } }, earned ? '🏅' : '📖'),
-                h('h2', { style: { margin: '0 0 8px', fontSize: earned ? 26 : 22, fontFamily: 'Georgia, serif',
+                h('h2', { ref: cqResultRef, tabIndex: -1, style: { margin: '0 0 8px', fontSize: earned ? 26 : 22, fontFamily: 'Georgia, serif',
                   color: earned ? '#7c2d12' : T.text,
                   fontWeight: earned ? 800 : 700,
                   letterSpacing: earned ? '0.04em' : 'normal' } }, earned ? 'Master Printer' : 'Apprentice — review recommended'),
@@ -9562,52 +9699,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var progressPct = Math.round((st.idx / CUMULATIVE_QUESTIONS.length) * 100);
         return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto', color: T.text } },
           backBar('🎯 Cumulative PrintingPress Quiz'),
-          h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 6 } },
-            __alloT('stem.printingpress.question', 'Question '), h('strong', null, st.idx + 1), ' of ' + CUMULATIVE_QUESTIONS.length,
+          h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6 } },
+            __alloT('stem.printingpress.question', 'Question '), h('strong', null, st.idx + 1), __alloFill(__alloT('stem.printingpress.cq_of_total', ' of {total}'), { total: CUMULATIVE_QUESTIONS.length }),
             __alloT('stem.printingpress.score', ' · score '), h('strong', null, st.score)),
           // Progress bar — fills as the student works through the quiz
-          h('div', { 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_quiz_progress', 'Quiz progress: {value1}%'), { value1: progressPct }),
+          h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progressPct,
+            'aria-label': __alloFill(__alloT('stem.printingpress.a11y_quiz_progress', 'Quiz progress: {value1}%'), { value1: progressPct }),
             style: { width: '100%', height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden', border: '1px solid ' + T.border, marginBottom: 12 } },
             h('div', { style: { width: progressPct + '%', height: '100%', background: T.accent, transition: 'width 0.3s ease' } })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 18 } },
-            h('p', { style: { margin: '0 0 14px', fontSize: 15, fontWeight: 600, lineHeight: 1.5 } }, q.q),
+            h('p', { ref: cqStemRef, tabIndex: -1, style: { margin: '0 0 14px', fontSize: 15, fontWeight: 600, lineHeight: 1.5 } }, q.q),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               q.opts.map(function(opt, oi) {
                 var picked = st.answered && st.lastChoice === oi;
                 var isCorrect = oi === q.ans;
                 var style = btn({ padding: '10px 14px', fontSize: 14 });
+                var marker = null;
                 if (st.answered) {
-                  if (isCorrect) style = Object.assign({}, style, { background: '#1f3d28', borderColor: T.ok, color: '#bbf7d0' });
-                  else if (picked) style = Object.assign({}, style, { background: '#3d1f1f', borderColor: T.danger, color: '#fecaca' });
+                  if (isCorrect) { style = Object.assign({}, style, { background: '#1f3d28', borderColor: T.ok, color: '#bbf7d0' }); marker = __alloT('stem.printingpress.option_marker_correct', '✓ Correct answer: '); }
+                  else if (picked) { style = Object.assign({}, style, { background: '#3d1f1f', borderColor: T.danger, color: '#fecaca' }); marker = __alloT('stem.printingpress.option_marker_your_pick', '✗ Your answer: '); }
                 }
                 return h('button', { key: oi, disabled: st.answered,
                   onClick: function() {
+                    // Only the first try is scored and kept for the review list; a
+                    // retry is practice. (Previously a retry erased the miss.)
+                    var firstTry = picks[st.idx] === undefined;
                     var nextPicks = Object.assign({}, picks);
-                    nextPicks[st.idx] = oi;
+                    if (firstTry) nextPicks[st.idx] = oi;
                     var nxt = Object.assign({}, st, { answered: true, lastChoice: oi, picks: nextPicks });
-                    if (oi === q.ans) nxt.score = st.score + 1;
+                    if (firstTry && oi === q.ans) nxt.score = st.score + 1;
+                    cqFocusRef.current = 'feedback';
                     upd('bigQuizState', nxt);
-                    announce(oi === q.ans ? 'Correct.' : 'Incorrect.');
+                    announce(oi === q.ans ? __alloT('stem.printingpress.sr_correct', 'Correct.') : __alloT('stem.printingpress.sr_incorrect', 'Incorrect.'));
                   },
-                  style: style }, opt);
+                  style: style }, marker && h('strong', null, marker), opt);
               })
             ),
-            st.answered && h('div', { style: { marginTop: 12, padding: 12, background: T.cardAlt, borderRadius: 8, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, 'Why: '), q.explain),
+            st.answered && h('div', { ref: cqFeedbackRef, tabIndex: -1, style: { marginTop: 12, padding: 12, background: T.cardAlt, borderRadius: 8, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: st.lastChoice === q.ans ? T.okText : '#fecaca', display: 'block', marginBottom: 4 } },
+                st.lastChoice === q.ans ? (picks[st.idx] !== q.ans ? __alloT('stem.printingpress.quiz_correct_on_retry', '✓ Correct on retry. Your first try still counts toward the score.') : __alloT('stem.printingpress.scenario_correct', '✓ Correct.')) : __alloT('stem.printingpress.quiz_not_quite', '✗ Not quite.')),
+              h('strong', { style: { color: T.text } }, __alloT('stem.printingpress.quiz_why', 'Why: ')), q.explain),
             st.answered && h('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
               st.lastChoice !== q.ans && h('button', {
                 onClick: function() {
-                  var nextPicks = Object.assign({}, picks); delete nextPicks[st.idx];
-                  upd('bigQuizState', Object.assign({}, st, { answered: false, lastChoice: null, picks: nextPicks }));
+                  cqFocusRef.current = 'stem';
+                  upd('bigQuizState', Object.assign({}, st, { answered: false, lastChoice: null }));
                   announce(__alloT('stem.printingpress.sr_question_reset_try_again', 'Question reset. Try again.'));
                 },
                 style: btn({ padding: '10px 16px', fontSize: 14 }) }, __alloT('stem.printingpress.try_again_4', '↺ Try again')),
               h('button', {
                 onClick: function() {
+                  cqFocusRef.current = st.idx + 1 < CUMULATIVE_QUESTIONS.length ? 'stem' : 'result';
                   upd('bigQuizState', Object.assign({}, st, { idx: st.idx + 1, answered: false, lastChoice: null }));
                 },
                 style: btnPrimary({ padding: '10px 16px', fontSize: 14 }) },
-                st.idx + 1 < CUMULATIVE_QUESTIONS.length ? 'Next →' : 'See results')
+                st.idx + 1 < CUMULATIVE_QUESTIONS.length ? __alloT('stem.printingpress.quiz_next', 'Next →') : __alloT('stem.printingpress.quiz_see_results', 'See results'))
             )
           ),
           disclaimerFooter()
@@ -20410,7 +20556,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           { t: 'Gathering', d: 'A bundled set of folded sheets that form one section of a book; also called a signature.' },
           { t: 'Gilt edges', d: 'Pages\' edges gilded gold. Both decorative + protective (keeps dust out).' },
           { t: 'Glyph', d: 'A specific letterform or shape within a typeface; an "a" + an "a" are different glyphs of the same letter.' },
-          { t: 'Goose-neck', d: 'The curved metal portion of a MIG welding torch — not a printing term, but appears in welding modules.' },
           { t: 'Halftone', d: 'Photographic reproduction method that simulates continuous tone using a pattern of dots of varying size.' },
           { t: 'Hairline', d: 'The thinnest stroke in a letterform; in Didone faces, hairlines are very thin compared to the main strokes.' },
           { t: 'Hatch Show Print', d: 'America\'s longest continuously-operating letterpress shop (Nashville, since 1879). Famous for country music posters.' },
@@ -20447,7 +20592,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           { t: 'Quarto', d: 'A sheet folded twice producing 8 pages.' },
           { t: 'Quoin', d: 'A wedge-shaped device used to lock type tightly in a chase.' },
           { t: 'Recto', d: 'The right-hand page of a book; the front of a leaf.' },
-          { t: 'Reference line', d: 'In AWS weld symbols, the horizontal line that anchors the symbol. (Not a printing term but appears in some modules.)' },
           { t: 'Roman type', d: 'Upright (non-italic) typeface, based on classical Latin inscriptional letters + humanist hand. Standard book typeface since ~1500.' },
           { t: 'Rotunda', d: 'A rounder form of blackletter typeface used in Spain + Italy.' },
           { t: 'Rubrication', d: 'Adding red ink for emphasis (initials, chapter headings) after black-ink printing.' },
@@ -20462,7 +20606,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           { t: 'Stem', d: 'The main vertical stroke of a letter.' },
           { t: 'Stereotype', d: 'A solid plate cast from a mold of a forme of type. Allowed reprinting without re-setting type.' },
           { t: 'Stress', d: 'The angle of thickest-to-thinnest in a curved letterform. Old Style has oblique stress; Modern has vertical.' },
-          { t: 'Tail', d: 'In a weld symbol, the diagonal lines at the right end of the reference line, used for process or procedure references. Not a typography term.' },
           { t: 'Terminal', d: 'The end of a stroke that doesn\'t have a serif (flat, curved, ball, etc.).' },
           { t: 'Textura', d: 'A formal blackletter typeface used by Gutenberg + early German printers.' },
           { t: 'Thumbnails', d: 'Small rough sketches showing page-by-page layout, used in book + illustration planning.' },
@@ -20497,7 +20640,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             })
           ),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 14, marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } }, filtered.length + ' / ' + terms.length + ' terms'),
+            h('div', { role: 'status', style: { fontSize: 12, color: T.muted, marginBottom: 8 } }, __alloFill(__alloT('stem.printingpress.glossary_count', '{shown} / {total} terms'), { shown: filtered.length, total: terms.length })),
+            !filtered.length && h('p', { style: { fontSize: 13, color: T.muted, margin: '0 0 8px' } }, __alloT('stem.printingpress.glossary_no_match', 'No terms match. Try a shorter word.')),
             filtered.map(function(t, i) {
               return h('div', { key: i, style: { background: T.cardAlt, borderLeft: '3px solid ' + T.accent, padding: 10, marginBottom: 6, borderRadius: 4 } },
                 h('div', { style: { fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', fontSize: 14, marginBottom: 4 } }, t.t),

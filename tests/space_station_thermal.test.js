@@ -187,7 +187,7 @@ describe('space station interactive thermal lab', () => {
       view.click('[data-thermal-preset="' + preset + '"]');
       expect(view.time).toBe(0);
       expect(view.host.querySelector('[data-thermal-outcome]').getAttribute('data-thermal-outcome')).toBe('outside');
-      expect(view.host.querySelector('[data-flight-rule="thermal"]').getAttribute('aria-label')).toContain('Attention');
+      expect(view.host.querySelector('[data-flight-rule="thermal"]').getAttribute('aria-label')).toContain('. CHECK.');
       view.click('[data-thermal-event="limit"]');
       expect(view.time).toBeCloseTo(run(options).firstLimitMinute, 8);
       expect(view.read('cabin')).toBe(limit.toFixed(2) + ' °C');
@@ -196,7 +196,7 @@ describe('space station interactive thermal lab', () => {
     }
     view.click('[data-thermal-preset="balanced"]');
     expect(view.read('cabin')).toBe('22.00 °C');
-    expect(view.host.querySelector('[data-flight-rule="thermal"]').getAttribute('aria-label')).toContain('Go');
+    expect(view.host.querySelector('[data-flight-rule="thermal"]').getAttribute('aria-label')).toContain('. GO.');
   });
 
   it('plays continuously through eclipse and preserves playback for focus and comparison changes', () => {
@@ -287,9 +287,11 @@ describe('space station interactive thermal lab', () => {
     const view = mountThermal({ opsRadiator: 30, opsCooling: 40, opsResearch: 95, opsOrbitMinute: 70 });
     const expected = inspect(run(restricted), 70), model = run(restricted);
     expect(view.read('cabin')).toBe(expected.cabin.toFixed(2) + ' °C');
-    const rule = view.host.querySelector('[data-flight-rule="thermal"]').textContent;
-    expect(rule).toContain(model.minCabin.toFixed(1) + '–' + model.maxCabin.toFixed(1));
-    expect(rule).toContain('ORBIT RANGE');
+    const rule = view.host.querySelector('[data-flight-rule="thermal"]');
+    const orbitRange = model.minCabin.toFixed(1) + ' to ' + model.maxCabin.toFixed(1) + ' °C';
+    expect(rule.querySelector('strong').textContent).toBe(orbitRange);
+    expect(rule.getAttribute('aria-label')).toContain(orbitRange);
+    expect(rule.textContent).toContain('ORBIT RANGE');
     view.patch({ opsMode: 'integrated' });
     expect(view.host.querySelector('#iss-orbit-readout').textContent).toContain('Thermal ' + margin(expected.cabin).toFixed(0) + '%');
   });

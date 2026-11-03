@@ -17,7 +17,7 @@
 //   node dev-tools/report_shared_glossary_terms.cjs [--json]
 const fs = require('fs');
 const path = require('path');
-const dir = path.join(path.resolve(__dirname, '..'), 'allopacks');
+const dir = path.join(path.resolve(__dirname, '..'), 'allopacks', 'current');
 const byTerm = new Map();
 const gradeOf = {};
 for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.allopack.json')).sort()) {

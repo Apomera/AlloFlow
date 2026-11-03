@@ -52,6 +52,7 @@ function makeGsSandbox() {
         createFile: (name, content) => { driveFiles.set(name, String(content)); return fileObj(name); },
     };
     const services = {
+        Session: { getActiveUser: () => ({ getEmail: () => "owner@example.test" }), getEffectiveUser: () => ({ getEmail: () => "owner@example.test" }) },
         CacheService: { getScriptCache: () => cache },
         PropertiesService: { getScriptProperties: () => ({
             getProperty: k => (props.has(k) ? props.get(k) : null),
@@ -72,14 +73,16 @@ function makeGsSandbox() {
             base64EncodeWebSafe: bytes => Buffer.from(bytes).toString('base64url'),
         },
     };
-    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle };');
+    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, setupMailboxOwner: setupMailboxOwner };');
     const gs = factory(...Object.values(services));
-    return { call: p => JSON.parse(gs.handle(p).getContent()), cacheStore, props };
+    const call = p => JSON.parse(gs.handle(p).getContent());
+    call.setupOwner = () => { gs.setupMailboxOwner(); return { ok: true, admin: props.get("admin") }; };
+    return { call, cacheStore, props };
 }
 
 function openedSandbox(code = 'AB2CD', secret = 'k_secret_k_secret_20') {
     const sandbox = makeGsSandbox();
-    const admin = sandbox.call({ a: 'claim' }).admin;
+    const admin = sandbox.call.setupOwner().admin;
     expect(sandbox.call({ a: 'open', admin, c: code, k: secret }).ok).toBe(true);
     const teacherCall = payload => sandbox.call({ admin, ...payload });
     const joinParticipant = () => {
@@ -792,8 +795,8 @@ describe('three-copy sync pins (Phase C sections)', () => {
         copies.forEach(source => {
             const fn = sliceBetween(source, 'const createHomeworkAssignmentLink = useCallback', 'const [includeSourceCitations');
             const gate = fn.indexOf('if (_isCanvasEnv || _alloFirebaseIsPlaceholder)');
-            const hosted = fn.indexOf('await hostPackOnMailbox(selectedResourceIds)');
-            const selfContained = fn.indexOf('return createSelfContainedHomeworkLink(selectedResourceIds);');
+            const hosted = fn.indexOf('await hostPackOnMailbox(selectedResourceIds, deliveryOptions)');
+            const selfContained = fn.indexOf('return createSelfContainedHomeworkLink(selectedResourceIds, deliveryOptions);');
             const cloudWrite = fn.indexOf("'HW-' + generateUUID()");
             expect(gate).toBeGreaterThanOrEqual(0);
             expect(hosted).toBeGreaterThan(gate);

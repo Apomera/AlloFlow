@@ -15,7 +15,7 @@ const EXPECTED_IDS = {
     'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel', 'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish', 'regal_angelfish', 'mandarin_dragonet', 'spotted_seahorse', 'ribbon_eel', 'leaf_scorpionfish', 'longnose_hawkfish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'longfin_bannerfish'],
   reptile: ['green_turtle', 'hawksbill_turtle', 'banded_sea_krait'],
   invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp', 'chocolate_chip_sea_star', 'porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'textile_cone', 'white_spotted_hermit_crab', 'bigfin_reef_squid', 'goldmouth_sea_squirt', 'feather_duster_worm'],
-  coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'orange_cup_coral'],
+  coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'orange_cup_coral', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata'],
   structure: ['reef_star', 'reef_ball', 'coral_tree_nursery']
 };
 const ALL = Object.values(EXPECTED_IDS).flat();
@@ -28,7 +28,7 @@ const ANEMONE_BUDGET = [2500, 8300];
 // for the magnified specimen view, while retaining only two draw calls.
 const FEATHER_DUSTER_BUDGET = [3000, 16000];
 // Corals, sponges and frames do not move; everything else must animate.
-const STATIC = ['barrel_sponge', 'brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star', 'reef_ball'];
+const STATIC = ['barrel_sponge', 'brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star', 'reef_ball', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata'];
 
 function load() {
   const local = {};

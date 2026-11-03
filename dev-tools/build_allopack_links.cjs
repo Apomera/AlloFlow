@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { readPack, publicSourceUrl, isoDate, catalogLicense, shortStandardCode } = require('../catalog/allopack_entry');
+const { legacyAliases, validateAliases } = require('../catalog/allopack_aliases');
 const ROOT = path.resolve(__dirname, '..');
 const MIRROR = path.join(ROOT, 'desktop/web-app/public');
 const START = '<!-- ALLOPACK_DIRECTORY_BEGIN -->';
@@ -69,7 +70,7 @@ function renderProvenance(entry) {
   const updated = isoDate(entry.updated_at), created = isoDate(entry.created_at);
   const stamp = updated || created;
   const date = stamp ? `<p class="pack-date">${updated ? 'Pack updated' : 'Pack created'} <time datetime="${stamp}">${new Intl.DateTimeFormat('en-US',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(stamp))}</time></p>` : '';
-  const links = sources.length ? `<div class="pack-sources"><p>Original ${sources.length === 1 ? 'source' : 'sources'}</p><ul>${sources.map(s => `<li><a href="${esc(publicSourceUrl(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.title)}${s.author ? ' — ' + esc(s.author) : ''}<span class="pack-external-note"> (opens in a new tab)</span></a></li>`).join('')}</ul></div>` : '';
+  const links = sources.length ? `<div class="pack-sources"><p>Sources and background</p><ul>${sources.map(s => `<li><a href="${esc(publicSourceUrl(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.title)}${s.author ? ' — ' + esc(s.author) : ''}<span class="pack-external-note"> (opens in a new tab)</span></a>${typeof s.context === 'string' && s.context.trim() ? `<p class="pack-source-context">${esc(s.context.slice(0,500))}</p>` : ''}</li>`).join('')}</ul></div>` : '';
   return links + date;
 }
 
@@ -93,15 +94,31 @@ function renderReviewAndReuse(entry) {
 
 function packEntries(manifest) {
   const entries = manifest.entries.filter(e => e.path.endsWith('.allopack.json'));
+  validateAliases(manifest.entries);
   const aliases = new Set();
   for (const e of entries) {
     if (!/^[a-z0-9][a-z0-9_-]{0,127}$/i.test(e.slug) || !/^[a-z0-9][a-z0-9-]{0,127}$/.test(e.share_slug)) throw new Error('Invalid catalog id or share alias: ' + e.path);
-    if (!/^allopacks\/(?:illustrated\/)?[a-z0-9_-]+\.allopack\.json$/i.test(e.path) || !fs.existsSync(path.join(ROOT, e.path))) throw new Error('Invalid or missing pack path: ' + e.path);
+    if (!/^allopacks\/(?:illustrated\/|current\/)?[a-z0-9_-]+\.allopack\.json$/i.test(e.path) || !fs.existsSync(path.join(ROOT, e.path))) throw new Error('Invalid or missing pack path: ' + e.path);
     if (aliases.has(e.share_slug)) throw new Error('Duplicate share alias: ' + e.share_slug);
     aliases.add(e.share_slug);
+    for (const alias of legacyAliases(e)) {
+      if (!fs.existsSync(path.join(ROOT, alias.path))) throw new Error('Missing legacy pack file: ' + alias.path);
+    }
   }
-  const files = ['', 'illustrated/'].flatMap(folder => fs.readdirSync(path.join(ROOT, 'allopacks', folder)).filter(f => f.endsWith('.allopack.json')).map(f => 'allopacks/' + folder + f));
-  const indexed = new Set(entries.map(e => e.path));
+  const files = ['', 'illustrated/', 'current/'].filter(folder => fs.existsSync(path.join(ROOT, 'allopacks', folder))).flatMap(folder => fs.readdirSync(path.join(ROOT, 'allopacks', folder)).filter(f => f.endsWith('.allopack.json')).map(f => 'allopacks/' + folder + f));
+  const indexed = new Set(entries.flatMap(e => [e.path, ...legacyAliases(e).map(alias => alias.path)]));
+  // Older editions kept on disk but deliberately unlisted (one current pack per topic).
+  // "withheld" packs (e.g. awaiting author review) stay on disk with no entry or share link.
+  const supersededFile = path.join(ROOT, 'catalog/superseded_allopacks.json');
+  const unlisted = fs.existsSync(supersededFile) ? JSON.parse(fs.readFileSync(supersededFile, 'utf8')) : { entries: [] };
+  const withheld = new Set((unlisted.withheld || []).map(w => w.path));
+  for (const p of withheld) if (indexed.has(p)) throw new Error('Withheld pack is listed: ' + p);
+  for (const s of unlisted.entries) {
+    if (!indexed.has(s.superseded_by) && !withheld.has(s.superseded_by)) throw new Error('Superseded pack points to an unlisted pack: ' + s.path);
+    if (indexed.has(s.path)) throw new Error('Superseded pack is still listed: ' + s.path);
+    indexed.add(s.path);
+  }
+  withheld.forEach(p => indexed.add(p));
   const missing = files.filter(file => !indexed.has(file));
   if (missing.length) throw new Error('AlloPacks missing from catalog: ' + missing.join(', ') + '. Validate and add them with node dev-tools/build_allopack_catalog_entries.cjs --apply');
   return entries;
@@ -148,6 +165,8 @@ function renderVersion(entry, single = false) {
 
 function renderDirectory(manifest, previewAssets = new Map()) {
   const entries = packEntries(manifest), groups = groupsFor(entries);
+  const unified = groups.every(group => group.entries.length === 1);
+  const countLabel = entries.length + (unified ? ' packs' : ' pack versions');
   const subjects = [...new Set(groups.map(g => g.subject))].sort();
   const cards = groups.map(g => {
     const hay = [g.title, g.subject, ...g.entries.flatMap(e => [...e.tags, e.audience || '', e.learning_purpose || '', ...(e.resource_types || []).map(r => resourceLabel(r.type)), ...(e.source_links || []).flatMap(s => [s.title,s.author || '']), ...(e.standards || []).flatMap(s => [s.code, shortStandardCode(s.code)])])].join(' ');
@@ -164,8 +183,8 @@ ${g.entries.length > 1 ? `      <details class="pack-other-versions"><summary>Ot
 <section class="section pack-directory" aria-labelledby="pack-directory-title" id="allopacks">
  <div class="section-inner">
   <h2 id="pack-directory-title">Explore the AlloPack library</h2>
-  <p>${groups.length} topics · ${entries.length} pack versions. Open a pack to preview it, then choose <strong>Load in AlloFlow</strong>.</p>
-  <p class="pack-review-note">These AI-authored resources need educator review before teaching. Base and illustrated editions can contain different activities. Sample artwork is an illustration from the pack, not a preview of every resource. Check the content, answer keys, accessibility, and source credits in the version you choose.</p>
+  <p>${groups.length} topics · ${countLabel}. Open a pack to preview it, then choose <strong>Load in AlloFlow</strong>.</p>
+  <p class="pack-review-note">These AI-authored resources need educator review before teaching. ${unified ? 'Each topic has one current illustrated pack.' : 'Base and illustrated editions can contain different activities.'} Sample artwork is an illustration from the pack. Check the content, answer keys, accessibility, and source credits before teaching.</p>
   <details class="pack-gemini-help"><summary>Using these packs in Gemini Canvas</summary><p>Open the <a href="launch.html">current AlloFlow Canvas</a> and find the pack in its Community Catalog, or download the JSON file here and use <strong>Load Project</strong>. Pack links open the browser app; they do not automatically open a particular pack inside Google's shared Canvas.</p></details>
   <form class="pack-filters" id="pack-filters" role="search" hidden>
    <label>Search topics or activities<input id="pack-search" type="search" placeholder="Water cycle, collaboration, memory aid…"></label>
@@ -173,7 +192,7 @@ ${g.entries.length > 1 ? `      <details class="pack-other-versions"><summary>Ot
    <label>Grade<select id="pack-grade"><option value="">All grades</option>${Array.from({length:12}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}</select></label>
    <button type="reset">Clear filters</button>
   </form>
-  <p id="pack-results" role="status" aria-live="polite" aria-atomic="true">${groups.length} topics · ${entries.length} pack versions</p>
+  <p id="pack-results" role="status" aria-live="polite" aria-atomic="true" data-pack-count-label="${unified ? 'packs' : 'pack versions'}">${groups.length} topics · ${countLabel}</p>
   <p id="pack-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
   <div class="pack-grid" id="pack-grid">${cards}</div>
   <p id="pack-empty" hidden>No topics match. Try a different search or clear the filters.</p>
@@ -183,7 +202,7 @@ ${END}`;
 }
 
 function redirectsBlock(manifest) {
-  const rows = packEntries(manifest).slice().sort((a, b) => a.share_slug.localeCompare(b.share_slug));
+  const rows = packEntries(manifest).flatMap(entry => [entry, ...legacyAliases(entry).map(alias => ({ share_slug: alias.share_slug, slug: entry.slug }))]).sort((a, b) => a.share_slug.localeCompare(b.share_slug));
   return [RSTART + ' (generated by dev-tools/build_allopack_links.cjs)', '/packs /library.html 302', '/packs/ /library.html 302', ...rows.map(e => '/p/' + e.share_slug + ' /app/?lesson=' + e.slug + ' 302'), REND].join('\n');
 }
 

@@ -158,6 +158,21 @@ describe('artifact-owned Check Level context', () => {
       contentFingerprint: Context.fingerprintText(generatedContent.data),
     });
   });
+
+  it('checks the original source with the same rubric and never attaches a late result to another text', async () => {
+    const source = { id: 'analysis-1', type: 'analysis', data: { sourceLanguage: 'Spanish', originalText: 'Las plantas necesitan luz.', analysisTargets: { grade: '5th Grade' } } };
+    const callGemini = vi.fn().mockResolvedValueOnce('{"estimatedLevel":"4th Grade"}').mockResolvedValueOnce('{"confirmedLevel":"5th Grade","rubric":{"conceptDensity":{"score":1,"reason":"Several ideas."}}}');
+    const setGeneratedContent = vi.fn(), setHistory = vi.fn(), calculateReadability = vi.fn();
+    await makeCheckLevel()({ generatedContent: source, gradeLevel: '1st Grade', leveledTextLanguage: 'English', callGemini, cleanJson: x => x, calculateReadability, setGeneratedContent, setHistory, setIsCheckingLevel: vi.fn(), setError: vi.fn(), addToast: vi.fn(), t: key => key, warnLog: vi.fn(), alloBotRef: { current: null } });
+    expect(callGemini.mock.calls[0][0]).toContain('Target Level: 5th Grade');
+    expect(calculateReadability).not.toHaveBeenCalled();
+    const apply = setGeneratedContent.mock.calls[0][0];
+    expect(apply(source).levelCheck.rubric.conceptDensity.score).toBe(1);
+    expect(apply(source).data).toBe(source.data);
+    const edited = { ...source, data: { ...source.data, originalText: 'Edited' } };
+    expect(apply(edited)).toBe(edited);
+    expect(setHistory.mock.calls[0][0]([edited])[0]).toBe(edited);
+  });
 });
 
 const complexityHarness = ({ language = 'English', original, candidate }) => {

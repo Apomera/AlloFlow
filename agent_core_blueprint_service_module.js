@@ -295,7 +295,7 @@
         if (opts.ensureAnalysis === true && !plan.some(function (row) { return row && row.tool === 'analysis'; })) {
           plan.unshift({
             tool: 'analysis', uiId: 'analysis-access',
-            directive: 'Analyze and retain the source as the primary reference text.'
+            directive: opts.existingAnalysis ? 'Already checked, reused. Retain the checked source as the primary reference text.' : 'Analyze and retain the source as the primary reference text.'
           });
         }
         if (opts.ensureAdapted === true && !plan.some(function (row) { return row && row.tool === 'simplified'; })) {
@@ -313,7 +313,7 @@
             && !plan.some(function (row) { return row && row.tool === 'analysis'; })) {
           plan.unshift({
             tool: 'analysis', uiId: 'analysis-access',
-            directive: 'Analyze and retain the source as the primary reference text.'
+            directive: opts.existingAnalysis ? 'Already checked, reused. Retain the checked source as the primary reference text.' : 'Analyze and retain the source as the primary reference text.'
           });
         }
       }
@@ -339,6 +339,8 @@
      */
     function createDraft(request) {
       var req = request || {};
+      var existingAnalysis = GenerationMatrix && typeof GenerationMatrix.findExistingSourceAnalysis === 'function'
+        ? GenerationMatrix.findExistingSourceAnalysis(req.existingArtifacts || req.history, req.sourceText) : null;
       var ctx = {
         blueprintId: req.blueprintId,
         gradeLevel: req.gradeLevel || '',
@@ -355,7 +357,7 @@
           legacyConfig = legacyConfig && typeof legacyConfig === 'object' ? legacyConfig : {};
           legacyConfig.globalSettings = frozenSettings(req, legacyConfig.globalSettings);
           var bp = applyDraftTextAccessDefaults(C.fromLegacyConfig(legacyConfig, ctx), {
-            ensureAnalysis: true, ensureAdapted: true
+            ensureAnalysis: true, ensureAdapted: true, existingAnalysis: existingAnalysis
           });
           bp.plan = resolveRows(bp.plan, req, bp.globalSettings);
           var report = validate(bp);
@@ -372,7 +374,7 @@
         ? req.globalSettings : {};
       var globalSettings = frozenSettings(req, requestedGlobalSettings);
       var bp = applyDraftTextAccessDefaults(C.fromLegacyConfig({ resourcePlan: plan, lessonDNA: req.lessonDNA || {}, globalSettings: globalSettings }, ctx), {
-        ensureAnalysis: true, ensureAdapted: true
+        ensureAnalysis: true, ensureAdapted: true, existingAnalysis: existingAnalysis
       });
       bp.plan = resolveRows(bp.plan, req, bp.globalSettings);
       var report = validate(bp);

@@ -56,7 +56,7 @@
 
   // ----- Constants ------------------------------------------------------------
 
-  var WORKER_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submit';
+  var WORKER_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/v2/submit';
   var MANIFEST_URL = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/catalog/index.json';
   var ENTRY_BASE_URL = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/';
   var LESSON_APP_URL = 'https://alloflow-cdn.pages.dev/app/';
@@ -71,8 +71,8 @@
   var PD_ENTRY_BASE_URL = ENTRY_BASE_URL; // PD entry.path is repo-relative, like lessons
   var PD_WORKER_URL = WORKER_URL.replace(/\/submit$/, '/submitPd');
   // Tier-2 (optional) verified-credential endpoints on the same worker host.
-  var PD_ISSUE_URL = WORKER_URL.replace(/\/submit$/, '/issuePd');
-  var PD_VERIFY_URL = WORKER_URL.replace(/\/submit$/, '/verifyPd');
+  var PD_ISSUE_URL = WORKER_URL.replace(/\/v2\/submit$/, '/issuePd');
+  var PD_VERIFY_URL = WORKER_URL.replace(/\/v2\/submit$/, '/verifyPd');
   var PD_INTENT_KEY = 'alloflow_pd_intent';
   var PD_LEARNER_KEY = 'alloflow_pd_learner_v1';
   var PD_QUIZ_SALT_KEY = 'alloflow_pd_quiz_salt_v1';
@@ -523,7 +523,29 @@
       ['title', 'subject', 'credit', 'license'].forEach(function (key) { if (entry[key] != null && typeof entry[key] !== 'string') throw new Error('The catalog contains invalid lesson metadata.'); });
       if (entry.grade_level != null && typeof entry.grade_level !== 'string' && typeof entry.grade_level !== 'number') throw new Error('The catalog contains an invalid grade level.');
     });
+    var shares = new Set();
+    data.entries.forEach(function (entry) {
+      if (entry.share_slug) {
+        if (shares.has(entry.share_slug)) throw new Error('The catalog contains duplicate share links.');
+        shares.add(entry.share_slug);
+      }
+    });
+    data.entries.forEach(function (entry) {
+      if (entry.legacy_aliases === undefined) return;
+      if (!Array.isArray(entry.legacy_aliases) || entry.legacy_aliases.length > 128 || (entry.legacy_aliases.length && !/^allopacks\/(?:illustrated\/)?[a-z0-9_-]+\.allopack\.json$/i.test(entry.path))) throw new Error('The catalog contains invalid legacy lesson links.');
+      entry.legacy_aliases.forEach(function (alias) {
+        if (!alias || typeof alias !== 'object' || Array.isArray(alias) || typeof alias.slug !== 'string' || !/^[a-z0-9][a-z0-9_-]{0,127}$/i.test(alias.slug) || typeof alias.share_slug !== 'string' || !/^[a-z0-9][a-z0-9-]{0,127}$/.test(alias.share_slug) || typeof alias.path !== 'string' || !/^allopacks\/(?:illustrated\/)?[a-z0-9_-]+\.allopack\.json$/i.test(alias.path)) throw new Error('The catalog contains invalid legacy lesson links.');
+        if (slugs.has(alias.slug) || paths.has(alias.path) || shares.has(alias.share_slug)) throw new Error('The catalog contains duplicate legacy lesson links.');
+        slugs.add(alias.slug); paths.add(alias.path); shares.add(alias.share_slug);
+      });
+    });
     return data.entries;
+  }
+
+  function catalogEntryForSlug(entries, slug) {
+    return entries.find(function (entry) {
+      return entry.slug === slug || (Array.isArray(entry.legacy_aliases) && entry.legacy_aliases.some(function (alias) { return alias.slug === slug; }));
+    });
   }
 
   function catalogLessonPermalink(slug, shareSlug) {
@@ -855,7 +877,7 @@
 
     useEffect(function () {
       if (!selectedSlug || state.status !== 'ok') return;
-      var entry = state.entries.find(function (candidate) { return candidate.slug === selectedSlug; });
+      var entry = catalogEntryForSlug(state.entries, selectedSlug);
       if (!entry) { setPreview({ status: 'missing' }); return; }
       var cancelled = false, controller = new AbortController(), timedOut = false, lesson = null;
       var renderId = ++previewRenderRef.current;
@@ -966,7 +988,7 @@
         state.status === 'loading' && e('p', { role: 'status' }, 'Finding the published lesson…'),
         state.status === 'error' && e('div', { role: 'alert' }, e('p', null, 'Could not load catalog: ' + state.error), e('button', { type: 'button', className: 'min-h-11 px-3 py-2 border rounded', onClick: function () { setRetryVersion(function (v) { return v + 1; }); } }, 'Retry loading catalog')),
         state.status === 'ok' && preview.status === 'missing' && e('div', { role: 'alert' }, e('h3', { className: 'text-xl font-bold' }, 'Lesson not found'), e('p', null, 'This link does not match a published lesson. Browse the catalog to find another lesson.'), e('button', { type: 'button', className: 'min-h-11 px-3 py-2 border rounded', onClick: function () { setRetryVersion(function (v) { return v + 1; }); } }, 'Check again')),
-        state.status === 'ok' && preview.entry && preview.entry.slug === selectedSlug && e(React.Fragment, null,
+        state.status === 'ok' && preview.entry && catalogEntryForSlug(state.entries, selectedSlug) === preview.entry && e(React.Fragment, null,
           e('h3', { className: 'text-2xl font-bold text-slate-900' }, preview.entry.title),
           e('p', { className: 'text-sm text-slate-600' }, [preview.entry.subject, preview.entry.grade_level ? 'Grade ' + preview.entry.grade_level : '', preview.entry.credit ? 'Credit: ' + preview.entry.credit : ''].filter(Boolean).join(' · ')),
           e('p', { className: 'text-sm text-slate-600' }, preview.selection === 'teacher' ? 'Preview the educator guide. Print this copy to prepare and teach the lesson.' : 'Preview the printable student resources. Print this copy, or load the lesson in AlloFlow to use its interactive tools.'),
@@ -1153,8 +1175,8 @@
       })
         .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; }); })
         .then(function (res) {
-          if (res.body && res.body.ok) {
-            setStatus({ stage: 'success', message: 'Submitted. Reference: ' + (res.body.slug || res.body.filename || '?') });
+          if (res.ok && res.body && res.body.ok && res.body.storage === 'private') {
+            setStatus({ stage: 'success', message: 'Submitted for private review. Reference: ' + (res.body.id || '?') });
             addToast && addToast(tr('catalog_submission_received_a_maintainer_will_review', 'Submission received. A maintainer will review it.'), 'success');
           } else {
             setStatus({ stage: 'error', message: (res.body && res.body.error) || ('Submission failed (HTTP ' + res.status + ')') });
@@ -1171,7 +1193,7 @@
     return e('div', { className: 'flex flex-col gap-4' },
       // Lead paragraph
       e('p', { className: 'text-sm text-slate-700' },
-        'Submissions are reviewed manually before publishing to the public catalog. By submitting you agree to the open-license terms below.'
+        'Lessons are stored privately for up to 30 days while a maintainer reviews them. Only a reviewed, approved copy may be published in the public catalog. Do not include personal student details. By submitting you agree to the open-license terms below.'
       ),
       // JSON input row
       e('div', null,
@@ -4529,6 +4551,7 @@
     pdBrowseStatus: pdBrowseStatus,
   };
   CommunityCatalog._parseCatalogManifest = parseCatalogManifest;
+  CommunityCatalog._catalogEntryForSlug = catalogEntryForSlug;
   CommunityCatalog._fetchCatalogLesson = fetchCatalogLesson;
   CommunityCatalog._parseCatalogLesson = parseCatalogLesson;
   CommunityCatalog._catalogEntryMatches = catalogEntryMatches;

@@ -36,12 +36,15 @@ function recordingStub(record) {
     }
     defineSlideMaster() {}
     addSlide() {
-      const slide = { texts: [], notes: [] };
+      const slide = { texts: [], notes: [], tables: [] };
       slide.addText = (text, options) => { slide.texts.push({ text: flatten(text), placeholder: options && options.placeholder }); };
       slide.addNotes = (text) => slide.notes.push(String(text));
       slide.addShape = vi.fn();
       slide.addImage = vi.fn();
-      slide.addTable = (rows) => { slide.texts.push({ text: rows.map((row) => row.map((cell) => (cell && cell.text) || cell || '').join(' | ')).join('\n') }); };
+      slide.addTable = (rows, options) => {
+        slide.tables.push({ rows, options });
+        slide.texts.push({ text: rows.map((row) => row.map((cell) => (cell && cell.text) || cell || '').join(' | ')).join('\n') });
+      };
       record.slides.push(slide);
       return slide;
     }
@@ -141,6 +144,67 @@ describe('PowerPoint export of studio resources', () => {
   });
 });
 
+
+describe('Glossary PowerPoint translations', () => {
+  const tables = record => record.slides.flatMap(slide => slide.tables);
+  const glossary = data => ({ id: 'glossary', type: 'glossary', title: 'Plant words', data });
+
+  it.each([
+    'Hoja: Parte de una planta.',
+    { term: 'Hoja', def: 'Parte de una planta.' },
+    { word: 'Hoja', definition: 'Parte de una planta.' },
+    { text: 'Hoja: Parte de una planta.' },
+    { translation: 'Hoja: Parte de una planta.' },
+  ])('keeps supported translated passages and language labels: %j', async spanish => {
+    const input = glossary([{ word: 'Leaf', meaning: 'A plant part.', translations: {
+      Spanish: spanish, Arabic: { term: 'ورقة', meaning: 'جزء من النبات' },
+      Invalid: { text: {}, term: [] }, Blank: ' \t ', Array: ['not a translation'], Null: null,
+    } }]);
+    const saved = JSON.stringify(input);
+    const { ok, record, allText } = await runExport([input]);
+    expect(ok).toBe(true);
+    const printed = tables(record);
+    expect(printed).toHaveLength(1);
+    expect(printed[0].rows[0]).toHaveLength(3);
+    expect(printed[0].rows[1]).toEqual(['Leaf', 'A plant part.', 'Spanish: Hoja: Parte de una planta.\nArabic: ورقة: جزء من النبات']);
+    expect(allText).not.toContain('[object Object]');
+    for (const omitted of ['Invalid:', 'Blank:', 'Array:', 'Null:', 'not a translation']) expect(allText).not.toContain(omitted);
+    expect(JSON.stringify(input)).toBe(saved);
+  });
+
+  it('omits the translation column when every saved value is unusable', async () => {
+    const input = glossary([{ term: 'Root', definition: 'The part under the ground.', translations: {
+      Spanish: { text: {} }, Arabic: { term: [], def: {} }, Empty: '', Whitespace: ' \n ', Array: [], Null: null,
+    } }]);
+    const saved = JSON.stringify(input);
+    const { ok, record, allText } = await runExport([input]);
+    expect(ok).toBe(true);
+    const printed = tables(record);
+    expect(printed).toHaveLength(1);
+    expect(printed[0].rows[0]).toHaveLength(2);
+    expect(printed[0].rows[1]).toEqual(['Root', 'The part under the ground.']);
+    expect(printed[0].options.colW).toEqual([2.5, 6.5]);
+    expect(allText).not.toContain('export.trans_col');
+    expect(allText).not.toContain('[object Object]');
+    expect(JSON.stringify(input)).toBe(saved);
+  });
+
+  it('budgets every short language paragraph when paginating glossary rows', async () => {
+    const languages = ['Spanish', 'Arabic', 'French', 'Hindi', 'Japanese', 'German'];
+    const entries = ['Leaf', 'Root', 'Stem'].map(term => ({ term, def: 'Meaning', translations: Object.fromEntries(languages.map(language => [language, 'x'])) }));
+    const input = glossary(entries), saved = JSON.stringify(input);
+    const { ok, record } = await runExport([input]);
+    expect(ok).toBe(true);
+    const printed = tables(record);
+    expect(printed).toHaveLength(3);
+    expect(printed.map(table => table.rows[1][0])).toEqual(['Leaf', 'Root', 'Stem']);
+    for (const table of printed) {
+      expect(table.rows).toHaveLength(2);
+      expect(table.rows[1][2].split('\n')).toEqual(languages.map(language => language + ': x'));
+    }
+    expect(JSON.stringify(input)).toBe(saved);
+  });
+});
 
 describe('Scoped PowerPoint export', () => {
   it('uses the explicit Builder resources instead of unrelated live History', async () => {

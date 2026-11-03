@@ -28,7 +28,7 @@ function load(lane) {
 async function blobText(context) {
   return new Promise((resolve, reject) => { const reader = new context.win.FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(context.blobs.at(-1)); });
 }
-async function save(context) { button(context.doc, 'Save word set').click(); await tick(); return JSON.parse(await blobText(context)); }
+async function save(context) { button(context.doc, 'Save word set').click(); await tick(); button(context.doc, 'I saved the file').click(); await tick(); return JSON.parse(await blobText(context)); }
 function edit(context, value) { const input = context.doc.querySelector('.awp-fields textarea'); input.value = value; input.dispatchEvent(new context.win.Event('change', { bubbles: true })); }
 function offline(context, input, options = {}, labels, uiLanguage) {
   const dom = new JSDOM(context.ui.buildHtml(input, { mode: 'vocabulary', repetitions: 1, includeAudio: false, ...options }, undefined, labels, undefined, uiLanguage), { runScripts: 'dangerously' });
@@ -131,19 +131,19 @@ describe.each(Object.keys(lanes))('Practice entry identity and interface languag
 
   it.each(['presenter', 'offline'])('keeps French UI separate from Arabic words and English definitions in the %s', async surface => {
     const c = load(lane), input = { language: 'Arabic', currentUiLanguage: 'French', words: [{ entryId: 'leaf', word: 'ورقة', termLanguage: 'ar', definition: 'A plant part.', definitionLanguage: 'English', example: 'Une feuille.', exampleLanguage: 'French' }] };
-    const values = { next: 'Suivant', show_meaning: 'Afficher le sens', card_progress: 'Carte {n} sur {total}', card_announce: 'Carte {n} sur {total}. {visible}' };
+    const values = { finish_round: 'Terminer la série', show_meaning: 'Afficher le sens', card_progress: 'Carte {n} sur {total}', card_announce: 'Carte {n} sur {total}. {visible}' };
     let doc;
     if (surface === 'presenter') { c.ui.open({ ...input, t: key => values[key.replace('word_practice.', '')] || key, options: { mode: 'vocabulary', repetitions: 1, includeAudio: false } }); button(c.doc, 'Present').click(); await tick(); doc = c.doc; }
     else doc = offline(c, input, {}, values, 'French');
     const host = doc.querySelector('.awp-player'); expect(host.lang).toBe('fr'); expect(host.dir).toBe('ltr');
-    expect(button(doc, 'Suivant').lang).toBe('fr'); expect(button(doc, 'Full screen').lang).toBe('en');
+    expect(button(doc, 'Terminer la série').lang).toBe('fr'); expect(button(doc, 'Full screen').lang).toBe('en');
     button(doc, 'Afficher le sens').click(); expect(doc.querySelector('.awp-word').lang).toBe('ar'); expect(doc.querySelector('.awp-word').dir).toBe('rtl');
-    for (const scope of ['.awp-card', '.awp-sr']) { expect(doc.querySelector(scope + ' .awp-definition').lang).toBe('en'); expect(doc.querySelector(scope + ' .awp-example').lang).toBe('fr'); }
+    for (const scope of ['.awp-card', '.awp-player > p.awp-sr[aria-live=polite]']) { expect(doc.querySelector(scope + ' .awp-definition').lang).toBe('en'); expect(doc.querySelector(scope + ' .awp-example').lang).toBe('fr'); }
     if (surface === 'offline') { expect(doc.documentElement.lang).toBe('fr'); expect(doc.documentElement.dir).toBe('ltr'); }
   });
 
   it('uses neutral metadata for unknown UI/content languages and English for readable fallback controls', () => {
-    const c = load(lane), doc = offline(c, { language: 'Unlisted language', words: ['word'] }, {}, { next: 'Translated control' }, 'Unlisted UI');
+    const c = load(lane), doc = offline(c, { language: 'Unlisted language', words: ['word'] }, {}, { finish_round: 'Translated control' }, 'Unlisted UI');
     expect(doc.documentElement.lang).toBe('und'); expect(doc.documentElement.dir).toBe('auto'); expect(doc.querySelector('.awp-word').lang).toBe('und'); expect(doc.querySelector('.awp-word').dir).toBe('auto');
     expect(button(doc, 'Translated control').lang).toBe('und'); expect(button(doc, 'Full screen').lang).toBe('en');
   });
@@ -155,8 +155,25 @@ describe.each(Object.keys(lanes))('Practice entry identity and interface languag
 
   it('keeps sentence prompt and answer languages independent without announcing a concealed answer', () => {
     const c = load(lane), doc = offline(c, { language: 'Spanish', words: [{ word: 'hoja', termLanguage: 'Spanish', sentenceActivity: { prompt: 'Find the ____.', language: 'English', choices: ['hoja', 'mesa'], answer: 'hoja' } }] }, { mode: 'sentence' }, undefined, 'French');
-    expect(doc.querySelector('.awp-card .awp-detail').lang).toBe('en'); expect([...doc.querySelectorAll('.awp-choices button')].map(node => node.lang)).toEqual(['es', 'es']); expect(doc.querySelector('.awp-sr').textContent).not.toContain('hoja');
-    button(doc, 'Reveal answer').click(); expect(doc.querySelector('.awp-feedback span').lang).toBe('es'); expect(doc.querySelector('.awp-sr').textContent).toContain('hoja'); expect(doc.querySelector('.awp-sr span[lang="es"]').textContent).toBe('hoja');
+    expect(doc.querySelector('.awp-card .awp-detail').lang).toBe('en'); expect([...doc.querySelectorAll('.awp-choices button')].map(node => node.lang)).toEqual(['es', 'es']); expect(doc.querySelector('.awp-player > p.awp-sr[aria-live=polite]').textContent).not.toContain('hoja');
+    button(doc, 'Reveal answer').click(); expect(doc.querySelector('.awp-feedback span').lang).toBe('es'); expect(doc.querySelector('.awp-player > p.awp-sr[aria-live=polite]').textContent).toContain('hoja'); expect(doc.querySelector('.awp-player > p.awp-sr[aria-live=polite] span[lang="es"]').textContent).toBe('hoja');
+  });
+  it('shows the same prepared blank in preview, presentation, and downloaded HTML', async () => {
+    const c = load(lane), prompt = '猫は\n「____」を見た。';
+    const input = { language: 'Japanese', words: [{ word: '魚', activityItems: { read_sentence: {
+      sentence: '猫は\n「魚」を見た。', before: '猫は\n「', after: '」を見た。', options: ['鳥', '魚'],
+    } } }], options: { mode: 'sentence', repetitions: 1, shuffle: false, includeAudio: false, cardFont: 'georgia' } };
+    c.ui.open(input);
+    expect(c.doc.querySelector('.awp-preview-prompt').textContent).toBe(prompt);
+    button(c.doc, 'Present').click(); await tick();
+    const live = c.doc.querySelector('.awp-sentence-prompt');
+    expect([live.textContent, live.lang, live.dir]).toEqual([prompt, 'ja', 'ltr']);
+    const doc = offline(c, input, input.options, undefined, 'Arabic');
+    expect(doc.querySelector('.awp-sentence-prompt').textContent).toBe(prompt);
+    expect(doc.querySelector('.awp-stage').dataset.awpCardFont).toBe('georgia');
+    expect(doc.querySelector('.awp-player > p.awp-sr[aria-live=polite]').textContent).not.toContain('魚');
+    button(doc, 'Reveal answer').click();
+    expect(doc.querySelector('.awp-feedback span').textContent).toBe('魚');
   });
 
   it('tags authored titles as content and dynamic English fallback messages independently of the French interface', async () => {

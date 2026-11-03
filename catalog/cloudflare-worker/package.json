@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Cloudflare Worker that accepts AlloFlow catalog submissions and commits them to catalog/pending/ via the GitHub API.",
+  "description": "Cloudflare Worker that stages AlloFlow community submissions privately for maintainer review.",
   "main": "src/index.js",
   "scripts": {
     "dev": "wrangler dev",

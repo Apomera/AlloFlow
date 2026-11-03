@@ -8,7 +8,7 @@ const date=process.argv[2]||new Date().toISOString().slice(0,10);
 if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('Use a YYYY-MM-DD report date');
 const output=path.join('docs','allopack-quality-'+date);fs.mkdirSync(output,{recursive:true});
 const rows=[];
-for(const dir of ['allopacks','allopacks/illustrated']) for(const file of fs.readdirSync(dir).filter(f=>f.endsWith('.allopack.json')).sort()) {
+for(const dir of ['allopacks/current']) for(const file of fs.readdirSync(dir).filter(f=>f.endsWith('.allopack.json')).sort()) {
  const p=JSON.parse(fs.readFileSync(path.join(dir,file),'utf8').replace(/^\uFEFF/,''));
  const row={file:dir+'/'+file,resources:p.history.length,embeddedImagePlacements:0,uniqueImages:0,missingAlt:[],unknownImageFields:[],coverage:{},draftValidator:{}};const hashes=new Set();
  function walk(n,at){if(Array.isArray(n)){n.forEach((v,i)=>walk(v,at+'['+i+']'));return;}if(!n||typeof n!=='object')return;for(const [k,v] of Object.entries(n)){if(typeof v==='string'&&v.startsWith('data:image/')){row.embeddedImagePlacements++;hashes.add(crypto.createHash('sha256').update(v).digest('hex'));const altKey={image:'imageAlt',imageUrl:'alt',iconUrl:'iconAlt'}[k];if(!altKey)row.unknownImageFields.push(at+'.'+k);else if(!(typeof n[altKey]==='string'&&n[altKey].trim())&&!n.decorative&&!n.imageDecorative)row.missingAlt.push(at+'.'+altKey);}else walk(v,at+'.'+k);}}

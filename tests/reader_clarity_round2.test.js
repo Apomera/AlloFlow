@@ -113,7 +113,7 @@ describe('side by side', () => {
     expect($$('[data-comparison-listen]').map(b => b.textContent)).toEqual(['Listen', 'Listen']);
     for (const button of $$('[data-comparison-listen]')) expect(button.getAttribute('aria-label')).toContain('Listen');
     for (const button of $$('[data-comparison-karaoke]')) {
-      expect(button.textContent).toBe('Listen with highlights');
+      expect(button.textContent).toBe('Read along with audio');
       expect(button.getAttribute('aria-label')).toContain(button.textContent);
     }
   });

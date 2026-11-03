@@ -17,7 +17,7 @@
 // Deliberately NOT stubbing THREE: initEngine is skipped whenever
 // window.__geoWorldEngine already exists, which is exactly the state we want.
 
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { React, ReactDOMClient, makeCtx, resetStemLab, loadTool } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_geometryworld.js';
@@ -266,6 +266,43 @@ describe('Geometry World engine lifecycle', () => {
 
     expect(fake._calls.clearWorld).toBe(1);
     expect(window[ENGINE_KEY]).toBeUndefined();
+  }, 20000);
+
+  it('initializes only the live viewport after a rapid tool switch', () => {
+    vi.useFakeTimers();
+    const rendererStarts = [];
+    const rendererLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const three = window.THREE;
+    // Observe the real initEngine entry at the first WebGL call. jsdom has no
+    // graphics context, so stop there rather than simulate an entire lesson.
+    window.THREE = new Proxy(three, { get(target, key) {
+      if (key === 'PerspectiveCamera') return class { constructor() { this.position = { set() {} }; } };
+      if (key !== 'WebGLRenderer') return target[key];
+      return class { constructor({ canvas }) {
+        rendererStarts.push({ viewport: canvas.parentElement, connected: canvas.isConnected });
+        throw new Error('Lifecycle probe: no WebGL in jsdom');
+      } };
+    } });
+    let first, next;
+    try {
+      first = mountTool(cfg, { _introShownOnce: true, worldActive: true });
+      const oldViewport = first.container.querySelector('#geoworld-fs-wrap');
+      React.act(() => vi.advanceTimersByTime(50));
+      first.unmount(); first = null;
+      next = mountTool(cfg, { _introShownOnce: true, worldActive: true });
+      const liveViewport = next.container.querySelector('#geoworld-fs-wrap');
+      expect(oldViewport.isConnected).toBe(false);
+      expect(liveViewport.isConnected).toBe(true);
+      React.act(() => vi.advanceTimersByTime(50));
+      expect(rendererStarts).toEqual([]);
+      React.act(() => vi.advanceTimersByTime(50));
+      expect(rendererStarts).toEqual([{ viewport: liveViewport, connected: true }]);
+    } finally {
+      if (first) first.unmount();
+      if (next) next.unmount();
+      window.THREE = three;
+      rendererLog.mockRestore(); vi.useRealTimers();
+    }
   }, 20000);
 
   // ── The second half of the blank-screen bug ──

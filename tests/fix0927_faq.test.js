@@ -116,19 +116,19 @@ describe('F3: regenerating a repeated FAQ sentence targets that occurrence', () 
 });
 
 describe('F2: FAQ strings go through the translation helper', () => {
-  const es = { 'faq.read_sentence': 'Leer: {sentence}', 'faq.save_tts': 'Guardar audio', 'faq.udl_goal_label': 'Meta DUA:' };
+  const es = { 'faq.read_sentence': 'Leer: {sentence}', 'faq.save_audio': 'Guardar audio', 'faq.udl_goal_label': 'Meta DUA:' };
   it('names sentence buttons with the translated template', async () => {
     await render(props({ t: key => es[key], isTeacherMode: false, isEditingFaq: false }));
-    const names = [...host.querySelectorAll('button[id^="sentence-"]')].map(el => el.getAttribute('aria-label'));
+    const names = [...host.querySelectorAll('button[data-faq-listen-question],button[id^="sentence-"]')].map(el => el.getAttribute('aria-label'));
     expect(names[0]).toBe('Leer: Echo.');
     expect(names.some(name => /Read sentence/.test(name))).toBe(false);
   });
-  it('translates the Save TTS control and the teacher goal label', async () => {
+  it('translates the Save audio control and the teacher goal label', async () => {
     await render(props({ t: key => es[key], isEditingFaq: false }));
     const save = [...host.querySelectorAll('button')].find(el => el.getAttribute('aria-label') === 'Guardar audio');
     expect(save?.textContent).toContain('Guardar audio');
     expect(host.textContent).toContain('Meta DUA:');
-    expect(host.textContent).not.toContain('Save TTS');
+    expect(host.textContent).not.toContain('Save audio');
   });
 });
 

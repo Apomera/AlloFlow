@@ -514,7 +514,7 @@ describe('homework QR hardening', () => {
     expect(rootSource).toContain('preparedPack || await buildAssignmentPackEncoded({ includeSharedActivity, resourceIds: selectedResourceIds, aiPolicy: shareOptions.aiPolicy })');
     expect(rootSource).toContain('activities: built.sharedActivities');
     expect(rootSource).toContain('sharedActivity: built.sharedActivities[0] || null');
-    expect(rootSource).toContain('if (sharedAssignmentActivity.enabled) {\n          return hostPackOnMailbox(selectedResourceIds);');
+    expect(rootSource).toContain('if (sharedAssignmentActivity.enabled) {\n          return hostPackOnMailbox(selectedResourceIds, deliveryOptions);');
     expect(sharedActivitySource).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
     expect(sharedActivitySource).toContain("a: 'joinactivity'");
     expect(sharedActivitySource).toContain("a: 'activityupsert'");

@@ -39,7 +39,7 @@ function fakeEngine() {
 let cfg;
 beforeAll(() => { resetStemLab(); window.THREE = makeThreeStub(); cfg = loadTool(FILE, 'geometryWorld'); }, 120000);
 beforeEach(() => { window.THREE = makeThreeStub(); localStorage.clear(); });
-afterEach(() => { delete window[ENGINE_KEY]; document.body.innerHTML = ''; });
+afterEach(() => { delete window[ENGINE_KEY]; document.body.innerHTML = ''; vi.restoreAllMocks();vi.unstubAllGlobals(); });
 
 function mount(bucket) {
   const container = document.createElement('div'); document.body.appendChild(container);
@@ -50,9 +50,57 @@ function mount(bucket) {
   const root = ReactDOMClient.createRoot(container);
   React.act(() => { root.render(React.createElement(Comp)); });
   React.act(() => bump());
-  return { container, unmount: () => { React.act(() => root.unmount()); container.remove(); } };
+  return { container, refresh: () => bump(), unmount: () => { React.act(() => root.unmount()); container.remove(); } };
 }
 const base = { worldActive: true, activeLesson: 'volumeExplorer', _introShownOnce: true, tutorialDismissed: true, showLessonIntro: false, touchMode: false };
+
+describe('building history stays reachable', () => {
+  function withHistory() {
+    const engine=fakeEngine();engine._undoStack=[{action:'place'}];engine._redoStack=[];
+    engine.undo=vi.fn(()=>{engine._redoStack.push(engine._undoStack.pop());return true;});
+    engine.redo=vi.fn(()=>{engine._undoStack.push(engine._redoStack.pop());return true;});
+    window[ENGINE_KEY]=engine;return engine;
+  }
+  it('retains focus on the final Undo and Redo and prevents empty-stack actions',()=>{
+    const engine=withHistory(),view=mount(base);
+    const undo=view.container.querySelector('[data-gw-utility="undo"]'),redo=view.container.querySelector('[data-gw-utility="redo"]');
+    expect(undo.getAttribute('aria-label')).toContain('1 action available');
+    expect(undo.getAttribute('aria-keyshortcuts')).toContain('Control+Z');
+    expect(redo.getAttribute('aria-keyshortcuts')).toContain('Control+Shift+Z');
+    expect(redo.getAttribute('aria-disabled')).toBe('true');expect(redo.disabled).toBe(false);
+    undo.focus();React.act(()=>{undo.click();view.refresh();});
+    expect(view.container.querySelector('[data-gw-utility="undo"]')).toBe(undo);
+    expect(document.activeElement).toBe(undo);expect(undo.getAttribute('aria-disabled')).toBe('true');
+    expect(undo.getAttribute('aria-label')).toContain('0 actions available');
+    React.act(()=>undo.click());expect(engine.undo).toHaveBeenCalledTimes(1);
+    expect(redo.getAttribute('aria-disabled')).toBe('false');
+    redo.focus();React.act(()=>{redo.click();view.refresh();});
+    expect(view.container.querySelector('[data-gw-utility="redo"]')).toBe(redo);
+    expect(document.activeElement).toBe(redo);expect(redo.getAttribute('aria-disabled')).toBe('true');
+    React.act(()=>redo.click());expect(engine.redo).toHaveBeenCalledTimes(1);
+    expect(undo.getAttribute('aria-disabled')).toBe('false');view.unmount();
+  });
+  it.each(['missing','transition','modal','showcase'])('keeps the world unchanged for %s history actions',state=>{
+    const engine=withHistory(),view=mount({...base,showHelp:state==='modal',showcaseActive:state==='showcase'});
+    if(state==='missing')window[ENGINE_KEY]={};
+    if(state==='transition')engine._pendingWorldTransition={};
+    const undo=view.container.querySelector('[data-gw-utility="undo"]');expect(undo).toBeTruthy();
+    React.act(()=>undo.click());expect(engine.undo).not.toHaveBeenCalled();expect(engine._undoStack).toHaveLength(1);
+    window[ENGINE_KEY]=engine;view.unmount();
+  });
+  it('offers touch builders Redo after Undo through the existing More menu',()=>{
+    vi.spyOn(navigator,'userAgent','get').mockReturnValue('iPhone');
+    const engine=withHistory(),view=mount({...base,touchMode:true,touchMoreOpen:true});
+    const find=action=>view.container.querySelector('[data-gw-touch-action="'+action+'"]');
+    expect(find('redo').disabled).toBe(true);expect(find('undo').disabled).toBe(false);
+    React.act(()=>find('undo').click());expect(engine.undo).toHaveBeenCalledTimes(1);
+    expect(view.container.querySelector('#gw-touch-more')).toBeNull();
+    React.act(()=>find('more').click());expect(find('redo').disabled).toBe(false);expect(find('undo').disabled).toBe(true);
+    React.act(()=>find('redo').click());expect(engine.redo).toHaveBeenCalledTimes(1);
+    expect(engine._undoStack).toHaveLength(1);expect(engine._redoStack).toHaveLength(0);
+    expect(view.container.querySelector('#gw-touch-more')).toBeNull();view.unmount();
+  });
+});
 
 describe('measuring tools reach pointer users', () => {
   it('the action bar offers Ruler, Angle and Net, each calling the same engine action as its key', () => {

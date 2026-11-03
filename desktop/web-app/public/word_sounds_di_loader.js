@@ -44,6 +44,36 @@
 // r-controlled vowel units). null denotes an unresolved pronunciation variant.
 function createWordSoundsCore(options = {}) {
   const VERSION = 1;
+  // BEGIN SHARED PREPARED SENTENCE PARTS
+  // The setup board stores trimmed fragments. Locate their edges in the
+  // authored sentence and replace only the answer, never its separators.
+  function preparedSentenceParts(sentence, before, target, after) {
+    if (![sentence, before, target, after].every(value => typeof value === 'string') || !target.trim()) return null;
+    const source = sentence.trim(), left = before.trim(), right = after.trim();
+    const fold = value => value.normalize('NFD').toLowerCase().replace(/\s+/gu, ' ');
+    let leftEnd = left.length, rightStart = source.length - right.length;
+    if (!source.startsWith(left) || !source.endsWith(right)) {
+      // Legacy fragments can differ in case, whitespace or Unicode form.
+      // Map the two comparison offsets back to actual source boundaries.
+      const leftUnits = fold(left).length, rightUnits = fold(source).length - fold(right).length;
+      leftEnd = leftUnits === 0 ? 0 : -1;
+      rightStart = rightUnits === 0 ? 0 : -1;
+      let units = 0;
+      for (const part of source.matchAll(/\s+|\S/gu)) {
+        units += fold(part[0]).length;
+        const end = part.index + part[0].length;
+        if (units === leftUnits) leftEnd = end;
+        if (units === rightUnits) rightStart = end;
+      }
+      if (leftEnd < 0 || rightStart < 0 || fold(source.slice(0, leftEnd)) !== fold(left) || fold(source.slice(rightStart)) !== fold(right)) return null;
+    }
+    if (rightStart < leftEnd) return null;
+    const gap = source.slice(leftEnd, rightStart), answer = gap.trim();
+    if (fold(answer) !== fold(target.trim())) return null;
+    const start = sentence.indexOf(source) + leftEnd + gap.indexOf(answer);
+    return { before: sentence.slice(0, start), answer, after: sentence.slice(start + answer.length) };
+  }
+  // END SHARED PREPARED SENTENCE PARTS
   // Shared, lazy pronunciation data: keep the full dictionary out of each of
   // the three embedded core copies and out of lessons saved for students.
   const root = typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : {};
@@ -1468,7 +1498,7 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
     return next;
   };
-  return {loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
